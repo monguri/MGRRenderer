@@ -147,7 +147,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Director.cpp" />
+    <ClCompile Include="Line2D.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Node.cpp" />
+    <ClCompile Include="Point2D.cpp" />
+    <ClCompile Include="Polygon2D.cpp" />
+    <ClCompile Include="Scene.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Director.h" />
+    <ClInclude Include="Line2D.h" />
+    <ClInclude Include="MGRRenderer.h" />
+    <ClInclude Include="Node.h" />
+    <ClInclude Include="Point2D.h" />
+    <ClInclude Include="Polygon2D.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="BasicDataTypes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

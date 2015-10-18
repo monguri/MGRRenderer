@@ -82,10 +82,12 @@ void fwKeyInputHandler(GLFWwindow* window, int key, int scancode, int action, in
 	}
 }
 
-// TODO:リサイズイベントを受けるメソッドもつくりたいな
-// 描画物のデータ構造と、OpenGLを使って描画するロジックは切り離して書くべき。OpenGL以外に移植するためにね。
 void initialize()
 {
+	//
+	// 描画するシーンをMGRRendererに登録している
+	//
+
 	std::vector<Point2DData> positionAndPointSize{
 		Point2DData(0.0f, 0.0f, 15.0f),
 		Point2DData(0.75f, 0.75f, 15.0f),
@@ -114,9 +116,11 @@ void initialize()
 
 void render()
 {
+	// MGRRendererに毎フレームの描画命令
 	Director::getInstance()->update();
 }
 
 void finalize() {
+	// MGRRenderer終了処理
 	Director::getInstance()->destroy();
 }

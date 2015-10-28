@@ -12,14 +12,13 @@ class Polygon2D
 	: public Node
 {
 public:
-	Polygon2D(const std::vector<Vec2>& vertexArray);
-	~Polygon2D();
+	bool initWithVertexArray(const std::vector<Vec2>& vertexArray);
 
 private:
 	OpenGLProgramData _glData;
 	std::vector<Vec2> _vertexArray;
 
-
+	~Polygon2D();
 	void render() override;
 };
 

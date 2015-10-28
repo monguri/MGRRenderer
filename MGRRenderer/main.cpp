@@ -1,8 +1,17 @@
 #include <iostream>
 #include <assert.h>
-#include <gl/glew.h>
-#include <GLFW/glfw3.h>
+#include <gles/include/glew.h>
+#include <glfw3/include/glfw3.h>
 #include "MGRRenderer.h"
+
+#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+
+// Windows Header Files:
+#include <windows.h>
+#include <tchar.h>
+
+static const int WINDOW_WIDTH = 640;
+static const int WINDOW_HEIGHT = 480;
 
 using namespace mgrrenderer;
 
@@ -13,8 +22,15 @@ static void initialize();
 static void render();
 static void finalize();
 
-int main()
+int APIENTRY _tWinMain(HINSTANCE hInstance,
+	HINSTANCE hPrevInstance,
+	LPTSTR    lpCmdLine,
+	int       nCmdShow)
 {
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
+//int main()
+//{
 	glfwSetErrorCallback(fwErrorHandler);
 
 	if (glfwInit() == GL_FALSE)
@@ -29,7 +45,7 @@ int main()
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow *const window = glfwCreateWindow(640, 480, "MGRRendererSampleApplication", NULL, NULL);
+	GLFWwindow *const window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "MGRRendererSampleApplication", NULL, NULL);
 	if (window == nullptr)
 	{
 		std::cerr << "Can't create GLFW window." << std::endl;
@@ -67,6 +83,7 @@ int main()
 	glfwDestroyWindow(window);
 	glfwTerminate();
 	exit(EXIT_SUCCESS);
+	return 0;
 }
 
 void fwErrorHandler(int error, const char* description)
@@ -87,31 +104,46 @@ void initialize()
 	//
 	// 描画するシーンをMGRRendererに登録している
 	//
+	bool isSucceeded = false;
+
+	Director::getInstance()->init(Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+
+	// 各ノードの作成はDirector::initの後に呼ぶ。Director::initのもっているウィンドウサイズを使用する場合があるので。
 
 	std::vector<Point2DData> positionAndPointSize{
 		Point2DData(0.0f, 0.0f, 15.0f),
-		Point2DData(0.75f, 0.75f, 15.0f),
+		Point2DData(-0.75f, -0.75f, 15.0f),
 	};
-	Point2D* pointNode = new Point2D(positionAndPointSize);
+	Point2D* pointNode = new Point2D();
+	pointNode->initWithPointArray(positionAndPointSize);
 
 	std::vector<Vec2> lineVertices{
 		Vec2(-1.0f, 0.0f), Vec2(1.0f, 0.0f),
 		Vec2(0.0f, 1.0f), Vec2(0.0f, -1.0f),
 	};
-	Line2D* lineNode = new Line2D(lineVertices);
+	Line2D* lineNode = new Line2D();
+	isSucceeded = lineNode->initWithVertexArray(lineVertices);
+	assert(isSucceeded);
 
 	std::vector<Vec2> polygonVertices{
 		Vec2(-0.75f, 0.75f), Vec2(-0.75f, 0.25f), Vec2(-0.25f, 0.75f),
 		Vec2(-0.25f, 0.75f), Vec2(-0.75f, 0.25f), Vec2(-0.25f, 0.25f),
 	};
-	Polygon2D* polygonNode = new Polygon2D(polygonVertices);
+	Polygon2D* polygonNode = new Polygon2D();
+	isSucceeded = polygonNode->initWithVertexArray(polygonVertices);
+	assert(isSucceeded);
+
+	Sprite2D* spriteNode = new Sprite2D();
+	isSucceeded = spriteNode->init(Vec2(0.25f, 0.25f), "../Resources/Hello.png");
+	assert(isSucceeded);
 
 	Scene* scene = new Scene();
 	scene->pushNode(pointNode);
 	scene->pushNode(lineNode);
 	scene->pushNode(polygonNode);
+	scene->pushNode(spriteNode);
 
-	Director::getInstance()->initWithScene(*scene);
+	Director::getInstance()->setScene(*scene);
 }
 
 void render()

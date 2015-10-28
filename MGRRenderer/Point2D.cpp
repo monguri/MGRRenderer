@@ -4,7 +4,12 @@
 namespace mgrrenderer
 {
 
-Point2D::Point2D(const std::vector<Point2DData>& pointArray)
+Point2D::~Point2D()
+{
+	destroyOpenGLProgram(_glData);
+}
+
+void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 {
 	_pointArray = pointArray;
 
@@ -30,11 +35,6 @@ Point2D::Point2D(const std::vector<Point2DData>& pointArray)
 	assert(_attributePointSize >= 0);
 }
 
-Point2D::~Point2D()
-{
-	destroyOpenGLProgram(_glData);
-}
-
 void Point2D::render()
 {
 	glUseProgram(_glData.shaderProgram);
@@ -50,7 +50,7 @@ void Point2D::render()
 	glVertexAttribPointer(_attributePointSize, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)((GLbyte*)&_pointArray[0] + sizeof(Vec2)));
 	assert(glGetError() == GL_NO_ERROR);
 
-	glDrawArrays(GL_POINTS, 0, 2);
+	glDrawArrays(GL_POINTS, 0, _pointArray.size());
 	assert(glGetError() == GL_NO_ERROR);
 }
 

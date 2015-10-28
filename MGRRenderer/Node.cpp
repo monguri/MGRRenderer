@@ -5,15 +5,6 @@
 namespace mgrrenderer
 {
 
-Node::Node()
-{
-}
-
-
-Node::~Node()
-{
-}
-
 void Node::visit()
 {
 	render();

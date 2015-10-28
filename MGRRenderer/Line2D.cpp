@@ -4,8 +4,19 @@
 namespace mgrrenderer
 {
 
-Line2D::Line2D(const std::vector<Vec2>& vertexArray)
+Line2D::~Line2D()
 {
+	destroyOpenGLProgram(_glData);
+}
+
+bool Line2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
+{
+	if (vertexArray.size() % 2 != 0)
+	{
+		// 三角形の頂点のため頂点数が3の倍数であることを前提にする
+		return false;
+	}
+
 	_vertexArray = vertexArray;
 
 	_glData = createOpenGLProgram(
@@ -22,12 +33,8 @@ Line2D::Line2D(const std::vector<Vec2>& vertexArray)
 		"	gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);"
 		"}"
 		);
-}
 
-
-Line2D::~Line2D()
-{
-	destroyOpenGLProgram(_glData);
+	return true;
 }
 
 void Line2D::render()
@@ -42,7 +49,7 @@ void Line2D::render()
 
 	glVertexAttribPointer(_glData.attributeVertexPosition, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_vertexArray[0]);
 	assert(glGetError() == GL_NO_ERROR);
-	glDrawArrays(GL_LINES, 0, 4);
+	glDrawArrays(GL_LINES, 0, _vertexArray.size());
 	assert(glGetError() == GL_NO_ERROR);
 }
 

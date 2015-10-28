@@ -1,66 +1,41 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Node.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Director.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Point2D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Line2D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Polygon2D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="BasicDataTypes.h" />
+    <ClInclude Include="Director.h" />
+    <ClInclude Include="FileUtility.h" />
+    <ClInclude Include="Image.h" />
+    <ClInclude Include="Line2D.h" />
+    <ClInclude Include="MGRRenderer.h" />
+    <ClInclude Include="Node.h" />
+    <ClInclude Include="Point2D.h" />
+    <ClInclude Include="Polygon2D.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Sprite2D.h" />
+    <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Node.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Director.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Point2D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Line2D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BasicDataTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Polygon2D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MGRRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClCompile Include="Director.cpp" />
+    <ClCompile Include="FileUtility.cpp" />
+    <ClCompile Include="Image.cpp" />
+    <ClCompile Include="Line2D.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Node.cpp" />
+    <ClCompile Include="Point2D.cpp" />
+    <ClCompile Include="Polygon2D.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Sprite2D.cpp" />
+    <ClCompile Include="Texture.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\Hello.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

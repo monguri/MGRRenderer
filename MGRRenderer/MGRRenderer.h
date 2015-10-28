@@ -7,3 +7,4 @@
 #include "Point2D.h"
 #include "Line2D.h"
 #include "Polygon2D.h"
+#include "Sprite2D.h"

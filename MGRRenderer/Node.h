@@ -1,6 +1,6 @@
 #pragma once
-#include <gl/glew.h>
-#include <GLFW/glfw3.h>
+#include <gles/include/glew.h>
+#include <glfw3/include/glfw3.h>
 #include "BasicDataTypes.h"
 
 namespace mgrrenderer
@@ -9,8 +9,6 @@ namespace mgrrenderer
 class Node
 {
 public:
-	Node();
-	~Node();
 	virtual void visit();
 
 protected:

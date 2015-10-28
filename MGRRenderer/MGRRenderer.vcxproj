@@ -18,6 +18,36 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BasicDataTypes.h" />
+    <ClInclude Include="Director.h" />
+    <ClInclude Include="FileUtility.h" />
+    <ClInclude Include="Image.h" />
+    <ClInclude Include="Line2D.h" />
+    <ClInclude Include="MGRRenderer.h" />
+    <ClInclude Include="Node.h" />
+    <ClInclude Include="Point2D.h" />
+    <ClInclude Include="Polygon2D.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Sprite2D.h" />
+    <ClInclude Include="Texture.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Director.cpp" />
+    <ClCompile Include="FileUtility.cpp" />
+    <ClCompile Include="Image.cpp" />
+    <ClCompile Include="Line2D.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Node.cpp" />
+    <ClCompile Include="Point2D.cpp" />
+    <ClCompile Include="Polygon2D.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Sprite2D.cpp" />
+    <ClCompile Include="Texture.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\Hello.png" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6BC7B3AF-198E-4A27-9950-D1C347DF439B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -68,17 +98,45 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>glew32.lib;libpng.lib;libzlib.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\MGRRenderer\external\gles\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -88,24 +146,10 @@
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>GLEW_STATIC;GLEW_STATIC;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;libpng.lib;libzlib.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\MGRRenderer\external\gles\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -116,15 +160,16 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>GLEW_STATIC;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glfw3.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;libpng.lib;libzlib.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\MGRRenderer\external\gles\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,36 +180,18 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>GLEW_STATIC;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glfw3.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;libpng.lib;libzlib.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\MGRRenderer\external\gles\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Director.cpp" />
-    <ClCompile Include="Line2D.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Node.cpp" />
-    <ClCompile Include="Point2D.cpp" />
-    <ClCompile Include="Polygon2D.cpp" />
-    <ClCompile Include="Scene.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Director.h" />
-    <ClInclude Include="Line2D.h" />
-    <ClInclude Include="MGRRenderer.h" />
-    <ClInclude Include="Node.h" />
-    <ClInclude Include="Point2D.h" />
-    <ClInclude Include="Polygon2D.h" />
-    <ClInclude Include="Scene.h" />
-    <ClInclude Include="BasicDataTypes.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

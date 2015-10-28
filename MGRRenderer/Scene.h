@@ -5,13 +5,11 @@
 namespace mgrrenderer
 {
 
-class Scene :
+class Scene final :
 	public Node
 {
 public:
-	Scene();
 	~Scene();
-	
 	void pushNode(Node* node);
 	void update();
 

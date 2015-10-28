@@ -4,8 +4,19 @@
 namespace mgrrenderer
 {
 
-Polygon2D::Polygon2D(const std::vector<Vec2>& vertexArray)
+Polygon2D::~Polygon2D()
 {
+	destroyOpenGLProgram(_glData);
+}
+
+bool Polygon2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
+{
+	if (vertexArray.size() % 3 != 0)
+	{
+		// 三角形の頂点のため頂点数が3の倍数であることを前提にする
+		return false;
+	}
+
 	_vertexArray = vertexArray;
 
 	_glData = createOpenGLProgram(
@@ -22,12 +33,8 @@ Polygon2D::Polygon2D(const std::vector<Vec2>& vertexArray)
 		"	gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);"
 		"}"
 		);
-}
 
-
-Polygon2D::~Polygon2D()
-{
-	destroyOpenGLProgram(_glData);
+	return true;
 }
 
 void Polygon2D::render()
@@ -42,7 +49,7 @@ void Polygon2D::render()
 
 	glVertexAttribPointer(_glData.attributeVertexPosition, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_vertexArray[0]);
 	assert(glGetError() == GL_NO_ERROR);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)_vertexArray.size());
 	assert(glGetError() == GL_NO_ERROR);
 }
 

@@ -110,44 +110,78 @@ void initialize()
 
 	// 各ノードの作成はDirector::initの後に呼ぶ。Director::initのもっているウィンドウサイズを使用する場合があるので。
 
-	std::vector<Point2DData> positionAndPointSize{
-		Point2DData(0.0f, 0.0f, 15.0f),
-		Point2DData(-0.75f, -0.75f, 15.0f),
-	};
-	Point2D* pointNode = new Point2D();
-	pointNode->initWithPointArray(positionAndPointSize);
+	//std::vector<Point2DData> positionAndPointSize{
+	//	Point2DData(0.0f, 0.0f, 15.0f),
+	//	Point2DData(-0.75f, -0.75f, 15.0f),
+	//};
+	//Point2D* pointNode = new Point2D();
+	//pointNode->initWithPointArray(positionAndPointSize);
 
-	std::vector<Vec2> lineVertices{
-		Vec2(-1.0f, 0.0f), Vec2(1.0f, 0.0f),
-		Vec2(0.0f, 1.0f), Vec2(0.0f, -1.0f),
-	};
-	Line2D* lineNode = new Line2D();
-	isSucceeded = lineNode->initWithVertexArray(lineVertices);
-	assert(isSucceeded);
+	//std::vector<Vec2> lineVertices{
+	//	Vec2(-1.0f, 0.0f), Vec2(1.0f, 0.0f),
+	//	Vec2(0.0f, 1.0f), Vec2(0.0f, -1.0f),
+	//};
+	//Line2D* lineNode = new Line2D();
+	//isSucceeded = lineNode->initWithVertexArray(lineVertices);
+	//assert(isSucceeded);
 
-	std::vector<Vec2> polygonVertices{
-		Vec2(-0.75f, 0.75f), Vec2(-0.75f, 0.25f), Vec2(-0.25f, 0.75f),
-		Vec2(-0.25f, 0.75f), Vec2(-0.75f, 0.25f), Vec2(-0.25f, 0.25f),
-	};
-	Polygon2D* polygonNode = new Polygon2D();
-	isSucceeded = polygonNode->initWithVertexArray(polygonVertices);
-	assert(isSucceeded);
+	//std::vector<Vec2> polygonVertices{
+	//	Vec2(-0.75f, 0.75f), Vec2(-0.75f, 0.25f), Vec2(-0.25f, 0.75f),
+	//	Vec2(-0.25f, 0.75f), Vec2(-0.75f, 0.25f), Vec2(-0.25f, 0.25f),
+	//};
+	//Polygon2D* polygonNode = new Polygon2D();
+	//isSucceeded = polygonNode->initWithVertexArray(polygonVertices);
+	//assert(isSucceeded);
 
 	Sprite2D* spriteNode = new Sprite2D();
 	isSucceeded = spriteNode->init(Vec2(0.25f, 0.25f), "../Resources/Hello.png");
 	assert(isSucceeded);
 
+	std::vector<Point3DData> positionAndPointSize3D {
+		Point3DData(0.0f, 0.0f, -0.5f, 15.0f),
+		Point3DData(-0.75f, -0.75f, 0.5f, 15.0f),
+	};
+	Point3D* point3DNode = new Point3D();
+	point3DNode->initWithPointArray(positionAndPointSize3D);
+
+	std::vector<Vec3> lineVertices3D {
+		Vec3(-1.0f, 0.0f, -0.75f), Vec3(1.0f, 0.0f, 0.75f),
+		Vec3(0.0f, 1.0f, 0.75f), Vec3(0.0f, -1.0f, -0.75f),
+	};
+	Line3D* line3DNode = new Line3D();
+	isSucceeded = line3DNode->initWithVertexArray(lineVertices3D);
+	assert(isSucceeded);
+
+	std::vector<Vec3> polygonVertices3D {
+		Vec3(-0.75f, 0.75f, 0.25f), Vec3(-0.75f, 0.25f, -0.25f), Vec3(-0.25f, 0.75f, 0.25f),
+		Vec3(-0.25f, 0.75f, -0.25f), Vec3(-0.75f, 0.25f, 0.25f), Vec3(-0.25f, 0.25f, -0.25f),
+	};
+	Polygon3D* polygon3DNode = new Polygon3D();
+	isSucceeded = polygon3DNode->initWithVertexArray(polygonVertices3D);
+	assert(isSucceeded);
+
 	Scene* scene = new Scene();
-	scene->pushNode(pointNode);
-	scene->pushNode(lineNode);
-	scene->pushNode(polygonNode);
+	scene->init();
+	//scene->pushNode(pointNode);
+	//scene->pushNode(lineNode);
+	//scene->pushNode(polygonNode);
 	scene->pushNode(spriteNode);
+	scene->pushNode(point3DNode);
+	scene->pushNode(line3DNode);
+	scene->pushNode(polygon3DNode);
 
 	Director::getInstance()->setScene(*scene);
 }
 
+static float cameraAngle = 0;
+
 void render()
 {
+	const Vec3& cameraPos = Director::getCamera().getPosition();
+	cameraAngle += 0.0001;
+	Vec3 newCameraPos = Vec3(-5.0f * sin(cameraAngle), cameraPos.z, -5.0f * cos(cameraAngle));
+	Director::getCamera().setPosition(newCameraPos);
+
 	// MGRRendererに毎フレームの描画命令
 	Director::getInstance()->update();
 }

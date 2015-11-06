@@ -8,3 +8,6 @@
 #include "Line2D.h"
 #include "Polygon2D.h"
 #include "Sprite2D.h"
+#include "Point3D.h"
+#include "Line3D.h"
+#include "Polygon3D.h"

@@ -4,15 +4,19 @@
 namespace mgrrenderer
 {
 	
+class Camera;
+
 class Director
 {
 public:
 	static Director* getInstance();
 	void destroy();
 	void init(const Size& windowSize);
+	const Size& getWindowSize() const { return _windowSize; }
+	Scene& getScene() { return _scene; }
 	void setScene(const Scene& scene);
 	void update();
-	const Size& getWindowSize() { return _windowSize; }
+	static Camera& getCamera();
 
 private:
 	static Director* _instance;

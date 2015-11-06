@@ -6,17 +6,17 @@
 namespace mgrrenderer
 {
 
-class Line2D :
-	public Node
+class Polygon3D
+	: public Node
 {
 public:
-	bool initWithVertexArray(const std::vector<Vec2>& vertexArray);
+	bool initWithVertexArray(const std::vector<Vec3>& vertexArray);
 
 private:
-	~Line2D();
 	OpenGLProgramData _glData;
-	std::vector<Vec2> _vertexArray;
+	std::vector<Vec3> _vertexArray;
 
+	~Polygon3D();
 	void render() override;
 };
 

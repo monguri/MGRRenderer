@@ -24,6 +24,8 @@ void Director::init(const Size& windowSize)
 {
 	_windowSize = windowSize;
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+	// TODO:2D描画しかしないときもデプステストをONにしている
+	glEnable(GL_DEPTH_TEST);
 }
 
 void Director::setScene(const Scene& scene)
@@ -35,6 +37,11 @@ void Director::setScene(const Scene& scene)
 void Director::update()
 {
 	_scene.update();
+}
+
+Camera& Director::getCamera()
+{
+	return getInstance()->getScene().getCamera();
 }
 
 } // namespace mgrrenderer

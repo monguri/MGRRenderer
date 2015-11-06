@@ -47,7 +47,7 @@ void Polygon2D::render()
 	glLineWidth(1.0f);
 	assert(glGetError() == GL_NO_ERROR);
 
-	glVertexAttribPointer(_glData.attributeVertexPosition, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_vertexArray[0]);
+	glVertexAttribPointer(_glData.attributeVertexPosition, sizeof(_vertexArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_vertexArray[0]);
 	assert(glGetError() == GL_NO_ERROR);
 	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)_vertexArray.size());
 	assert(glGetError() == GL_NO_ERROR);

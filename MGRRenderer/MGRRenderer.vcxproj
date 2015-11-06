@@ -20,27 +20,35 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicDataTypes.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Director.h" />
     <ClInclude Include="FileUtility.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Line2D.h" />
+    <ClInclude Include="Line3D.h" />
     <ClInclude Include="MGRRenderer.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="Point2D.h" />
+    <ClInclude Include="Point3D.h" />
     <ClInclude Include="Polygon2D.h" />
+    <ClInclude Include="Polygon3D.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Sprite2D.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Director.cpp" />
     <ClCompile Include="FileUtility.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="Line2D.cpp" />
+    <ClCompile Include="Line3D.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="Point2D.cpp" />
+    <ClCompile Include="Point3D.cpp" />
     <ClCompile Include="Polygon2D.cpp" />
+    <ClCompile Include="Polygon3D.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Sprite2D.cpp" />
     <ClCompile Include="Texture.cpp" />

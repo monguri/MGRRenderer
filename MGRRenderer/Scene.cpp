@@ -11,6 +11,13 @@ Scene::~Scene()
 	}
 }
 
+void Scene::init()
+{
+	Camera defaultCamera;
+	defaultCamera.initAsDefault();
+	_camera = defaultCamera;
+}
+
 void Scene::pushNode(Node* node)
 {
 	_children.push_back(node);
@@ -18,7 +25,7 @@ void Scene::pushNode(Node* node)
 
 void Scene::update()
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (Node* child : _children)
 	{

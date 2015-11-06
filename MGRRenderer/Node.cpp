@@ -1,4 +1,5 @@
 #include "Node.h"
+#include "Director.h"
 #include <iostream>
 #include <assert.h>
 
@@ -25,6 +26,9 @@ OpenGLProgramData Node::createOpenGLProgram(const GLchar* vertexShaderSource, co
 	ret.attributeVertexPosition = glGetAttribLocation(ret.shaderProgram, "attr_pos");
 	assert(glGetError() == GL_NO_ERROR);
 	assert(ret.attributeVertexPosition >= 0);
+
+	ret.uniformViewMatrix = glGetUniformLocation(ret.shaderProgram, "unif_view_mat");
+	ret.uniformProjectionMatrix = glGetUniformLocation(ret.shaderProgram, "unif_proj_mat");
 
 	return ret;
 }

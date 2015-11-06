@@ -45,9 +45,10 @@ void Point2D::render()
 	glEnableVertexAttribArray(_attributePointSize);
 	assert(glGetError() == GL_NO_ERROR);
 
-	glVertexAttribPointer(_glData.attributeVertexPosition, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)&_pointArray[0]);
+	// TODO:毎回サイズ計算の割り算をしてるのは無駄
+	glVertexAttribPointer(_glData.attributeVertexPosition, sizeof(_pointArray[0].point) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point2DData), (GLvoid*)&_pointArray[0].point);
 	assert(glGetError() == GL_NO_ERROR);
-	glVertexAttribPointer(_attributePointSize, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)((GLbyte*)&_pointArray[0] + sizeof(Vec2)));
+	glVertexAttribPointer(_attributePointSize, sizeof(_pointArray[0].pointSize) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point2DData), (GLvoid*)((GLbyte*)&_pointArray[0].pointSize));
 	assert(glGetError() == GL_NO_ERROR);
 
 	glDrawArrays(GL_POINTS, 0, _pointArray.size());

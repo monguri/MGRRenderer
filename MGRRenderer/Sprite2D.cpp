@@ -37,17 +37,19 @@ bool Sprite2D::init(const Vec2& position, const std::string& filePath)
 	_glData = createOpenGLProgram(
 		// vertex shader
 		"attribute mediump vec4 attr_pos;"
-		"attribute mediump vec2 attr_texCoord;" // TODO:対応必要
-		"varying mediump vec2 vary_texCoord;" // TODO:対応必要
+		"attribute mediump vec2 attr_texCoord;"
+		"varying mediump vec2 vary_texCoord;"
+		"uniform mediump mat4 unif_view_mat;"
+		"uniform mediump mat4 unif_proj_mat;"
 		"void main()"
 		"{"
-		"	gl_Position = attr_pos;"
+		"	gl_Position = unif_proj_mat * unif_view_mat * attr_pos;"
 		"	vary_texCoord = attr_texCoord;"
 		"}"
 		,
 		// fragment shader
 		"uniform sampler2D texture;"
-		"varying mediump vec2 vary_texCoord;" // TODO:対応必要
+		"varying mediump vec2 vary_texCoord;"
 		"void main()"
 		"{"
 		"	gl_FragColor = texture2D(texture, vary_texCoord);" // テクスチャ番号は0のみに対応
@@ -77,15 +79,13 @@ bool Sprite2D::init(const Vec2& position, const std::string& filePath)
 	}
 
 	//glUniform1i(_glData.uniformTexture, 0); // TODO:ここに書くのが適切か？Texture.cppにglActiveとBindを書いてるのもそうだが
-	const Size& windowSize = Director::getInstance()->getWindowSize();
-
 	_quadrangle.bottomLeft.pos = Vec2(position.x, position.y);
 	_quadrangle.bottomLeft.texCoords = TextureCoordinates(0, 1);
-	_quadrangle.bottomRight.pos = Vec2(position.x + _rect.size.width / (windowSize.width / 2), position.y);
+	_quadrangle.bottomRight.pos = Vec2(position.x + _rect.size.width, position.y);
 	_quadrangle.bottomRight.texCoords = TextureCoordinates(1, 1);
-	_quadrangle.topLeft.pos = Vec2(position.x, position.y + _rect.size.height / (windowSize.height / 2));
+	_quadrangle.topLeft.pos = Vec2(position.x, position.y + _rect.size.height);
 	_quadrangle.topLeft.texCoords = TextureCoordinates(0, 0);
-	_quadrangle.topRight.pos = Vec2(position.x + _rect.size.width / (windowSize.width / 2), position.y + _rect.size.height / (windowSize.height / 2));
+	_quadrangle.topRight.pos = Vec2(position.x + _rect.size.width, position.y + _rect.size.height);
 	_quadrangle.topRight.texCoords = TextureCoordinates(1, 0);
 
 	return true;
@@ -95,6 +95,10 @@ void Sprite2D::render()
 {
 	// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
 	glUseProgram(_glData.shaderProgram);
+	assert(glGetError() == GL_NO_ERROR);
+
+	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
+	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 	assert(glGetError() == GL_NO_ERROR);
 
 	glEnableVertexAttribArray(_glData.attributeVertexPosition);

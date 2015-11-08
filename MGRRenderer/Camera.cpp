@@ -18,15 +18,11 @@ void Camera::initAsDefault()
 
 	// cocos2d-xのデフォルトDirector::Projection::_3Dを想定
 	float defaultEyeZ = size.height / 1.1566f; // TODO:この数字が何を指すのかは不明
-	//initAsPerspective(60.0f, // field of view
-	//				size.width / size.height, // aspectRatio
-	//				10.0f, // zNearPlane
-	//				defaultEyeZ + size.height / 2.0f); // zFarPlane TODO:この式も不明
-	initAsPerspective(Vec3(0, 0, -5),
-					45.0f, // field of view
-					1.0f, // aspectRatio
-					1.0f, // zNearPlane
-					30.0f); // zFarPlane TODO:この式も不明
+	initAsPerspective(Vec3(size.width / 2.0f, size.height / 2.0f, defaultEyeZ),
+					60.0f, // field of view
+					size.width / size.height, // aspectratio
+					10.0f, // znearplane
+					defaultEyeZ + size.height / 2.0f); // zfarplane todo:この式も不明
 
 	// _projectionMatrixと_viewMatrixの計算だけに特化し、Nodeに対してsetRotationとかsetPositionとかはしない
 }
@@ -41,12 +37,8 @@ void Camera::initAsPerspective(const Vec3& position, float fieldOfView, float as
 
 	_projectionMatrix = Mat4::createPerspective(fieldOfView, aspectRatio, zNearPlane, zFarPlane);
 
-	// まだ座標系はウィンドウに正規化したままなので、ViewMatrixもピクセル座標基準では扱えない
-	//_viewMatrix = Mat4::createLookAt(Vec3(size.width / 2.0f, size.height / 2.0f, defaultEyeZ), // eyePosition
-	//								Vec3(size.width / 2.0f, size.height / 2.0f, 0.0f), // targetPosition
-	//								Vec3(0.0f, 1.0f, 0.0f)); // up
-	_viewMatrix = Mat4::createLookAt(_position, // eyePosition
-									Vec3(0, 0, 0), // targetPosition
+	_viewMatrix = Mat4::createLookAt(Vec3(size.width / 2.0f, size.height / 2.0f, defaultEyeZ), // eyePosition
+									Vec3(size.width / 2.0f, size.height / 2.0f, 0.0f), // targetPosition
 									Vec3(0.0f, 1.0f, 0.0f)); // up
 }
 
@@ -66,8 +58,10 @@ void Camera::initAsOrthographic(const Vec3& position, float width, float height,
 void Camera::setPosition(const Vec3& position)
 {
 	_position = position;
+
+	Size size = Director::getInstance()->getWindowSize();
 	_viewMatrix = Mat4::createLookAt(position, // eyePosition
-									Vec3(0, 0, 0), // targetPosition
+									Vec3(size.width / 2.0f, size.height / 2.0f, 0.0f), // targetPosition
 									Vec3(0.0f, 1.0f, 0.0f)); // up
 }
 

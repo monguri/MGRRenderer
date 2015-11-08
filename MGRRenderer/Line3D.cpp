@@ -48,6 +48,7 @@ void Line3D::render()
 
 	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+	assert(glGetError() == GL_NO_ERROR);
 
 	glEnableVertexAttribArray(_glData.attributeVertexPosition);
 	assert(glGetError() == GL_NO_ERROR);

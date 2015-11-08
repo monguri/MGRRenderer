@@ -26,6 +26,8 @@ void Director::init(const Size& windowSize)
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	// TODO:2D描画しかしないときもデプステストをONにしている
 	glEnable(GL_DEPTH_TEST);
+	// OpenGL側でやるビューポート変換のためのパラメータを渡す
+	glViewport(0, 0, windowSize.width, windowSize.height);
 }
 
 void Director::setScene(const Scene& scene)

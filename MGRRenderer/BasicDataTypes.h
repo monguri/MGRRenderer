@@ -109,16 +109,38 @@ struct Vec3
 	}
 };
 
+struct Vec4
+{
+	float x;
+	float y;
+	float z;
+	float w;
+
+	Vec4() : x(0), y(0), z(0), w(0) {}
+	Vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+
+	const Vec4 operator+(const Vec4& v) const { return Vec4(x + v.x, y + v.y, z + v.z, w + v.w); }
+	const Vec4 operator-(const Vec4& v) const { return Vec4(x - v.x, y - v.y, z - v.z, w - v.w); }
+	Vec4& operator+=(const Vec4& v) { x += v.x; y += v.y; z += v.z; w += v.w; }
+	Vec4& operator-=(const Vec4& v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; }
+	const Vec4 operator*(float a) const { return Vec4(a * x, a * y, a * z, a * w); }
+	const Vec4 operator/(float a) const { assert(a != 0.0);  return Vec4(x / a, y / a, z / a, w / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
+	Vec4& operator*=(float a) { x *= a; y *= a; z *= a; w *= a; }
+	Vec4& operator/=(float a) { assert(a != 0.0); x /= a; y /= a; z /= a; w /= a; }
+	bool operator==(const Vec4& v) const { return (x == v.x && y == v.y && z == v.z && w == v.w); } //TODO:うーん。。。誤差考慮してない
+	bool operator!=(const Vec4& v) const { return (x != v.x || y != v.y || z != v.z || w != v.w);}
+};
+
 struct Mat4
 {
-	float m[16];
+	float m[4][4];
 
 	Mat4() {
-		//　インデックスは列方向に増えていく
-		m[0] = 0.0f; m[4] = 0.0f; m[8] = 0.0f; m[12] = 0.0f;
-		m[1] = 0.0f; m[5] = 0.0f; m[9] = 0.0f; m[13] = 0.0f;
-		m[2] = 0.0f; m[6] = 0.0f; m[10] = 0.0f; m[14] = 0.0f;
-		m[3] = 0.0f; m[7] = 0.0f; m[11] = 0.0f; m[15] = 0.0f;
+		//　cocos2d-xの一次配列との対応をコメントに記載する
+		m[0][0] = 0.0f;/*[0]*/ m[1][0] = 0.0f;/*[4]*/ m[2][0] = 0.0f;/*[8]*/ m[3][0] = 0.0f;/*[12]*/
+		m[0][1] = 0.0f;/*[1]*/ m[1][1] = 0.0f;/*[5]*/ m[2][1] = 0.0f;/*[9]*/ m[3][1] = 0.0f;/*[13]*/
+		m[0][2] = 0.0f;/*[2]*/ m[1][2] = 0.0f;/*[6]*/ m[2][2] = 0.0f;/*[10]*/m[3][2] = 0.0f;/*[14]*/
+		m[0][3] = 0.0f;/*[3]*/ m[1][3] = 0.0f;/*[7]*/ m[2][3] = 0.0f;/*[11]*/m[3][3] = 0.0f;/*[15]*/
 	}
 
 	Mat4(
@@ -128,11 +150,30 @@ struct Mat4
 		float m30, float m31, float m32, float m33
 		)
 	{
-		//　インデックスは列方向に増えていく
-		m[0] = m00; m[4] = m01; m[8] = m02; m[12] = m03;
-		m[1] = m10; m[5] = m11; m[9] = m12; m[13] = m13;
-		m[2] = m20; m[6] = m21; m[10] = m22; m[14] = m23;
-		m[3] = m30; m[7] = m31; m[11] = m32; m[15] = m33;
+		//　普通にイメージする行列とは転置関係になる
+		m[0][0] = m00; m[1][0] = m01; m[2][0] = m02; m[3][0] = m03;
+		m[0][1] = m10; m[1][1] = m11; m[2][1] = m12; m[3][1] = m13;
+		m[0][2] = m20; m[1][2] = m21; m[2][2] = m22; m[3][2] = m23;
+		m[0][3] = m30; m[1][3] = m31; m[2][3] = m32; m[3][3] = m33;
+	}
+
+	const Vec4 operator*(const Vec4& v) const
+	{
+		Vec4 ret;
+		// あれ？これ、GPUでやられる計算方法と逆じゃない？普通の乗算だ。cocosはこうなってたぞ。
+		ret.x = m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z + m[3][0] * v.w;
+		ret.y = m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z + m[3][1] * v.w;
+		ret.z = m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z + m[3][2] * v.w;
+		// wは0のままでよい
+		return ret;
+	}
+
+	const Vec3 operator*(const Vec3& v) const
+	{
+		// Vec4のoperator*を利用する
+		Vec4 vec4(v.x, v.y, v.z, 1.0f);
+		vec4 = *this * vec4;
+		return Vec3(vec4.x, vec4.y, vec4.z);
 	}
 
 	static Mat4 createLookAt(const Vec3& eyePosition, const Vec3& targetPosition, const Vec3& up)

@@ -30,7 +30,7 @@ bool Sprite2D::init(const Vec2& position, const std::string& filePath)
 	_texture = new Texture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
 	_texture->initWithImage(image);
 
-	_rect = Rect(position.x, position.y, _texture->getContentSize().width, _texture->getContentSize().height);
+	const Rect& rect = Rect(position.x, position.y, _texture->getContentSize().width, _texture->getContentSize().height);
 
 	//TODO: 乗算する頂点カラーには対応しない
 
@@ -79,14 +79,14 @@ bool Sprite2D::init(const Vec2& position, const std::string& filePath)
 	}
 
 	//glUniform1i(_glData.uniformTexture, 0); // TODO:ここに書くのが適切か？Texture.cppにglActiveとBindを書いてるのもそうだが
-	_quadrangle.bottomLeft.pos = Vec2(position.x, position.y);
-	_quadrangle.bottomLeft.texCoords = TextureCoordinates(0, 1);
-	_quadrangle.bottomRight.pos = Vec2(position.x + _rect.size.width, position.y);
-	_quadrangle.bottomRight.texCoords = TextureCoordinates(1, 1);
-	_quadrangle.topLeft.pos = Vec2(position.x, position.y + _rect.size.height);
-	_quadrangle.topLeft.texCoords = TextureCoordinates(0, 0);
-	_quadrangle.topRight.pos = Vec2(position.x + _rect.size.width, position.y + _rect.size.height);
-	_quadrangle.topRight.texCoords = TextureCoordinates(1, 0);
+	_quadrangle.bottomLeft.position = Vec2(position.x, position.y);
+	_quadrangle.bottomLeft.textureCoordinate = Vec2(0, 1);
+	_quadrangle.bottomRight.position = Vec2(position.x + rect.size.width, position.y);
+	_quadrangle.bottomRight.textureCoordinate = Vec2(1, 1);
+	_quadrangle.topLeft.position = Vec2(position.x, position.y + rect.size.height);
+	_quadrangle.topLeft.textureCoordinate = Vec2(0, 0);
+	_quadrangle.topRight.position = Vec2(position.x + rect.size.width, position.y + rect.size.height);
+	_quadrangle.topRight.textureCoordinate = Vec2(1, 0);
 
 	return true;
 }
@@ -107,8 +107,8 @@ void Sprite2D::render()
 	glEnableVertexAttribArray(_glData.attributeTextureCoordinates);
 	assert(glGetError() == GL_NO_ERROR);
 
-	glVertexAttribPointer(_glData.attributeVertexPosition, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.pos);
-	glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.texCoords);
+	glVertexAttribPointer(_glData.attributeVertexPosition, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.position);
+	glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.textureCoordinate);
 
 	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

@@ -16,7 +16,6 @@ public:
 	bool init(const Vec2& position, const std::string& filePath);
 
 private:
-	Rect _rect;
 	OpenGLProgramData _glData;
 	Texture* _texture;
 	Quadrangle2D _quadrangle;

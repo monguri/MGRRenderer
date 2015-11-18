@@ -24,20 +24,30 @@ static float convertDegreeToRadian(float angle)
 
 struct Vec2
 {
-	float x;
-	float y;
+	union
+	{
+		float x;
+		float u;
+		float s;
+	};
+	union
+	{
+		float y;
+		float v;
+		float t;
+	};
 
 	Vec2() : x(0), y(0) {}
 	Vec2(float x, float y) : x(x), y(y) {}
 
 	const Vec2 operator+(const Vec2& v) const { return Vec2(x + v.x, y + v.y); }
 	const Vec2 operator-(const Vec2& v) const { return Vec2(x - v.x, y - v.y); }
-	Vec2& operator+=(const Vec2& v) { x += v.x; y += v.y; }
-	Vec2& operator-=(const Vec2& v) { x -= v.x; y -= v.y; }
+	Vec2& operator+=(const Vec2& v) { x += v.x; y += v.y; return *this; }
+	Vec2& operator-=(const Vec2& v) { x -= v.x; y -= v.y; return *this; }
 	const Vec2 operator*(float a) const { return Vec2(a * x, a * y); }
 	const Vec2 operator/(float a) const { assert(a != 0.0);  return Vec2(x / a, y / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
-	Vec2& operator*=(float a) { x *= a; y *= a; }
-	Vec2& operator/=(float a) { assert(a != 0.0); x /= a; y /= a; }
+	Vec2& operator*=(float a) { x *= a; y *= a; return *this; }
+	Vec2& operator/=(float a) { assert(a != 0.0); x /= a; y /= a; return *this; }
 	bool operator==(const Vec2& v) const { return (x == v.x && y == v.y); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Vec2& v) const { return (x != v.x || y != v.y);}
 	void normalize() {
@@ -64,21 +74,33 @@ struct Vec2
 
 struct Vec3
 {
-	float x;
-	float y;
-	float z;
+	union
+	{
+		float x;
+		float r;
+	};
+	union
+	{
+		float y;
+		float g;
+	};
+	union
+	{
+		float z;
+		float b;
+	};
 
 	Vec3() : x(0), y(0), z(0) {}
 	Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
 
 	const Vec3 operator+(const Vec3& v) const { return Vec3(x + v.x, y + v.y, z + v.z); }
 	const Vec3 operator-(const Vec3& v) const { return Vec3(x - v.x, y - v.y, z - v.z); }
-	Vec3& operator+=(const Vec3& v) { x += v.x; y += v.y; z += v.z; }
-	Vec3& operator-=(const Vec3& v) { x -= v.x; y -= v.y; z -= v.z;}
+	Vec3& operator+=(const Vec3& v) { x += v.x; y += v.y; z += v.z; return *this; }
+	Vec3& operator-=(const Vec3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
 	const Vec3 operator*(float a) const { return Vec3(a * x, a * y, a * z); }
 	const Vec3 operator/(float a) const { assert(a != 0.0);  return Vec3(x / a, y / a, z / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
-	Vec3& operator*=(float a) { x *= a; y *= a; z *= a; }
-	Vec3& operator/=(float a) { assert(a != 0.0); x /= a; y /= a; z /= a; }
+	Vec3& operator*=(float a) { x *= a; y *= a; z *= a; return *this; }
+	Vec3& operator/=(float a) { assert(a != 0.0); x /= a; y /= a; z /= a; return *this; }
 	bool operator==(const Vec3& v) const { return (x == v.x && y == v.y && z == v.z); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Vec3& v) const { return (x != v.x || y != v.y || z != v.z);}
 	void normalize() {
@@ -111,22 +133,38 @@ struct Vec3
 
 struct Vec4
 {
-	float x;
-	float y;
-	float z;
-	float w;
+	union
+	{
+		float x;
+		float r;
+	};
+	union
+	{
+		float y;
+		float g;
+	};
+	union
+	{
+		float z;
+		float b;
+	};
+	union
+	{
+		float w;
+		float a;
+	};
 
 	Vec4() : x(0), y(0), z(0), w(0) {}
 	Vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 
 	const Vec4 operator+(const Vec4& v) const { return Vec4(x + v.x, y + v.y, z + v.z, w + v.w); }
 	const Vec4 operator-(const Vec4& v) const { return Vec4(x - v.x, y - v.y, z - v.z, w - v.w); }
-	Vec4& operator+=(const Vec4& v) { x += v.x; y += v.y; z += v.z; w += v.w; }
-	Vec4& operator-=(const Vec4& v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; }
+	Vec4& operator+=(const Vec4& v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
+	Vec4& operator-=(const Vec4& v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
 	const Vec4 operator*(float a) const { return Vec4(a * x, a * y, a * z, a * w); }
 	const Vec4 operator/(float a) const { assert(a != 0.0);  return Vec4(x / a, y / a, z / a, w / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
-	Vec4& operator*=(float a) { x *= a; y *= a; z *= a; w *= a; }
-	Vec4& operator/=(float a) { assert(a != 0.0); x /= a; y /= a; z /= a; w /= a; }
+	Vec4& operator*=(float a) { x *= a; y *= a; z *= a; w *= a; return *this; }
+	Vec4& operator/=(float a) { assert(a != 0.0); x /= a; y /= a; z /= a; w /= a; return *this; }
 	bool operator==(const Vec4& v) const { return (x == v.x && y == v.y && z == v.z && w == v.w); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Vec4& v) const { return (x != v.x || y != v.y || z != v.z || w != v.w);}
 };
@@ -268,28 +306,19 @@ struct Rect
 	Rect(float x, float y, float w, float h) : origin(Vec2(x, y)), size(Size(w, h)) {}
 };
 
-struct TextureCoordinates
-{
-	float u;
-	float v;
-
-	TextureCoordinates() : u(0), v(0) {}
-	TextureCoordinates(float u, float v) : u(u), v(v) {}
-};
-
 struct Position2DTextureCoordinates
 {
-	Vec2 pos;
-	TextureCoordinates texCoords;
+	Vec2 position;
+	Vec2 textureCoordinate;
 
 	Position2DTextureCoordinates() :
-	pos(Vec2()),
-	texCoords(TextureCoordinates())
+	position(Vec2()),
+	textureCoordinate(Vec2())
 	{}
 
-	Position2DTextureCoordinates(const Vec2& position, const TextureCoordinates& textureCoordinates) :
-	pos(position),
-	texCoords(textureCoordinates)
+	Position2DTextureCoordinates(const Vec2& pos, const Vec2& texCoord) :
+	position(pos),
+	textureCoordinate(texCoord)
 	{}
 };
 
@@ -299,6 +328,22 @@ struct Quadrangle2D
 	Position2DTextureCoordinates bottomLeft;
 	Position2DTextureCoordinates topRight;
 	Position2DTextureCoordinates bottomRight;
+};
+
+struct Position3DTextureCoordinates
+{
+	Vec3 position;
+	Vec2 textureCoordinate;
+
+	Position3DTextureCoordinates() :
+	position(Vec3()),
+	textureCoordinate(Vec2())
+	{}
+
+	Position3DTextureCoordinates(const Vec3& pos, const Vec2& texCoord) :
+	position(pos),
+	textureCoordinate(texCoord)
+	{}
 };
 
 struct OpenGLProgramData

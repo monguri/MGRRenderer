@@ -23,6 +23,8 @@
     <ClInclude Include="Line3D.h" />
     <ClInclude Include="Polygon3D.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="ObjLoader.h" />
+    <ClInclude Include="Sprite3D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Director.cpp" />
@@ -40,6 +42,8 @@
     <ClCompile Include="Line3D.cpp" />
     <ClCompile Include="Polygon3D.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="ObjLoader.cpp" />
+    <ClCompile Include="Sprite3D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Hello.png">

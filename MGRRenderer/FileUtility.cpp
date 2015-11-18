@@ -196,4 +196,17 @@ bool FileUtility::isValidFileNameAtWindows(const std::string& fullPath, const st
 	return true;
 }
 
+std::string FileUtility::getStringFromFile(const std::string& fileName) const
+{
+	ssize_t size;
+	const unsigned char* data = getFileData(fileName, &size);
+	if (data == nullptr)
+	{
+		return "";
+	}
+
+	return std::string((const char*)data);
+}
+
 } // namespace mgrrenderer
+

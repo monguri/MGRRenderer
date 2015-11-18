@@ -17,6 +17,8 @@ public:
 	bool isFileExistInternal(const std::string& path) const;
 	unsigned char* getFileData(const std::string& fileName, ssize_t* size) const;
 	static bool isValidFileNameAtWindows(const std::string& fullPath, const std::string& fileName);
+	std::string getStringFromFile(const std::string& fileName) const;
+	static std::string convertPathFormatToUnixStyle(const std::string& path);
 
 private:
 	static const int MAX_PATH_LENGTH = 512;
@@ -24,8 +26,6 @@ private:
 	std::string _resourceRootPath;
 
 	FileUtility();
-
-	static std::string convertPathFormatToUnixStyle(const std::string& path);
 };
 
 } // namespace mgrrenderer

@@ -11,3 +11,4 @@
 #include "Point3D.h"
 #include "Line3D.h"
 #include "Polygon3D.h"
+#include "Sprite3D.h"

@@ -160,6 +160,11 @@ void initialize()
 	isSucceeded = polygon3DNode->initWithVertexArray(polygonVertices3D);
 	assert(isSucceeded);
 
+	Sprite3D* sprite3DNode = new Sprite3D();
+	isSucceeded = sprite3DNode->initWithModel(Vec3(0.0f, 0.0f, 0.0f), 5.0f, "../Resources/boss1.obj");
+	assert(isSucceeded);
+	sprite3DNode->setTexture("../Resources/boss.png");
+
 	Scene* scene = new Scene();
 	scene->init();
 	//scene->pushNode(pointNode);
@@ -169,6 +174,7 @@ void initialize()
 	scene->pushNode(point3DNode);
 	scene->pushNode(line3DNode);
 	scene->pushNode(polygon3DNode);
+	scene->pushNode(sprite3DNode);
 
 	Director::getInstance()->setScene(*scene);
 }
@@ -179,7 +185,7 @@ void render()
 {
 	const Vec3& cameraPos = Director::getCamera().getPosition();
 	cameraAngle += 0.0001;
-	Vec3 newCameraPos = Vec3(WINDOW_HEIGHT * sin(cameraAngle) + WINDOW_WIDTH / 2.0f, cameraPos.z, WINDOW_HEIGHT * cos(cameraAngle) + WINDOW_HEIGHT / 2.0f);
+	Vec3 newCameraPos = Vec3(WINDOW_HEIGHT * sin(cameraAngle) + WINDOW_WIDTH / 2.0f, cameraPos.y, WINDOW_HEIGHT * cos(cameraAngle) + WINDOW_HEIGHT / 2.0f);
 	Director::getCamera().setPosition(newCameraPos);
 
 	// MGRRendererÇ…ñàÉtÉåÅ[ÉÄÇÃï`âÊñΩóﬂ

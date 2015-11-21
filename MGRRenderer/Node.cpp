@@ -6,6 +6,17 @@
 namespace mgrrenderer
 {
 
+// TODO:Ç±Ç±Ç…íuÇ≠ÇÃÇ™Ç†Ç‹ÇËÇ¢Ç¢Ç∆ÇÕévÇÌÇ»Ç¢Ç™Ç∆ÇËÇ†Ç¶Ç∏
+std::string ATTRIBUTE_NAME_POSITION = "attr_position";
+std::string ATTRIBUTE_NAME_COLOR = "attr_color";
+std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE = "attr_tex_coord";
+std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_1 = "attr_tex_coord_1";
+std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_2 = "attr_tex_coord_2";
+std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_3 = "attr_tex_coord_3";
+std::string ATTRIBUTE_NAME_NORMAL = "attr_normal";
+std::string ATTRIBUTE_NAME_BLEND_WEIGHT = "attr_blend_weight";
+std::string ATTRIBUTE_NAME_BLEND_INDEX = "attr_blend_index";
+
 void Node::visit()
 {
 	render();
@@ -23,9 +34,9 @@ OpenGLProgramData Node::createOpenGLProgram(const GLchar* vertexShaderSource, co
 	ret.fragmentShader = createFragmentShader(fragmentShaderSource);
 	ret.shaderProgram = createShaderProgram(ret.vertexShader, ret.fragmentShader);
 
-	ret.attributeVertexPosition = glGetAttribLocation(ret.shaderProgram, "attr_pos");
-	assert(glGetError() == GL_NO_ERROR);
-	assert(ret.attributeVertexPosition >= 0);
+	//ret.attributeVertexPosition = glGetAttribLocation(ret.shaderProgram, "attr_position");
+	//assert(glGetError() == GL_NO_ERROR);
+	//assert(ret.attributeVertexPosition >= 0);
 
 	ret.uniformViewMatrix = glGetUniformLocation(ret.shaderProgram, "unif_view_mat");
 	ret.uniformProjectionMatrix = glGetUniformLocation(ret.shaderProgram, "unif_proj_mat");
@@ -131,6 +142,28 @@ GLuint Node::createShaderProgram(const GLuint vertexShader, const GLuint fragmen
 	assert(glGetError() == GL_NO_ERROR);
 	glAttachShader(ret, fragmentShader);
 	assert(glGetError() == GL_NO_ERROR);
+
+	// å≈íËÇÃattributeïœêîï∂éöóÒÇå≈íËÇÃattributeïœêîIDÇ…åãÇ—Ç¬ÇØÇÈ
+	static const struct Attribute {
+		const std::string& name;
+		AttributeLocation location;
+	} attributes[] =
+	{
+		{ATTRIBUTE_NAME_POSITION, AttributeLocation::POSITION},
+		{ATTRIBUTE_NAME_COLOR, AttributeLocation::COLOR},
+		{ATTRIBUTE_NAME_TEXTURE_COORDINATE, AttributeLocation::TEXTURE_COORDINATE},
+		{ATTRIBUTE_NAME_TEXTURE_COORDINATE_1, AttributeLocation::TEXTURE_COORDINATE_1},
+		{ATTRIBUTE_NAME_TEXTURE_COORDINATE_2, AttributeLocation::TEXTURE_COORDINATE_2},
+		{ATTRIBUTE_NAME_TEXTURE_COORDINATE_3, AttributeLocation::TEXTURE_COORDINATE_3},
+		{ATTRIBUTE_NAME_NORMAL, AttributeLocation::NORMAL},
+		{ATTRIBUTE_NAME_BLEND_WEIGHT, AttributeLocation::BLEND_WEIGHT},
+		{ATTRIBUTE_NAME_BLEND_INDEX, AttributeLocation::BLEND_INDEX},
+	};
+
+	for (const Attribute& attribute : attributes)
+	{
+		glBindAttribLocation(ret, (GLuint)attribute.location, attribute.name.c_str());
+	}
 
 	glLinkProgram(ret);
 

@@ -23,12 +23,12 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 
 	_glData = createOpenGLProgram(
 		// vertex shader
-		"attribute mediump vec4 attr_pos;"
+		"attribute mediump vec4 attr_position;"
 		"uniform mediump mat4 unif_view_mat;"
 		"uniform mediump mat4 unif_proj_mat;"
 		"void main()"
 		"{"
-		"	gl_Position = unif_proj_mat * unif_view_mat * attr_pos;"
+		"	gl_Position = unif_proj_mat * unif_view_mat * attr_position;"
 		"}"
 		,
 		// fragment shader
@@ -50,12 +50,12 @@ void Polygon3D::render()
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 	assert(glGetError() == GL_NO_ERROR);
 
-	glEnableVertexAttribArray(_glData.attributeVertexPosition);
+	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 	assert(glGetError() == GL_NO_ERROR);
 	glLineWidth(1.0f);
 	assert(glGetError() == GL_NO_ERROR);
 
-	glVertexAttribPointer(_glData.attributeVertexPosition, sizeof(_vertexArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_vertexArray[0]);
+	glVertexAttribPointer((GLuint)AttributeLocation::POSITION, sizeof(_vertexArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_vertexArray[0]);
 	assert(glGetError() == GL_NO_ERROR);
 	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)_vertexArray.size());
 	assert(glGetError() == GL_NO_ERROR);

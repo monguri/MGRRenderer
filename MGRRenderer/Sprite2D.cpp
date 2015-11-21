@@ -36,14 +36,14 @@ bool Sprite2D::init(const Vec2& position, const std::string& filePath)
 
 	_glData = createOpenGLProgram(
 		// vertex shader
-		"attribute mediump vec4 attr_pos;"
+		"attribute mediump vec4 attr_position;"
 		"attribute mediump vec2 attr_texCoord;"
 		"varying mediump vec2 vary_texCoord;"
 		"uniform mediump mat4 unif_view_mat;"
 		"uniform mediump mat4 unif_proj_mat;"
 		"void main()"
 		"{"
-		"	gl_Position = unif_proj_mat * unif_view_mat * attr_pos;"
+		"	gl_Position = unif_proj_mat * unif_view_mat * attr_position;"
 		"	vary_texCoord = attr_texCoord;"
 		"}"
 		,
@@ -101,13 +101,13 @@ void Sprite2D::render()
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 	assert(glGetError() == GL_NO_ERROR);
 
-	glEnableVertexAttribArray(_glData.attributeVertexPosition);
+	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 	assert(glGetError() == GL_NO_ERROR);
 
 	glEnableVertexAttribArray(_glData.attributeTextureCoordinates);
 	assert(glGetError() == GL_NO_ERROR);
 
-	glVertexAttribPointer(_glData.attributeVertexPosition, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.position);
+	glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.position);
 	glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.textureCoordinate);
 
 	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());

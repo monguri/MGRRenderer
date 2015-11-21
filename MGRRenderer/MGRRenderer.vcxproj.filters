@@ -25,6 +25,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ObjLoader.h" />
     <ClInclude Include="Sprite3D.h" />
+    <ClInclude Include="C3bLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Director.cpp" />
@@ -44,6 +45,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ObjLoader.cpp" />
     <ClCompile Include="Sprite3D.cpp" />
+    <ClCompile Include="C3bLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Hello.png">

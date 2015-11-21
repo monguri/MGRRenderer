@@ -17,13 +17,13 @@ void Point3D::initWithPointArray(const std::vector<Point3DData>& pointArray)
 
 	_glData = createOpenGLProgram(
 		// vertex shader
-		"attribute mediump vec4 attr_pos;"
+		"attribute mediump vec4 attr_position;"
 		"attribute mediump float attr_point_size;"
 		"uniform mediump mat4 unif_view_mat;"
 		"uniform mediump mat4 unif_proj_mat;"
 		"void main()"
 		"{"
-		"	gl_Position = unif_proj_mat * unif_view_mat * attr_pos;"
+		"	gl_Position = unif_proj_mat * unif_view_mat * attr_position;"
 		"	gl_PointSize = attr_point_size;"
 		"}"
 		,
@@ -48,12 +48,12 @@ void Point3D::render()
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 	assert(glGetError() == GL_NO_ERROR);
 
-	glEnableVertexAttribArray(_glData.attributeVertexPosition);
+	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 	assert(glGetError() == GL_NO_ERROR);
 	glEnableVertexAttribArray(_attributePointSize);
 	assert(glGetError() == GL_NO_ERROR);
 
-	glVertexAttribPointer(_glData.attributeVertexPosition, sizeof(_pointArray[0].point) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point3DData), (GLvoid*)&_pointArray[0].point);
+	glVertexAttribPointer((GLuint)AttributeLocation::POSITION, sizeof(_pointArray[0].point) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point3DData), (GLvoid*)&_pointArray[0].point);
 	assert(glGetError() == GL_NO_ERROR);
 	glVertexAttribPointer(_attributePointSize, sizeof(_pointArray[0].pointSize) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point3DData), (GLvoid*)((GLbyte*)&_pointArray[0].pointSize));
 	assert(glGetError() == GL_NO_ERROR);

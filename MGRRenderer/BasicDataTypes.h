@@ -4,6 +4,7 @@
 #include <ShlObj.h>
 #include <math.h> // fabs‚âfmod‚ðŽg‚¤‚½‚ß
 #include <stdio.h> // printf‚Ì‚½‚ß
+#include <string>
 
 #ifndef __SSIZE_T
 #define __SSIZE_T
@@ -351,11 +352,27 @@ struct OpenGLProgramData
 	GLuint vertexShader;
 	GLuint fragmentShader;
 	GLuint shaderProgram;
-	GLint attributeVertexPosition;
 	GLint attributeTextureCoordinates;
 	GLint uniformTexture;
 	GLint uniformViewMatrix;
 	GLint uniformProjectionMatrix;
+};
+
+enum class AttributeLocation : int
+{
+	NONE = -1,
+
+	POSITION,
+	COLOR,
+	TEXTURE_COORDINATE,
+	TEXTURE_COORDINATE_1,
+	TEXTURE_COORDINATE_2,
+	TEXTURE_COORDINATE_3,
+	NORMAL,
+	BLEND_WEIGHT,
+	BLEND_INDEX,
+
+	NUM_ATTRIBUTE_IDS,
 };
 
 } // namespace mgrrenderer

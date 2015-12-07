@@ -1,12 +1,13 @@
 #include "Sprite3D.h"
 #include "ObjLoader.h"
+#include "C3bLoader.h"
 #include "Image.h"
 #include "Director.h"
 
 namespace mgrrenderer
 {
 
-Sprite3D::Sprite3D() : _texture(nullptr)
+Sprite3D::Sprite3D() : _texture(nullptr), _meshData(nullptr), _perVertexByteSize(0)
 {
 }
 
@@ -24,8 +25,14 @@ bool Sprite3D::initWithModel(const Vec3& position, float scale, const std::strin
 {
 	//TODO: _positionによるワールド座標への変換を書かないと。。
 
-	if (filePath.substr(filePath.length() - 4, 4) == ".obj")
+	_isObj = false;
+	_isC3b = false;
+
+	const std::string& ext = filePath.substr(filePath.length() - 4, 4);
+	if (ext == ".obj")
 	{
+		_isObj = true;
+
 		std::vector<ObjLoader::MeshData> meshList;
 		std::vector<ObjLoader::MaterialData> materialList;
 
@@ -58,6 +65,54 @@ bool Sprite3D::initWithModel(const Vec3& position, float scale, const std::strin
 			vertex.position += position;
 			_vertices[i] = vertex;
 		}
+	}
+	else if (ext == ".c3t")
+	{
+		_isC3b = true;
+
+		C3bLoader::MeshDatas* meshDatas = new (std::nothrow)C3bLoader::MeshDatas();
+		C3bLoader::MaterialDatas* materialDatas = new (std::nothrow)C3bLoader::MaterialDatas();
+		C3bLoader::NodeDatas* nodeDatas = new (std::nothrow)C3bLoader::NodeDatas();
+		const std::string& err = C3bLoader::loadC3t(filePath, *meshDatas, *materialDatas, *nodeDatas);
+		if (!err.empty())
+		{
+			printf(err.c_str());
+			return false;
+		}
+
+		_meshData = meshDatas->meshDatas[0];
+		_indices = _meshData->subMeshIndices[0];
+
+		size_t perVertexNumFloat = 0;
+		_perVertexByteSize = 0;
+			
+		for (C3bLoader::MeshVertexAttribute attrib : _meshData->attributes)
+		{
+			perVertexNumFloat += attrib.size;
+			_perVertexByteSize += attrib.attributeSizeBytes;
+		}
+
+		size_t numVertex = _meshData->vertexSizeInFloat / perVertexNumFloat;
+		for (int i = 0; i < numVertex; ++i)
+		{
+			// ローカル座標からワールド座標に座標変換
+			//TODO: ちゃんと行列でやりたい
+			// TODO:最初のattribがPositionsであること前提
+			_meshData->vertices[0 + i * perVertexNumFloat] *= scale;
+			_meshData->vertices[1 + i * perVertexNumFloat] *= scale;
+			_meshData->vertices[2 + i * perVertexNumFloat] *= scale;
+			_meshData->vertices[0 + i * perVertexNumFloat] += position.x;
+			_meshData->vertices[1 + i * perVertexNumFloat] += position.y;
+			_meshData->vertices[2 + i * perVertexNumFloat] += position.z;
+		}
+
+		C3bLoader::MaterialData* materialData = materialDatas->materialDatas[0];
+		const C3bLoader::TextureData& texture = materialData->textures[0];
+		setTexture(texture.fileName);
+
+		delete nodeDatas;
+		delete materialDatas;
+		//delete meshDatas; // TODO:解放せずに残しておく残しておく
 	}
 	else
 	{
@@ -138,11 +193,20 @@ void Sprite3D::render()
 	glEnableVertexAttribArray(_glData.attributeTextureCoordinates);
 	assert(glGetError() == GL_NO_ERROR);
 
-	glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DTextureCoordinates), (GLvoid*)&_vertices[0].position);
-	assert(glGetError() == GL_NO_ERROR);
-	glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
-	assert(glGetError() == GL_NO_ERROR);
-	// TODO:インデックスを使ってglDrawElementsしたい
+	if (_isObj)
+	{
+		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DTextureCoordinates), (GLvoid*)&_vertices[0].position);
+		assert(glGetError() == GL_NO_ERROR);
+		glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
+		assert(glGetError() == GL_NO_ERROR);
+	}
+	else if (_isC3b)
+	{
+		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, _perVertexByteSize, (GLvoid*)&_meshData->vertices[0]); // TODO:インデックス指定はとりあえず
+		assert(glGetError() == GL_NO_ERROR);
+		glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, _perVertexByteSize, (GLvoid*)&_meshData->vertices[6]); // TODO:インデックス指定はとりあえず
+		assert(glGetError() == GL_NO_ERROR);
+	}
 
 	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
 	assert(glGetError() == GL_NO_ERROR);

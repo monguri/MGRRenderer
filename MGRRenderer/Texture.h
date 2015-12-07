@@ -31,8 +31,8 @@ public:
 		AI88,
 		////! 16-bit textures: RGBA4444
 		//RGBA4444,
-		////! 16-bit textures: RGB5A1
-		//RGB5A1,
+		//! 16-bit textures: RGB5A1
+		RGB5A1,
 		////! 4-bit PVRTC-compressed texture: PVRTC4
 		//PVRTC4,
 		////! 4-bit PVRTC-compressed texture: PVRTC4 (has alpha channel)

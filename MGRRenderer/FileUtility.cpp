@@ -104,7 +104,7 @@ bool FileUtility::isFileExistInternal(const std::string& path) const
 	return true;
 }
 
-unsigned char* FileUtility::getFileData(const std::string& fileName, ssize_t* size) const
+unsigned char* FileUtility::getFileData(const std::string& fileName, ssize_t* size, bool forString /* = false */) const
 {
 	unsigned char* ret = nullptr;
 	*size = 0;
@@ -122,7 +122,17 @@ unsigned char* FileUtility::getFileData(const std::string& fileName, ssize_t* si
 	if (fileHandle != INVALID_HANDLE_VALUE)
 	{
 		*size = GetFileSize(fileHandle, nullptr);
-		ret = (unsigned char*)malloc(*size);
+
+		if (forString)
+		{
+			// 0終端をつける。返すサイズは変えない
+			ret = (unsigned char*)malloc(*size + 1);
+			ret[*size] = '\0';
+		}
+		else
+		{
+			ret = (unsigned char*)malloc(*size);
+		}
 
 		DWORD sizeRead = 0;
 		// freadに該当する処理
@@ -199,13 +209,13 @@ bool FileUtility::isValidFileNameAtWindows(const std::string& fullPath, const st
 std::string FileUtility::getStringFromFile(const std::string& fileName) const
 {
 	ssize_t size;
-	const unsigned char* data = getFileData(fileName, &size);
+	const unsigned char* data = getFileData(fileName, &size, true);
 	if (data == nullptr)
 	{
 		return "";
 	}
 
-	return std::string((const char*)data);
+	return std::string((const char*)data, size);
 }
 
 } // namespace mgrrenderer

@@ -15,6 +15,7 @@ public:
 		UNKNOWN = -1,
 		// Œ»ópng‚¾‚¯‚É‘Î‰
 		PNG,
+		TGA,
 		NUM_FORMATS,
 	};
 
@@ -41,6 +42,7 @@ private:
 	Format detectFormat(const unsigned char * data, ssize_t dataLen);
 	bool isPng(const unsigned char * data, ssize_t dataLen);
 	bool initWithPngData(const unsigned char * data, ssize_t dataLen);
+	bool initWithTgaData(const unsigned char * data, ssize_t dataLen);
 	void premultiplyAlpha();
 	inline static unsigned int premultiplyAlpha(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 	{

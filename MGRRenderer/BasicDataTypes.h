@@ -174,6 +174,9 @@ struct Mat4
 {
 	float m[4][4];
 
+	static const Mat4 IDENTITY;
+	static const Mat4 ZERO;
+
 	Mat4() {
 		//　cocos2d-xの一次配列との対応をコメントに記載する
 		m[0][0] = 0.0f;/*[0]*/ m[1][0] = 0.0f;/*[4]*/ m[2][0] = 0.0f;/*[8]*/ m[3][0] = 0.0f;/*[12]*/
@@ -213,6 +216,11 @@ struct Mat4
 		Vec4 vec4(v.x, v.y, v.z, 1.0f);
 		vec4 = *this * vec4;
 		return Vec3(vec4.x, vec4.y, vec4.z);
+	}
+
+	void setZero()
+	{
+		memset(m, 0, sizeof(Mat4));
 	}
 
 	static Mat4 createLookAt(const Vec3& eyePosition, const Vec3& targetPosition, const Vec3& up)

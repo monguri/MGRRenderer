@@ -46,6 +46,7 @@
     <ClCompile Include="ObjLoader.cpp" />
     <ClCompile Include="Sprite3D.cpp" />
     <ClCompile Include="C3bLoader.cpp" />
+    <ClCompile Include="BasicDataTypes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Hello.png">

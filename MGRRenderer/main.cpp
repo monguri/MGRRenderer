@@ -160,10 +160,14 @@ void initialize()
 	isSucceeded = polygon3DNode->initWithVertexArray(polygonVertices3D);
 	assert(isSucceeded);
 
-	Sprite3D* sprite3DNode = new Sprite3D();
-	isSucceeded = sprite3DNode->initWithModel(Vec3(0.0f, 0.0f, 0.0f), 5.0f, "../Resources/boss1.obj");
+	Sprite3D* sprite3DObjNode = new Sprite3D();
+	isSucceeded = sprite3DObjNode->initWithModel(Vec3(0.0f, 0.0f, 0.0f), 5.0f, "../Resources/boss1.obj");
 	assert(isSucceeded);
-	sprite3DNode->setTexture("../Resources/boss.png");
+	sprite3DObjNode->setTexture("../Resources/boss.png");
+
+	Sprite3D* sprite3DC3tNode = new Sprite3D();
+	isSucceeded = sprite3DC3tNode->initWithModel(Vec3(0.0f, 100.0f, 0.0f), 5.0f, "../Resources/orc.c3t");
+	assert(isSucceeded);
 
 	Scene* scene = new Scene();
 	scene->init();
@@ -174,7 +178,8 @@ void initialize()
 	scene->pushNode(point3DNode);
 	scene->pushNode(line3DNode);
 	scene->pushNode(polygon3DNode);
-	scene->pushNode(sprite3DNode);
+	scene->pushNode(sprite3DObjNode);
+	scene->pushNode(sprite3DC3tNode);
 
 	Director::getInstance()->setScene(*scene);
 }

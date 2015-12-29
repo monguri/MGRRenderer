@@ -13,7 +13,8 @@ public:
 	~Scene();
 	void init();
 	void pushNode(Node* node);
-	void update();
+	// TODO:本来はdtはスケジューラに渡せばいいのだが、今は各ノードでupdateメソッドでアニメーションをやってるのでdtをvisitとupdateに渡している
+	void update(float dt);
 	Camera& getCamera() { return _camera; }
 	void setCamera(const Camera& camera) { _camera = camera; } // まだ大してサイズ大きくないのでPODとして扱う
 

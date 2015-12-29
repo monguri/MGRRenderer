@@ -9,17 +9,30 @@ namespace mgrrenderer
 // TODO:‚±‚±‚É’u‚­‚Ì‚ª‚ ‚Ü‚è‚¢‚¢‚Æ‚ÍŽv‚í‚È‚¢‚ª‚Æ‚è‚ ‚¦‚¸
 std::string ATTRIBUTE_NAME_POSITION = "attr_position";
 std::string ATTRIBUTE_NAME_COLOR = "attr_color";
-std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE = "attr_tex_coord";
-std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_1 = "attr_tex_coord_1";
-std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_2 = "attr_tex_coord_2";
-std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_3 = "attr_tex_coord_3";
+std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE = "attr_texCoord";
+std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_1 = "attr_texCoord1";
+std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_2 = "attr_texCoord2";
+std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_3 = "attr_texCoord3";
 std::string ATTRIBUTE_NAME_NORMAL = "attr_normal";
-std::string ATTRIBUTE_NAME_BLEND_WEIGHT = "attr_blend_weight";
-std::string ATTRIBUTE_NAME_BLEND_INDEX = "attr_blend_index";
+std::string ATTRIBUTE_NAME_BLEND_WEIGHT = "attr_blendWeight";
+std::string ATTRIBUTE_NAME_BLEND_INDEX = "attr_blendIndex";
 
-void Node::visit()
+Node::Node() : _scale(Vec3(1.0f, 1.0f, 1.0f)), _modelMatrix(Mat4::IDENTITY)
 {
+}
+
+void Node::visit(float dt)
+{
+	update(dt);
+
+	_modelMatrix = Mat4::createTransform(_position, _rotation, _scale);
+
 	render();
+}
+
+void Node::update(float dt)
+{
+	// ‰½‚à‚µ‚È‚¢
 }
 
 void Node::render()
@@ -34,12 +47,9 @@ OpenGLProgramData Node::createOpenGLProgram(const GLchar* vertexShaderSource, co
 	ret.fragmentShader = createFragmentShader(fragmentShaderSource);
 	ret.shaderProgram = createShaderProgram(ret.vertexShader, ret.fragmentShader);
 
-	//ret.attributeVertexPosition = glGetAttribLocation(ret.shaderProgram, "attr_position");
-	//assert(glGetError() == GL_NO_ERROR);
-	//assert(ret.attributeVertexPosition >= 0);
-
-	ret.uniformViewMatrix = glGetUniformLocation(ret.shaderProgram, "unif_view_mat");
-	ret.uniformProjectionMatrix = glGetUniformLocation(ret.shaderProgram, "unif_proj_mat");
+	ret.uniformModelMatrix = glGetUniformLocation(ret.shaderProgram, "unif_modelMatrix");
+	ret.uniformViewMatrix = glGetUniformLocation(ret.shaderProgram, "unif_viewMatrix");
+	ret.uniformProjectionMatrix = glGetUniformLocation(ret.shaderProgram, "unif_projectionMatrix");
 
 	return ret;
 }

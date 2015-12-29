@@ -5,6 +5,7 @@
 #include <math.h> // fabsやfmodを使うため
 #include <stdio.h> // printfのため
 #include <string>
+#include <vector>
 
 #ifndef __SSIZE_T
 #define __SSIZE_T
@@ -170,6 +171,86 @@ struct Vec4
 	bool operator!=(const Vec4& v) const { return (x != v.x || y != v.y || z != v.z || w != v.w);}
 };
 
+struct Quaternion {
+	float x;
+	float y;
+	float z;
+	float w;
+
+	Quaternion() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) {}
+	Quaternion(float xVal, float yVal, float zVal, float wVal) : x(xVal), y(yVal), z(zVal), w(wVal) {}
+	bool operator==(const Quaternion& q) const { return (x == q.x && y == q.y && z == q.z && w == q.w); } //TODO:うーん。。。誤差考慮してない
+	bool operator!=(const Quaternion& q) const { return (x != q.x || y != q.y || z != q.z || w != q.w);}
+
+	static Quaternion slerp(const Quaternion& q1, const Quaternion& q2, float t)
+	{
+		assert(0.0f <= t && t <= 1.0f);
+		if (t == 0.0f)
+		{
+			return q1;
+		}
+		else
+		{
+			return q2;
+		}
+
+		if (q1 == q2)
+		{
+			return q1;
+		}
+
+		//TODO: ここから先はまだ理論がよくわかってない
+		float halfY, alpha, beta;
+		float u, f1, f2a, f2b;
+		float ratio1, ratio2;
+		float halfSecHalfTheta, versHalfTheta;
+		float sqNotU, sqU;
+
+		float cosTheta = q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
+
+		alpha = cosTheta >= 0 ? 1.0f : -1.0f;
+		halfY = 1 + alpha * cosTheta;
+
+		f2b = t - 0.5f;
+		u = f2b >= 0 ? f2b : -f2b;
+		f2a = u - f2b;
+		f2b += u;
+		u += u;
+		f1 = 1.0f - u;
+
+		halfSecHalfTheta = 1.09f - (0.476537f - 0.903321f * halfY) * halfY;
+		halfSecHalfTheta *= 1.5f - halfY * halfSecHalfTheta * halfSecHalfTheta;
+		versHalfTheta = 1.0f - halfY * halfSecHalfTheta;
+
+		sqNotU = f1 * f1;
+		ratio2 = 0.0000440917108f * versHalfTheta;
+		ratio1 = -0.00158730159f + (sqNotU - 16.0f) * ratio2;
+		ratio1 = 0.0333333333f + ratio1 * (sqNotU - 9.0f) * versHalfTheta;
+		ratio1 = -0.0333333333f + ratio1 * (sqNotU - 4.0f) * versHalfTheta;
+		ratio1 = 1.0f + ratio1 * (sqNotU - 1.0f) * versHalfTheta;
+
+		sqU = u * u;
+		ratio2 = -0.00158730159f + (sqU - 16.0f) * ratio2;
+		ratio2 = 0.0333333333f + ratio2 * (sqU - 9.0f) * versHalfTheta;
+		ratio2 = -0.0333333333f + ratio2 * (sqU - 4.0f) * versHalfTheta;
+		ratio2 = 1.0f + ratio2 * (sqU - 1.0f) * versHalfTheta;
+
+		f1 *= ratio1 * halfSecHalfTheta;
+		f2a *= ratio2;
+		f2b *= ratio2;
+		alpha *= f1 + f2a;
+		beta = f1 + f2b;
+
+		float x = alpha * q1.x + beta * q2.x;
+		float y = alpha * q1.y + beta * q2.y;
+		float z = alpha * q1.z + beta * q2.z;
+		float w = alpha * q1.w + beta * q2.w;
+
+		f1 = 1.5f - 0.5f * (x * x + y * y + z * z + w * w);
+		return Quaternion(x * f1, y * f1, z * f1, w * f1);
+	}
+};
+
 struct Mat4
 {
 	float m[4][4];
@@ -218,6 +299,38 @@ struct Mat4
 		return Vec3(vec4.x, vec4.y, vec4.z);
 	}
 
+	const Mat4 operator*(const Mat4& mat) const
+	{
+		Mat4 ret;
+
+		ret.m[0][0] = m[0][0] * mat.m[0][0] + m[1][0] * mat.m[0][1] + m[2][0] * mat.m[0][2] + m[3][0] * mat.m[0][3];
+		ret.m[0][1] = m[0][1] * mat.m[0][0] + m[1][1] * mat.m[0][1] + m[2][1] * mat.m[0][2] + m[3][1] * mat.m[0][3];
+		ret.m[0][2] = m[0][2] * mat.m[0][0] + m[1][2] * mat.m[0][1] + m[2][2] * mat.m[0][2] + m[3][2] * mat.m[0][3];
+		ret.m[0][3] = m[0][3] * mat.m[0][0] + m[1][3] * mat.m[0][1] + m[2][3] * mat.m[0][2] + m[3][3] * mat.m[0][3];
+
+		ret.m[1][0] = m[0][0] * mat.m[1][0] + m[1][0] * mat.m[1][1] + m[2][0] * mat.m[1][2] + m[3][0] * mat.m[1][3];
+		ret.m[1][1] = m[0][1] * mat.m[1][0] + m[1][1] * mat.m[1][1] + m[2][1] * mat.m[1][2] + m[3][1] * mat.m[1][3];
+		ret.m[1][2] = m[0][2] * mat.m[1][0] + m[1][2] * mat.m[1][1] + m[2][2] * mat.m[1][2] + m[3][2] * mat.m[1][3];
+		ret.m[1][3] = m[0][3] * mat.m[1][0] + m[1][3] * mat.m[1][1] + m[2][3] * mat.m[1][2] + m[3][3] * mat.m[1][3];
+
+		ret.m[2][0] = m[0][0] * mat.m[2][0] + m[1][0] * mat.m[2][1] + m[2][0] * mat.m[2][2] + m[3][0] * mat.m[2][3];
+		ret.m[2][1] = m[0][1] * mat.m[2][0] + m[1][1] * mat.m[2][1] + m[2][1] * mat.m[2][2] + m[3][1] * mat.m[2][3];
+		ret.m[2][2] = m[0][2] * mat.m[2][0] + m[1][2] * mat.m[2][1] + m[2][2] * mat.m[2][2] + m[3][2] * mat.m[2][3];
+		ret.m[2][3] = m[0][3] * mat.m[2][0] + m[1][3] * mat.m[2][1] + m[2][3] * mat.m[2][2] + m[3][3] * mat.m[2][3];
+
+		ret.m[3][0] = m[0][0] * mat.m[3][0] + m[1][0] * mat.m[3][1] + m[2][0] * mat.m[3][2] + m[3][0] * mat.m[3][3];
+		ret.m[3][1] = m[0][1] * mat.m[3][0] + m[1][1] * mat.m[3][1] + m[2][1] * mat.m[3][2] + m[3][1] * mat.m[3][3];
+		ret.m[3][2] = m[0][2] * mat.m[3][0] + m[1][2] * mat.m[3][1] + m[2][2] * mat.m[3][2] + m[3][2] * mat.m[3][3];
+		ret.m[3][3] = m[0][3] * mat.m[3][0] + m[1][3] * mat.m[3][1] + m[2][3] * mat.m[3][2] + m[3][3] * mat.m[3][3];
+
+		return ret;
+	}
+
+	Mat4& operator*=(const Mat4& mat)
+	{
+		*this = *this * mat;
+		return *this;
+	}
 	void setZero()
 	{
 		memset(m, 0, sizeof(Mat4));
@@ -295,6 +408,76 @@ struct Mat4
 			0.0f,				0.0f,				0.0f,							1.0f	
 			);
 	}
+
+	static Mat4 createTranslation(const Vec3& translation)
+	{
+		Mat4 ret;
+		memcpy(&ret, &IDENTITY, sizeof(Mat4));
+
+		ret.m[3][0] = translation.x;
+		ret.m[3][1] = translation.y;
+		ret.m[3][2] = translation.z;
+
+		return ret;
+	}
+
+	static Mat4 createRotation(const Quaternion& rotation)
+	{
+		// TODO:理論をちゃんと知るべし
+		float x2 = rotation.x + rotation.x;
+		float y2 = rotation.y + rotation.y;
+		float z2 = rotation.z + rotation.z;
+
+		float xx2 = rotation.x * x2;
+		float yy2 = rotation.y * y2;
+		float zz2 = rotation.z * z2;
+
+		float xy2 = rotation.x * y2;
+		float xz2 = rotation.x * z2;
+		float yz2 = rotation.y * z2;
+
+		float wx2 = rotation.w * x2;
+		float wy2 = rotation.w * y2;
+		float wz2 = rotation.w * z2;
+
+		return Mat4(
+			1.0f - yy2 - zz2,	xy2 - wz2,			xz2 + wy2,			0.0f,
+			xy2 + wz2,			1.0f - xx2 - zz2,	yz2 - wx2,			0.0f,
+			xz2 - wy2,			yz2 + wx2,			1.0f - xx2 -yy2,	0.0f,
+			0.0f,				0.0f,				0.0f,				1.0f
+			);
+	}
+
+	static Mat4 createScale(const Vec3& scale)
+	{
+		Mat4 ret;
+		memcpy(&ret, &IDENTITY, sizeof(Mat4));
+
+		ret.m[0][0] = scale.x;
+		ret.m[1][1] = scale.y;
+		ret.m[2][2] = scale.z;
+		return ret;
+	}
+
+	static Mat4 createTransform(const Vec3& translation, const Quaternion& rotation, const Vec3& scale)
+	{
+		Mat4 ret = createTranslation(translation);
+		ret *= createRotation(rotation);
+		ret *= createScale(scale);
+		return ret;
+	}
+
+	void transpose()
+	{
+		Mat4 mat(
+			m[0][0], m[0][1], m[0][2], m[0][3],
+			m[1][0], m[1][1], m[1][2], m[1][3],
+			m[2][0], m[2][1], m[2][2], m[2][3],
+			m[3][0], m[3][1], m[3][2], m[3][3]
+		);
+
+		memcpy(this, &mat, sizeof(Mat4));
+	}
 };
 
 struct Size
@@ -313,6 +496,16 @@ struct Rect
 
 	Rect() : origin(Vec2()), size(Size()) {}
 	Rect(float x, float y, float w, float h) : origin(Vec2(x, y)), size(Size(w, h)) {}
+};
+
+struct AnimationCurve
+{
+	std::vector<float> keytimeArray;
+	std::vector<float> valueArray;
+
+	AnimationCurve(const std::vector<float>& keytimeArrayVal, const std::vector<float>& valueArrayVal) :
+	keytimeArray(keytimeArrayVal), valueArray(valueArrayVal)
+	{}
 };
 
 struct Position2DTextureCoordinates
@@ -362,8 +555,10 @@ struct OpenGLProgramData
 	GLuint shaderProgram;
 	GLint attributeTextureCoordinates;
 	GLint uniformTexture;
+	GLint uniformModelMatrix;
 	GLint uniformViewMatrix;
 	GLint uniformProjectionMatrix;
+	GLint uniformSkinMatrixPalette;
 };
 
 enum class AttributeLocation : int

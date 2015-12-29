@@ -23,13 +23,13 @@ void Scene::pushNode(Node* node)
 	_children.push_back(node);
 }
 
-void Scene::update()
+void Scene::update(float dt)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (Node* child : _children)
 	{
-		child->visit();
+		child->visit(dt);
 	}
 }
 

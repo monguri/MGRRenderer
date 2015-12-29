@@ -13,8 +13,10 @@ class Sprite3D :
 {
 public:
 	Sprite3D();
-	bool initWithModel(const Vec3& position, float scale, const std::string& filePath);
+	bool initWithModel(const std::string& filePath);
 	void setTexture(const std::string& filePath);
+	void startAnimation(const std::string& animationName, bool loop = false);
+	void stopAnimation();
 
 private:
 	// TODO:とりあえずフラグで動作を切り替えている
@@ -30,12 +32,21 @@ private:
 
 	// TODO:現状c3t/c3bのみに使っている。I/FをObjLoaderとC3bLoaderで合わせよう
 	std::vector<unsigned short> _indices;
-	C3bLoader::MeshData* _meshData;
+	C3bLoader::MeshDatas* _meshDatas;
+	C3bLoader::NodeDatas* _nodeDatas;
 	size_t _perVertexByteSize;
-
+	C3bLoader::AnimationDatas* _animationDatas;
+	C3bLoader::AnimationData* _currentAnimation;
+	bool _loopAnimation;
+	float _elapsedTime;
+	//std::vector<Mat4> _matrixPalette;
+	std::vector<Vec4> _matrixPalette;
+	bool _isCpuMode;
 
 	~Sprite3D();
+	void update(float dt) override;
 	void render() override;
+	C3bLoader::NodeData* findJointByName(const std::string& jointName, const std::vector<C3bLoader::NodeData*> children);
 };
 
 } // namespace mgrrenderer

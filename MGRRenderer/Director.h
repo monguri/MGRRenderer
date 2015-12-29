@@ -22,6 +22,10 @@ private:
 	static Director* _instance;
 	Scene _scene;
 	Size _windowSize;
+	struct timeval _lastUpdateTime;
+
+	struct timeval getCurrentTimeOfDay();
+	float calculateDeltaTime();
 };
 
 } // namespace mgrrenderer

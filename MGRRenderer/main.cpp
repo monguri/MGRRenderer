@@ -134,7 +134,8 @@ void initialize()
 	//assert(isSucceeded);
 
 	Sprite2D* spriteNode = new Sprite2D();
-	isSucceeded = spriteNode->init(Vec2(400.0f, 300.0f), "../Resources/Hello.png");
+	isSucceeded = spriteNode->init("../Resources/Hello.png");
+	spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
 	assert(isSucceeded);
 
 	std::vector<Point3DData> positionAndPointSize3D {
@@ -161,12 +162,16 @@ void initialize()
 	assert(isSucceeded);
 
 	Sprite3D* sprite3DObjNode = new Sprite3D();
-	isSucceeded = sprite3DObjNode->initWithModel(Vec3(0.0f, 0.0f, 0.0f), 5.0f, "../Resources/boss1.obj");
+	isSucceeded = sprite3DObjNode->initWithModel("../Resources/boss1.obj");
+	sprite3DObjNode->setScale(5.0f);
 	assert(isSucceeded);
 	sprite3DObjNode->setTexture("../Resources/boss.png");
 
 	Sprite3D* sprite3DC3tNode = new Sprite3D();
-	isSucceeded = sprite3DC3tNode->initWithModel(Vec3(0.0f, 100.0f, 0.0f), 5.0f, "../Resources/orc.c3t");
+	isSucceeded = sprite3DC3tNode->initWithModel("../Resources/orc.c3t");
+	sprite3DC3tNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f - 100, WINDOW_HEIGHT / 1.1566f)); // カメラのデフォルトの視点位置に置いた
+	sprite3DC3tNode->setScale(10.0f);
+	sprite3DC3tNode->startAnimation("Take 001", true);
 	assert(isSucceeded);
 
 	Scene* scene = new Scene();
@@ -174,22 +179,23 @@ void initialize()
 	//scene->pushNode(pointNode);
 	//scene->pushNode(lineNode);
 	//scene->pushNode(polygonNode);
-	scene->pushNode(spriteNode);
-	scene->pushNode(point3DNode);
-	scene->pushNode(line3DNode);
-	scene->pushNode(polygon3DNode);
-	scene->pushNode(sprite3DObjNode);
+	//scene->pushNode(spriteNode);
+	//scene->pushNode(point3DNode);
+	//scene->pushNode(line3DNode);
+	//scene->pushNode(polygon3DNode);
+	//scene->pushNode(sprite3DObjNode);
 	scene->pushNode(sprite3DC3tNode);
 
 	Director::getInstance()->setScene(*scene);
 }
 
-static float cameraAngle = 0;
+static float cameraAngle = 0; //TODO:objとc3tが見えやすい位置
 
 void render()
 {
 	const Vec3& cameraPos = Director::getCamera().getPosition();
-	cameraAngle += 0.0001;
+	//cameraAngle += 0.0001;
+	cameraAngle += 0.001; // TODO:アニメーションでパフォーマンス落ちてるのでしょうがなく回転角を増やしている
 	Vec3 newCameraPos = Vec3(WINDOW_HEIGHT * sin(cameraAngle) + WINDOW_WIDTH / 2.0f, cameraPos.y, WINDOW_HEIGHT * cos(cameraAngle) + WINDOW_HEIGHT / 2.0f);
 	Director::getCamera().setPosition(newCameraPos);
 

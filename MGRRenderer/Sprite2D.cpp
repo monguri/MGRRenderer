@@ -21,7 +21,7 @@ Sprite2D::~Sprite2D()
 	}
 }
 
-bool Sprite2D::init(const Vec2& position, const std::string& filePath)
+bool Sprite2D::init(const std::string& filePath)
 {
 	// Textureをロードし、pngやjpegを生データにし、OpenGLにあげる仕組みを作らねば。。Spriteのソースを見直すときだ。
 	Image image; // ImageはCPU側のメモリを使っているのでこのスコープで解放されてもよいものだからスタックに取る
@@ -30,26 +30,25 @@ bool Sprite2D::init(const Vec2& position, const std::string& filePath)
 	_texture = new Texture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
 	_texture->initWithImage(image);
 
-	const Rect& rect = Rect(position.x, position.y, _texture->getContentSize().width, _texture->getContentSize().height);
-
 	//TODO: 乗算する頂点カラーには対応しない
 
 	_glData = createOpenGLProgram(
 		// vertex shader
-		"attribute mediump vec4 attr_position;"
-		"attribute mediump vec2 attr_texCoord;"
-		"varying mediump vec2 vary_texCoord;"
-		"uniform mediump mat4 unif_view_mat;"
-		"uniform mediump mat4 unif_proj_mat;"
+		"attribute vec4 attr_position;"
+		"attribute vec2 attr_texCoord;"
+		"varying vec2 vary_texCoord;"
+		"uniform mat4 unif_modelMatrix;"
+		"uniform mat4 unif_viewMatrix;"
+		"uniform mat4 unif_projectionMatrix;"
 		"void main()"
 		"{"
-		"	gl_Position = unif_proj_mat * unif_view_mat * attr_position;"
+		"	gl_Position = unif_projectionMatrix * unif_viewMatrix * unif_modelMatrix * attr_position;"
 		"	vary_texCoord = attr_texCoord;"
 		"}"
 		,
 		// fragment shader
 		"uniform sampler2D texture;"
-		"varying mediump vec2 vary_texCoord;"
+		"varying vec2 vary_texCoord;"
 		"void main()"
 		"{"
 		"	gl_FragColor = texture2D(texture, vary_texCoord);" // テクスチャ番号は0のみに対応
@@ -78,15 +77,14 @@ bool Sprite2D::init(const Vec2& position, const std::string& filePath)
 		return false;
 	}
 
-	//glUniform1i(_glData.uniformTexture, 0); // TODO:ここに書くのが適切か？Texture.cppにglActiveとBindを書いてるのもそうだが
-	_quadrangle.bottomLeft.position = Vec2(position.x, position.y);
-	_quadrangle.bottomLeft.textureCoordinate = Vec2(0, 1);
-	_quadrangle.bottomRight.position = Vec2(position.x + rect.size.width, position.y);
-	_quadrangle.bottomRight.textureCoordinate = Vec2(1, 1);
-	_quadrangle.topLeft.position = Vec2(position.x, position.y + rect.size.height);
-	_quadrangle.topLeft.textureCoordinate = Vec2(0, 0);
-	_quadrangle.topRight.position = Vec2(position.x + rect.size.width, position.y + rect.size.height);
-	_quadrangle.topRight.textureCoordinate = Vec2(1, 0);
+	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
+	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
+	_quadrangle.bottomRight.position = Vec2(_texture->getContentSize().width, 0.0f);
+	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 1.0f);
+	_quadrangle.topLeft.position = Vec2(0.0f, _texture->getContentSize().height);
+	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 0.0f);
+	_quadrangle.topRight.position = Vec2(_texture->getContentSize().width, _texture->getContentSize().height);
+	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 0.0f);
 
 	return true;
 }
@@ -97,6 +95,7 @@ void Sprite2D::render()
 	glUseProgram(_glData.shaderProgram);
 	assert(glGetError() == GL_NO_ERROR);
 
+	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
 	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 	assert(glGetError() == GL_NO_ERROR);

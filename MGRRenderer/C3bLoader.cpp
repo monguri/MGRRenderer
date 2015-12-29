@@ -475,11 +475,13 @@ namespace C3bLoader
 		return true;
 	}
 
-	static NodeData* parseNodeRecursivelyJson(const rapidjson::Value& value, bool isSingleSprite, const std::string& version)
+	static NodeData* parseNodeRecursivelyJson(const rapidjson::Value& value, bool isSingleSprite, const std::string& version, NodeData* parent)
 	{
 		NodeData* nodeData = new (std::nothrow)NodeData();
 		// id
 		nodeData->id = value["id"].GetString();
+		// parent
+		nodeData->parent = parent;
 
 		// transform
 		Mat4 transform;
@@ -582,7 +584,7 @@ namespace C3bLoader
 			{
 				const rapidjson::Value& childVal = childrenVal[i];
 
-				NodeData* child = parseNodeRecursivelyJson(childVal, isSingleSprite, version);
+				NodeData* child = parseNodeRecursivelyJson(childVal, isSingleSprite, version, nodeData);
 				nodeData->children.push_back(child);
 			}
 		}
@@ -608,7 +610,7 @@ namespace C3bLoader
 		{
 			const rapidjson::Value& nodeVal = nodesVal[i];
 			const std::string& id = nodeVal["id"].GetString();
-			NodeData* nodeData = parseNodeRecursivelyJson(nodeVal, nodesValSize == 1, version);
+			NodeData* nodeData = parseNodeRecursivelyJson(nodeVal, nodesValSize == 1, version, nullptr);
 
 			bool isSkelton = nodeVal["skeleton"].GetBool();
 			if (isSkelton)
@@ -624,7 +626,90 @@ namespace C3bLoader
 		return true;
 	}
 
-	std::string loadC3t(const std::string& fileName, MeshDatas& outMeshDatas, MaterialDatas& outMaterialDatas, NodeDatas& outNodeDatas)
+	static bool loadAnimationDataJson(const rapidjson::Document& json, AnimationDatas& outAnimationDatas, const std::string& version)
+	{
+		std::string anim;
+		if (version == "1.2" || version == "0.2")
+		{
+			anim = "animation";
+		}
+		else
+		{
+			anim = "animations";
+		}
+
+		if (!json.HasMember(anim.c_str()))
+		{
+			return false;
+		}
+
+		const rapidjson::Value& animationsVal = json[anim.c_str()];
+		rapidjson::SizeType animationsValSize = animationsVal.Size();
+
+		// タイムラインラベルごと
+		for (rapidjson::SizeType i = 0; i < animationsValSize; ++i)
+		{
+			const rapidjson::Value& animationVal = animationsVal[i];
+
+			AnimationData* animationData = new AnimationData();
+			animationData->totalTime = animationVal["length"].GetDouble();
+
+			const rapidjson::Value& bonesVal = animationVal["bones"];
+			rapidjson::SizeType bonesValSize = bonesVal.Size();
+			for (rapidjson::SizeType j = 0; j < bonesValSize; ++j)
+			{
+				const rapidjson::Value& boneVal = bonesVal[j];
+				if (!boneVal.HasMember("keyframes"))
+				{
+					continue;
+				}
+
+				const rapidjson::Value& keyframesVal = boneVal["keyframes"];
+				rapidjson::SizeType keyframesValSize = keyframesVal.Size();
+
+				const std::string& boneName = boneVal["boneId"].GetString(); // なぜかここだけキー名が大文字
+				animationData->translationKeyFrames[boneName].reserve(keyframesValSize);
+				animationData->rotationKeyFrames[boneName].reserve(keyframesValSize);
+				animationData->scaleKeyFrames[boneName].reserve(keyframesValSize);
+
+				for (rapidjson::SizeType k = 0; k < keyframesValSize; ++k)
+				{
+					const rapidjson::Value& keyframeVal = keyframesVal[k];
+
+					if (keyframeVal.HasMember("translation"))
+					{
+						const rapidjson::Value& translationVal = keyframeVal["translation"];
+						float time = keyframeVal["keytime"].GetDouble();
+						Vec3 translation(translationVal[(rapidjson::SizeType)0].GetDouble(), translationVal[(rapidjson::SizeType)1].GetDouble(), translationVal[(rapidjson::SizeType)2].GetDouble());
+						animationData->translationKeyFrames[boneName].push_back(AnimationData::Vec3KeyFrame(time, translation));
+					}
+
+					if (keyframeVal.HasMember("rotation"))
+					{
+						const rapidjson::Value& rotationVal = keyframeVal["rotation"];
+						float time = keyframeVal["keytime"].GetDouble();
+						Quaternion rotation(rotationVal[(rapidjson::SizeType)0].GetDouble(), rotationVal[(rapidjson::SizeType)1].GetDouble(), rotationVal[(rapidjson::SizeType)2].GetDouble(), rotationVal[(rapidjson::SizeType)3].GetDouble());
+						animationData->rotationKeyFrames[boneName].push_back(AnimationData::QuaternionKeyFrame(time, rotation));
+					}
+
+					if (keyframeVal.HasMember("scale"))
+					{
+						const rapidjson::Value& scaleVal = keyframeVal["scale"];
+						float time = keyframeVal["keytime"].GetDouble();
+						Vec3 scale(scaleVal[(rapidjson::SizeType)0].GetDouble(), scaleVal[(rapidjson::SizeType)1].GetDouble(), scaleVal[(rapidjson::SizeType)2].GetDouble());
+						animationData->scaleKeyFrames[boneName].push_back(AnimationData::Vec3KeyFrame(time, scale));
+					}
+				}
+			}
+
+			const std::string& timelineName = animationVal["id"].GetString();
+			outAnimationDatas.animations[timelineName] = animationData;
+		}
+
+		return true;
+	}
+
+	std::string loadC3t(const std::string& fileName, MeshDatas& outMeshDatas, MaterialDatas& outMaterialDatas, NodeDatas& outNodeDatas, AnimationDatas& outAnimationDatas)
 	{
 		const std::string& json = FileUtility::getInstance()->getStringFromFile(fileName);
 
@@ -741,10 +826,11 @@ namespace C3bLoader
 			loadNodesJson(jsonReader, outNodeDatas, c3tVersion);
 		}
 		
+		loadAnimationDataJson(jsonReader, outAnimationDatas, c3tVersion);
 		return "";
 	}
 
-	std::string loadC3b(const std::string& fileName, MeshDatas& outMeshDatas, MaterialDatas& outMaterialDatas, NodeDatas& outNodeDatas)
+	std::string loadC3b(const std::string& fileName, MeshDatas& outMeshDatas, MaterialDatas& outMaterialDatas, NodeDatas& outNodeDatas, AnimationDatas& outAnimationDatas)
 	{
 
 		return "";

@@ -13,7 +13,7 @@ class Sprite2D :
 public:
 	Sprite2D();
 	~Sprite2D();
-	bool init(const Vec2& position, const std::string& filePath);
+	bool init(const std::string& filePath);
 
 private:
 	OpenGLProgramData _glData;

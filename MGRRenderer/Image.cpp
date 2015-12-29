@@ -397,12 +397,12 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 			}
 		}
 
-		for (int i = 0; i < _dataLen; i += mode)
-		{
-			TCHAR b[5];
-			wsprintf(b, TEXT("%02x "), _data[i]);
-			OutputDebugString(b);
-		}
+		//for (int i = 0; i < _dataLen; i += mode)
+		//{
+		//	TCHAR b[5];
+		//	wsprintf(b, TEXT("%02x "), _data[i]);
+		//	OutputDebugString(b);
+		//}
 	}
 
 	// TODO:initWithTGAData‚Ì•”•ª‚ð‘‚¢‚Ä‚È‚¢

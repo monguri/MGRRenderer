@@ -16,13 +16,14 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 
 	_glData = createOpenGLProgram(
 		// vertex shader
-		"attribute mediump vec4 attr_position;"
-		"attribute mediump float attr_point_size;"
-		"uniform mediump mat4 unif_view_mat;"
-		"uniform mediump mat4 unif_proj_mat;"
+		"attribute vec4 attr_position;"
+		"attribute float attr_point_size;"
+		"uniform mat4 unif_modelMatrix;"
+		"uniform mat4 unif_viewMatrix;"
+		"uniform mat4 unif_projectionMatrix;"
 		"void main()"
 		"{"
-		"	gl_Position = unif_proj_mat * unif_view_mat * attr_position;"
+		"	gl_Position = unif_projectionMatrix * unif_viewMatrix * unif_modelMatrix * attr_position;"
 		"	gl_PointSize = attr_point_size;"
 		"}"
 		,
@@ -43,6 +44,7 @@ void Point2D::render()
 	glUseProgram(_glData.shaderProgram);
 	assert(glGetError() == GL_NO_ERROR);
 
+	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
 	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 	assert(glGetError() == GL_NO_ERROR);

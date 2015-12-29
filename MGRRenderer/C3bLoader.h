@@ -192,8 +192,9 @@ namespace C3bLoader
 		std::vector<ModelData*> modelNodeDatas;
 		std::vector<NodeData*> children;
 		NodeData* parent; // TODO:cocosにはないが、cocosのSkeleton3DとBone3Dにはあって、ツリーのトラバースに必要なため、暫定的に追加
+		Mat4 animatedTransform; // TODO:cocosにはないが、cocosのSkeleton3DとBone3Dにはあって、トラバースしてアニメーション行列パレットを求めるのに必要なため、暫定的に追加 Mat4::ZEROを、アニメーションしてないものとしてtransform側を使うための判定値に使う
 
-		NodeData() : parent(nullptr) {}
+		NodeData() : parent(nullptr), transform(Mat4::ZERO), animatedTransform(Mat4::ZERO) {}
 		
 		~NodeData()
 		{
@@ -204,6 +205,7 @@ namespace C3bLoader
 		{
 			id.clear();
 			transform.setZero();
+			animatedTransform.setZero();
 
 			for (const auto& it : children)
 			{

@@ -193,124 +193,124 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 				//"	vary_texCoord.y = 1.0 - vary_texCoord.y;"
 				//"}"
 				//// アニメーションを使う場合
-				//"attribute vec3 attr_position;" // これがvec3になっているのに注意 TODO:なぜなのか？
-				//"attribute vec2 attr_texCoord;"
-				//"attribute vec4 attr_blendWeight;"
-				//"attribute vec4 attr_blendIndex;"
-				//""
-				//"const int SKINNING_JOINT_COUNT = 60;" // TODO:なぜ60個までなのか？
-				//""
-				//"uniform mat4 unif_modelMatrix;"
-				//"uniform mat4 unif_viewMatrix;"
-				//"uniform mat4 unif_projectionMatrix;"
-				//"uniform mat4 unif_matrixPalette[SKINNING_JOINT_COUNT];"
-				//""
-				//"varying vec2 vary_texCoord;"
-				//""
-				//"vec4 getPosition()"
-				//"{"
-				//"	mat4 skinMatrix = unif_matrixPalette[int(attr_blendIndex[0])] * attr_blendWeight[0];"
-				//""
-				//"	if (attr_blendWeight[1] > 0.0)"
-				//"	{"
-				//"		skinMatrix += unif_matrixPalette[int(attr_blendIndex[1])] * attr_blendWeight[1];"
-				//""
-				//"		if (attr_blendWeight[2] > 0.0)"
-				//"		{"
-				//"			skinMatrix += unif_matrixPalette[int(attr_blendIndex[2])] * attr_blendWeight[2];"
-				//""
-				//"			if (attr_blendWeight[3] > 0.0)"
-				//"			{"
-				//"				skinMatrix += unif_matrixPalette[int(attr_blendIndex[3])] * attr_blendWeight[3];"
-				//"			}"
-				//"		}"
-				//"	}"
-				//""
-				//"	vec4 position = vec4(attr_position, 1.0);"
-				//"	vec4 skinnedPosition = skinMatrix * position;"
-				//"	skinnedPosition.w = 1.0;"
-				//"	return skinnedPosition;"
-				//"}"
-				//""
-				//"void main()"
-				//"{"
-				//"	gl_Position = unif_projectionMatrix * unif_viewMatrix * unif_modelMatrix * getPosition();"
-				//"	vary_texCoord = attr_texCoord;"
-				//"	vary_texCoord.y = 1.0 - vary_texCoord.y;" // c3bの事情によるもの
-				//"}"
-				//
-				// cocosのやつ
-				//
-				"attribute vec3 attr_position;"
+				"attribute vec3 attr_position;" // これがvec3になっているのに注意 TODO:なぜなのか？
+				"attribute vec2 attr_texCoord;"
 				"attribute vec4 attr_blendWeight;"
 				"attribute vec4 attr_blendIndex;"
 				""
-				"attribute vec2 attr_texCoord;"
+				"const int SKINNING_JOINT_COUNT = 60;" // TODO:なぜ60個までなのか？
 				""
-				"const int SKINNING_JOINT_COUNT = 60;"
-				""
-				"uniform vec4 unif_matrixPalette[SKINNING_JOINT_COUNT * 3];"
-				""
-				"varying vec2 vary_texCoord;"
 				"uniform mat4 unif_modelMatrix;"
 				"uniform mat4 unif_viewMatrix;"
 				"uniform mat4 unif_projectionMatrix;"
+				"uniform mat4 unif_matrixPalette[SKINNING_JOINT_COUNT];"
+				""
+				"varying vec2 vary_texCoord;"
 				""
 				"vec4 getPosition()"
 				"{"
-				"	float blendWeight = attr_blendWeight[0];"
+				"	mat4 skinMatrix = unif_matrixPalette[int(attr_blendIndex[0])] * attr_blendWeight[0];"
 				""
-				"	int matrixIndex = int(attr_blendIndex[0]) * 3;"
-				"	vec4 matrixPalette1 = unif_matrixPalette[matrixIndex] * blendWeight;"
-				"	vec4 matrixPalette2 = unif_matrixPalette[matrixIndex + 1] * blendWeight;"
-				"	vec4 matrixPalette3 = unif_matrixPalette[matrixIndex + 2] * blendWeight;"
-				""
-				""
-				"	blendWeight = attr_blendWeight[1];"
-				"	if (blendWeight > 0.0)"
+				"	if (attr_blendWeight[1] > 0.0)"
 				"	{"
-				"		matrixIndex = int(attr_blendIndex[1]) * 3;"
-				"		matrixPalette1 += unif_matrixPalette[matrixIndex] * blendWeight;"
-				"		matrixPalette2 += unif_matrixPalette[matrixIndex + 1] * blendWeight;"
-				"		matrixPalette3 += unif_matrixPalette[matrixIndex + 2] * blendWeight;"
+				"		skinMatrix += unif_matrixPalette[int(attr_blendIndex[1])] * attr_blendWeight[1];"
 				""
-				"		blendWeight = attr_blendWeight[2];"
-				"		if (blendWeight > 0.0)"
+				"		if (attr_blendWeight[2] > 0.0)"
 				"		{"
-				"			matrixIndex = int(attr_blendIndex[2]) * 3;"
-				"			matrixPalette1 += unif_matrixPalette[matrixIndex] * blendWeight;"
-				"			matrixPalette2 += unif_matrixPalette[matrixIndex + 1] * blendWeight;"
-				"			matrixPalette3 += unif_matrixPalette[matrixIndex + 2] * blendWeight;"
+				"			skinMatrix += unif_matrixPalette[int(attr_blendIndex[2])] * attr_blendWeight[2];"
 				""
-				"			blendWeight = attr_blendWeight[3];"
-				"			if (blendWeight > 0.0)"
+				"			if (attr_blendWeight[3] > 0.0)"
 				"			{"
-				"				matrixIndex = int(attr_blendIndex[3]) * 3;"
-				"				matrixPalette1 += unif_matrixPalette[matrixIndex] * blendWeight;"
-				"				matrixPalette2 += unif_matrixPalette[matrixIndex + 1] * blendWeight;"
-				"				matrixPalette3 += unif_matrixPalette[matrixIndex + 2] * blendWeight;"
+				"				skinMatrix += unif_matrixPalette[int(attr_blendIndex[3])] * attr_blendWeight[3];"
 				"			}"
 				"		}"
 				"	}"
 				""
-				"	vec4 _skinnedPosition;"
-				"	vec4 postion = vec4(attr_position, 1.0);"
-				"	_skinnedPosition.x = dot(postion, matrixPalette1);"
-				"	_skinnedPosition.y = dot(postion, matrixPalette2);"
-				"	_skinnedPosition.z = dot(postion, matrixPalette3);"
-				"	_skinnedPosition.w = postion.w;"
-				""
-				"	return _skinnedPosition;"
+				"	vec4 position = vec4(attr_position, 1.0);"
+				"	vec4 skinnedPosition = skinMatrix * position;"
+				"	skinnedPosition.w = 1.0;"
+				"	return skinnedPosition;"
 				"}"
 				""
 				"void main()"
 				"{"
-				"	vec4 position = getPosition();"
-				"	gl_Position = unif_projectionMatrix * unif_viewMatrix * unif_modelMatrix * position;"
-				""
+				"	gl_Position = unif_projectionMatrix * unif_viewMatrix * unif_modelMatrix * getPosition();"
 				"	vary_texCoord = attr_texCoord;"
-				"	vary_texCoord.y = 1.0 - vary_texCoord.y;"
+				"	vary_texCoord.y = 1.0 - vary_texCoord.y;" // c3bの事情によるもの
 				"}"
+				//
+				// cocosのやつ
+				//
+				//"attribute vec3 attr_position;"
+				//"attribute vec4 attr_blendWeight;"
+				//"attribute vec4 attr_blendIndex;"
+				//""
+				//"attribute vec2 attr_texCoord;"
+				//""
+				//"const int SKINNING_JOINT_COUNT = 60;"
+				//""
+				//"uniform vec4 unif_matrixPalette[SKINNING_JOINT_COUNT * 3];"
+				//""
+				//"varying vec2 vary_texCoord;"
+				//"uniform mat4 unif_modelMatrix;"
+				//"uniform mat4 unif_viewMatrix;"
+				//"uniform mat4 unif_projectionMatrix;"
+				//""
+				//"vec4 getPosition()"
+				//"{"
+				//"	float blendWeight = attr_blendWeight[0];"
+				//""
+				//"	int matrixIndex = int(attr_blendIndex[0]) * 3;"
+				//"	vec4 matrixPalette1 = unif_matrixPalette[matrixIndex] * blendWeight;"
+				//"	vec4 matrixPalette2 = unif_matrixPalette[matrixIndex + 1] * blendWeight;"
+				//"	vec4 matrixPalette3 = unif_matrixPalette[matrixIndex + 2] * blendWeight;"
+				//""
+				//""
+				//"	blendWeight = attr_blendWeight[1];"
+				//"	if (blendWeight > 0.0)"
+				//"	{"
+				//"		matrixIndex = int(attr_blendIndex[1]) * 3;"
+				//"		matrixPalette1 += unif_matrixPalette[matrixIndex] * blendWeight;"
+				//"		matrixPalette2 += unif_matrixPalette[matrixIndex + 1] * blendWeight;"
+				//"		matrixPalette3 += unif_matrixPalette[matrixIndex + 2] * blendWeight;"
+				//""
+				//"		blendWeight = attr_blendWeight[2];"
+				//"		if (blendWeight > 0.0)"
+				//"		{"
+				//"			matrixIndex = int(attr_blendIndex[2]) * 3;"
+				//"			matrixPalette1 += unif_matrixPalette[matrixIndex] * blendWeight;"
+				//"			matrixPalette2 += unif_matrixPalette[matrixIndex + 1] * blendWeight;"
+				//"			matrixPalette3 += unif_matrixPalette[matrixIndex + 2] * blendWeight;"
+				//""
+				//"			blendWeight = attr_blendWeight[3];"
+				//"			if (blendWeight > 0.0)"
+				//"			{"
+				//"				matrixIndex = int(attr_blendIndex[3]) * 3;"
+				//"				matrixPalette1 += unif_matrixPalette[matrixIndex] * blendWeight;"
+				//"				matrixPalette2 += unif_matrixPalette[matrixIndex + 1] * blendWeight;"
+				//"				matrixPalette3 += unif_matrixPalette[matrixIndex + 2] * blendWeight;"
+				//"			}"
+				//"		}"
+				//"	}"
+				//""
+				//"	vec4 _skinnedPosition;"
+				//"	vec4 postion = vec4(attr_position, 1.0);"
+				//"	_skinnedPosition.x = dot(postion, matrixPalette1);"
+				//"	_skinnedPosition.y = dot(postion, matrixPalette2);"
+				//"	_skinnedPosition.z = dot(postion, matrixPalette3);"
+				//"	_skinnedPosition.w = postion.w;"
+				//""
+				//"	return _skinnedPosition;"
+				//"}"
+				//""
+				//"void main()"
+				//"{"
+				//"	vec4 position = getPosition();"
+				//"	gl_Position = unif_projectionMatrix * unif_viewMatrix * unif_modelMatrix * position;"
+				//""
+				//"	vary_texCoord = attr_texCoord;"
+				//"	vary_texCoord.y = 1.0 - vary_texCoord.y;"
+				//"}"
 				,
 				// fragment shader
 				"uniform sampler2D unif_texture;"
@@ -432,6 +432,7 @@ void Sprite3D::update(float dt)
 	size_t numSkinJoint = _nodeDatas->nodes[0]->modelNodeDatas[0]->bones.size();
 	assert(numSkinJoint == _nodeDatas->nodes[0]->modelNodeDatas[0]->invBindPose.size());
 
+	// 先に各ジョイントのアニメーション行列を作成する
 	for (int i = 0; i < numSkinJoint; ++i)
 	{
 		const std::string& jointName = _nodeDatas->nodes[0]->modelNodeDatas[0]->bones[i];//TODO: nodes下に要素は一個、parts下にも一個だけであることを前提にしている
@@ -445,7 +446,8 @@ void Sprite3D::update(float dt)
 		}
 		assert(node != nullptr);
 
-		Mat4 transform = node->transform;
+		// 一旦、アニメーション使わない方に初期化
+		node->animatedTransform = Mat4::ZERO;
 
 		if (_currentAnimation != nullptr && _currentAnimation->translationKeyFrames.find(jointName) != _currentAnimation->translationKeyFrames.end())
 		{
@@ -454,14 +456,32 @@ void Sprite3D::update(float dt)
 			const Quaternion& rotation = _currentAnimation->evaluateRotation(jointName, t);
 			const Vec3& scale = _currentAnimation->evaluateScale(jointName, t);
 
-			transform = Mat4::createTransform(translation, rotation, scale);
+			node->animatedTransform = Mat4::createTransform(translation, rotation, scale);
 		}
+	}
+
+	// 次にジョイントのマトリックスパレットをすべて求める
+	for (int i = 0; i < numSkinJoint; ++i)
+	{
+		const std::string& jointName = _nodeDatas->nodes[0]->modelNodeDatas[0]->bones[i];//TODO: nodes下に要素は一個、parts下にも一個だけであることを前提にしている
+
+		// キーフレーム情報がなかったら、NodeDatas::skeletons::transformの方のツリーから再帰的にジョイント位置座標変換配列を計算する
+		// まずは対応するボーンを探し、設定されている行列を取得する
+		C3bLoader::NodeData* node = findJointByName(jointName, _nodeDatas->skeleton);
+		if (node == nullptr)
+		{
+			printf("nodesの方にあったものでskeletonsからボーン名で検索したがない。");
+		}
+		assert(node != nullptr);
+
+		Mat4 transform = (node->animatedTransform != Mat4::ZERO) ? node->animatedTransform : node->transform;
 
 		// 親をルートまでさかのぼってワールド行列を計算する
 		while (node->parent != nullptr)
 		{
-			// TODO:親のボーンもアニメーションしてる可能性あるよー やっぱボーンのデータにアニメーションデータを付与する形でないと無理なんでないか？
-			transform = node->parent->transform * transform;
+			// TODO:親のボーンもアニメーションしてる可能性あったために、NodeDataにもう一個Matrix持たせるという強引な方法。本来はSkeleton3DとBone3Dみたいに別の階層構造データを保持した方がいい
+			const Mat4& parentTransform = (node->parent->animatedTransform != Mat4::ZERO) ? node->parent->animatedTransform : node->parent->transform;
+			transform = parentTransform * transform;
 			node = node->parent;
 		}
 
@@ -470,10 +490,10 @@ void Sprite3D::update(float dt)
 
 		Mat4 matrix = transform * invBindPose;
 		//matrix.transpose(); // TODO:転置はただしいのか？ シェーダでのMvが、実際は行列x列ベクトルでなく、vtMtのように行ベクトルx行列の転置と考えると転置はただしい。 →実際表示させてみると正しくないっぽい。うーん。。。
-		//_matrixPalette.push_back(matrix);
-		_matrixPalette.push_back(Vec4(matrix.m[0][0],matrix.m[1][0],matrix.m[2][0],matrix.m[3][0]));
-		_matrixPalette.push_back(Vec4(matrix.m[0][1],matrix.m[1][1],matrix.m[2][1],matrix.m[3][1]));
-		_matrixPalette.push_back(Vec4(matrix.m[0][2],matrix.m[1][2],matrix.m[2][2],matrix.m[3][2]));
+		_matrixPalette.push_back(matrix);
+		//_matrixPalette.push_back(Vec4(matrix.m[0][0],matrix.m[1][0],matrix.m[2][0],matrix.m[3][0]));
+		//_matrixPalette.push_back(Vec4(matrix.m[0][1],matrix.m[1][1],matrix.m[2][1],matrix.m[3][1]));
+		//_matrixPalette.push_back(Vec4(matrix.m[0][2],matrix.m[1][2],matrix.m[2][2],matrix.m[3][2]));
 	}
 }
 
@@ -485,8 +505,8 @@ void Sprite3D::render()
 
 	if (_isC3b && !_isCpuMode) {
 		assert(_matrixPalette.size() > 0);
-		//glUniformMatrix4fv(_glData.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
-		glUniform4fv(_glData.uniformSkinMatrixPalette, _matrixPalette.size(), (GLfloat*)(&_matrixPalette[0]));
+		glUniformMatrix4fv(_glData.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
+		//glUniform4fv(_glData.uniformSkinMatrixPalette, _matrixPalette.size(), (GLfloat*)(&_matrixPalette[0]));
 	}
 
 	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);

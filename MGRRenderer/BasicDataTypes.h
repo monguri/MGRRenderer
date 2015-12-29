@@ -331,6 +331,37 @@ struct Mat4
 		*this = *this * mat;
 		return *this;
 	}
+
+	bool operator==(const Mat4& mat) const {
+		for (int i = 0; i < 4; ++i)
+		{
+			for (int j = 0; j < 4; ++j)
+			{
+				if (m[i][j] != mat.m[i][j])
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
+	} //TODO:うーん。。。誤差考慮してない
+
+	bool operator!=(const Mat4& mat) const {
+		for (int i = 0; i < 4; ++i)
+		{
+			for (int j = 0; j < 4; ++j)
+			{
+				if (m[i][j] != mat.m[i][j])
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	} //TODO:うーん。。。誤差考慮してない
+
 	void setZero()
 	{
 		memset(m, 0, sizeof(Mat4));

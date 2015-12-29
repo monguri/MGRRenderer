@@ -179,6 +179,7 @@ struct Quaternion {
 
 	Quaternion() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) {}
 	Quaternion(float xVal, float yVal, float zVal, float wVal) : x(xVal), y(yVal), z(zVal), w(wVal) {}
+	Quaternion(const Vec3& angleVec);
 	bool operator==(const Quaternion& q) const { return (x == q.x && y == q.y && z == q.z && w == q.w); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Quaternion& q) const { return (x != q.x || y != q.y || z != q.z || w != q.w);}
 

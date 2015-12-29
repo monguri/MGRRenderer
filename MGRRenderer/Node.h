@@ -13,6 +13,7 @@ public:
 	void visit(float dt);
 	void setPosition(const Vec3& position) { _position = position; };
 	void setRotation(const Quaternion& rotation) { _rotation = rotation; };
+	void setRotation(const Vec3& rotation);
 	void setScale(const Vec3& scale) { _scale = scale; };
 	void setScale(float scale) { _scale = Vec3(scale, scale, scale); };
 

@@ -40,6 +40,10 @@ void Node::render()
 	// ‰½‚à‚µ‚È‚¢
 }
 
+void Node::setRotation(const Vec3& angleVec) {
+	_rotation = Quaternion(angleVec);
+}
+
 OpenGLProgramData Node::createOpenGLProgram(const GLchar* vertexShaderSource, const GLchar* fragmentShaderSource)
 {
 	OpenGLProgramData ret;

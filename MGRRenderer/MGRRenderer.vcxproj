@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicDataTypes.h" />
+    <ClInclude Include="BinaryReader.h" />
     <ClInclude Include="C3bLoader.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Director.h" />
@@ -41,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BasicDataTypes.cpp" />
+    <ClCompile Include="BinaryReader.cpp" />
     <ClCompile Include="C3bLoader.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Director.cpp" />
@@ -59,9 +61,6 @@
     <ClCompile Include="Sprite2D.cpp" />
     <ClCompile Include="Sprite3D.cpp" />
     <ClCompile Include="Texture.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Resources\Hello.png" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6BC7B3AF-198E-4A27-9950-D1C347DF439B}</ProjectGuid>

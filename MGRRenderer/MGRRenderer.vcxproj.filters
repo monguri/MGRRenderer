@@ -26,6 +26,7 @@
     <ClInclude Include="ObjLoader.h" />
     <ClInclude Include="Sprite3D.h" />
     <ClInclude Include="C3bLoader.h" />
+    <ClInclude Include="BinaryReader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Director.cpp" />
@@ -47,10 +48,6 @@
     <ClCompile Include="Sprite3D.cpp" />
     <ClCompile Include="C3bLoader.cpp" />
     <ClCompile Include="BasicDataTypes.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Resources\Hello.png">
-      <Filter>Resource Files</Filter>
-    </Image>
+    <ClCompile Include="BinaryReader.cpp" />
   </ItemGroup>
 </Project>

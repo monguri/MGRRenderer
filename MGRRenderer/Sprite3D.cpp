@@ -83,7 +83,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_vertices = mesh.vertices;
 		_indices = mesh.indices;
 	}
-	else if (ext == ".c3t")
+	else if (ext == ".c3t" || ext == ".c3b")
 	{
 		_isC3b = true; // TODO:Ç±ÇÃÉtÉâÉOï™ÇØÇÕîÒèÌÇ…ÇæÇ≥Ç¢
 
@@ -91,7 +91,17 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		C3bLoader::MaterialDatas* materialDatas = new (std::nothrow)C3bLoader::MaterialDatas();
 		_nodeDatas = new (std::nothrow)C3bLoader::NodeDatas();
 		_animationDatas = new (std::nothrow)C3bLoader::AnimationDatas();
-		const std::string& err = C3bLoader::loadC3t(filePath, *_meshDatas, *materialDatas, *_nodeDatas, *_animationDatas);
+		std::string err;
+		if (ext == ".c3t")
+		{
+			err = C3bLoader::loadC3t(filePath, *_meshDatas, *materialDatas, *_nodeDatas, *_animationDatas);
+		}
+		else
+		{
+			assert(ext == ".c3b");
+			err = C3bLoader::loadC3b(filePath, *_meshDatas, *materialDatas, *_nodeDatas, *_animationDatas);
+		}
+
 		if (!err.empty())
 		{
 			printf(err.c_str());

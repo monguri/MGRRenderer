@@ -1,12 +1,60 @@
 #include "C3bLoader.h"
 #include "FileUtility.h"
 #include "external/json/document.h"
+#include "BinaryReader.h"
 
 namespace mgrrenderer
 {
 
 namespace C3bLoader
 {
+	// TODO:途中！！！
+	enum class SeekDataType : unsigned int
+	{
+		SCENE = 1,
+		NODE = 2,
+		ANIMATIONS = 3,
+		ANIMATION = 4,
+		ANIMATION_CHANNEL = 5,
+		MODEL = 10,
+		MATERIAL = 16,
+		EFFECT = 18,
+		CAMERA = 32,
+		LIGHT = 33,
+		MESH = 34,
+		MESH_PART = 35,
+		MESH_SKIN = 36,
+	};
+
+	struct SeekData
+	{
+		std::string id;
+		SeekDataType type;
+		unsigned int offset;
+	};
+
+	static bool seek(BinaryReader& binary, const std::vector<SeekData>& seekPointTable, SeekDataType type, const std::string& id = "")
+	{
+		for (const SeekData& data : seekPointTable)
+		{
+			// id指定がある場合はid一致を確認する
+			if (id != "" && id != data.id)
+			{
+				continue;
+			}
+
+			if (type != data.type)
+			{
+				continue;
+			}
+
+			binary.seek(data.offset, SEEK_SET);
+			return true;
+		}
+
+		return false;
+	}
+
 	static GLenum parseGLTypeString(const std::string& str)
 	{
 		if (str == "GL_BYTE")
@@ -204,6 +252,136 @@ namespace C3bLoader
 		return "";
 	}
 
+	static std::string loadMeshDatasFromBinary_0_1(BinaryReader& binary, const std::vector<SeekData>& seekPointTable, MeshDatas& outMeshDatas)
+	{
+		bool success = seek(binary, seekPointTable, SeekDataType::MESH);
+		if (!success)
+		{
+			return "seek failed, SeekDataType::MESH";
+		}
+
+		MeshData* mesh = new (std::nothrow)MeshData();
+
+		//
+		// attributes
+		//
+		unsigned int attribSize = 0;
+		size_t readCount = binary.read(&attribSize, 4, 1);
+		if (readCount != 1 || attribSize < 1)
+		{
+			delete mesh;
+			return "warning: Failed to read meshdata: attribCount";
+		}
+
+		enum class VertexAttribType : unsigned int
+		{
+			POSITION = 0,
+			COLOR = 1,
+			TEX_COORD = 2,
+			NORMAL = 3,
+			BLEND_WEIGHT = 4,
+			BLEND_INDEX = 5,
+		};
+
+		for (unsigned int i = 0; i < attribSize; ++i)
+		{
+			VertexAttribType attribType; 
+			unsigned int size;
+			readCount = binary.read(&attribType, 4, 1);
+			if (readCount != 1)
+			{
+				delete mesh;
+				return "warning: Failed to read meshdata : attribType.";
+			}
+
+			readCount = binary.read(&size, 4, 1);
+			if (readCount != 1)
+			{
+				delete mesh;
+				return "warning: Failed to read meshdata : size.";
+			}
+
+			MeshVertexAttribute attrib;
+			attrib.size = size;
+			attrib.attributeSizeBytes = size * sizeof(float);
+			attrib.type = GL_FLOAT;
+
+			switch (attribType)
+			{
+			case VertexAttribType::POSITION:
+				attrib.location = AttributeLocation::POSITION;
+				break;
+			case VertexAttribType::COLOR:
+				attrib.location = AttributeLocation::COLOR;
+				break;
+			case VertexAttribType::TEX_COORD:
+				attrib.location = AttributeLocation::TEXTURE_COORDINATE;
+				break;
+			case VertexAttribType::NORMAL:
+				attrib.location = AttributeLocation::NORMAL;
+				break;
+			case VertexAttribType::BLEND_WEIGHT:
+				attrib.location = AttributeLocation::BLEND_WEIGHT;
+				break;
+			case VertexAttribType::BLEND_INDEX:
+				attrib.location = AttributeLocation::BLEND_INDEX;
+				break;
+			default:
+				assert(false);
+				break;
+			}
+
+			mesh->attributes.push_back(attrib);
+		}
+
+		// 
+		// vertices
+		//
+		readCount = binary.read(&mesh->vertexSizeInFloat, 4, 1);
+		if (readCount != 1 || mesh->vertexSizeInFloat == 0)
+		{
+			delete mesh;
+			return "warning: Failed to read meshdata: vertexSizeInFloat";
+		}
+
+		mesh->vertices.resize(mesh->vertexSizeInFloat);
+		readCount = binary.read(&mesh->vertices[0], 4, mesh->vertexSizeInFloat);
+		if (readCount != mesh->vertexSizeInFloat)
+		{
+			delete mesh;
+			return "warning: Failed to read meshdata: vertex element";
+		}
+
+		//
+		// indices
+		//
+		unsigned int meshPartCount = 1;
+		for (unsigned int i = 0; i < meshPartCount; ++i)
+		{
+			unsigned int indexCount;
+			readCount = binary.read(&indexCount, 4, 1);
+			if (readCount != 1)
+			{
+				delete mesh;
+				return "warning: Failed to read meshdata: indexCount";
+			}
+
+			std::vector<unsigned short> indices;
+			indices.resize(indexCount);
+			readCount = binary.read(&indices[0], 2, indexCount);
+			if (readCount != indexCount)
+			{
+				delete mesh;
+				return "warning: Failed to read meshdata: indices";
+			}
+
+			mesh->subMeshIndices.push_back(indices);
+		}
+
+		outMeshDatas.meshDatas.push_back(mesh);
+		return "";
+	}
+
 	static std::string loadMeshDatasFromJson(const rapidjson::Document& json, MeshDatas& outMeshDatas)
 	{
 		const rapidjson::Value& meshesVal = json["meshes"];
@@ -270,6 +448,127 @@ namespace C3bLoader
 		return "";
 	}
 
+	static std::string loadMeshDatasFromBinary(BinaryReader& binary, const std::vector<SeekData>& seekPointTable, MeshDatas& outMeshDatas)
+	{
+		bool success = seek(binary, seekPointTable, SeekDataType::MESH);
+		if (!success)
+		{
+			return "seek failed, SeekDataType::MESH";
+		}
+
+		unsigned int meshSize;
+		size_t readCount = binary.read(&meshSize, 4, 1);
+		if (readCount != 1 || meshSize < 1)
+		{
+			return "warning: Failed to read meshdata: attribCount";
+		}
+
+		for (unsigned int i = 0; i < meshSize; ++i)
+		{
+			MeshData* mesh = new (std::nothrow)MeshData();
+
+			//
+			// attributes
+			//
+			unsigned int attribSize = 0;
+			size_t readCount = binary.read(&attribSize, 4, 1);
+			if (readCount != 1 || attribSize < 1)
+			{
+				delete mesh;
+				outMeshDatas.resetData();
+				return "warning: Failed to read meshdata: attribCount";
+			}
+
+			mesh->numAttribute = attribSize;
+			mesh->attributes.resize(attribSize);
+
+			for (unsigned int i = 0; i < attribSize; ++i)
+			{
+				unsigned int size;
+				readCount = binary.read(&size, 4, 1);
+				if (readCount != 1)
+				{
+					delete mesh;
+					outMeshDatas.resetData();
+					return "warning: Failed to read meshdata : size.";
+				}
+
+				const std::string& type = binary.readString();
+				const std::string& attribStr = binary.readString();
+				mesh->attributes[i].size = size;
+				mesh->attributes[i].attributeSizeBytes = size * sizeof(float);
+				mesh->attributes[i].type = parseGLTypeString(type);
+				mesh->attributes[i].location = parseGLProgramAttributeString(attribStr);
+			}
+
+			// 
+			// vertices
+			//
+			readCount = binary.read(&mesh->vertexSizeInFloat, 4, 1);
+			if (readCount != 1 || mesh->vertexSizeInFloat == 0)
+			{
+				delete mesh;
+				outMeshDatas.resetData();
+				return "warning: Failed to read meshdata: vertexSizeInFloat";
+			}
+
+			mesh->vertices.resize(mesh->vertexSizeInFloat);
+			readCount = binary.read(&mesh->vertices[0], 4, mesh->vertexSizeInFloat);
+			if (readCount != mesh->vertexSizeInFloat)
+			{
+				delete mesh;
+				outMeshDatas.resetData();
+				return "warning: Failed to read meshdata: vertex element";
+			}
+
+			//
+			// indices
+			//
+			unsigned int meshPartCount = 1;
+			readCount = binary.read(&meshPartCount, 4, 1);
+			if (readCount != 1)
+			{
+				delete mesh;
+				outMeshDatas.resetData();
+				return "warning: Failed to read meshdata: mesh part count";
+			}
+
+			for (unsigned int i = 0; i < meshPartCount; ++i)
+			{
+				const std::string& meshPartId = binary.readString();
+				mesh->subMeshIds.push_back(meshPartId);
+
+				unsigned int indexCount;
+				readCount = binary.read(&indexCount, 4, 1);
+				if (readCount != 1)
+				{
+					delete mesh;
+					outMeshDatas.resetData();
+					return "warning: Failed to read meshdata: indexCount";
+				}
+
+				std::vector<unsigned short> indices;
+				indices.resize(indexCount);
+				readCount = binary.read(&indices[0], 2, indexCount);
+				if (readCount != indexCount)
+				{
+					delete mesh;
+					outMeshDatas.resetData();
+					return "warning: Failed to read meshdata: indices";
+				}
+
+				mesh->subMeshIndices.push_back(indices);
+				mesh->numSubMesh = indexCount;
+
+				// subMeshAABBは省略
+			}
+
+			outMeshDatas.meshDatas.push_back(mesh);
+		}
+
+		return "";
+	}
+
 	static std::string loadMaterialDatasFromJson(const rapidjson::Document& json, const std::string& dirPath, MaterialDatas& outMaterialDatas)
 	{
 		if (!json.HasMember("materials"))
@@ -312,6 +611,83 @@ namespace C3bLoader
 		return "";
 	}
 
+	static std::string loadMaterialDatasFromBinary(BinaryReader& binary, const std::vector<SeekData>& seekPointTable, const std::string& dirPath, MaterialDatas& outMaterialDatas)
+	{
+		bool success = seek(binary, seekPointTable, SeekDataType::MATERIAL);
+		if (!success)
+		{
+			return "seek failed, SeekDataType::MATERIAL";
+		}
+
+		unsigned int numMaterial;
+		size_t readCount = binary.read(&numMaterial, 4, 1);
+		if (readCount != 1)
+		{
+			return "warning: Failed to read Materialdata: num material";
+		}
+
+		for (unsigned int i = 0; i < numMaterial; ++i)
+		{
+			MaterialData* material = new (std::nothrow)MaterialData();
+			material->id = binary.readString();
+
+			// diffuse(3), ambient(3), emissive(3), opacity(1), specular(3), shininess(1)
+			// 使ってない
+			float color[14];
+			readCount = binary.read(color, 4, 14);
+			if (readCount != 14)
+			{
+				delete material;
+				outMaterialDatas.resetData();
+				return "warning: Failed to read Materialdata: color";
+			}
+
+			unsigned int numTexture;
+			readCount = binary.read(&numTexture, 4, 1);
+			if (readCount != 1)
+			{
+				delete material;
+				outMaterialDatas.resetData();
+				return "warning: Failed to read Materialdata: num texture";
+			}
+
+			for (unsigned int j = 0; j < numTexture; ++j)
+			{
+				TextureData texture;
+				texture.id = binary.readString();
+				if (texture.id.empty())
+				{
+					delete material;
+					outMaterialDatas.resetData();
+					return "warning: Failed to read Materialdata: texturePath is empty";
+				}
+
+				const std::string& texturePath = binary.readString();
+				if (texturePath.empty())
+				{
+					delete material;
+					outMaterialDatas.resetData();
+					return "warning: Failed to read Materialdata: texturePath is empty";
+				}
+
+				texture.fileName = dirPath + texturePath;
+
+				// 使ってない
+				float uv[4];
+				binary.read(&uv, 4, 4);
+
+				texture.type = parseGLTextureTypeString(binary.readString());
+				texture.wrapS = parseGLTypeString(binary.readString());
+				texture.wrapT = parseGLTypeString(binary.readString());
+				material->textures.push_back(texture);
+			}
+
+			outMaterialDatas.materialDatas.push_back(material);
+		}
+		
+		return "";
+	}
+
 	static std::string loadMaterialDatasFromJson_0_1(const rapidjson::Document& json, const std::string& dirPath, MaterialDatas& outMaterialDatas)
 	{
 		if (!json.HasMember("material"))
@@ -345,6 +721,33 @@ namespace C3bLoader
 		return "";
 	}
 
+	static std::string loadMaterialDatasFromBinary_0_1(BinaryReader& binary, const std::vector<SeekData>& seekPointTable, const std::string& dirPath, MaterialDatas& outMaterialDatas)
+	{
+		bool success = seek(binary, seekPointTable, SeekDataType::MATERIAL);
+		if (!success)
+		{
+			return "seek failed, SeekDataType::MATERIAL";
+		}
+
+		MaterialData* material = new (std::nothrow)MaterialData();
+
+		const std::string& texturePath = binary.readString();
+		if (texturePath.empty())
+		{
+			delete material;
+			outMaterialDatas.resetData();
+			return "warning: Failed to read Materialdata: texturePath is empty";
+		}
+
+		TextureData texture;
+		texture.fileName = dirPath + texturePath;
+		texture.id = "";
+		texture.type = TextureData::Usage::DIFFUSE;
+		material->textures.push_back(texture);
+		outMaterialDatas.materialDatas.push_back(material);
+		return "";
+	}
+
 	static std::string loadMaterialDatasFromJson_0_2(const rapidjson::Document& json, const std::string& dirPath, MaterialDatas& outMaterialDatas)
 	{
 		if (!json.HasMember("material"))
@@ -369,6 +772,44 @@ namespace C3bLoader
 			material->textures.push_back(texture);
 		}
 		outMaterialDatas.materialDatas.push_back(material);
+		
+		return "";
+	}
+
+	static std::string loadMaterialDatasFromBinary_0_2(BinaryReader& binary, const std::vector<SeekData>& seekPointTable, const std::string& dirPath, MaterialDatas& outMaterialDatas)
+	{
+		bool success = seek(binary, seekPointTable, SeekDataType::MATERIAL);
+		if (!success)
+		{
+			return "seek failed, SeekDataType::MATERIAL";
+		}
+
+		unsigned int numMaterial;
+		size_t readCount = binary.read(&numMaterial, 4, 1);
+		if (readCount != 1)
+		{
+			return "warning: Failed to read Materialdata: num material";
+		}
+
+		for (unsigned int i = 0; i < numMaterial; ++i)
+		{
+			MaterialData* material = new (std::nothrow)MaterialData();
+
+			const std::string& texturePath = binary.readString();
+			if (texturePath.empty())
+			{
+				delete material;
+				outMaterialDatas.resetData();
+				return "warning: Failed to read Materialdata: texturePath is empty";
+			}
+
+			TextureData texture;
+			texture.fileName = dirPath + texturePath;
+			texture.id = "";
+			texture.type = TextureData::Usage::DIFFUSE;
+			material->textures.push_back(texture);
+			outMaterialDatas.materialDatas.push_back(material);
+		}
 		
 		return "";
 	}
@@ -431,7 +872,7 @@ namespace C3bLoader
 		}
 	}
 
-	static bool loadSkinDataJson(const rapidjson::Document& json, SkinData& outSkinData)
+	static bool loadSkinDataFromJson(const rapidjson::Document& json, SkinData& outSkinData)
 	{
 		if (!json.HasMember("skin"))
 		{
@@ -472,6 +913,140 @@ namespace C3bLoader
 		// parent and child relationship map
 		outSkinData.skinBoneOriginMatrices.resize(outSkinData.skinBoneNames.size());
 		getChildMap(outSkinData.boneChild, outSkinData, skinDataVal1);
+		return true;
+	}
+
+	static bool loadSkinDataFromBinary(BinaryReader& binary, const std::vector<SeekData>& seekPointTable, SkinData& outSkinData)
+	{
+		bool success = seek(binary, seekPointTable, SeekDataType::MESH_SKIN);
+		if (!success)
+		{
+			printf("seek failed, SeekDataType::MESH_SKIN");
+			return false;
+		}
+
+		std::string& boneName = binary.readString();
+
+		// transform
+		float bindShape[4][4];
+		success = binary.readMatrix(&bindShape[0][0]);
+		if (!success)
+		{
+			printf("warning: Failed to read SkinData: bindShape matrix");
+			return false;
+		}
+
+		// bone count
+		unsigned int numBone;
+		size_t readCount = binary.read(&numBone, 4, 1);
+		if (readCount != 1 || numBone == 0)
+		{
+			printf("warning: Failed to read SkinData: boneNum");
+			return false;
+		}
+
+		float bindPos[4][4];
+		for (unsigned int i = 0; i < numBone; ++i)
+		{
+			const std::string& skinBoneName = binary.readString();
+			outSkinData.skinBoneNames.push_back(skinBoneName);
+
+			success = binary.readMatrix(&bindPos[0][0]);
+			if (!success)
+			{
+				printf("warning: Failed to load SkinData: bindpos");
+				return false;
+			}
+
+			Mat4 invBindPose((float**)bindPos);
+			outSkinData.inverseBindPoseMatrices.push_back(Mat4((float**)bindPos));
+		}
+
+		outSkinData.skinBoneOriginMatrices.resize(numBone);
+
+		boneName = binary.readString(); // なぜか再び読んでいて、前に読んだものは使ってない
+		if (boneName.empty())
+		{
+			printf("warning: Failed to load SkinData: bone name");
+			return false;
+		}
+
+		success = binary.readMatrix(&bindShape[0][0]); // なぜか再び読んでいて、前に読んだものは使ってない
+		if (!success)
+		{
+			printf("warning: Failed to load SkinData: bind shape");
+			return false;
+		}
+
+		int rootIndex = outSkinData.getSkinBoneNameIndex(boneName);
+		if (rootIndex < 0)
+		{
+			outSkinData.addNodeBoneName(boneName);
+			rootIndex = outSkinData.getSkinBoneNameIndex(boneName);
+			outSkinData.nodeBoneOriginMatrices.push_back(Mat4((float**)bindShape));
+		}
+		else
+		{
+			outSkinData.skinBoneOriginMatrices[rootIndex] = Mat4((float**)bindShape);
+		}
+
+		outSkinData.rootBoneIndex = rootIndex;
+
+		unsigned int numLink;
+		readCount = binary.read(&numLink, 4, 1);
+		if (readCount != 1)
+		{
+			printf("warning: Failed to read SkinData: numLink");
+			return false;
+		}
+
+		for (unsigned int i = 0; i < numLink; ++i)
+		{
+			const std::string& id = binary.readString();
+			if (id.empty())
+			{
+				printf("warning: Failed to read SkinData: id");
+				return false;
+			}
+
+			int index = outSkinData.getSkinBoneNameIndex(id);
+
+			const std::string& parentId = binary.readString();
+			if (parentId.empty())
+			{
+				printf("warning: Failed to read SkinData: parentId");
+				return false;
+			}
+
+			float transform[4][4];
+			success = binary.readMatrix(&transform[0][0]);
+			if (!success)
+			{
+				printf("warning: Failed to load SkinData : transform");
+				return false;
+			}
+
+			if (index < 0)
+			{
+				outSkinData.addNodeBoneName(id);
+				index = outSkinData.getBoneNameIndex(id);
+				outSkinData.nodeBoneOriginMatrices.push_back(Mat4((float**)transform));
+			}
+			else
+			{
+				outSkinData.skinBoneOriginMatrices.push_back(Mat4((float**)transform));
+			}
+
+			int parentIndex = outSkinData.getSkinBoneNameIndex(parentId);
+			if (parentIndex < 0)
+			{
+				outSkinData.addNodeBoneName(parentId);
+				parentIndex = outSkinData.getBoneNameIndex(parentId);
+			}
+
+			outSkinData.boneChild[parentIndex].push_back(index);
+		}
+
 		return true;
 	}
 
@@ -585,6 +1160,7 @@ namespace C3bLoader
 				const rapidjson::Value& childVal = childrenVal[i];
 
 				NodeData* child = parseNodeRecursivelyJson(childVal, isSingleSprite, version, nodeData);
+				// nullptrが返っても加える
 				nodeData->children.push_back(child);
 			}
 		}
@@ -592,7 +1168,173 @@ namespace C3bLoader
 		return nodeData;
 	}
 
-	static bool loadNodesJson(const rapidjson::Document& json, NodeDatas& outNodeDatas, const std::string& version)
+	static NodeData* parseNodeRecursivelyBinary(BinaryReader& binary, const std::vector<SeekData>& seekPointTable, bool isSingleSprite, const std::string& version, NodeData* parent, bool& skeleton)
+	{
+		const std::string& id = binary.readString();
+
+		size_t readCount = binary.read(&skeleton, 1, 1);
+		if (readCount != 1)
+		{
+			printf("warning: Failed to read is sleleton");
+			return nullptr;
+		}
+
+		Mat4 transform;
+		bool success = binary.readMatrix((float*)transform.m);
+		if (!success)
+		{
+			printf("warning: Failed to read transform matrix");
+			return nullptr;
+		}
+
+		unsigned int partsSize;
+		readCount = binary.read(&partsSize, 4, 1);
+		if (readCount != 1)
+		{
+			printf("warning: Failed to read nodedata: parts size");
+			return nullptr;
+		}
+
+		NodeData* node = new (std::nothrow)NodeData();
+		node->parent = parent;
+		node->id = id;
+
+		bool isSkin = false;
+
+		if (partsSize > 0)
+		{
+			for (unsigned int i = 0; i < partsSize; ++i)
+			{
+				ModelData* model = new (std::nothrow)ModelData();
+				model->subMeshId = binary.readString();
+				if (model->subMeshId.empty())
+				{
+					printf("part is missing meshPartId");
+					delete model;
+					delete node;
+					return nullptr;
+				}
+
+				model->materialId = binary.readString();
+				if (model->materialId.empty())
+				{
+					printf("part is missing materialId");
+					delete model;
+					delete node;
+					return nullptr;
+				}
+
+				unsigned int boneSize;
+				readCount = binary.read(&boneSize, 4, 1);
+				if (readCount != 1)
+				{
+					printf("warning: Failed to read nodedata: bone size");
+					delete model;
+					delete node;
+					return nullptr;
+				}
+
+				if (boneSize > 0)
+				{
+					for (unsigned int j = 0; j < boneSize; ++j)
+					{
+						model->bones.push_back(binary.readString());
+
+						Mat4 invBindPose;
+						success = binary.readMatrix((float*)invBindPose.m);
+						if (!success)
+						{
+							printf("warning: Failed to read nodedata: invBinsPose");
+							delete model;
+							delete node;
+							return nullptr;
+						}
+
+						model->invBindPose.push_back(invBindPose);
+					}
+
+					isSkin = true;
+				}
+
+				unsigned int uvMapping;
+				readCount = binary.read(&uvMapping, 4, 1);
+				if (readCount != 1)
+				{
+					printf("warning: Failed to read nodedata: uvMapping");
+					delete model;
+					delete node;
+					return nullptr;
+				}
+
+				for (unsigned int j = 0; j < uvMapping; ++j)
+				{
+					unsigned int textureSize;
+					readCount = binary.read(&textureSize, 4, 1);
+					if (readCount != 1)
+					{
+						printf("warning: Failed to read nodedata: uvMapping");
+						delete model;
+						delete node;
+						return nullptr;
+					}
+
+					for (unsigned int k = 0; k < textureSize; ++k)
+					{
+						unsigned int index;
+						readCount = binary.read(&index, 4, 1);
+						if (readCount != 1)
+						{
+							printf("warning: Failed to read nodedata: uvMapping");
+							delete model;
+							delete node;
+							return nullptr;
+						}
+					}
+				}
+
+				node->modelNodeDatas.push_back(model);
+			}
+		}
+
+		if (version == "0.1" || version == "0.2" || version == "0.3" || version == "0.4" || version == "0.5" || version == "0.6")
+		{
+			if (isSkin || isSingleSprite)
+			{
+				node->transform = Mat4::IDENTITY;
+			}
+			else
+			{
+				node->transform = transform;
+			}
+		}
+		else
+		{
+			node->transform = transform;
+		}
+
+		unsigned int childrenSize;
+		readCount = binary.read(&childrenSize, 4, 1);
+		if (readCount != 1)
+		{
+			printf("warning: Failed to read nodedata: uvMapping");
+			delete node;
+			return nullptr;
+		}
+
+		if (childrenSize > 0)
+		{
+			for (unsigned int i = 0; i < childrenSize; ++i)
+			{
+				NodeData* childNode = parseNodeRecursivelyBinary(binary, seekPointTable, isSingleSprite, version, node, skeleton);
+				// nullptrが返っても加える
+				node->children.push_back(childNode);
+			}
+		}
+
+		return node;
+	}
+
+	static bool loadNodesFromJson(const rapidjson::Document& json, NodeDatas& outNodeDatas, const std::string& version)
 	{
 		if (!json.HasMember("nodes"))
 		{
@@ -611,6 +1353,7 @@ namespace C3bLoader
 			const rapidjson::Value& nodeVal = nodesVal[i];
 			const std::string& id = nodeVal["id"].GetString();
 			NodeData* nodeData = parseNodeRecursivelyJson(nodeVal, nodesValSize == 1, version, nullptr);
+			// nullptrが返っても加える
 
 			bool isSkelton = nodeVal["skeleton"].GetBool();
 			if (isSkelton)
@@ -626,7 +1369,41 @@ namespace C3bLoader
 		return true;
 	}
 
-	static bool loadAnimationDataJson(const rapidjson::Document& json, AnimationDatas& outAnimationDatas, const std::string& version)
+	static bool loadNodesFromBinary(BinaryReader& binary, const std::vector<SeekData>& seekPointTable, NodeDatas& outNodeDatas, const std::string& version)
+	{
+		bool success = seek(binary, seekPointTable, SeekDataType::NODE);
+		if (!success)
+		{
+			return "seek failed, SeekDataType::NODE";
+		}
+
+		unsigned int nodeSize;
+		size_t readCount = binary.read(&nodeSize, 4, 1);
+		if (readCount != 1)
+		{
+			return "warning: Failed to read nodes";
+		}
+
+		for (unsigned int i = 0; i < nodeSize; ++i)
+		{
+			bool skeleton;
+			NodeData* node = parseNodeRecursivelyBinary(binary, seekPointTable, nodeSize == 1, version, nullptr, skeleton);
+			// nullptrが返っても加える
+
+			if (skeleton)
+			{
+				outNodeDatas.skeleton.push_back(node);
+			}
+			else
+			{
+				outNodeDatas.nodes.push_back(node);
+			}
+		}
+
+		return "";
+	}
+
+	static bool loadAnimationDataFromJson(const rapidjson::Document& json, AnimationDatas& outAnimationDatas, const std::string& version)
 	{
 		std::string anim;
 		if (version == "1.2" || version == "0.2")
@@ -709,6 +1486,181 @@ namespace C3bLoader
 		return true;
 	}
 
+	static bool loadAnimationDataFromBinary(BinaryReader& binary, const std::vector<SeekData>& seekPointTable, AnimationDatas& outAnimationDatas, const std::string& version)
+	{
+		if (version == "0.1" || version == "0.2" || version == "0.3" || version == "0.4")
+		{
+			bool success = seek(binary, seekPointTable, SeekDataType::ANIMATIONS);
+			if (!success)
+			{
+				printf("seek failed: animations");
+				return false;
+			}
+		}
+		else
+		{
+			//TODO: こっちはアニメラベルでseekせねばならず、すべて読み取るというのができない
+			// やるには、seekでtypeすべてをループで取り出すようにする必要があるが、それをやるなら、
+			// ラベル指定で取り出すつくりにしたほうが早い
+			assert(false);
+			return false;
+		}
+
+		size_t readCount;
+		unsigned int numAnim = 1;
+		if (version == "0.3" || version == "0.4")
+		{
+			readCount = binary.read(&numAnim, 4, 1);
+			if (readCount != 1)
+			{
+				printf("warning: Failed to read AnimationData: animNum");
+				return false;
+			}
+		}
+
+		for (unsigned int i = 0; i < numAnim; ++i)
+		{
+			AnimationData* animation = new (std::nothrow)AnimationData();
+
+			const std::string& animId = binary.readString();
+
+			readCount = binary.read(&animation->totalTime, 4, 1);
+			if (readCount != 1)
+			{
+				printf("warning: Failed to read AnimationData: totalTime");
+				delete animation;
+				outAnimationDatas.resetData();
+				return false;
+			}
+
+			unsigned int numNodeAnimation;
+			readCount = binary.read(&numNodeAnimation, 4, 1);
+			if (readCount != 1)
+			{
+				printf("warning: Failed to read AnimationData: num anim");
+				delete animation;
+				outAnimationDatas.resetData();
+				return false;
+			}
+
+			for (unsigned int j = 0; j < numNodeAnimation; ++j)
+			{
+				const std::string& boneName = binary.readString();
+
+				unsigned int numKeyFrame;
+				readCount = binary.read(&numKeyFrame, 4, 1);
+				if (readCount != 1)
+				{
+					printf("warning: Failed to read AnimationData: num keyframe");
+					delete animation;
+					outAnimationDatas.resetData();
+					return false;
+				}
+
+				animation->rotationKeyFrames[boneName].reserve(numKeyFrame);
+				animation->scaleKeyFrames[boneName].reserve(numKeyFrame);
+				animation->translationKeyFrames[boneName].reserve(numKeyFrame);
+
+				for (unsigned int k = 0; k < numKeyFrame; ++k)
+				{
+					float keyTime;
+					readCount = binary.read(&keyTime, 4, 1);
+					if (readCount != 1)
+					{
+						printf("warning: Failed to read AnimationData: keytime");
+						delete animation;
+						outAnimationDatas.resetData();
+						return false;
+					}
+
+					// transformFlag
+					unsigned char transformFlag(0);
+					if (version != "0.1" && version != "0.2" && version != "0.3")
+					{
+						readCount = binary.read(&transformFlag, 1, 1);
+						if (readCount != 1)
+						{
+							printf("warning: Failed to read AnimationData: transformFlag");
+							delete animation;
+							outAnimationDatas.resetData();
+							return false;
+						}
+					}
+
+					// rotation
+					bool hasRotate = true;
+					if (version != "0.1" && version != "0.2" && version != "0.3")
+					{
+						hasRotate = transformFlag & 0x01;
+					}
+
+					if (hasRotate)
+					{
+						Quaternion rotate;
+						readCount = binary.read(&rotate, 4, 4);
+						if (readCount != 4)
+						{
+							printf("warning: Failed to read AnimationData: rotate");
+							delete animation;
+							outAnimationDatas.resetData();
+							return false;
+						}
+
+						animation->rotationKeyFrames[boneName].push_back(AnimationData::QuaternionKeyFrame(keyTime, rotate));
+					}
+
+					// rotation
+					bool hasScale = true;
+					if (version != "0.1" && version != "0.2" && version != "0.3")
+					{
+						hasScale = (transformFlag >> 1) & 0x01;
+					}
+
+					if (hasScale)
+					{
+						Vec3 scale;
+						readCount = binary.read(&scale, 4, 3);
+						if (readCount != 3)
+						{
+							printf("warning: Failed to read AnimationData: scale");
+							delete animation;
+							outAnimationDatas.resetData();
+							return false;
+						}
+
+						animation->scaleKeyFrames[boneName].push_back(AnimationData::Vec3KeyFrame(keyTime, scale));
+					}
+
+					// translation
+					bool hasTranslation = true;
+					if (version != "0.1" && version != "0.2" && version != "0.3")
+					{
+						hasTranslation = (transformFlag >> 2) & 0x01;
+					}
+
+					if (hasTranslation)
+					{
+						Vec3 translation;
+						readCount = binary.read(&translation, 4, 3);
+						if (readCount != 3)
+						{
+							printf("warning: Failed to read AnimationData: translation");
+							delete animation;
+							outAnimationDatas.resetData();
+							return false;
+						}
+
+						animation->translationKeyFrames[boneName].push_back(AnimationData::Vec3KeyFrame(keyTime, translation));
+					}
+				}
+			}
+
+			outAnimationDatas.animations[animId] = animation;
+		}
+
+		return true;
+	}
+
 	std::string loadC3t(const std::string& fileName, MeshDatas& outMeshDatas, MaterialDatas& outMaterialDatas, NodeDatas& outNodeDatas, AnimationDatas& outAnimationDatas)
 	{
 		const std::string& json = FileUtility::getInstance()->getStringFromFile(fileName);
@@ -765,7 +1717,7 @@ namespace C3bLoader
 		{
 			SkinData skinData;
 			// TODO:orc.c3tにはskin要素はないようだしloadSkinは割愛しようかな。。
-			bool loaded = loadSkinDataJson(jsonReader, skinData);
+			bool loaded = loadSkinDataFromJson(jsonReader, skinData);
 			if (!loaded)
 			{
 				NodeData* node = new (std::nothrow)NodeData();
@@ -823,15 +1775,176 @@ namespace C3bLoader
 		}
 		else
 		{
-			loadNodesJson(jsonReader, outNodeDatas, c3tVersion);
+			loadNodesFromJson(jsonReader, outNodeDatas, c3tVersion);
 		}
 		
-		loadAnimationDataJson(jsonReader, outAnimationDatas, c3tVersion);
+		loadAnimationDataFromJson(jsonReader, outAnimationDatas, c3tVersion);
 		return "";
 	}
 
 	std::string loadC3b(const std::string& fileName, MeshDatas& outMeshDatas, MaterialDatas& outMaterialDatas, NodeDatas& outNodeDatas, AnimationDatas& outAnimationDatas)
 	{
+		ssize_t length;
+		unsigned char* buffer = FileUtility::getInstance()->getFileData(fileName, &length);
+		if (buffer == nullptr || length <= 0)
+		{
+			return "empty file";
+		}
+
+		BinaryReader binaryReader;
+		binaryReader.init(buffer, length);
+
+		// シグネチャ確認
+		char identifier[] = {'C', '3', 'B', '\0'};
+		char sig[4];
+		size_t readCount = binaryReader.read(sig, 1, 4);
+		if (readCount != 4 || memcmp(sig, identifier, 4) != 0)
+		{
+			return "warning: Invalid identifier.";
+		}
+
+		// バージョン取得
+		char version[2];
+		readCount = binaryReader.read(version, 1, 2);
+		if (readCount != 2)
+		{
+			return "warning: Failed to read version";
+		}
+
+		char versionStr[20]; // TODO:20の根拠は不明
+		sprintf_s(versionStr, "%d.%d", version[0], version[1]);
+		std::string c3bVersion(versionStr);
+
+		// この後はシーク用データテーブル（id、type、offset）が続く。その後、実データ。
+
+		// テーブルのサイズ取得
+		unsigned int seekPointCount = 0;
+		readCount = binaryReader.read(&seekPointCount, 4, 1);
+		if (readCount != 1)
+		{
+			return "warning: Failed to read ref table size";
+		}
+
+		// シーク用データテーブル作成
+		std::vector<SeekData> seekPointTable(seekPointCount);
+		for (unsigned int i = 0; i < seekPointCount; ++i)
+		{
+			seekPointTable[i].id = binaryReader.readString();
+			if (seekPointTable[i].id.empty())
+			{
+				printf("warning: Failed to read id");
+				break;
+			}
+
+			readCount = binaryReader.read(&seekPointTable[i].type, 4, 1);
+			if (readCount != 1)
+			{
+				printf("warning: Failed to read type");
+				break;
+			}
+
+			readCount = binaryReader.read(&seekPointTable[i].offset, 4, 1);
+			if (readCount != 1)
+			{
+				printf("warning: Failed to read type");
+				break;
+			}
+		}
+
+		// meshデータロード
+		if (c3bVersion == "0.1" || c3bVersion == "0.2")
+		{
+			loadMeshDatasFromBinary_0_1(binaryReader, seekPointTable, outMeshDatas);
+		}
+		else
+		{
+			loadMeshDatasFromBinary(binaryReader, seekPointTable, outMeshDatas);
+		}
+
+		ssize_t lastSlashIndex = fileName.find_last_of('/');
+		const std::string& dirPath = fileName.substr(0, lastSlashIndex + 1);
+		
+		// materialデータロード
+		if (c3bVersion == "0.1")
+		{
+			loadMaterialDatasFromBinary_0_1(binaryReader, seekPointTable, dirPath, outMaterialDatas);
+		}
+		else if (c3bVersion == "0.2")
+		{
+			loadMaterialDatasFromBinary_0_2(binaryReader, seekPointTable, dirPath, outMaterialDatas);
+		}
+		else
+		{
+			loadMaterialDatasFromBinary(binaryReader, seekPointTable, dirPath, outMaterialDatas);
+		}
+		
+		// nodeデータロード
+		if (c3bVersion == "0.1" || c3bVersion == "0.2" || c3bVersion == "1.2")
+		{
+			SkinData skinData;
+			// TODO:orc.c3tにはskin要素はないようだしloadSkinは割愛しようかな。。
+			bool loaded = loadSkinDataFromBinary(binaryReader, seekPointTable, skinData);
+			if (!loaded)
+			{
+				NodeData* node = new (std::nothrow)NodeData();
+				ModelData* model = new (std::nothrow)ModelData();
+				model->materialId = "";
+				model->subMeshId = "";
+				node->modelNodeDatas.push_back(model);
+				outNodeDatas.nodes.push_back(node);
+				return "";
+			}
+
+			NodeData** nodeDatas = new (std::nothrow)NodeData*[skinData.skinBoneNames.size() + skinData.nodeBoneNames.size()];
+			int index = 0;
+
+			size_t skinBoneNamesSize = skinData.skinBoneNames.size();
+			for (size_t i = 0; i < skinBoneNamesSize; ++i)
+			{
+				nodeDatas[index] = new (std::nothrow)NodeData();
+				nodeDatas[index]->id = skinData.skinBoneNames[i];
+				nodeDatas[index]->transform = skinData.skinBoneOriginMatrices[i];
+				index++;
+			}
+
+			size_t nodeBoneNamesSize = skinData.nodeBoneNames.size();
+			for (size_t i = 0; i < skinBoneNamesSize; ++i)
+			{
+				nodeDatas[index] = new (std::nothrow)NodeData();
+				nodeDatas[index]->id = skinData.nodeBoneNames[i];
+				nodeDatas[index]->transform = skinData.nodeBoneOriginMatrices[i];
+				index++;
+			}
+
+			for (const std::pair<int, std::vector<int>>& it : skinData.boneChild)
+			{
+				const std::vector<int>& children = it.second;
+				NodeData* parent = nodeDatas[it.first];
+
+				for (int child : children)
+				{
+					parent->children.push_back(nodeDatas[child]);
+				}
+			}
+
+			outNodeDatas.skeleton.push_back(nodeDatas[skinData.rootBoneIndex]);
+
+			NodeData* node = new (std::nothrow)NodeData();
+			ModelData* model = new (std::nothrow)ModelData();
+			model->materialId = "";
+			model->subMeshId = "";
+			model->bones = skinData.skinBoneNames;
+			model->invBindPose = skinData.inverseBindPoseMatrices;
+			node->modelNodeDatas.push_back(model);
+			outNodeDatas.nodes.push_back(node);
+			delete[] nodeDatas;
+		}
+		else
+		{
+			loadNodesFromBinary(binaryReader, seekPointTable, outNodeDatas, c3bVersion);
+		}
+		
+		loadAnimationDataFromBinary(binaryReader, seekPointTable, outAnimationDatas, c3bVersion);
 
 		return "";
 	}

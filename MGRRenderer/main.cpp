@@ -168,7 +168,7 @@ void initialize()
 	sprite3DObjNode->setTexture("../Resources/boss.png");
 
 	Sprite3D* sprite3DC3tNode = new Sprite3D();
-	isSucceeded = sprite3DC3tNode->initWithModel("../Resources/orc.c3t");
+	isSucceeded = sprite3DC3tNode->initWithModel("../Resources/orc.c3b");
 	sprite3DC3tNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f - 100, WINDOW_HEIGHT / 1.1566f)); // カメラのデフォルトの視点位置に置いた
 	sprite3DC3tNode->setRotation(Vec3(0.0f, 180.0f, 0.0f));
 	sprite3DC3tNode->setScale(10.0f);

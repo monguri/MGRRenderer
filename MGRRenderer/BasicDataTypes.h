@@ -281,6 +281,11 @@ struct Mat4
 		m[0][3] = m30; m[1][3] = m31; m[2][3] = m32; m[3][3] = m33;
 	}
 
+	Mat4(float** mat)
+	{
+		memcpy(m[0], mat[0], 4 * 4);
+	}
+
 	const Vec4 operator*(const Vec4& v) const
 	{
 		Vec4 ret;

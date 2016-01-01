@@ -215,7 +215,9 @@ std::string FileUtility::getStringFromFile(const std::string& fileName) const
 		return "";
 	}
 
-	return std::string((const char*)data, size);
+	const std::string& ret = std::string((const char*)data, size);
+	delete data;
+	return ret;
 }
 
 } // namespace mgrrenderer

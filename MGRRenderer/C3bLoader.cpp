@@ -8,7 +8,6 @@ namespace mgrrenderer
 
 namespace C3bLoader
 {
-	// TODO:“r’†III
 	enum class SeekDataType : unsigned int
 	{
 		SCENE = 1,

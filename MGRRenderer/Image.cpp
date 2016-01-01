@@ -43,7 +43,6 @@ bool Image::initWithFilePath(const std::string& filePath)
 	unsigned char* fileData = fileUtil->getFileData(fullPath, &fileSize);
 	// libpng、libjpegによってrawデータに変換
 
-	// TODO:unzipってlibpngに必要なのかな？→必要ない
 	Format format = detectFormat(fileData, fileSize);
 	bool isSucceeded = false;
 	switch (format)
@@ -62,6 +61,8 @@ bool Image::initWithFilePath(const std::string& filePath)
 		}
 		break;
 	}
+
+	delete fileData;
 
 	return isSucceeded;
 }

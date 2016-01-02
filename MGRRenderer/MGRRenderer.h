@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BasicDataTypes.h"
+#include "Logger.h"
 #include "Director.h"
 #include "Scene.h"
 #include "Node.h"

@@ -152,7 +152,7 @@ unsigned char* FileUtility::getFileData(const std::string& fileName, ssize_t* si
 		std::string msg = "Get data from file(";
 		std::string errCodeStr = "" + GetLastError();
 		msg = msg + fileName + ") failed. error code is " + errCodeStr;
-		printf("%s", msg.c_str());
+		Logger::log("%s", msg.c_str());
 	}
 	return ret;
 }
@@ -188,7 +188,7 @@ bool FileUtility::isValidFileNameAtWindows(const std::string& fullPath, const st
 				msg.append(fileName).append("\" the real name is: ").append(realName);
 
 				// TODO:ÇøÇ·ÇÒÇ∆ÇµÇΩÉçÉKÅ[çÏÇËÇΩÇ¢
-				printf("%s", msg.c_str());
+				Logger::log("%s", msg.c_str());
 				return false;
 			}
 		}

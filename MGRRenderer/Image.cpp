@@ -56,7 +56,7 @@ bool Image::initWithFilePath(const std::string& filePath)
 		//TODO: _fileDataのヘッダとフッタを除いた部分を_dataにコピーする形式なのでヘッダとフッタは解放しないと
 		if (!isSucceeded)
 		{
-			printf("unsupport image format.");
+			Logger::log("unsupport image format.");
 		}
 		break;
 	}
@@ -396,13 +396,6 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 				_data[i + 2] = b;
 			}
 		}
-
-		//for (int i = 0; i < _dataLen; i += mode)
-		//{
-		//	TCHAR b[5];
-		//	wsprintf(b, TEXT("%02x "), _data[i]);
-		//	OutputDebugString(b);
-		//}
 	}
 
 	// TODO:initWithTGADataの部分を書いてない
@@ -422,7 +415,7 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 		}
 		else
 		{
-			printf("Image WARNING: unsupport true color tga data pixel format.");
+			Logger::log("Image WARNING: unsupport true color tga data pixel format.");
 			return false;
 		}
 	}
@@ -434,7 +427,7 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 		}
 		else
 		{
-			printf("Image WARNING: unsupport gray tga data pixel format.");
+			Logger::log("Image WARNING: unsupport gray tga data pixel format.");
 			return false;
 		}
 	}

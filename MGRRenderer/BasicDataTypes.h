@@ -3,9 +3,9 @@
 // TODO:ssize_tを使うためだが、もっとましな方法はないかな。。
 #include <ShlObj.h>
 #include <math.h> // fabsやfmodを使うため
-#include <stdio.h> // printfのため
 #include <string>
 #include <vector>
+#include "Logger.h"
 
 #ifndef __SSIZE_T
 #define __SSIZE_T
@@ -404,7 +404,7 @@ struct Mat4
 
 		if (fabs(fmod(fieldOfViewRadian, PI_OVER2)) < FLOAT_EPSILON)
 		{
-			printf("Invalid field of view value (%f) causes attempted calculation tan(%f), which is undefined.", fieldOfView, fieldOfViewRadian);
+			Logger::log("Invalid field of view value (%f) causes attempted calculation tan(%f), which is undefined.", fieldOfView, fieldOfViewRadian);
 			assert(false);
 
 			Mat4 zeroMat;

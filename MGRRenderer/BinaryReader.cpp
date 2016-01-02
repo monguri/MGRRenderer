@@ -1,4 +1,5 @@
 #include "BinaryReader.h"
+#include "Logger.h"
 #include <assert.h>
 #include <ShlObj.h>
 
@@ -28,14 +29,14 @@ size_t BinaryReader::read(void* outResult, size_t size, size_t count)
 
 	if (_position >= _length)
 	{
-		printf("warning: bundle reader out of range");
+		Logger::log("warning: bundle reader out of range");
 		return 0;
 	}
 
 	size_t validLength = _length - _position;
 	if (size * count > validLength)
 	{
-		printf("warning: bundle reader out of range");
+		Logger::log("warning: bundle reader out of range");
 	}
 
 	size_t validCount = validLength / size;

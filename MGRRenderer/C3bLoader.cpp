@@ -95,7 +95,7 @@ namespace C3bLoader
 		else
 		{
 			assert(false);
-			printf("Invalid GL str.");
+			Logger::log("Invalid GL str.");
 			return 0;
 		}
 	}
@@ -141,7 +141,7 @@ namespace C3bLoader
 		else
 		{
 			assert(false);
-			printf("Wrong Attribute type.");
+			Logger::log("Wrong Attribute type.");
 			return AttributeLocation::NONE;
 		}
 	}
@@ -191,7 +191,7 @@ namespace C3bLoader
 		else
 		{
 			assert(false);
-			printf("Wrong Texture type");
+			Logger::log("Wrong Texture type");
 			return TextureData::Usage::UNKNOWN;
 		}
 	}
@@ -920,7 +920,7 @@ namespace C3bLoader
 		bool success = seek(binary, seekPointTable, SeekDataType::MESH_SKIN);
 		if (!success)
 		{
-			printf("seek failed, SeekDataType::MESH_SKIN");
+			Logger::log("seek failed, SeekDataType::MESH_SKIN");
 			return false;
 		}
 
@@ -931,7 +931,7 @@ namespace C3bLoader
 		success = binary.readMatrix(&bindShape[0][0]);
 		if (!success)
 		{
-			printf("warning: Failed to read SkinData: bindShape matrix");
+			Logger::log("warning: Failed to read SkinData: bindShape matrix");
 			return false;
 		}
 
@@ -940,7 +940,7 @@ namespace C3bLoader
 		size_t readCount = binary.read(&numBone, 4, 1);
 		if (readCount != 1 || numBone == 0)
 		{
-			printf("warning: Failed to read SkinData: boneNum");
+			Logger::log("warning: Failed to read SkinData: boneNum");
 			return false;
 		}
 
@@ -953,7 +953,7 @@ namespace C3bLoader
 			success = binary.readMatrix(&bindPos[0][0]);
 			if (!success)
 			{
-				printf("warning: Failed to load SkinData: bindpos");
+				Logger::log("warning: Failed to load SkinData: bindpos");
 				return false;
 			}
 
@@ -966,14 +966,14 @@ namespace C3bLoader
 		boneName = binary.readString(); // なぜか再び読んでいて、前に読んだものは使ってない
 		if (boneName.empty())
 		{
-			printf("warning: Failed to load SkinData: bone name");
+			Logger::log("warning: Failed to load SkinData: bone name");
 			return false;
 		}
 
 		success = binary.readMatrix(&bindShape[0][0]); // なぜか再び読んでいて、前に読んだものは使ってない
 		if (!success)
 		{
-			printf("warning: Failed to load SkinData: bind shape");
+			Logger::log("warning: Failed to load SkinData: bind shape");
 			return false;
 		}
 
@@ -995,7 +995,7 @@ namespace C3bLoader
 		readCount = binary.read(&numLink, 4, 1);
 		if (readCount != 1)
 		{
-			printf("warning: Failed to read SkinData: numLink");
+			Logger::log("warning: Failed to read SkinData: numLink");
 			return false;
 		}
 
@@ -1004,7 +1004,7 @@ namespace C3bLoader
 			const std::string& id = binary.readString();
 			if (id.empty())
 			{
-				printf("warning: Failed to read SkinData: id");
+				Logger::log("warning: Failed to read SkinData: id");
 				return false;
 			}
 
@@ -1013,7 +1013,7 @@ namespace C3bLoader
 			const std::string& parentId = binary.readString();
 			if (parentId.empty())
 			{
-				printf("warning: Failed to read SkinData: parentId");
+				Logger::log("warning: Failed to read SkinData: parentId");
 				return false;
 			}
 
@@ -1021,7 +1021,7 @@ namespace C3bLoader
 			success = binary.readMatrix(&transform[0][0]);
 			if (!success)
 			{
-				printf("warning: Failed to load SkinData : transform");
+				Logger::log("warning: Failed to load SkinData : transform");
 				return false;
 			}
 
@@ -1086,7 +1086,7 @@ namespace C3bLoader
 
 				if (modelData->subMeshId.empty() || modelData->materialId.empty())
 				{
-					printf("warning: Node %s part is missing meshPartId or materialId", nodeData->id.c_str());
+					Logger::log("warning: Node %s part is missing meshPartId or materialId", nodeData->id.c_str());
 					delete modelData;
 					delete nodeData;
 					return nullptr;
@@ -1104,7 +1104,7 @@ namespace C3bLoader
 						// node
 						if (!boneVal.HasMember("node"))
 						{
-							printf("warning: Bone node ID missing");
+							Logger::log("warning: Bone node ID missing");
 							delete modelData;
 							delete nodeData;
 							return nullptr;
@@ -1174,7 +1174,7 @@ namespace C3bLoader
 		size_t readCount = binary.read(&skeleton, 1, 1);
 		if (readCount != 1)
 		{
-			printf("warning: Failed to read is sleleton");
+			Logger::log("warning: Failed to read is sleleton");
 			return nullptr;
 		}
 
@@ -1182,7 +1182,7 @@ namespace C3bLoader
 		bool success = binary.readMatrix((float*)transform.m);
 		if (!success)
 		{
-			printf("warning: Failed to read transform matrix");
+			Logger::log("warning: Failed to read transform matrix");
 			return nullptr;
 		}
 
@@ -1190,7 +1190,7 @@ namespace C3bLoader
 		readCount = binary.read(&partsSize, 4, 1);
 		if (readCount != 1)
 		{
-			printf("warning: Failed to read nodedata: parts size");
+			Logger::log("warning: Failed to read nodedata: parts size");
 			return nullptr;
 		}
 
@@ -1208,7 +1208,7 @@ namespace C3bLoader
 				model->subMeshId = binary.readString();
 				if (model->subMeshId.empty())
 				{
-					printf("part is missing meshPartId");
+					Logger::log("part is missing meshPartId");
 					delete model;
 					delete node;
 					return nullptr;
@@ -1217,7 +1217,7 @@ namespace C3bLoader
 				model->materialId = binary.readString();
 				if (model->materialId.empty())
 				{
-					printf("part is missing materialId");
+					Logger::log("part is missing materialId");
 					delete model;
 					delete node;
 					return nullptr;
@@ -1227,7 +1227,7 @@ namespace C3bLoader
 				readCount = binary.read(&boneSize, 4, 1);
 				if (readCount != 1)
 				{
-					printf("warning: Failed to read nodedata: bone size");
+					Logger::log("warning: Failed to read nodedata: bone size");
 					delete model;
 					delete node;
 					return nullptr;
@@ -1243,7 +1243,7 @@ namespace C3bLoader
 						success = binary.readMatrix((float*)invBindPose.m);
 						if (!success)
 						{
-							printf("warning: Failed to read nodedata: invBinsPose");
+							Logger::log("warning: Failed to read nodedata: invBinsPose");
 							delete model;
 							delete node;
 							return nullptr;
@@ -1259,7 +1259,7 @@ namespace C3bLoader
 				readCount = binary.read(&uvMapping, 4, 1);
 				if (readCount != 1)
 				{
-					printf("warning: Failed to read nodedata: uvMapping");
+					Logger::log("warning: Failed to read nodedata: uvMapping");
 					delete model;
 					delete node;
 					return nullptr;
@@ -1271,7 +1271,7 @@ namespace C3bLoader
 					readCount = binary.read(&textureSize, 4, 1);
 					if (readCount != 1)
 					{
-						printf("warning: Failed to read nodedata: uvMapping");
+						Logger::log("warning: Failed to read nodedata: uvMapping");
 						delete model;
 						delete node;
 						return nullptr;
@@ -1283,7 +1283,7 @@ namespace C3bLoader
 						readCount = binary.read(&index, 4, 1);
 						if (readCount != 1)
 						{
-							printf("warning: Failed to read nodedata: uvMapping");
+							Logger::log("warning: Failed to read nodedata: uvMapping");
 							delete model;
 							delete node;
 							return nullptr;
@@ -1315,7 +1315,7 @@ namespace C3bLoader
 		readCount = binary.read(&childrenSize, 4, 1);
 		if (readCount != 1)
 		{
-			printf("warning: Failed to read nodedata: uvMapping");
+			Logger::log("warning: Failed to read nodedata: uvMapping");
 			delete node;
 			return nullptr;
 		}
@@ -1492,7 +1492,7 @@ namespace C3bLoader
 			bool success = seek(binary, seekPointTable, SeekDataType::ANIMATIONS);
 			if (!success)
 			{
-				printf("seek failed: animations");
+				Logger::log("seek failed: animations");
 				return false;
 			}
 		}
@@ -1512,7 +1512,7 @@ namespace C3bLoader
 			readCount = binary.read(&numAnim, 4, 1);
 			if (readCount != 1)
 			{
-				printf("warning: Failed to read AnimationData: animNum");
+				Logger::log("warning: Failed to read AnimationData: animNum");
 				return false;
 			}
 		}
@@ -1526,7 +1526,7 @@ namespace C3bLoader
 			readCount = binary.read(&animation->totalTime, 4, 1);
 			if (readCount != 1)
 			{
-				printf("warning: Failed to read AnimationData: totalTime");
+				Logger::log("warning: Failed to read AnimationData: totalTime");
 				delete animation;
 				outAnimationDatas.resetData();
 				return false;
@@ -1536,7 +1536,7 @@ namespace C3bLoader
 			readCount = binary.read(&numNodeAnimation, 4, 1);
 			if (readCount != 1)
 			{
-				printf("warning: Failed to read AnimationData: num anim");
+				Logger::log("warning: Failed to read AnimationData: num anim");
 				delete animation;
 				outAnimationDatas.resetData();
 				return false;
@@ -1550,7 +1550,7 @@ namespace C3bLoader
 				readCount = binary.read(&numKeyFrame, 4, 1);
 				if (readCount != 1)
 				{
-					printf("warning: Failed to read AnimationData: num keyframe");
+					Logger::log("warning: Failed to read AnimationData: num keyframe");
 					delete animation;
 					outAnimationDatas.resetData();
 					return false;
@@ -1566,7 +1566,7 @@ namespace C3bLoader
 					readCount = binary.read(&keyTime, 4, 1);
 					if (readCount != 1)
 					{
-						printf("warning: Failed to read AnimationData: keytime");
+						Logger::log("warning: Failed to read AnimationData: keytime");
 						delete animation;
 						outAnimationDatas.resetData();
 						return false;
@@ -1579,7 +1579,7 @@ namespace C3bLoader
 						readCount = binary.read(&transformFlag, 1, 1);
 						if (readCount != 1)
 						{
-							printf("warning: Failed to read AnimationData: transformFlag");
+							Logger::log("warning: Failed to read AnimationData: transformFlag");
 							delete animation;
 							outAnimationDatas.resetData();
 							return false;
@@ -1599,7 +1599,7 @@ namespace C3bLoader
 						readCount = binary.read(&rotate, 4, 4);
 						if (readCount != 4)
 						{
-							printf("warning: Failed to read AnimationData: rotate");
+							Logger::log("warning: Failed to read AnimationData: rotate");
 							delete animation;
 							outAnimationDatas.resetData();
 							return false;
@@ -1621,7 +1621,7 @@ namespace C3bLoader
 						readCount = binary.read(&scale, 4, 3);
 						if (readCount != 3)
 						{
-							printf("warning: Failed to read AnimationData: scale");
+							Logger::log("warning: Failed to read AnimationData: scale");
 							delete animation;
 							outAnimationDatas.resetData();
 							return false;
@@ -1643,7 +1643,7 @@ namespace C3bLoader
 						readCount = binary.read(&translation, 4, 3);
 						if (readCount != 3)
 						{
-							printf("warning: Failed to read AnimationData: translation");
+							Logger::log("warning: Failed to read AnimationData: translation");
 							delete animation;
 							outAnimationDatas.resetData();
 							return false;
@@ -1831,21 +1831,21 @@ namespace C3bLoader
 			seekPointTable[i].id = binaryReader.readString();
 			if (seekPointTable[i].id.empty())
 			{
-				printf("warning: Failed to read id");
+				Logger::log("warning: Failed to read id");
 				break;
 			}
 
 			readCount = binaryReader.read(&seekPointTable[i].type, 4, 1);
 			if (readCount != 1)
 			{
-				printf("warning: Failed to read type");
+				Logger::log("warning: Failed to read type");
 				break;
 			}
 
 			readCount = binaryReader.read(&seekPointTable[i].offset, 4, 1);
 			if (readCount != 1)
 			{
-				printf("warning: Failed to read type");
+				Logger::log("warning: Failed to read type");
 				break;
 			}
 		}

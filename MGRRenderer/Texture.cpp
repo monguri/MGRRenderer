@@ -147,7 +147,7 @@ Texture::PixelFormat Texture::convertDataToFormat(const unsigned char* data, ssi
 	case PixelFormat::RGB888:
 		return convertRGB888ToFormat(data, dataLen, toFormat, outData, outDataLen);
 	default:
-		printf("unsupport convert for format %d to format %d", fromFormat, toFormat); // cocosÇ≈unsupportÇ∆Ç»Ç¡ÇƒÇΩÇ™Ç»Ç∫ÇæÅH
+		Logger::log("unsupport convert for format %d to format %d", fromFormat, toFormat); // cocosÇ≈unsupportÇ∆Ç»Ç¡ÇƒÇΩÇ™Ç»Ç∫ÇæÅH
 		*outData = (unsigned char*)data;
 		*outDataLen = dataLen;
 		return fromFormat;
@@ -176,7 +176,7 @@ Texture::PixelFormat Texture::convertI8ToFormat(const unsigned char* data, ssize
 	default:
 		if (toFormat != PixelFormat::AUTO || toFormat != PixelFormat::I8)
 		{
-			printf("Can not convert image format PixelFormat::I8 to format ID:%d, we will use it's origin format PixelFormat::I8", toFormat);
+			Logger::log("Can not convert image format PixelFormat::I8 to format ID:%d, we will use it's origin format PixelFormat::I8", toFormat);
 		}
 		*outData = (unsigned char*)data;
 		*outDataLen = dataLen;
@@ -208,7 +208,7 @@ Texture::PixelFormat Texture::convertAI88ToFormat(const unsigned char* data, ssi
 	default:
 		if (toFormat != PixelFormat::AUTO || toFormat != PixelFormat::AI88)
 		{
-			printf("Can not convert image format PixelFormat::AI88 to format ID:%d, we will use it's origin format PixelFormat::AI88", toFormat);
+			Logger::log("Can not convert image format PixelFormat::AI88 to format ID:%d, we will use it's origin format PixelFormat::AI88", toFormat);
 		}
 		*outData = (unsigned char*)data;
 		*outDataLen = dataLen;
@@ -240,7 +240,7 @@ Texture::PixelFormat Texture::convertRGB888ToFormat(const unsigned char* data, s
 	default:
 		if (toFormat != PixelFormat::AUTO || toFormat != PixelFormat::RGB888)
 		{
-			printf("Can not convert image format PixelFormat::RGB888 to format ID:%d, we will use it's origin format PixelFormat::RGB888", toFormat);
+			Logger::log("Can not convert image format PixelFormat::RGB888 to format ID:%d, we will use it's origin format PixelFormat::RGB888", toFormat);
 		}
 		*outData = (unsigned char*)data;
 		*outDataLen = dataLen;
@@ -272,7 +272,7 @@ Texture::PixelFormat Texture::convertRGBA8888ToFormat(const unsigned char* data,
 	default:
 		if (toFormat != PixelFormat::AUTO || toFormat != PixelFormat::RGBA8888)
 		{
-			printf("Can not convert image format PixelFormat::RGBA8888 to format ID:%d, we will use it's origin format PixelFormat::RGBA8888", toFormat);
+			Logger::log("Can not convert image format PixelFormat::RGBA8888 to format ID:%d, we will use it's origin format PixelFormat::RGBA8888", toFormat);
 		}
 		*outData = (unsigned char*)data;
 		*outDataLen = dataLen;

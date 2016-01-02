@@ -27,6 +27,7 @@
     <ClInclude Include="Sprite3D.h" />
     <ClInclude Include="C3bLoader.h" />
     <ClInclude Include="BinaryReader.h" />
+    <ClInclude Include="Logger.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Director.cpp" />
@@ -49,5 +50,6 @@
     <ClCompile Include="C3bLoader.cpp" />
     <ClCompile Include="BasicDataTypes.cpp" />
     <ClCompile Include="BinaryReader.cpp" />
+    <ClCompile Include="Logger.cpp" />
   </ItemGroup>
 </Project>

@@ -67,7 +67,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		const std::string& err = ObjLoader::loadObj(filePath, meshList, materialList);
 		if (!err.empty())
 		{
-			printf(err.c_str());
+			Logger::log(err.c_str());
 			return false;
 		}
 
@@ -104,7 +104,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		if (!err.empty())
 		{
-			printf(err.c_str());
+			Logger::log(err.c_str());
 			return false;
 		}
 
@@ -452,7 +452,7 @@ void Sprite3D::update(float dt)
 		C3bLoader::NodeData* node = findJointByName(jointName, _nodeDatas->skeleton);
 		if (node == nullptr)
 		{
-			printf("nodesの方にあったものでskeletonsからボーン名で検索したがない。");
+			Logger::log("nodesの方にあったものでskeletonsからボーン名で検索したがない。");
 		}
 		assert(node != nullptr);
 
@@ -480,7 +480,7 @@ void Sprite3D::update(float dt)
 		C3bLoader::NodeData* node = findJointByName(jointName, _nodeDatas->skeleton);
 		if (node == nullptr)
 		{
-			printf("nodesの方にあったものでskeletonsからボーン名で検索したがない。");
+			Logger::log("nodesの方にあったものでskeletonsからボーン名で検索したがない。");
 		}
 		assert(node != nullptr);
 

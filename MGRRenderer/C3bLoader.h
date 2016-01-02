@@ -170,7 +170,6 @@ namespace C3bLoader
 		}
 	};
 
-	// TODO:–{“–‚É‚¢‚é‚Ì‚©‚È‚ ‚±‚ê
 	struct ModelData
 	{
 		std::string subMeshId;

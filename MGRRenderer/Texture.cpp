@@ -42,7 +42,7 @@ bool Texture::initWithImage(const Image& image)
 
 	unsigned char* convertedData = nullptr;
 	ssize_t convertedDataLen = 0;
-	// TODO:今はレンダーバッファをPixelFormat::RGBA8888フォーマットにしか対応しないのでし画像もRGBA8888に変：換
+	// TODO:今はレンダーバッファをPixelFormat::RGBA8888フォーマットにしか対応しないのでし画像もRGBA8888に変換
 	PixelFormat toFormat = convertDataToFormat(image.getData(), image.getDataLength(), image.getPixelFormat(), PixelFormat::RGBA8888, &convertedData, &convertedDataLen);
 	if (toFormat != PixelFormat::RGBA8888)
 	{

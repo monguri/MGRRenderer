@@ -49,7 +49,6 @@ bool Image::initWithFilePath(const std::string& filePath)
 	{
 	case Format::PNG:
 		isSucceeded = initWithPngData(fileData, fileSize);
-		//TODO: _data用には別にmallocされるのでfileDataは解放しないと
 		break;
 	default:
 		// フォーマットのわからないものはtgaとして読んでみる。tgaはファイル内にtga形式であることを示すものが必ずしもあるわけでない

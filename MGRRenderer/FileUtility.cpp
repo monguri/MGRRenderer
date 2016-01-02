@@ -162,10 +162,10 @@ bool FileUtility::isValidFileNameAtWindows(const std::string& fullPath, const st
 	// Windowsは大文字小文字区別しないでヒットしちゃうから、ここで大文字小文字区別しても該当するファイルがあるかチェックする
 	// TODO:FileUtils-win32.cppのcheckFileNameから持ってきてるけど処理内容がよくわからん
 
-	std::string path = convertPathFormatToUnixStyle(fullPath);
+	std::string& path = convertPathFormatToUnixStyle(fullPath);
 	ssize_t pathLen = path.length();
 	ssize_t nameLen = fileName.length();
-	std::string realName;
+	std::string& realName = std::string();
 
 	while (path.length() >= pathLen - nameLen && path.length() > 2) // おそらく普通は一周しかしない。二周するケースが何なのか不明
 	{

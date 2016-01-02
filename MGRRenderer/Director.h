@@ -17,15 +17,20 @@ public:
 	void setScene(const Scene& scene);
 	void update();
 	static Camera& getCamera();
+	void setDisplayStats(bool displayStats) { _displayStats = displayStats; }
 
 private:
 	static Director* _instance;
 	Scene _scene;
 	Size _windowSize;
 	struct timeval _lastUpdateTime;
+	bool _displayStats;
+	float _accumulatedDeltaTime;
 
+	Director();
 	struct timeval getCurrentTimeOfDay();
 	float calculateDeltaTime();
+	void updateStats(float dt);
 };
 
 } // namespace mgrrenderer

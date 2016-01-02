@@ -5,6 +5,11 @@ namespace mgrrenderer
 
 Director* Director::_instance = nullptr;
 
+Director::Director() : _displayStats(false), _accumulatedDeltaTime(0.0f)
+{
+
+}
+
 Director* Director::getInstance()
 {
 	if (_instance == nullptr)
@@ -41,6 +46,12 @@ void Director::setScene(const Scene& scene)
 void Director::update()
 {
 	float dt = calculateDeltaTime();
+
+	if (_displayStats)
+	{
+		updateStats(dt);
+	}
+
 	_scene.update(dt);
 }
 
@@ -67,6 +78,29 @@ float Director::calculateDeltaTime()
 	float ret = now.tv_sec - _lastUpdateTime.tv_sec + (now.tv_usec - _lastUpdateTime.tv_usec) / 1000000.0f;
 	_lastUpdateTime = now;
 	return max(0.0f, ret);
+}
+
+void Director::updateStats(float dt)
+{
+	static float prevDeltaTime = 0.016f; // 初期値は60FPS
+	static const float FPS_FILTER = 0.10f;
+	static const float STATS_INTERVAL = 0.10f; // 0.1秒ごとにfps更新
+
+	_accumulatedDeltaTime += dt;
+
+	// cocosの真似だが、現在のdtが10%で、60FPSを90%で重ねるので現在のdtの影響が結構小さい.
+	float avgDeltaTime = dt * FPS_FILTER + prevDeltaTime * (1.0f - FPS_FILTER);
+	prevDeltaTime = avgDeltaTime;
+	float fps = 1.0f / avgDeltaTime;
+
+	if (_accumulatedDeltaTime > STATS_INTERVAL)
+	{
+		//char buffer[30]; // 30はcocosのshowStatsの真似
+
+		//sprintf_s(buffer, "%.1f", fps);
+		Logger::log("%.1f / %.3f", fps, avgDeltaTime);
+		_accumulatedDeltaTime = 0.0f;
+	}
 }
 
 } // namespace mgrrenderer

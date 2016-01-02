@@ -12,6 +12,7 @@
 
 static const int WINDOW_WIDTH = 640;
 static const int WINDOW_HEIGHT = 480;
+static const int FPS = 60;
 
 using namespace mgrrenderer;
 
@@ -67,14 +68,34 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	// 描画の初期化
 	initialize();
 
+	// FPSから1ループの長さの計算
+	LARGE_INTEGER nFreq;
+	QueryPerformanceFrequency(&nFreq);
+	LARGE_INTEGER loopInterval;
+	loopInterval.QuadPart = (LONGLONG)(1.0 / FPS * nFreq.QuadPart);
+
+	LARGE_INTEGER nLast;
+	LARGE_INTEGER nNow;
+	QueryPerformanceCounter(&nLast);
+
 	while (glfwWindowShouldClose(window) == GL_FALSE)
 	{
-		// 描画のメインループ
-		render();
+		QueryPerformanceCounter(&nNow);
+		if (nNow.QuadPart - nLast.QuadPart > loopInterval.QuadPart)
+		{
+			nLast.QuadPart = nNow.QuadPart - (nNow.QuadPart % loopInterval.QuadPart); // 余り分も次回計算で用いる。整数計算にしているので精度が高い
 
-		glfwSwapBuffers(window);
+			// 描画のメインループ
+			render();
 
-		glfwPollEvents();
+			glfwSwapBuffers(window);
+
+			glfwPollEvents();
+		}
+		else
+		{
+			Sleep(1);
+		}
 	}
 
 	// 描画の終了処理
@@ -107,6 +128,7 @@ void initialize()
 	bool isSucceeded = false;
 
 	Director::getInstance()->init(Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+	Director::getInstance()->setDisplayStats(true);
 
 	// 各ノードの作成はDirector::initの後に呼ぶ。Director::initのもっているウィンドウサイズを使用する場合があるので。
 

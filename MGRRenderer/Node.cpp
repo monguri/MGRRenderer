@@ -51,9 +51,9 @@ OpenGLProgramData Node::createOpenGLProgram(const GLchar* vertexShaderSource, co
 	ret.fragmentShader = createFragmentShader(fragmentShaderSource);
 	ret.shaderProgram = createShaderProgram(ret.vertexShader, ret.fragmentShader);
 
-	ret.uniformModelMatrix = glGetUniformLocation(ret.shaderProgram, "unif_modelMatrix");
-	ret.uniformViewMatrix = glGetUniformLocation(ret.shaderProgram, "unif_viewMatrix");
-	ret.uniformProjectionMatrix = glGetUniformLocation(ret.shaderProgram, "unif_projectionMatrix");
+	ret.uniformModelMatrix = glGetUniformLocation(ret.shaderProgram, "u_modelMatrix");
+	ret.uniformViewMatrix = glGetUniformLocation(ret.shaderProgram, "u_viewMatrix");
+	ret.uniformProjectionMatrix = glGetUniformLocation(ret.shaderProgram, "u_projectionMatrix");
 
 	return ret;
 }

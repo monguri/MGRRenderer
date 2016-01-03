@@ -135,24 +135,24 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_glData = createOpenGLProgram(
 			// vertex shader
 			// ModelDataしか使わない場合
-			"attribute vec4 attr_position;"
-			"attribute vec2 attr_texCoord;"
-			"varying vec2 vary_texCoord;"
-			"uniform mat4 unif_modelMatrix;"
-			"uniform mat4 unif_viewMatrix;"
-			"uniform mat4 unif_projectionMatrix;"
+			"attribute vec4 a_position;"
+			"attribute vec2 a_texCoord;"
+			"varying vec2 v_texCoord;"
+			"uniform mat4 u_modelMatrix;"
+			"uniform mat4 u_viewMatrix;"
+			"uniform mat4 u_projectionMatrix;"
 			"void main()"
 			"{"
-			"	gl_Position = unif_projectionMatrix * unif_viewMatrix * unif_modelMatrix * attr_position;"
-			"	vary_texCoord = attr_texCoord;"
+			"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;"
+			"	v_texCoord = a_texCoord;"
 			"}"
 			,
 			// fragment shader
-			"uniform sampler2D unif_texture;"
-			"varying vec2 vary_texCoord;"
+			"uniform sampler2D u_texture;"
+			"varying vec2 v_texCoord;"
 			"void main()"
 			"{"
-			"	gl_FragColor = texture2D(unif_texture, vary_texCoord);" // テクスチャ番号は0のみに対応
+			"	gl_FragColor = texture2D(u_texture, v_texCoord);" // テクスチャ番号は0のみに対応
 			"}"
 			);
 	}
@@ -163,25 +163,25 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			_glData = createOpenGLProgram(
 				// vertex shader
 				// ModelDataしか使わない場合
-				"attribute vec4 attr_position;"
-				"attribute vec2 attr_texCoord;"
-				"varying vec2 vary_texCoord;"
-				"uniform mat4 unif_modelMatrix;"
-				"uniform mat4 unif_viewMatrix;"
-				"uniform mat4 unif_projectionMatrix;"
+				"attribute vec4 a_position;"
+				"attribute vec2 a_texCoord;"
+				"varying vec2 v_texCoord;"
+				"uniform mat4 u_modelMatrix;"
+				"uniform mat4 u_viewMatrix;"
+				"uniform mat4 u_projectionMatrix;"
 				"void main()"
 				"{"
-				"	gl_Position = unif_projectionMatrix * unif_viewMatrix * unif_modelMatrix * attr_position;"
-				"	vary_texCoord = attr_texCoord;"
-				"	vary_texCoord.y = 1.0 - vary_texCoord.y;" // c3bの事情によるもの
+				"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;"
+				"	v_texCoord = a_texCoord;"
+				"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
 				"}"
 				,
 				// fragment shader
-				"uniform sampler2D unif_texture;"
-				"varying vec2 vary_texCoord;"
+				"uniform sampler2D u_texture;"
+				"varying vec2 v_texCoord;"
 				"void main()"
 				"{"
-				"	gl_FragColor = texture2D(unif_texture, vary_texCoord);" // テクスチャ番号は0のみに対応
+				"	gl_FragColor = texture2D(u_texture, v_texCoord);" // テクスチャ番号は0のみに対応
 				"}"
 				);
 		}
@@ -190,53 +190,53 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			_glData = createOpenGLProgram(
 				// vertex shader
 				// ModelDataしか使わない場合
-				//"attribute vec4 attr_position;"
-				//"attribute vec2 attr_texCoord;"
-				//"varying vec2 vary_texCoord;"
-				//"uniform mat4 unif_modelMatrix;"
-				//"uniform mat4 unif_viewMatrix;"
-				//"uniform mat4 unif_projectionMatrix;"
+				//"attribute vec4 a_position;"
+				//"attribute vec2 a_texCoord;"
+				//"varying vec2 v_texCoord;"
+				//"uniform mat4 u_modelMatrix;"
+				//"uniform mat4 u_viewMatrix;"
+				//"uniform mat4 u_projectionMatrix;"
 				//"void main()"
 				//"{"
-				//"	gl_Position = unif_projectionMatrix * unif_viewMatrix * attr_position;"
-				//"	vary_texCoord = attr_texCoord;"
-				//"	vary_texCoord.y = 1.0 - vary_texCoord.y;"
+				//"	gl_Position = u_projectionMatrix * u_viewMatrix * a_position;"
+				//"	v_texCoord = a_texCoord;"
+				//"	v_texCoord.y = 1.0 - v_texCoord.y;"
 				//"}"
 				//// アニメーションを使う場合
-				"attribute vec3 attr_position;" // これがvec3になっているのに注意 TODO:なぜなのか？
-				"attribute vec2 attr_texCoord;"
-				"attribute vec4 attr_blendWeight;"
-				"attribute vec4 attr_blendIndex;"
+				"attribute vec3 a_position;" // これがvec3になっているのに注意 TODO:なぜなのか？
+				"attribute vec2 a_texCoord;"
+				"attribute vec4 a_blendWeight;"
+				"attribute vec4 a_blendIndex;"
 				""
 				"const int SKINNING_JOINT_COUNT = 60;" // TODO:なぜ60個までなのか？
 				""
-				"uniform mat4 unif_modelMatrix;"
-				"uniform mat4 unif_viewMatrix;"
-				"uniform mat4 unif_projectionMatrix;"
-				"uniform mat4 unif_matrixPalette[SKINNING_JOINT_COUNT];"
+				"uniform mat4 u_modelMatrix;"
+				"uniform mat4 u_viewMatrix;"
+				"uniform mat4 u_projectionMatrix;"
+				"uniform mat4 u_matrixPalette[SKINNING_JOINT_COUNT];"
 				""
-				"varying vec2 vary_texCoord;"
+				"varying vec2 v_texCoord;"
 				""
 				"vec4 getPosition()"
 				"{"
-				"	mat4 skinMatrix = unif_matrixPalette[int(attr_blendIndex[0])] * attr_blendWeight[0];"
+				"	mat4 skinMatrix = u_matrixPalette[int(a_blendIndex[0])] * a_blendWeight[0];"
 				""
-				"	if (attr_blendWeight[1] > 0.0)"
+				"	if (a_blendWeight[1] > 0.0)"
 				"	{"
-				"		skinMatrix += unif_matrixPalette[int(attr_blendIndex[1])] * attr_blendWeight[1];"
+				"		skinMatrix += u_matrixPalette[int(a_blendIndex[1])] * a_blendWeight[1];"
 				""
-				"		if (attr_blendWeight[2] > 0.0)"
+				"		if (a_blendWeight[2] > 0.0)"
 				"		{"
-				"			skinMatrix += unif_matrixPalette[int(attr_blendIndex[2])] * attr_blendWeight[2];"
+				"			skinMatrix += u_matrixPalette[int(a_blendIndex[2])] * a_blendWeight[2];"
 				""
-				"			if (attr_blendWeight[3] > 0.0)"
+				"			if (a_blendWeight[3] > 0.0)"
 				"			{"
-				"				skinMatrix += unif_matrixPalette[int(attr_blendIndex[3])] * attr_blendWeight[3];"
+				"				skinMatrix += u_matrixPalette[int(a_blendIndex[3])] * a_blendWeight[3];"
 				"			}"
 				"		}"
 				"	}"
 				""
-				"	vec4 position = vec4(attr_position, 1.0);"
+				"	vec4 position = vec4(a_position, 1.0);"
 				"	vec4 skinnedPosition = skinMatrix * position;"
 				"	skinnedPosition.w = 1.0;"
 				"	return skinnedPosition;"
@@ -244,61 +244,61 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 				""
 				"void main()"
 				"{"
-				"	gl_Position = unif_projectionMatrix * unif_viewMatrix * unif_modelMatrix * getPosition();"
-				"	vary_texCoord = attr_texCoord;"
-				"	vary_texCoord.y = 1.0 - vary_texCoord.y;" // c3bの事情によるもの
+				"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * getPosition();"
+				"	v_texCoord = a_texCoord;"
+				"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
 				"}"
 				//
 				// cocosのやつ
 				//
-				//"attribute vec3 attr_position;"
-				//"attribute vec4 attr_blendWeight;"
-				//"attribute vec4 attr_blendIndex;"
+				//"attribute vec3 a_position;"
+				//"attribute vec4 a_blendWeight;"
+				//"attribute vec4 a_blendIndex;"
 				//""
-				//"attribute vec2 attr_texCoord;"
+				//"attribute vec2 a_texCoord;"
 				//""
 				//"const int SKINNING_JOINT_COUNT = 60;"
 				//""
-				//"uniform vec4 unif_matrixPalette[SKINNING_JOINT_COUNT * 3];"
+				//"uniform vec4 u_matrixPalette[SKINNING_JOINT_COUNT * 3];"
 				//""
-				//"varying vec2 vary_texCoord;"
-				//"uniform mat4 unif_modelMatrix;"
-				//"uniform mat4 unif_viewMatrix;"
-				//"uniform mat4 unif_projectionMatrix;"
+				//"varying vec2 v_texCoord;"
+				//"uniform mat4 u_modelMatrix;"
+				//"uniform mat4 u_viewMatrix;"
+				//"uniform mat4 u_projectionMatrix;"
 				//""
 				//"vec4 getPosition()"
 				//"{"
-				//"	float blendWeight = attr_blendWeight[0];"
+				//"	float blendWeight = a_blendWeight[0];"
 				//""
-				//"	int matrixIndex = int(attr_blendIndex[0]) * 3;"
-				//"	vec4 matrixPalette1 = unif_matrixPalette[matrixIndex] * blendWeight;"
-				//"	vec4 matrixPalette2 = unif_matrixPalette[matrixIndex + 1] * blendWeight;"
-				//"	vec4 matrixPalette3 = unif_matrixPalette[matrixIndex + 2] * blendWeight;"
+				//"	int matrixIndex = int(a_blendIndex[0]) * 3;"
+				//"	vec4 matrixPalette1 = u_matrixPalette[matrixIndex] * blendWeight;"
+				//"	vec4 matrixPalette2 = u_matrixPalette[matrixIndex + 1] * blendWeight;"
+				//"	vec4 matrixPalette3 = u_matrixPalette[matrixIndex + 2] * blendWeight;"
 				//""
 				//""
-				//"	blendWeight = attr_blendWeight[1];"
+				//"	blendWeight = a_blendWeight[1];"
 				//"	if (blendWeight > 0.0)"
 				//"	{"
-				//"		matrixIndex = int(attr_blendIndex[1]) * 3;"
-				//"		matrixPalette1 += unif_matrixPalette[matrixIndex] * blendWeight;"
-				//"		matrixPalette2 += unif_matrixPalette[matrixIndex + 1] * blendWeight;"
-				//"		matrixPalette3 += unif_matrixPalette[matrixIndex + 2] * blendWeight;"
+				//"		matrixIndex = int(a_blendIndex[1]) * 3;"
+				//"		matrixPalette1 += u_matrixPalette[matrixIndex] * blendWeight;"
+				//"		matrixPalette2 += u_matrixPalette[matrixIndex + 1] * blendWeight;"
+				//"		matrixPalette3 += u_matrixPalette[matrixIndex + 2] * blendWeight;"
 				//""
-				//"		blendWeight = attr_blendWeight[2];"
+				//"		blendWeight = a_blendWeight[2];"
 				//"		if (blendWeight > 0.0)"
 				//"		{"
-				//"			matrixIndex = int(attr_blendIndex[2]) * 3;"
-				//"			matrixPalette1 += unif_matrixPalette[matrixIndex] * blendWeight;"
-				//"			matrixPalette2 += unif_matrixPalette[matrixIndex + 1] * blendWeight;"
-				//"			matrixPalette3 += unif_matrixPalette[matrixIndex + 2] * blendWeight;"
+				//"			matrixIndex = int(a_blendIndex[2]) * 3;"
+				//"			matrixPalette1 += u_matrixPalette[matrixIndex] * blendWeight;"
+				//"			matrixPalette2 += u_matrixPalette[matrixIndex + 1] * blendWeight;"
+				//"			matrixPalette3 += u_matrixPalette[matrixIndex + 2] * blendWeight;"
 				//""
-				//"			blendWeight = attr_blendWeight[3];"
+				//"			blendWeight = a_blendWeight[3];"
 				//"			if (blendWeight > 0.0)"
 				//"			{"
 				//"				matrixIndex = int(attr_blendIndex[3]) * 3;"
-				//"				matrixPalette1 += unif_matrixPalette[matrixIndex] * blendWeight;"
-				//"				matrixPalette2 += unif_matrixPalette[matrixIndex + 1] * blendWeight;"
-				//"				matrixPalette3 += unif_matrixPalette[matrixIndex + 2] * blendWeight;"
+				//"				matrixPalette1 += u_matrixPalette[matrixIndex] * blendWeight;"
+				//"				matrixPalette2 += u_matrixPalette[matrixIndex + 1] * blendWeight;"
+				//"				matrixPalette3 += u_matrixPalette[matrixIndex + 2] * blendWeight;"
 				//"			}"
 				//"		}"
 				//"	}"
@@ -316,18 +316,18 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 				//"void main()"
 				//"{"
 				//"	vec4 position = getPosition();"
-				//"	gl_Position = unif_projectionMatrix * unif_viewMatrix * unif_modelMatrix * position;"
+				//"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * position;"
 				//""
-				//"	vary_texCoord = attr_texCoord;"
-				//"	vary_texCoord.y = 1.0 - vary_texCoord.y;"
+				//"	v_texCoord = attr_texCoord;"
+				//"	v_texCoord.y = 1.0 - v_texCoord.y;"
 				//"}"
 				,
 				// fragment shader
-				"uniform sampler2D unif_texture;"
-				"varying vec2 vary_texCoord;"
+				"uniform sampler2D u_texture;"
+				"varying vec2 v_texCoord;"
 				"void main()"
 				"{"
-				"	gl_FragColor = texture2D(unif_texture, vary_texCoord);" // テクスチャ番号は0のみに対応
+				"	gl_FragColor = texture2D(u_texture, v_texCoord);" // テクスチャ番号は0のみに対応
 				"}"
 				);
 		}
@@ -344,7 +344,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		return false;
 	}
 
-	_glData.uniformTexture = glGetUniformLocation(_glData.shaderProgram, "unif_texture");
+	_glData.uniformTexture = glGetUniformLocation(_glData.shaderProgram, "u_texture");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		return false;
@@ -357,7 +357,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 	if (_isC3b && !_isCpuMode)
 	{
-		_glData.uniformSkinMatrixPalette = glGetUniformLocation(_glData.shaderProgram, "unif_matrixPalette");
+		_glData.uniformSkinMatrixPalette = glGetUniformLocation(_glData.shaderProgram, "u_matrixPalette");
 		if (glGetError() != GL_NO_ERROR)
 		{
 			return false;

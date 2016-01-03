@@ -16,15 +16,15 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 
 	_glData = createOpenGLProgram(
 		// vertex shader
-		"attribute vec4 attr_position;"
-		"attribute float attr_point_size;"
-		"uniform mat4 unif_modelMatrix;"
-		"uniform mat4 unif_viewMatrix;"
-		"uniform mat4 unif_projectionMatrix;"
+		"attribute vec4 a_position;"
+		"attribute float a_point_size;"
+		"uniform mat4 u_modelMatrix;"
+		"uniform mat4 u_viewMatrix;"
+		"uniform mat4 u_projectionMatrix;"
 		"void main()"
 		"{"
-		"	gl_Position = unif_projectionMatrix * unif_viewMatrix * unif_modelMatrix * attr_position;"
-		"	gl_PointSize = attr_point_size;"
+		"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;"
+		"	gl_PointSize = a_point_size;"
 		"}"
 		,
 		// fragment shader
@@ -34,7 +34,7 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 		"}"
 		);
 
-	_attributePointSize = glGetAttribLocation(_glData.shaderProgram, "attr_point_size");
+	_attributePointSize = glGetAttribLocation(_glData.shaderProgram, "a_point_size");
 	assert(glGetError() == GL_NO_ERROR);
 	assert(_attributePointSize >= 0);
 }

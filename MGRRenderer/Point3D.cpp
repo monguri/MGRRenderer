@@ -19,12 +19,12 @@ void Point3D::initWithPointArray(const std::vector<Point3DData>& pointArray)
 		// vertex shader
 		"attribute vec4 attr_position;"
 		"attribute float attr_point_size;"
-		"uniform mat4 unif_modelMatrix;"
-		"uniform mat4 unif_viewMatrix;"
-		"uniform mat4 unif_projectionMatrix;"
+		"uniform mat4 u_modelMatrix;"
+		"uniform mat4 u_viewMatrix;"
+		"uniform mat4 u_projectionMatrix;"
 		"void main()"
 		"{"
-		"	gl_Position = unif_projectionMatrix * unif_viewMatrix * unif_modelMatrix * attr_position;"
+		"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * attr_position;"
 		"	gl_PointSize = attr_point_size;"
 		"}"
 		,

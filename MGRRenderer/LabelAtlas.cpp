@@ -32,28 +32,28 @@ bool LabelAtlas::init(const std::string& string, const Texture* texture, int ite
 
 	_glData = createOpenGLProgram(
 		// vertex shader
-		"attribute vec4 attr_position;"
-		"attribute vec2 attr_texCoord;"
-		"varying vec2 vary_texCoord;"
-		"uniform mat4 unif_modelMatrix;"
-		"uniform mat4 unif_viewMatrix;"
-		"uniform mat4 unif_projectionMatrix;"
+		"attribute vec4 a_position;"
+		"attribute vec2 a_texCoord;"
+		"varying vec2 v_texCoord;"
+		"uniform mat4 u_modelMatrix;"
+		"uniform mat4 u_viewMatrix;"
+		"uniform mat4 u_projectionMatrix;"
 		"void main()"
 		"{"
-		"	gl_Position = unif_projectionMatrix * unif_viewMatrix * unif_modelMatrix * attr_position;"
-		"	vary_texCoord = attr_texCoord;"
+		"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;"
+		"	v_texCoord = a_texCoord;"
 		"}"
 		,
 		// fragment shader
 		"uniform sampler2D texture;"
-		"varying vec2 vary_texCoord;"
+		"varying vec2 v_texCoord;"
 		"void main()"
 		"{"
-		"	gl_FragColor = texture2D(texture, vary_texCoord);" // テクスチャ番号は0のみに対応
+		"	gl_FragColor = texture2D(texture, v_texCoord);" // テクスチャ番号は0のみに対応
 		"}"
 		);
 
-	_glData.attributeTextureCoordinates = glGetAttribLocation(_glData.shaderProgram, "attr_texCoord");
+	_glData.attributeTextureCoordinates = glGetAttribLocation(_glData.shaderProgram, "a_texCoord");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		return false;

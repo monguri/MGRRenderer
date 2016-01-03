@@ -1,12 +1,12 @@
 #pragma once
 #include <gles/include/glew.h>
-// TODO:ssize_tを使うためだが、もっとましな方法はないかな。。
-#include <ShlObj.h>
 #include <math.h> // fabsやfmodを使うため
 #include <string>
 #include <vector>
 #include "Logger.h"
 
+// TODO:ssize_tを使うためだが、もっとましな方法はないかな。。
+#include <ShlObj.h>
 #ifndef __SSIZE_T
 #define __SSIZE_T
 typedef SSIZE_T ssize_t;

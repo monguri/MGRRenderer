@@ -22,6 +22,7 @@ public:
 	Image();
 	~Image();
 	bool initWithFilePath(const std::string& filePath);
+	bool initWithImageData(const unsigned char* data, ssize_t dataLen);
 
 	unsigned char* getData() const { return _data; };
 	ssize_t getDataLength() const { return _dataLen; };

@@ -5,6 +5,7 @@ namespace mgrrenderer
 {
 	
 class Camera;
+class LabelAtlas;
 
 class Director
 {
@@ -26,11 +27,14 @@ private:
 	struct timeval _lastUpdateTime;
 	bool _displayStats;
 	float _accumulatedDeltaTime;
+	LabelAtlas* _FPSLabel;
 
 	Director();
+	~Director();
 	struct timeval getCurrentTimeOfDay();
 	float calculateDeltaTime();
 	void updateStats(float dt);
+	void createStatsLabel();
 };
 
 } // namespace mgrrenderer

@@ -5,6 +5,22 @@
 namespace mgrrenderer
 {
 
+static Texture::PixelFormat _defaultPixelFormat = Texture::PixelFormat::DEFAULT;
+
+typedef Texture::PixelFormatInfoMap::value_type PixelFomatInfoMapValue;
+static const PixelFomatInfoMapValue TexturePixelFormatInfoTable[] =
+{
+	PixelFomatInfoMapValue(Texture::PixelFormat::RGBA8888, Texture::PixelFormatInfo(GL_RGBA, GL_UNSIGNED_BYTE, 32, false, true)),
+	PixelFomatInfoMapValue(Texture::PixelFormat::RGB888, Texture::PixelFormatInfo(GL_RGB, GL_UNSIGNED_BYTE, 24, false, false)),
+	PixelFomatInfoMapValue(Texture::PixelFormat::I8, Texture::PixelFormatInfo(GL_LUMINANCE, GL_UNSIGNED_BYTE, 8, false, false)),
+	PixelFomatInfoMapValue(Texture::PixelFormat::AI88, Texture::PixelFormatInfo(GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, 16, false, true)),
+	PixelFomatInfoMapValue(Texture::PixelFormat::RGBA4444, Texture::PixelFormatInfo(GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, 16, false, true)),
+	PixelFomatInfoMapValue(Texture::PixelFormat::RGB5A1, Texture::PixelFormatInfo(GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, 16, false, true)),
+};
+
+// こんな風にstatic constなmapを初期化できるのね。。
+const Texture::PixelFormatInfoMap Texture::_pixelFormatInfoTable(TexturePixelFormatInfoTable, TexturePixelFormatInfoTable + sizeof(TexturePixelFormatInfoTable) / sizeof(TexturePixelFormatInfoTable[0]));
+
 Texture::Texture() :
 _textureId(0),
 _contentSize(Size(0, 0)),
@@ -25,6 +41,11 @@ Texture::~Texture()
 
 bool Texture::initWithImage(const Image& image)
 {
+	return initWithImage(image, _defaultPixelFormat);
+}
+
+bool Texture::initWithImage(const Image& image, PixelFormat format)
+{
 	if (image.getData() == nullptr)
 	{
 		return false;
@@ -42,27 +63,17 @@ bool Texture::initWithImage(const Image& image)
 
 	unsigned char* convertedData = nullptr;
 	ssize_t convertedDataLen = 0;
-	// TODO:今はレンダーバッファをPixelFormat::RGBA8888フォーマットにしか対応しないのでし画像もRGBA8888に変換
-	PixelFormat toFormat = convertDataToFormat(image.getData(), image.getDataLength(), image.getPixelFormat(), PixelFormat::RGBA8888, &convertedData, &convertedDataLen);
-	if (toFormat != PixelFormat::RGBA8888)
+	PixelFormat pixelFormat = (format == PixelFormat::NONE || format == PixelFormat::AUTO) ? image.getPixelFormat() : format;
+	PixelFormat toFormat = convertDataToFormat(image.getData(), image.getDataLength(), image.getPixelFormat(), pixelFormat, &convertedData, &convertedDataLen);
+	if (toFormat != pixelFormat)
 	{
 		goto ERR;
 	}
 
-	//PixelFormatInfo(GLenum anInternalFormat, GLenum aFormat, GLenum aType, int aBpp, bool aCompressed, bool anAlpha)
-	//	: internalFormat(anInternalFormat)
-	//	, format(aFormat)
-	//	, type(aType)
-	//	, bpp(aBpp)
-	//	, compressed(aCompressed)
-	//	, alpha(anAlpha)
-	//{}
+	assert(_pixelFormatInfoTable.find(toFormat) != _pixelFormatInfoTable.end());
+	const PixelFormatInfo& info = _pixelFormatInfoTable.at(toFormat);
 
-	//PixelFormatInfoMapValue(Texture2D::PixelFormat::RGBA8888, Texture2D::PixelFormatInfo(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 32, false, true)),
-
-	// TODO:この処理いるか？
-	static const int BITS_PER_PIXEL = 32; // RGBA8888固定
-	unsigned int bytesPerRow = imageWidth * BITS_PER_PIXEL / 8;
+	unsigned int bytesPerRow = imageWidth * info.bitPerPixel / 8;
 	if (bytesPerRow % 8 == 0)
 	{
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
@@ -70,6 +81,14 @@ bool Texture::initWithImage(const Image& image)
 	else if (bytesPerRow % 4 == 0)
 	{
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	}
+	else if (bytesPerRow % 2 == 0)
+	{
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+	}
+	else
+	{
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	}
 
 	if (_textureId != 0)
@@ -93,7 +112,8 @@ bool Texture::initWithImage(const Image& image)
 		goto ERR;
 	}
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)convertedData);
+	// TODO:圧縮は未考慮。圧縮時はglCompressedTexture2Dを使う必要がある。また、info.internalFormatとinfo.formatの違いにも未考慮のため、info.formatは設けてない
+	glTexImage2D(GL_TEXTURE_2D, 0, info.internalFormat, imageWidth, imageHeight, 0, info.internalFormat, info.type, (unsigned char*)convertedData);
 	err = glGetError();
 	if (err != GL_NO_ERROR)
 	{
@@ -173,6 +193,11 @@ Texture::PixelFormat Texture::convertI8ToFormat(const unsigned char* data, ssize
 		*outData = (unsigned char*)malloc(sizeof(unsigned char) * (*outDataLen));
 		convertI8ToAI88(data, dataLen, *outData);
 		break;
+	case PixelFormat::RGBA4444:
+		*outDataLen = dataLen * 2;
+		*outData = (unsigned char*)malloc(sizeof(unsigned char) * (*outDataLen));
+		convertI8ToRGBA4444(data, dataLen, *outData);
+		break;
 	default:
 		if (toFormat != PixelFormat::AUTO || toFormat != PixelFormat::I8)
 		{
@@ -204,6 +229,11 @@ Texture::PixelFormat Texture::convertAI88ToFormat(const unsigned char* data, ssi
 		*outDataLen = dataLen / 2;
 		*outData = (unsigned char*)malloc(sizeof(unsigned char) * (*outDataLen));
 		convertAI88ToI8(data, dataLen, *outData);
+		break;
+	case PixelFormat::RGBA4444:
+		*outDataLen = dataLen;
+		*outData = (unsigned char*)malloc(sizeof(unsigned char) * (*outDataLen));
+		convertAI88ToRGBA4444(data, dataLen, *outData);
 		break;
 	default:
 		if (toFormat != PixelFormat::AUTO || toFormat != PixelFormat::AI88)
@@ -237,6 +267,11 @@ Texture::PixelFormat Texture::convertRGB888ToFormat(const unsigned char* data, s
 		*outData = (unsigned char*)malloc(sizeof(unsigned char) * (*outDataLen));
 		convertRGB888ToAI88(data, dataLen, *outData);
 		break;
+	case PixelFormat::RGBA4444:
+		*outDataLen = dataLen / 3 * 2;
+		*outData = (unsigned char*)malloc(sizeof(unsigned char) * (*outDataLen));
+		convertRGB888ToRGBA4444(data, dataLen, *outData);
+		break;
 	default:
 		if (toFormat != PixelFormat::AUTO || toFormat != PixelFormat::RGB888)
 		{
@@ -268,6 +303,11 @@ Texture::PixelFormat Texture::convertRGBA8888ToFormat(const unsigned char* data,
 		*outDataLen = dataLen / 2;
 		*outData = (unsigned char*)malloc(sizeof(unsigned char) * (*outDataLen));
 		convertRGBA8888ToAI88(data, dataLen, *outData);
+		break;
+	case PixelFormat::RGBA4444:
+		*outDataLen = dataLen / 2;
+		*outData = (unsigned char*)malloc(sizeof(unsigned char) * (*outDataLen));
+		convertRGBA8888ToRGBA4444(data, dataLen, *outData);
 		break;
 	default:
 		if (toFormat != PixelFormat::AUTO || toFormat != PixelFormat::RGBA8888)
@@ -313,6 +353,19 @@ void Texture::convertI8ToAI88(const unsigned char* data, ssize_t dataLen, unsign
 	}
 }
 
+void Texture::convertI8ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+{
+	unsigned short* out16 = (unsigned short*)outData;
+	for (ssize_t i = 0; i < dataLen; ++i)
+	{
+		// 下位4ビットはカット
+		*out16++ = (data[i] & 0x00F0) << 8 // R
+			| (data[i] & 0x00F0) << 4 // G
+			| (data[i] & 0x00F0) // B
+			| 0x000F; // A
+	}
+}
+
 void Texture::convertAI88ToRGBA8888(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
 {
 	for (ssize_t i = 0, l = dataLen - 1; i < l; i += 2)
@@ -339,6 +392,19 @@ void Texture::convertAI88ToI8(const unsigned char* data, ssize_t dataLen, unsign
 	for (ssize_t i = 0, l = dataLen - 1; i < l; i += 2)
 	{
 		*outData++ = data[i]; // R
+	}
+}
+
+void Texture::convertAI88ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+{
+	unsigned short* out16 = (unsigned short*)outData;
+	for (ssize_t i = 0; i < dataLen - 1; i += 2)
+	{
+		// 下位4ビットはカット
+		*out16++ = (data[i] & 0x00F0) << 8 // R
+			| (data[i] & 0x00F0) << 4 // G
+			| (data[i] & 0x00F0) // B
+			| (data[i + 1] & 0x00F0) >> 4; // A
 	}
 }
 
@@ -370,6 +436,19 @@ void Texture::convertRGB888ToAI88(const unsigned char* data, ssize_t dataLen, un
 	}
 }
 
+void Texture::convertRGB888ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+{
+	unsigned short* out16 = (unsigned short*)outData;
+	for (ssize_t i = 0; i < dataLen - 2; i += 3)
+	{
+		// 下位4ビットはカット
+		*out16++ = (data[i] & 0x00F0) << 8 // R
+			| (data[i + 1] & 0x00F0) << 4 // G
+			| (data[i + 2] & 0x00F0) // B
+			| 0x000F; // A
+	}
+}
+
 void Texture::convertRGBA8888ToRGB888(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
 {
 	for (ssize_t i = 0, l = dataLen - 3; i < l; i += 4)
@@ -395,6 +474,24 @@ void Texture::convertRGBA8888ToAI88(const unsigned char* data, ssize_t dataLen, 
 		*outData++ = (data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114 + 500) / 1000; // I = (R * 299 + G * 587 + B * 114 + 500) / 1000 // TODO:どういう数式やろかこれ。。
 		*outData++ = data[i + 3];
 	}
+}
+
+void Texture::convertRGBA8888ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+{
+	unsigned short* out16 = (unsigned short*)outData;
+	for (ssize_t i = 0; i < dataLen - 3; i += 4)
+	{
+		// 下位4ビットはカット
+		*out16++ = (data[i] & 0x00F0) << 8 // R
+			| (data[i + 1] & 0x00F0) << 4 // G
+			| (data[i + 2] & 0x00F0) // B
+			| (data[i + 3] & 0x00F0) >> 4; // A
+	}
+}
+
+void Texture::setDefaultPixelFormat(PixelFormat format)
+{
+	_defaultPixelFormat = format;
 }
 
 } // namespace mgrrenderer

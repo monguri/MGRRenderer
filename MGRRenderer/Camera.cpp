@@ -33,7 +33,7 @@ void Camera::initAsPerspective(const Vec3& position, float fieldOfView, float as
 
 	//TODO:Ç±Ç±Ç…targetPositionÇ∆upÇÃà¯êîÇ‡ïKóv
 	Size size = Director::getInstance()->getWindowSize();
-	float defaultEyeZ = size.height / 1.1566f; // sqrt(3) / 2
+	float defaultEyeZ = size.height / 1.1566f; // sqrt(3) / ÅF2
 
 	_projectionMatrix = Mat4::createPerspective(fieldOfView, aspectRatio, zNearPlane, zFarPlane);
 

@@ -1,13 +1,27 @@
 #include "Director.h"
+#include "Image.h"
+#include "Texture.h"
+#include "FPSFontImage.h"
+#include "LabelAtlas.h"
 
 namespace mgrrenderer
 {
 
 Director* Director::_instance = nullptr;
 
-Director::Director() : _displayStats(false), _accumulatedDeltaTime(0.0f)
+Director::Director() : _displayStats(false), _accumulatedDeltaTime(0.0f), _FPSLabel(nullptr)
 {
+}
 
+Director::~Director()
+{
+	if (_FPSLabel != nullptr)
+	{
+		delete _FPSLabel;
+		_FPSLabel = nullptr;
+	}
+
+	_instance = nullptr;
 }
 
 Director* Director::getInstance()
@@ -30,11 +44,16 @@ void Director::init(const Size& windowSize)
 	calculateDeltaTime();
 
 	_windowSize = windowSize;
-	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	// TODO:2D描画しかしないときもデプステストをONにしている
 	glEnable(GL_DEPTH_TEST);
 	// OpenGL側でやるビューポート変換のためのパラメータを渡す
 	glViewport(0, 0, windowSize.width, windowSize.height);
+
+	// デフォルトのピクセルフォーマットをRGBA8888に。
+	Texture::setDefaultPixelFormat(Texture::PixelFormat::RGBA8888);
+
+	createStatsLabel();
 }
 
 void Director::setScene(const Scene& scene)
@@ -80,6 +99,27 @@ float Director::calculateDeltaTime()
 	return max(0.0f, ret);
 }
 
+void Director::createStatsLabel()
+{
+	if (_FPSLabel == nullptr)
+	{
+		_FPSLabel = new (std::nothrow) LabelAtlas();
+	}
+
+	//Texture::PixelFormat currentFormat = 
+	Image image; // ImageはCPU側のメモリを使っているのでこのスコープで解放されてもよいものだからスタックに取る
+	bool success = image.initWithImageData(FPSFontImage::PNG_DATA, FPSFontImage::getPngDataSize());
+	assert(success);
+
+	Texture* texture = new (std::nothrow) Texture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
+	success = texture->initWithImage(image, Texture::PixelFormat::RGBA4444);
+	assert(success);
+
+	_FPSLabel->init("", texture,
+		12, 32, '.'); // 左の情報は、すでにテクスチャの情報を知っていることからの決め打ち
+	_FPSLabel->setPosition(Vec3(0, 0, 0));
+}
+
 void Director::updateStats(float dt)
 {
 	static float prevDeltaTime = 0.016f; // 初期値は60FPS
@@ -95,11 +135,22 @@ void Director::updateStats(float dt)
 
 	if (_accumulatedDeltaTime > STATS_INTERVAL)
 	{
-		//char buffer[30]; // 30はcocosのshowStatsの真似
+		if (_FPSLabel != nullptr)
+		{
+			char buffer[30]; // 30はcocosのshowStatsの真似
 
-		//sprintf_s(buffer, "%.1f", fps);
-		Logger::log("%.1f / %.3f", fps, avgDeltaTime);
+			sprintf_s(buffer, "%.1f / %.3f", fps, avgDeltaTime);
+			_FPSLabel->setString(buffer);
+		}
+
+		//Logger::log("%.1f / %.3f", fps, avgDeltaTime);
 		_accumulatedDeltaTime = 0.0f;
+	}
+
+	if (_FPSLabel != nullptr)
+	{
+		// FPSラベルはどこにもaddChildしないのでここでvisitを呼んで描画する
+		_FPSLabel->visit(dt);
 	}
 }
 

@@ -28,6 +28,8 @@
     <ClInclude Include="C3bLoader.h" />
     <ClInclude Include="BinaryReader.h" />
     <ClInclude Include="Logger.h" />
+    <ClInclude Include="FPSFontImage.h" />
+    <ClInclude Include="LabelAtlas.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Director.cpp" />
@@ -51,5 +53,7 @@
     <ClCompile Include="BasicDataTypes.cpp" />
     <ClCompile Include="BinaryReader.cpp" />
     <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="FPSFontImage.cpp" />
+    <ClCompile Include="LabelAtlas.cpp" />
   </ItemGroup>
 </Project>

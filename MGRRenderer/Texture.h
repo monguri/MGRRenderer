@@ -1,5 +1,6 @@
 #pragma once
 #include "BasicDataTypes.h"
+#include <map>
 
 namespace mgrrenderer
 {
@@ -30,7 +31,7 @@ public:
 		//! 16-bit textures used as masks
 		AI88,
 		////! 16-bit textures: RGBA4444
-		//RGBA4444,
+		RGBA4444,
 		//! 16-bit textures: RGB5A1
 		RGB5A1,
 		////! 4-bit PVRTC-compressed texture: PVRTC4
@@ -64,9 +65,30 @@ public:
 	Texture();
 	~Texture();
 	bool initWithImage(const Image& image);
+	bool initWithImage(const Image& image, PixelFormat format);
 
 	GLuint getTextureId() const { return _textureId; }
 	const Size& getContentSize() const { return _contentSize; }
+	static void setDefaultPixelFormat(PixelFormat format);
+
+	struct PixelFormatInfo
+	{
+		PixelFormatInfo(GLenum internalFormatVal, GLenum typeVal, int bitPerPixelVal, bool isCompressedVal, bool hasAlphaVal) :
+			internalFormat(internalFormatVal),
+			type(typeVal),
+			bitPerPixel(bitPerPixelVal),
+			isCompressed(isCompressedVal),
+			hasAlpha(hasAlphaVal)
+		{}
+
+		GLenum internalFormat;
+		GLenum type;
+		int bitPerPixel;
+		bool isCompressed;
+		bool hasAlpha;
+	};
+
+	typedef std::map<PixelFormat, PixelFormatInfo> PixelFormatInfoMap;
 
 private:
 	GLuint _textureId;
@@ -74,6 +96,8 @@ private:
 	int _pixelWidth;
 	int _pixelHeight;
 	bool _hasPremultipliedAlpha;
+
+	static const PixelFormatInfoMap _pixelFormatInfoTable;
 
 	static PixelFormat convertDataToFormat(const unsigned char* data, ssize_t dataLen, PixelFormat fromFormat, PixelFormat toFormat, unsigned char** outData, ssize_t* outDataLen);
 
@@ -85,18 +109,22 @@ private:
 	static void convertI8ToRGBA8888(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
 	static void convertI8ToRGB888(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
 	static void convertI8ToAI88(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
+	static void convertI8ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
 
 	static void convertAI88ToRGBA8888(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
 	static void convertAI88ToRGB888(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
 	static void convertAI88ToI8(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
+	static void convertAI88ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
 
 	static void convertRGB888ToRGBA8888(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
 	static void convertRGB888ToI8(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
 	static void convertRGB888ToAI88(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
+	static void convertRGB888ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
 
 	static void convertRGBA8888ToRGB888(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
 	static void convertRGBA8888ToI8(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
 	static void convertRGBA8888ToAI88(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
+	static void convertRGBA8888ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
 };
 
 } // namespace mgrrenderer

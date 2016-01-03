@@ -43,16 +43,25 @@ bool Image::initWithFilePath(const std::string& filePath)
 	unsigned char* fileData = fileUtil->getFileData(fullPath, &fileSize);
 	// libpng、libjpegによってrawデータに変換
 
-	Format format = detectFormat(fileData, fileSize);
+	bool isSucceeded = initWithImageData(fileData, fileSize);
+	delete fileData;
+	return isSucceeded;
+}
+
+bool Image::initWithImageData(const unsigned char* data, ssize_t dataLen)
+{
+	// libpng、libjpegによってrawデータに変換
+
+	Format format = detectFormat(data, dataLen);
 	bool isSucceeded = false;
 	switch (format)
 	{
 	case Format::PNG:
-		isSucceeded = initWithPngData(fileData, fileSize);
+		isSucceeded = initWithPngData(data, dataLen);
 		break;
 	default:
 		// フォーマットのわからないものはtgaとして読んでみる。tgaはファイル内にtga形式であることを示すものが必ずしもあるわけでない
-		isSucceeded = initWithTgaData(fileData, fileSize);
+		isSucceeded = initWithTgaData(data, dataLen);
 		//TODO: _fileDataのヘッダとフッタを除いた部分を_dataにコピーする形式なのでヘッダとフッタは解放しないと
 		if (!isSucceeded)
 		{
@@ -60,8 +69,6 @@ bool Image::initWithFilePath(const std::string& filePath)
 		}
 		break;
 	}
-
-	delete fileData;
 
 	return isSucceeded;
 }

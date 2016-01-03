@@ -25,7 +25,9 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Director.h" />
     <ClInclude Include="FileUtility.h" />
+    <ClInclude Include="FPSFontImage.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="LabelAtlas.h" />
     <ClInclude Include="Line2D.h" />
     <ClInclude Include="Line3D.h" />
     <ClInclude Include="Logger.h" />
@@ -48,7 +50,9 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Director.cpp" />
     <ClCompile Include="FileUtility.cpp" />
+    <ClCompile Include="FPSFontImage.cpp" />
     <ClCompile Include="Image.cpp" />
+    <ClCompile Include="LabelAtlas.cpp" />
     <ClCompile Include="Line2D.cpp" />
     <ClCompile Include="Line3D.cpp" />
     <ClCompile Include="Logger.cpp" />

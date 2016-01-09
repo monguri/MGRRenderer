@@ -333,7 +333,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		}
 	}
 
-	_glData.attributeTextureCoordinates = glGetAttribLocation(_glData.shaderProgram, "attr_texCoord");
+	_glData.attributeTextureCoordinates = glGetAttribLocation(_glData.shaderProgram, "a_texCoord");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		return false;

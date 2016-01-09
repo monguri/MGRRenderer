@@ -66,12 +66,14 @@ void Director::update()
 {
 	float dt = calculateDeltaTime();
 
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	_scene.update(dt);
+
 	if (_displayStats)
 	{
 		updateStats(dt);
 	}
-
-	_scene.update(dt);
 }
 
 Camera& Director::getCamera()
@@ -118,6 +120,7 @@ void Director::createStatsLabel()
 	_FPSLabel->init("", texture,
 		12, 32, '.'); // 左の情報は、すでにテクスチャの情報を知っていることからの決め打ち
 	_FPSLabel->setPosition(Vec3(0, 0, 0));
+	_FPSLabel->setScale(5.0f);
 }
 
 void Director::updateStats(float dt)

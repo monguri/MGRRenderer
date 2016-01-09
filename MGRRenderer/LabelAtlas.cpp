@@ -21,7 +21,6 @@ LabelAtlas::~LabelAtlas()
 
 bool LabelAtlas::init(const std::string& string, const Texture* texture, int itemWidth, int itemHeight, char mapStartChararcter)
 {
-	glBindTexture(GL_TEXTURE_2D, 0);
 	_texture = texture;
 
 	_mapStartCharacter = mapStartChararcter;
@@ -89,35 +88,51 @@ void LabelAtlas::setString(const std::string& string)
 	float itemHeightOnTexCoord = _itemHeight / _texture->getContentSize().height;
 
 	size_t len = _string.length();
-	_quadrangles.clear();
-	_quadrangles.resize(len);
+	_vertices.clear();
+	_vertices.resize(4 * len); // GL_TRIANGLESを使うが4角形内の重複はインデックスで排除するので4頂点
+	_indices.clear();
+	_indices.resize(6 * len); // GL_TRIANGLESを使うので一つの4角形に6
 
 	for (size_t i = 0; i < len; ++i)
 	{
 		unsigned char a = (unsigned char)_string[i] - _mapStartCharacter;
-		char row = a % itemsPerRow;
-		char column = a / itemsPerRow;
+		char column = a % itemsPerRow;
+		char row = a / itemsPerRow;
 
-		float left = row * itemWidthOnTexCoord;
+		float left = column * itemWidthOnTexCoord;
 		float right = left + itemWidthOnTexCoord;
-		float top = column * itemHeightOnTexCoord;
+		float top = row * itemHeightOnTexCoord;
 		float bottom = top + itemHeightOnTexCoord;
 
-		_quadrangles[i].topLeft.textureCoordinate = Vec2(left, top);
-		_quadrangles[i].topRight.textureCoordinate = Vec2(right, top);
-		_quadrangles[i].bottomLeft.textureCoordinate = Vec2(left, bottom);
-		_quadrangles[i].bottomRight.textureCoordinate = Vec2(right, bottom);
+		_vertices[4 * i].textureCoordinate = Vec2(left, top);
+		_vertices[4 * i + 1].textureCoordinate = Vec2(left, bottom);
+		_vertices[4 * i + 2].textureCoordinate = Vec2(right, top);
+		_vertices[4 * i + 3].textureCoordinate = Vec2(right, bottom);
 
 		// カーニングは考慮しない。フォントファイルまだ用意してないし
-		_quadrangles[i].topLeft.position = Vec2(i * _itemWidth, _itemHeight);
-		_quadrangles[i].topRight.position = Vec2((i + 1) * _itemWidth, _itemHeight);
-		_quadrangles[i].bottomLeft.position = Vec2(i * _itemWidth, 0.0f);
-		_quadrangles[i].bottomRight.position = Vec2((i + 1) * _itemWidth, 0.0f);
+		_vertices[4 * i].position = Vec2(i * _itemWidth, _itemHeight);
+		_vertices[4 * i + 1].position = Vec2(i * _itemWidth, 0.0f);
+		_vertices[4 * i + 2].position = Vec2((i + 1) * _itemWidth, _itemHeight);
+		_vertices[4 * i + 3].position = Vec2((i + 1) * _itemWidth, 0.0f);
+
+		// TODO:glDrawElementsを使っていて、インデックスは単純に増やしているだけで頂点の重複は考慮してない。もっと効率いいやり方あるかも
+		_indices[6 * i] = 4 * i;
+		_indices[6 * i + 1] = 4 * i + 1;
+		_indices[6 * i + 2] = 4 * i + 2;
+		_indices[6 * i + 3] = 4 * i + 3;
+		_indices[6 * i + 4] = 4 * i + 2;
+		_indices[6 * i + 5] = 4 * i + 1;
 	}
 }
 
 void LabelAtlas::render()
 {
+	if (_indices.size() == 0)
+	{
+		// まだ文字設定をしてないときは描画しない。描画するとglVertexAttribPointerで0インデックスにアクセスするのでエラーになる。
+		return;
+	}
+
 	glUseProgram(_glData.shaderProgram);
 	assert(glGetError() == GL_NO_ERROR);
 
@@ -132,11 +147,14 @@ void LabelAtlas::render()
 	glEnableVertexAttribArray(_glData.attributeTextureCoordinates);
 	assert(glGetError() == GL_NO_ERROR);
 
-	glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangles[0].topLeft.position);
-	glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangles[0].topLeft.textureCoordinate);
+
+	glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_vertices[0].position);
+	glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
 
 	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
-	glDrawArrays(GL_QUADS, 0, _quadrangles.size()); // TODO:簡単なのでGL_QUADSで指定。最終的にはVBOに。
+	assert(glGetError() == GL_NO_ERROR);
+	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
+	assert(glGetError() == GL_NO_ERROR);
 }
 
 } // namespace mgrrenderer

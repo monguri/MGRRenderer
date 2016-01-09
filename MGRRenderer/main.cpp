@@ -202,12 +202,12 @@ void initialize()
 	//scene->pushNode(pointNode);
 	//scene->pushNode(lineNode);
 	//scene->pushNode(polygonNode);
-	//scene->pushNode(spriteNode);
+	scene->pushNode(spriteNode);
 	scene->pushNode(point3DNode);
 	scene->pushNode(line3DNode);
 	scene->pushNode(polygon3DNode);
-	scene->pushNode(sprite3DObjNode);
-	scene->pushNode(sprite3DC3tNode);
+	//scene->pushNode(sprite3DObjNode);
+	//scene->pushNode(sprite3DC3tNode);
 
 	Director::getInstance()->setScene(*scene);
 }

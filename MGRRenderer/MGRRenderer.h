@@ -13,3 +13,4 @@
 #include "Line3D.h"
 #include "Polygon3D.h"
 #include "Sprite3D.h"
+#include "LabelAtlas.h"

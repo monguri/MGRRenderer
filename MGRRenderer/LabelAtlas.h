@@ -20,7 +20,8 @@ private:
 	char _mapStartCharacter;
 	std::string _string;
 	const Texture* _texture;
-	std::vector<Quadrangle2D> _quadrangles;
+	std::vector<Position2DTextureCoordinates> _vertices;
+	std::vector<unsigned short> _indices;
 	int _itemWidth;
 	int _itemHeight;
 

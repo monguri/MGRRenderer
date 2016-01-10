@@ -22,13 +22,13 @@ bool Polygon2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
 
 	_glData = createOpenGLProgram(
 		// vertex shader
-		"attribute vec4 attr_position;"
+		"attribute vec4 a_position;"
 		"uniform mat4 u_modelMatrix;"
 		"uniform mat4 u_viewMatrix;"
 		"uniform mat4 u_projectionMatrix;"
 		"void main()"
 		"{"
-		"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * attr_position;"
+		"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;"
 		"}"
 		,
 		// fragment shader

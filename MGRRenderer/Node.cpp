@@ -7,15 +7,15 @@ namespace mgrrenderer
 {
 
 // TODO:‚±‚±‚É’u‚­‚Ì‚ª‚ ‚Ü‚è‚¢‚¢‚Æ‚ÍŽv‚í‚È‚¢‚ª‚Æ‚è‚ ‚¦‚¸
-std::string ATTRIBUTE_NAME_POSITION = "attr_position";
-std::string ATTRIBUTE_NAME_COLOR = "attr_color";
-std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE = "attr_texCoord";
-std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_1 = "attr_texCoord1";
-std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_2 = "attr_texCoord2";
-std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_3 = "attr_texCoord3";
-std::string ATTRIBUTE_NAME_NORMAL = "attr_normal";
-std::string ATTRIBUTE_NAME_BLEND_WEIGHT = "attr_blendWeight";
-std::string ATTRIBUTE_NAME_BLEND_INDEX = "attr_blendIndex";
+std::string ATTRIBUTE_NAME_POSITION = "a_position";
+std::string ATTRIBUTE_NAME_COLOR = "a_color";
+std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE = "a_texCoord";
+std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_1 = "a_texCoord1";
+std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_2 = "a_texCoord2";
+std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_3 = "a_texCoord3";
+std::string ATTRIBUTE_NAME_NORMAL = "a_normal";
+std::string ATTRIBUTE_NAME_BLEND_WEIGHT = "a_blendWeight";
+std::string ATTRIBUTE_NAME_BLEND_INDEX = "a_blendIndex";
 
 Node::Node() : _scale(Vec3(1.0f, 1.0f, 1.0f)), _modelMatrix(Mat4::IDENTITY)
 {

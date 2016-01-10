@@ -27,6 +27,9 @@ bool LabelAtlas::init(const std::string& string, const Texture* texture, int ite
 	_itemWidth = itemWidth;
 	_itemHeight = itemHeight;
 
+	// TODO:Directorにセットしたカメラを動かすと位置が動いてしまうため、とりあえず中でデフォルトのカメラを保持する
+	_camera.initAsDefault();
+
 	setString(string);
 
 	_glData = createOpenGLProgram(
@@ -137,8 +140,8 @@ void LabelAtlas::render()
 	assert(glGetError() == GL_NO_ERROR);
 
 	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
-	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)_camera.getViewMatrix().m);
+	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)_camera.getProjectionMatrix().m);
 	assert(glGetError() == GL_NO_ERROR);
 
 	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);

@@ -120,7 +120,6 @@ void Director::createStatsLabel()
 	_FPSLabel->init("", texture,
 		12, 32, '.'); // 左の情報は、すでにテクスチャの情報を知っていることからの決め打ち
 	_FPSLabel->setPosition(Vec3(0, 0, 0));
-	_FPSLabel->setScale(5.0f);
 }
 
 void Director::updateStats(float dt)

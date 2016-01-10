@@ -1,6 +1,7 @@
 #pragma once
 #include "Node.h"
 #include "BasicDataTypes.h"
+#include "Camera.h"
 
 namespace mgrrenderer
 {
@@ -24,6 +25,7 @@ private:
 	std::vector<unsigned short> _indices;
 	int _itemWidth;
 	int _itemHeight;
+	Camera _camera;
 
 	void render() override;
 };

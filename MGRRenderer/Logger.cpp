@@ -2,6 +2,7 @@
 //// TODO:va_listなどを使うためだが、もっとましな方法はないかな。。
 #include <ShlObj.h>
 #include <stdio.h>
+#include <assert.h>
 
 namespace mgrrenderer
 {

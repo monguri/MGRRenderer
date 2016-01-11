@@ -94,8 +94,7 @@ namespace C3bLoader
 		}
 		else
 		{
-			assert(false);
-			Logger::log("Invalid GL str.");
+			Logger::logAssert(false, "Invalid GL str.");
 			return 0;
 		}
 	}
@@ -140,8 +139,7 @@ namespace C3bLoader
 		}
 		else
 		{
-			assert(false);
-			Logger::log("Wrong Attribute type.");
+			Logger::logAssert(false, "Wrong Attribute type.");
 			return AttributeLocation::NONE;
 		}
 	}
@@ -190,8 +188,7 @@ namespace C3bLoader
 		}
 		else
 		{
-			assert(false);
-			Logger::log("Wrong Texture type");
+			Logger::logAssert(false, "Wrong Texture type");
 			return TextureData::Usage::UNKNOWN;
 		}
 	}
@@ -326,7 +323,7 @@ namespace C3bLoader
 				attrib.location = AttributeLocation::BLEND_INDEX;
 				break;
 			default:
-				assert(false);
+				Logger::logAssert(false, "想定していないアトリビュート変数タイプ");
 				break;
 			}
 
@@ -879,7 +876,7 @@ namespace C3bLoader
 		}
 
 		const rapidjson::Value& skinDataArrayVal = json["skin"];
-		assert(skinDataArrayVal.IsArray());
+		Logger::logAssert(skinDataArrayVal.IsArray(), "c3tのフォーマットがおかしい");
 
 		const rapidjson::Value& skinDataVal0 = skinDataArrayVal[(rapidjson::SizeType)0];
 
@@ -1501,7 +1498,7 @@ namespace C3bLoader
 			//TODO: こっちはアニメラベルでseekせねばならず、すべて読み取るというのができない
 			// やるには、seekでtypeすべてをループで取り出すようにする必要があるが、それをやるなら、
 			// ラベル指定で取り出すつくりにしたほうが早い
-			assert(false);
+			Logger::logAssert(false, "現状このバージョンには非対応ver=%s", version.c_str());
 			return false;
 		}
 
@@ -1668,7 +1665,6 @@ namespace C3bLoader
 		auto& doc = jsonReader.ParseInsitu<0>((char*)json.c_str()); // 型の扱いが難しいのでautoで扱う
 		if (doc.HasParseError())
 		{
-			assert(false);
 			return "Parse json failed.";
 		}
 

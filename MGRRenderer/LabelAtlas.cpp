@@ -137,27 +137,27 @@ void LabelAtlas::render()
 	}
 
 	glUseProgram(_glData.shaderProgram);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
 	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)_camera.getViewMatrix().m);
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)_camera.getProjectionMatrix().m);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray(_glData.attributeTextureCoordinates);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 
 	glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_vertices[0].position);
 	glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
 
 	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 }
 
 } // namespace mgrrenderer

@@ -70,7 +70,7 @@ bool Texture::initWithImage(const Image& image, PixelFormat format)
 		goto ERR;
 	}
 
-	assert(_pixelFormatInfoTable.find(toFormat) != _pixelFormatInfoTable.end());
+	Logger::logAssert(_pixelFormatInfoTable.find(toFormat) != _pixelFormatInfoTable.end(), "ピクセルフォーマット情報テーブルにないフォーマットを使用しようとしている");
 	const PixelFormatInfo& info = _pixelFormatInfoTable.at(toFormat);
 
 	unsigned int bytesPerRow = imageWidth * info.bitPerPixel / 8;

@@ -2,7 +2,6 @@
 #include "FileUtility.h"
 #include "Image.h"
 #include "Director.h"
-#include <assert.h>
 
 namespace mgrrenderer
 {
@@ -93,18 +92,18 @@ void Sprite2D::render()
 {
 	// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
 	glUseProgram(_glData.shaderProgram);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
 	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray(_glData.attributeTextureCoordinates);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.position);
 	glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.textureCoordinate);

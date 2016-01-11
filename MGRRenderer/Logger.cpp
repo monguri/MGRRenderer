@@ -1,21 +1,15 @@
 #include "Logger.h"
 //// TODO:va_listなどを使うためだが、もっとましな方法はないかな。。
 #include <ShlObj.h>
-//#include <stdarg.h>
 #include <stdio.h>
-//#include <string.h>
 
 namespace mgrrenderer
 {
 
 namespace Logger
 {
-
-	void log(const char* format, ...)
+	static void log(const char* format, va_list args)
 	{
-		va_list args;
-		va_start(args, format);
-
 		char buf[MAX_LOG_LENGTH];
 		vsnprintf_s(buf, MAX_LOG_LENGTH - 3, format, args); // TODO:なぜ-3なのか。cocosそのまま持ってきてるが
 		strcat_s(buf, "\n");
@@ -28,8 +22,26 @@ namespace Logger
 		printf("%s", buf);
 		//SendLogToWindow(); // 必要かわからなかったのでとりあえずコメントアウト
 		fflush(stdout);
+	}
 
+	void log(const char* format, ...)
+	{
+		va_list args;
+		va_start(args, format);
+		log(format, args);
 		va_end(args);
+	}
+
+	void logAssert(bool equation, const char* format, ...)
+	{
+		if (!equation)
+		{
+			va_list args;
+			va_start(args, format);
+			log(format, args);
+			va_end(args);
+			assert(false);
+		}
 	}
 } // namespace Logger
 

@@ -12,8 +12,6 @@
 typedef SSIZE_T ssize_t;
 #endif // __SSIZE_T
 
-#include <assert.h>
-
 namespace mgrrenderer
 {
 
@@ -47,9 +45,9 @@ struct Vec2
 	Vec2& operator+=(const Vec2& v) { x += v.x; y += v.y; return *this; }
 	Vec2& operator-=(const Vec2& v) { x -= v.x; y -= v.y; return *this; }
 	const Vec2 operator*(float a) const { return Vec2(a * x, a * y); }
-	const Vec2 operator/(float a) const { assert(a != 0.0);  return Vec2(x / a, y / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
+	const Vec2 operator/(float a) const { Logger::logAssert(a != 0.0, "0で除算している。");  return Vec2(x / a, y / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
 	Vec2& operator*=(float a) { x *= a; y *= a; return *this; }
-	Vec2& operator/=(float a) { assert(a != 0.0); x /= a; y /= a; return *this; }
+	Vec2& operator/=(float a) { Logger::logAssert(a != 0.0, "0で除算している。"); x /= a; y /= a; return *this; }
 	bool operator==(const Vec2& v) const { return (x == v.x && y == v.y); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Vec2& v) const { return (x != v.x || y != v.y);}
 	void normalize() {
@@ -64,7 +62,7 @@ struct Vec2
 		{
 			return;
 		}
-		assert(n > 0.0f);
+		Logger::logAssert(n > 0.0f, "0で除算している。");
 
 		n = 1.0f / n;
 		x *= n;
@@ -100,9 +98,9 @@ struct Vec3
 	Vec3& operator+=(const Vec3& v) { x += v.x; y += v.y; z += v.z; return *this; }
 	Vec3& operator-=(const Vec3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
 	const Vec3 operator*(float a) const { return Vec3(a * x, a * y, a * z); }
-	const Vec3 operator/(float a) const { assert(a != 0.0);  return Vec3(x / a, y / a, z / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
+	const Vec3 operator/(float a) const { Logger::logAssert(a != 0.0, "0で除算している。");  return Vec3(x / a, y / a, z / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
 	Vec3& operator*=(float a) { x *= a; y *= a; z *= a; return *this; }
-	Vec3& operator/=(float a) { assert(a != 0.0); x /= a; y /= a; z /= a; return *this; }
+	Vec3& operator/=(float a) { Logger::logAssert(a != 0.0, "0で除算している。"); x /= a; y /= a; z /= a; return *this; }
 	bool operator==(const Vec3& v) const { return (x == v.x && y == v.y && z == v.z); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Vec3& v) const { return (x != v.x || y != v.y || z != v.z);}
 	void normalize() {
@@ -117,7 +115,7 @@ struct Vec3
 		{
 			return;
 		}
-		assert(n > 0.0f);
+		Logger::logAssert(n > 0.0f, "0で除算している。");
 
 		n = 1.0f / n;
 		x *= n;
@@ -164,9 +162,9 @@ struct Vec4
 	Vec4& operator+=(const Vec4& v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
 	Vec4& operator-=(const Vec4& v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
 	const Vec4 operator*(float a) const { return Vec4(a * x, a * y, a * z, a * w); }
-	const Vec4 operator/(float a) const { assert(a != 0.0);  return Vec4(x / a, y / a, z / a, w / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
+	const Vec4 operator/(float a) const { Logger::logAssert(a != 0.0, "0で除算している。");  return Vec4(x / a, y / a, z / a, w / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
 	Vec4& operator*=(float a) { x *= a; y *= a; z *= a; w *= a; return *this; }
-	Vec4& operator/=(float a) { assert(a != 0.0); x /= a; y /= a; z /= a; w /= a; return *this; }
+	Vec4& operator/=(float a) { Logger::logAssert(a != 0.0, "0で除算している。"); x /= a; y /= a; z /= a; w /= a; return *this; }
 	bool operator==(const Vec4& v) const { return (x == v.x && y == v.y && z == v.z && w == v.w); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Vec4& v) const { return (x != v.x || y != v.y || z != v.z || w != v.w);}
 };
@@ -185,7 +183,7 @@ struct Quaternion {
 
 	static Quaternion slerp(const Quaternion& q1, const Quaternion& q2, float t)
 	{
-		assert(0.0f <= t && t <= 1.0f);
+		Logger::logAssert(0.0f <= t && t <= 1.0f, "slerpのパラメターが0から1の範囲外。");
 		if (t == 0.0f)
 		{
 			return q1;
@@ -397,22 +395,21 @@ struct Mat4
 
 	static Mat4 createPerspective(float fieldOfView, float aspectRatio, float zNearPlane, float zFarPlane)
 	{
-		assert(zFarPlane != zNearPlane);
+		Logger::logAssert(zFarPlane != zNearPlane, "ニアプレーンとファープレーンの値が同じ。");
 
 		float distanceFactor = 1.0f / (zFarPlane - zNearPlane);
 		float fieldOfViewRadian = convertDegreeToRadian(fieldOfView) * 0.5f;
 
 		if (fabs(fmod(fieldOfViewRadian, PI_OVER2)) < FLOAT_EPSILON)
 		{
-			Logger::log("Invalid field of view value (%f) causes attempted calculation tan(%f), which is undefined.", fieldOfView, fieldOfViewRadian);
-			assert(false);
+			Logger::logAssert(false, "Invalid field of view value (%f) causes attempted calculation tan(%f), which is undefined.", fieldOfView, fieldOfViewRadian);
 
 			Mat4 zeroMat;
 			return zeroMat;
 		}
 
 		float divisor = tan(fieldOfViewRadian);
-		assert(divisor != 0);
+		Logger::logAssert(divisor != 0, "0で除算しようとしている。");
 		float factor = 1.0f / divisor;
 
 		return Mat4(
@@ -425,9 +422,9 @@ struct Mat4
 
 	static Mat4 createOrthographicAtCenter(float width, float height, float zNearPlane, float zFarPlane)
 	{
-		assert(width > 0.0f);
-		assert(height > 0.0f);
-		assert(zNearPlane != zFarPlane);
+		Logger::logAssert(width > 0.0f, "widthが0以下。");
+		Logger::logAssert(height > 0.0f, "heightが0以下。");
+		Logger::logAssert(zNearPlane != zFarPlane, "ファープレインとニアプレインが同値。");
 		float halfWidth = width / 2.0f;
 		float halfHeight = height / 2.0f;
 		return createOrthographic(-halfWidth, halfWidth, -halfHeight, halfHeight, zNearPlane, zFarPlane);
@@ -435,9 +432,9 @@ struct Mat4
 
 	static Mat4 createOrthographic(float left, float right, float bottom, float top, float zNearPlane, float zFarPlane)
 	{
-		assert(left != right);
-		assert(bottom != top);
-		assert(zNearPlane != zFarPlane);
+		Logger::logAssert(left != right, "leftとrightが同値");
+		Logger::logAssert(bottom != top, "bottomとtopが同値");
+		Logger::logAssert(zNearPlane != zFarPlane, "ファープレインとニアプレインが同値。");
 		return Mat4(
 			2 / (right - left),	0.0f,				0.0f,							(left + right) / (left - right),
 			0.0f,				2 / (top - bottom),	0.0f,							(bottom + top) / (bottom - top),

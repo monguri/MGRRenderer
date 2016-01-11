@@ -8,6 +8,8 @@ namespace Logger
 {
 	static const int MAX_LOG_LENGTH = 16 * 1024; // cocos‚Æ“¯‚¶‚É‚µ‚½
 	void log(const char* format, ...);
+	// TODO:ƒƒK[‚ÉŠÔØ‚è
+	void logAssert(bool equation, const char* format, ...);
 } // namespace Logger
 
 } // namespace mgrrenderer

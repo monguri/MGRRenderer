@@ -1,6 +1,5 @@
 #include "ObjLoader.h"
 #include <sstream>
-#include <assert.h>
 
 namespace mgrrenderer
 {
@@ -157,9 +156,9 @@ namespace ObjLoader
 			return it->second;
 		}
 
-		assert(allPositions.size() > vi.vIdx);
-		assert(allNormals.size() > vi.vnIdx);
-		assert(allTexCoords.size() > vi.vtIdx);
+		Logger::logAssert(allPositions.size() > vi.vIdx, "インデックスの値が配列数を超えた。");
+		Logger::logAssert(allNormals.size() > vi.vnIdx, "インデックスの値が配列数を超えた。");
+		Logger::logAssert(allTexCoords.size() > vi.vtIdx, "インデックスの値が配列数を超えた。");
 
 		Position3DTextureCoordinates vertex;
 		vertex.position = allPositions[vi.vIdx];
@@ -173,18 +172,11 @@ namespace ObjLoader
 		//else
 		//{
 		//	//TODO:現状、vnインデックスの省略には未対応
-		//	assert(false);
+		//	Logger::logAssert(false);
 		//}
 
-		if (vi.vtIdx >= 0) // faceにtexcoordsは必ずあるとは限らない
-		{
-			vertex.textureCoordinate = allTexCoords[vi.vtIdx];
-		}
-		else
-		{
-			//TODO:現状、vtインデックスの省略には未対応
-			assert(false);
-		}
+		Logger::logAssert(vi.vtIdx >= 0, "現状、vtインデックスの省略には未対応");
+		vertex.textureCoordinate = allTexCoords[vi.vtIdx];
 
 		mesh.vertices.push_back(vertex);
 
@@ -334,8 +326,7 @@ namespace ObjLoader
 			const char* token = lineBuf.c_str();
 			token += strspn(token, " \t");
 
-			// スペースだけの行は本来はないはず
-			assert(token);
+			Logger::logAssert(token != nullptr, "トークンの取得失敗");
 
 			if (token[0] == '\0')
 			{
@@ -534,8 +525,7 @@ namespace ObjLoader
 			const char* token = lineBuf.c_str();
 			token += strspn(token, " \t");
 
-			// スペースだけの行は本来はないはず
-			assert(token);
+			Logger::logAssert(token, "スペースだけの行は本来はないはず");
 
 			if (token[0] == '\0')
 			{
@@ -672,7 +662,7 @@ namespace ObjLoader
 					token += strspn(token, " \t\r");
 				}
 
-				assert(names.size() > 0);
+				Logger::logAssert(names.size() > 0, "objのgのフォーマットがおかしい");
 				name = names[0];
 			}
 			// object name

@@ -1,6 +1,5 @@
 #include "Image.h"
 #include "FileUtility.h"
-#include <assert.h>
 
 extern "C"
 {
@@ -447,7 +446,7 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 
 void Image::premultiplyAlpha()
 {
-	assert(_pixelFormat == Texture::PixelFormat::RGBA8888);
+	Logger::logAssert(_pixelFormat == Texture::PixelFormat::RGBA8888, "pngではアルファの事前乗算はRGBA8888にしか対応させてない");
 
 	unsigned int* fourBytes = (unsigned int*)_data;
 	for (int i = 0; i < _width * _height; i++)

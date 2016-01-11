@@ -111,11 +111,11 @@ void Director::createStatsLabel()
 	//Texture::PixelFormat currentFormat = 
 	Image image; // ImageはCPU側のメモリを使っているのでこのスコープで解放されてもよいものだからスタックに取る
 	bool success = image.initWithImageData(FPSFontImage::PNG_DATA, FPSFontImage::getPngDataSize());
-	assert(success);
+	Logger::logAssert(success, "Imageの初期化に失敗");
 
 	Texture* texture = new (std::nothrow) Texture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
 	success = texture->initWithImage(image, Texture::PixelFormat::RGBA4444);
-	assert(success);
+	Logger::logAssert(success, "Textureの初期化に失敗");
 
 	_FPSLabel->init("", texture,
 		12, 32, '.'); // 左の情報は、すでにテクスチャの情報を知っていることからの決め打ち

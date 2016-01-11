@@ -1,6 +1,5 @@
 #include "BinaryReader.h"
 #include "Logger.h"
-#include <assert.h>
 #include <ShlObj.h>
 
 namespace mgrrenderer
@@ -17,15 +16,15 @@ BinaryReader::~BinaryReader()
 
 void BinaryReader::init(unsigned char* buffer, size_t length)
 {
-	assert(buffer != nullptr);
-	assert(length > 0);
+	Logger::logAssert(buffer != nullptr, "バッファ引数はnullptrを許容しない。");
+	Logger::logAssert(length > 0, "長さ引数が0以下は許容しない。");
 	_buffer = buffer;
 	_length = length;
 }
 
 size_t BinaryReader::read(void* outResult, size_t size, size_t count)
 {
-	assert(_buffer != nullptr);
+	Logger::logAssert(_buffer != nullptr, "バッファ引数はnullptrを許容しない。");
 
 	if (_position >= _length)
 	{
@@ -54,7 +53,7 @@ size_t BinaryReader::tell() const
 
 void BinaryReader::seek(long int offset, int origin)
 {
-	assert(_buffer != nullptr);
+	Logger::logAssert(_buffer != nullptr, "バッファ引数はnullptrを許容しない。");
 
 	switch (origin)
 	{
@@ -68,14 +67,14 @@ void BinaryReader::seek(long int offset, int origin)
 		_position = _length + offset;
 		break;
 	default:
-		assert(false);
+		Logger::logAssert(false, "想定してないシークタイプが来た。");
 		break;
 	}
 }
 
 void BinaryReader::rewind()
 {
-	assert(_buffer != nullptr);
+	Logger::logAssert(_buffer != nullptr, "バッファ引数はnullptrを許容しない。");
 	_position = 0;
 }
 

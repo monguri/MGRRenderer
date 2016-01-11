@@ -1,5 +1,4 @@
 #include <iostream>
-#include <assert.h>
 #include <gles/include/glew.h>
 #include <glfw3/include/glfw3.h>
 #include "MGRRenderer.h"
@@ -145,7 +144,7 @@ void initialize()
 	//};
 	//Line2D* lineNode = new Line2D();
 	//isSucceeded = lineNode->initWithVertexArray(lineVertices);
-	//assert(isSucceeded);
+	//Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
 	//std::vector<Vec2> polygonVertices{
 	//	Vec2(80.0f, 420.0f), Vec2(80.0f, 300.0f), Vec2(240.0f, 420.0f),
@@ -153,12 +152,12 @@ void initialize()
 	//};
 	//Polygon2D* polygonNode = new Polygon2D();
 	//isSucceeded = polygonNode->initWithVertexArray(polygonVertices);
-	//assert(isSucceeded);
+	//Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
 	Sprite2D* spriteNode = new Sprite2D();
 	isSucceeded = spriteNode->init("../Resources/Hello.png");
 	spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
-	assert(isSucceeded);
+	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
 	std::vector<Point3DData> positionAndPointSize3D {
 		Point3DData(320.0f, 240.0f, -240.0f, 15.0f),
@@ -173,7 +172,7 @@ void initialize()
 	};
 	Line3D* line3DNode = new Line3D();
 	isSucceeded = line3DNode->initWithVertexArray(lineVertices3D);
-	assert(isSucceeded);
+	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
 	std::vector<Vec3> polygonVertices3D {
 		Vec3(80.0f, 420.0f, 120.0f), Vec3(80.0f, 300.0f, -120.0f), Vec3(240.0f, 420.0f, 120.0f),
@@ -181,12 +180,12 @@ void initialize()
 	};
 	Polygon3D* polygon3DNode = new Polygon3D();
 	isSucceeded = polygon3DNode->initWithVertexArray(polygonVertices3D);
-	assert(isSucceeded);
+	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
 	Sprite3D* sprite3DObjNode = new Sprite3D();
 	isSucceeded = sprite3DObjNode->initWithModel("../Resources/boss1.obj");
 	sprite3DObjNode->setScale(5.0f);
-	assert(isSucceeded);
+	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 	sprite3DObjNode->setTexture("../Resources/boss.png");
 
 	Sprite3D* sprite3DC3tNode = new Sprite3D();
@@ -195,7 +194,7 @@ void initialize()
 	sprite3DC3tNode->setRotation(Vec3(0.0f, 180.0f, 0.0f));
 	sprite3DC3tNode->setScale(10.0f);
 	sprite3DC3tNode->startAnimation("Take 001", true);
-	assert(isSucceeded);
+	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
 	Scene* scene = new Scene();
 	scene->init();

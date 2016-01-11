@@ -78,7 +78,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		// →まとまってる。しかし、今回はマテリアルは一種類という前提でいこう
 		// 本来は、std::vector<std::vector<Position3DTextureCoordinates>> がメンバ変数になってて、マテリアルごとに切り替えて描画する
 		// テクスチャも本来は切り替え前提だからsetTextureってメソッドおかしいよな。。
-		assert(meshList.size() == 1);
+		Logger::logAssert(meshList.size() == 1, "現状メッシュ複数には対応してない。");
 		const ObjLoader::MeshData& mesh = meshList[0];
 		_vertices = mesh.vertices;
 		_indices = mesh.indices;
@@ -98,7 +98,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		}
 		else
 		{
-			assert(ext == ".c3b");
+			Logger::logAssert(ext == ".c3b", "");
 			err = C3bLoader::loadC3b(filePath, *_meshDatas, *materialDatas, *_nodeDatas, *_animationDatas);
 		}
 
@@ -126,8 +126,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	else
 	{
-		// TODO:まだc3bには未対応
-		assert(false);
+		Logger::logAssert(false, "対応してない拡張子%s", ext);
 	}
 
 	if (_isObj)
@@ -440,7 +439,7 @@ void Sprite3D::update(float dt)
 
 	// アニメーションを行う。Animate3D::updateを参考に C3bLoader::AnimationDataの使いこなしが肝だ
 	size_t numSkinJoint = _nodeDatas->nodes[0]->modelNodeDatas[0]->bones.size();
-	assert(numSkinJoint == _nodeDatas->nodes[0]->modelNodeDatas[0]->invBindPose.size());
+	Logger::logAssert(numSkinJoint == _nodeDatas->nodes[0]->modelNodeDatas[0]->invBindPose.size(), "ジョイント数は一致するはず");
 
 	// 先に各ジョイントのアニメーション行列を作成する
 	for (int i = 0; i < numSkinJoint; ++i)
@@ -450,11 +449,7 @@ void Sprite3D::update(float dt)
 		// キーフレーム情報がなかったら、NodeDatas::skeletons::transformの方のツリーから再帰的にジョイント位置座標変換配列を計算する
 		// まずは対応するボーンを探し、設定されている行列を取得する
 		C3bLoader::NodeData* node = findJointByName(jointName, _nodeDatas->skeleton);
-		if (node == nullptr)
-		{
-			Logger::log("nodesの方にあったものでskeletonsからボーン名で検索したがない。");
-		}
-		assert(node != nullptr);
+		Logger::logAssert(node != nullptr, "nodesの方にあったものでskeletonsからボーン名で検索したがない。");
 
 		// 一旦、アニメーション使わない方に初期化
 		node->animatedTransform = Mat4::ZERO;
@@ -482,7 +477,7 @@ void Sprite3D::update(float dt)
 		{
 			Logger::log("nodesの方にあったものでskeletonsからボーン名で検索したがない。");
 		}
-		assert(node != nullptr);
+		Logger::logAssert(node != nullptr, "c3bの仕様上、ジョイント名が見つからないはずがない。");
 
 		Mat4 transform = (node->animatedTransform != Mat4::ZERO) ? node->animatedTransform : node->transform;
 
@@ -510,10 +505,10 @@ void Sprite3D::render()
 {
 	// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
 	glUseProgram(_glData.shaderProgram);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	if (_isC3b && !_isCpuMode) {
-		assert(_matrixPalette.size() > 0);
+		Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
 		glUniformMatrix4fv(_glData.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
 		//glUniform4fv(_glData.uniformSkinMatrixPalette, _matrixPalette.size(), (GLfloat*)(&_matrixPalette[0]));
 	}
@@ -521,26 +516,26 @@ void Sprite3D::render()
 	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
 	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray((GLuint)AttributeLocation::BLEND_WEIGHT);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray((GLuint)AttributeLocation::BLEND_INDEX);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray(_glData.attributeTextureCoordinates);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	if (_isObj)
 	{
 		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DTextureCoordinates), (GLvoid*)&_vertices[0].position);
-		assert(glGetError() == GL_NO_ERROR);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 		glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
-		assert(glGetError() == GL_NO_ERROR);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 	}
 	else if (_isC3b)
 	{
@@ -552,16 +547,16 @@ void Sprite3D::render()
 			if (!_isCpuMode)
 			{
 				glVertexAttribPointer((GLuint)attrib.location, attrib.size, attrib.type, GL_FALSE, _perVertexByteSize, (GLvoid*)&meshData->vertices[offset]);
-				assert(glGetError() == GL_NO_ERROR);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 			}
 			offset += attrib.size;
 		}
 	}
 
 	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
-	assert(glGetError() == GL_NO_ERROR);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 }
 
 } // namespace mgrrenderer

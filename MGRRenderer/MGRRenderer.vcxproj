@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicDataTypes.h" />
+    <ClInclude Include="BillBoard.h" />
     <ClInclude Include="BinaryReader.h" />
     <ClInclude Include="C3bLoader.h" />
     <ClInclude Include="Camera.h" />
@@ -45,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BasicDataTypes.cpp" />
+    <ClCompile Include="BillBoard.cpp" />
     <ClCompile Include="BinaryReader.cpp" />
     <ClCompile Include="C3bLoader.cpp" />
     <ClCompile Include="Camera.cpp" />

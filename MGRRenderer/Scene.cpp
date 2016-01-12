@@ -25,6 +25,8 @@ void Scene::pushNode(Node* node)
 
 void Scene::update(float dt)
 {
+	_camera.visit(dt);
+
 	for (Node* child : _children)
 	{
 		child->visit(dt);

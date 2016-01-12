@@ -15,12 +15,13 @@ public:
 	~Sprite2D();
 	bool init(const std::string& filePath);
 
+protected:
+	void render() override;
+
 private:
 	OpenGLProgramData _glData;
 	Texture* _texture;
 	Quadrangle2D _quadrangle;
-
-	void render() override;
 };
 
 } // namespace mgrrenderer

@@ -16,6 +16,7 @@ namespace mgrrenderer
 {
 
 static const float PI_OVER2 = 1.57079632679489661923f; // pi / 2
+static const float FLOAT_TOLERANCE = 2e-37f;
 static const float FLOAT_EPSILON = 0.000001f;
 static float convertDegreeToRadian(float angle)
 {
@@ -103,6 +104,9 @@ struct Vec3
 	Vec3& operator/=(float a) { Logger::logAssert(a != 0.0, "0で除算している。"); x /= a; y /= a; z /= a; return *this; }
 	bool operator==(const Vec3& v) const { return (x == v.x && y == v.y && z == v.z); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Vec3& v) const { return (x != v.x || y != v.y || z != v.z);}
+	float length() const {
+		return sqrt(x * x + y * y + z * z);
+	}
 	void normalize() {
 		float n = x * x + y * y + z * z;
 		if (n == 1.0f)
@@ -111,20 +115,20 @@ struct Vec3
 		}
 
 		n = sqrt(n);
-		if (n == 0.0f) //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
+		if (n < FLOAT_TOLERANCE)
 		{
+			Logger::logAssert(n > FLOAT_TOLERANCE, "0に近い値で除算している。");
 			return;
 		}
-		Logger::logAssert(n > 0.0f, "0で除算している。");
 
 		n = 1.0f / n;
 		x *= n;
 		y *= n;
 		z *= n;
 	}
-	float dot(const Vec3& v) { return (x * v.x + y * v.y + z * v.z); }
+	float dot(const Vec3& v) const { return (x * v.x + y * v.y + z * v.z); }
 	static float dot(const Vec3& v1, const Vec3& v2) { return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z); }
-	const Vec3 cross(const Vec3& v) { return Vec3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x); }
+	const Vec3 cross(const Vec3& v) const { return Vec3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x); }
 	static Vec3 cross(const Vec3& v1, const Vec3& v2)
 	{
 		return Vec3(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
@@ -258,11 +262,11 @@ struct Mat4
 	static const Mat4 ZERO;
 
 	Mat4() {
-		//　cocos2d-xの一次配列との対応をコメントに記載する
-		m[0][0] = 0.0f;/*[0]*/ m[1][0] = 0.0f;/*[4]*/ m[2][0] = 0.0f;/*[8]*/ m[3][0] = 0.0f;/*[12]*/
-		m[0][1] = 0.0f;/*[1]*/ m[1][1] = 0.0f;/*[5]*/ m[2][1] = 0.0f;/*[9]*/ m[3][1] = 0.0f;/*[13]*/
-		m[0][2] = 0.0f;/*[2]*/ m[1][2] = 0.0f;/*[6]*/ m[2][2] = 0.0f;/*[10]*/m[3][2] = 0.0f;/*[14]*/
-		m[0][3] = 0.0f;/*[3]*/ m[1][3] = 0.0f;/*[7]*/ m[2][3] = 0.0f;/*[11]*/m[3][3] = 0.0f;/*[15]*/
+		setZero();
+	}
+
+	~Mat4() {
+		setZero();
 	}
 
 	Mat4(
@@ -273,10 +277,11 @@ struct Mat4
 		)
 	{
 		//　普通にイメージする行列とは転置関係になる
-		m[0][0] = m00; m[1][0] = m01; m[2][0] = m02; m[3][0] = m03;
-		m[0][1] = m10; m[1][1] = m11; m[2][1] = m12; m[3][1] = m13;
-		m[0][2] = m20; m[1][2] = m21; m[2][2] = m22; m[3][2] = m23;
-		m[0][3] = m30; m[1][3] = m31; m[2][3] = m32; m[3][3] = m33;
+		//　cocos2d-xの一次配列との対応をコメントに記載する
+		m[0][0] = m00;/*[0]*/ m[1][0] = m01;/*[4]*/ m[2][0] = m02;/*[8]*/ m[3][0] = m03;/*[12]*/
+		m[0][1] = m10;/*[1]*/ m[1][1] = m11;/*[5]*/ m[2][1] = m12;/*[9]*/ m[3][1] = m13;/*[13]*/
+		m[0][2] = m20;/*[2]*/ m[1][2] = m21;/*[6]*/ m[2][2] = m22;/*[10]*/ m[3][2] = m23;/*[14]*/
+		m[0][3] = m30;/*[3]*/ m[1][3] = m31;/*[7]*/ m[2][3] = m32;/*[11]*/ m[3][3] = m33;/*[15]*/
 	}
 
 	Mat4(float** mat)
@@ -371,6 +376,11 @@ struct Mat4
 		memset(m, 0, sizeof(Mat4));
 	}
 
+	void setIdentity()
+	{
+		memcpy(&m, &IDENTITY, sizeof(Mat4));
+	}
+
 	static Mat4 createLookAt(const Vec3& eyePosition, const Vec3& targetPosition, const Vec3& up)
 	{
 		Vec3 upVec = up;
@@ -446,7 +456,7 @@ struct Mat4
 	static Mat4 createTranslation(const Vec3& translation)
 	{
 		Mat4 ret;
-		memcpy(&ret, &IDENTITY, sizeof(Mat4));
+		ret.setIdentity();
 
 		ret.m[3][0] = translation.x;
 		ret.m[3][1] = translation.y;
@@ -485,7 +495,7 @@ struct Mat4
 	static Mat4 createScale(const Vec3& scale)
 	{
 		Mat4 ret;
-		memcpy(&ret, &IDENTITY, sizeof(Mat4));
+		ret.setIdentity();
 
 		ret.m[0][0] = scale.x;
 		ret.m[1][1] = scale.y;

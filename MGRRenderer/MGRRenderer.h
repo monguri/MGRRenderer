@@ -14,3 +14,4 @@
 #include "Polygon3D.h"
 #include "Sprite3D.h"
 #include "LabelAtlas.h"
+#include "BillBoard.h"

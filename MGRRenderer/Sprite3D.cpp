@@ -15,8 +15,7 @@ _perVertexByteSize(0),
 _animationDatas(nullptr),
 _currentAnimation(nullptr),
 _loopAnimation(false),
-_elapsedTime(0.0f),
-_isCpuMode(false)
+_elapsedTime(0.0f)
 {
 }
 
@@ -157,106 +156,76 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	else if (_isC3b)
 	{
-		if (_isCpuMode)
-		{
-			_glData = createOpenGLProgram(
-				// vertex shader
-				// ModelDataしか使わない場合
-				"attribute vec4 a_position;"
-				"attribute vec2 a_texCoord;"
-				"varying vec2 v_texCoord;"
-				"uniform mat4 u_modelMatrix;"
-				"uniform mat4 u_viewMatrix;"
-				"uniform mat4 u_projectionMatrix;"
-				"void main()"
-				"{"
-				"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;"
-				"	v_texCoord = a_texCoord;"
-				"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
-				"}"
-				,
-				// fragment shader
-				"uniform sampler2D u_texture;"
-				"varying vec2 v_texCoord;"
-				"void main()"
-				"{"
-				"	gl_FragColor = texture2D(u_texture, v_texCoord);" // テクスチャ番号は0のみに対応
-				"}"
-				);
-		}
-		else
-		{
-			_glData = createOpenGLProgram(
-				// vertex shader
-				// ModelDataしか使わない場合
-				//"attribute vec4 a_position;"
-				//"attribute vec2 a_texCoord;"
-				//"varying vec2 v_texCoord;"
-				//"uniform mat4 u_modelMatrix;"
-				//"uniform mat4 u_viewMatrix;"
-				//"uniform mat4 u_projectionMatrix;"
-				//"void main()"
-				//"{"
-				//"	gl_Position = u_projectionMatrix * u_viewMatrix * a_position;"
-				//"	v_texCoord = a_texCoord;"
-				//"	v_texCoord.y = 1.0 - v_texCoord.y;"
-				//"}"
-				//// アニメーションを使う場合
-				"attribute vec3 a_position;" // これがvec3になっているのに注意 TODO:なぜなのか？
-				"attribute vec2 a_texCoord;"
-				"attribute vec4 a_blendWeight;"
-				"attribute vec4 a_blendIndex;"
-				""
-				"const int SKINNING_JOINT_COUNT = 60;" // TODO:なぜ60個までなのか？
-				""
-				"uniform mat4 u_modelMatrix;"
-				"uniform mat4 u_viewMatrix;"
-				"uniform mat4 u_projectionMatrix;"
-				"uniform mat4 u_matrixPalette[SKINNING_JOINT_COUNT];"
-				""
-				"varying vec2 v_texCoord;"
-				""
-				"vec4 getPosition()"
-				"{"
-				"	mat4 skinMatrix = u_matrixPalette[int(a_blendIndex[0])] * a_blendWeight[0];"
-				""
-				"	if (a_blendWeight[1] > 0.0)"
-				"	{"
-				"		skinMatrix += u_matrixPalette[int(a_blendIndex[1])] * a_blendWeight[1];"
-				""
-				"		if (a_blendWeight[2] > 0.0)"
-				"		{"
-				"			skinMatrix += u_matrixPalette[int(a_blendIndex[2])] * a_blendWeight[2];"
-				""
-				"			if (a_blendWeight[3] > 0.0)"
-				"			{"
-				"				skinMatrix += u_matrixPalette[int(a_blendIndex[3])] * a_blendWeight[3];"
-				"			}"
-				"		}"
-				"	}"
-				""
-				"	vec4 position = vec4(a_position, 1.0);"
-				"	vec4 skinnedPosition = skinMatrix * position;"
-				"	skinnedPosition.w = 1.0;"
-				"	return skinnedPosition;"
-				"}"
-				""
-				"void main()"
-				"{"
-				"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * getPosition();"
-				"	v_texCoord = a_texCoord;"
-				"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
-				"}"
-				,
-				// fragment shader
-				"uniform sampler2D u_texture;"
-				"varying vec2 v_texCoord;"
-				"void main()"
-				"{"
-				"	gl_FragColor = texture2D(u_texture, v_texCoord);" // テクスチャ番号は0のみに対応
-				"}"
-				);
-		}
+		_glData = createOpenGLProgram(
+			// vertex shader
+			// ModelDataしか使わない場合
+			//"attribute vec4 a_position;"
+			//"attribute vec2 a_texCoord;"
+			//"varying vec2 v_texCoord;"
+			//"uniform mat4 u_modelMatrix;"
+			//"uniform mat4 u_viewMatrix;"
+			//"uniform mat4 u_projectionMatrix;"
+			//"void main()"
+			//"{"
+			//"	gl_Position = u_projectionMatrix * u_viewMatrix * a_position;"
+			//"	v_texCoord = a_texCoord;"
+			//"	v_texCoord.y = 1.0 - v_texCoord.y;"
+			//"}"
+			//// アニメーションを使う場合
+			"attribute vec3 a_position;" // これがvec3になっているのに注意 TODO:なぜなのか？
+			"attribute vec2 a_texCoord;"
+			"attribute vec4 a_blendWeight;"
+			"attribute vec4 a_blendIndex;"
+			""
+			"const int SKINNING_JOINT_COUNT = 60;" // TODO:なぜ60個までなのか？
+			""
+			"uniform mat4 u_modelMatrix;"
+			"uniform mat4 u_viewMatrix;"
+			"uniform mat4 u_projectionMatrix;"
+			"uniform mat4 u_matrixPalette[SKINNING_JOINT_COUNT];"
+			""
+			"varying vec2 v_texCoord;"
+			""
+			"vec4 getPosition()"
+			"{"
+			"	mat4 skinMatrix = u_matrixPalette[int(a_blendIndex[0])] * a_blendWeight[0];"
+			""
+			"	if (a_blendWeight[1] > 0.0)"
+			"	{"
+			"		skinMatrix += u_matrixPalette[int(a_blendIndex[1])] * a_blendWeight[1];"
+			""
+			"		if (a_blendWeight[2] > 0.0)"
+			"		{"
+			"			skinMatrix += u_matrixPalette[int(a_blendIndex[2])] * a_blendWeight[2];"
+			""
+			"			if (a_blendWeight[3] > 0.0)"
+			"			{"
+			"				skinMatrix += u_matrixPalette[int(a_blendIndex[3])] * a_blendWeight[3];"
+			"			}"
+			"		}"
+			"	}"
+			""
+			"	vec4 position = vec4(a_position, 1.0);"
+			"	vec4 skinnedPosition = skinMatrix * position;"
+			"	skinnedPosition.w = 1.0;"
+			"	return skinnedPosition;"
+			"}"
+			""
+			"void main()"
+			"{"
+			"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * getPosition();"
+			"	v_texCoord = a_texCoord;"
+			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
+			"}"
+			,
+			// fragment shader
+			"uniform sampler2D u_texture;"
+			"varying vec2 v_texCoord;"
+			"void main()"
+			"{"
+			"	gl_FragColor = texture2D(u_texture, v_texCoord);" // テクスチャ番号は0のみに対応
+			"}"
+			);
 	}
 
 	_glData.attributeTextureCoordinates = glGetAttribLocation(_glData.shaderProgram, "a_texCoord");
@@ -281,7 +250,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		return false;
 	}
 
-	if (_isC3b && !_isCpuMode)
+	if (_isC3b)
 	{
 		_glData.uniformSkinMatrixPalette = glGetUniformLocation(_glData.shaderProgram, "u_matrixPalette");
 		if (glGetError() != GL_NO_ERROR)
@@ -431,7 +400,7 @@ void Sprite3D::render()
 	glUseProgram(_glData.shaderProgram);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
-	if (_isC3b && !_isCpuMode) {
+	if (_isC3b) {
 		Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
 		glUniformMatrix4fv(_glData.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
 	}
@@ -467,11 +436,8 @@ void Sprite3D::render()
 		for (int i = 0, offset = 0; i < meshData->numAttribute; ++i)
 		{
 			const C3bLoader::MeshVertexAttribute& attrib = meshData->attributes[i];
-			if (!_isCpuMode)
-			{
-				glVertexAttribPointer((GLuint)attrib.location, attrib.size, attrib.type, GL_FALSE, _perVertexByteSize, (GLvoid*)&meshData->vertices[offset]);
-				Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
-			}
+			glVertexAttribPointer((GLuint)attrib.location, attrib.size, attrib.type, GL_FALSE, _perVertexByteSize, (GLvoid*)&meshData->vertices[offset]);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 			offset += attrib.size;
 		}
 	}

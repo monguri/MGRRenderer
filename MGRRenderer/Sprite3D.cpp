@@ -247,79 +247,6 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 				"	v_texCoord = a_texCoord;"
 				"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
 				"}"
-				//
-				// cocosのやつ
-				//
-				//"attribute vec3 a_position;"
-				//"attribute vec4 a_blendWeight;"
-				//"attribute vec4 a_blendIndex;"
-				//""
-				//"attribute vec2 a_texCoord;"
-				//""
-				//"const int SKINNING_JOINT_COUNT = 60;"
-				//""
-				//"uniform vec4 u_matrixPalette[SKINNING_JOINT_COUNT * 3];"
-				//""
-				//"varying vec2 v_texCoord;"
-				//"uniform mat4 u_modelMatrix;"
-				//"uniform mat4 u_viewMatrix;"
-				//"uniform mat4 u_projectionMatrix;"
-				//""
-				//"vec4 getPosition()"
-				//"{"
-				//"	float blendWeight = a_blendWeight[0];"
-				//""
-				//"	int matrixIndex = int(a_blendIndex[0]) * 3;"
-				//"	vec4 matrixPalette1 = u_matrixPalette[matrixIndex] * blendWeight;"
-				//"	vec4 matrixPalette2 = u_matrixPalette[matrixIndex + 1] * blendWeight;"
-				//"	vec4 matrixPalette3 = u_matrixPalette[matrixIndex + 2] * blendWeight;"
-				//""
-				//""
-				//"	blendWeight = a_blendWeight[1];"
-				//"	if (blendWeight > 0.0)"
-				//"	{"
-				//"		matrixIndex = int(a_blendIndex[1]) * 3;"
-				//"		matrixPalette1 += u_matrixPalette[matrixIndex] * blendWeight;"
-				//"		matrixPalette2 += u_matrixPalette[matrixIndex + 1] * blendWeight;"
-				//"		matrixPalette3 += u_matrixPalette[matrixIndex + 2] * blendWeight;"
-				//""
-				//"		blendWeight = a_blendWeight[2];"
-				//"		if (blendWeight > 0.0)"
-				//"		{"
-				//"			matrixIndex = int(a_blendIndex[2]) * 3;"
-				//"			matrixPalette1 += u_matrixPalette[matrixIndex] * blendWeight;"
-				//"			matrixPalette2 += u_matrixPalette[matrixIndex + 1] * blendWeight;"
-				//"			matrixPalette3 += u_matrixPalette[matrixIndex + 2] * blendWeight;"
-				//""
-				//"			blendWeight = a_blendWeight[3];"
-				//"			if (blendWeight > 0.0)"
-				//"			{"
-				//"				matrixIndex = int(a_blendIndex[3]) * 3;"
-				//"				matrixPalette1 += u_matrixPalette[matrixIndex] * blendWeight;"
-				//"				matrixPalette2 += u_matrixPalette[matrixIndex + 1] * blendWeight;"
-				//"				matrixPalette3 += u_matrixPalette[matrixIndex + 2] * blendWeight;"
-				//"			}"
-				//"		}"
-				//"	}"
-				//""
-				//"	vec4 _skinnedPosition;"
-				//"	vec4 postion = vec4(a_position, 1.0);"
-				//"	_skinnedPosition.x = dot(postion, matrixPalette1);"
-				//"	_skinnedPosition.y = dot(postion, matrixPalette2);"
-				//"	_skinnedPosition.z = dot(postion, matrixPalette3);"
-				//"	_skinnedPosition.w = postion.w;"
-				//""
-				//"	return _skinnedPosition;"
-				//"}"
-				//""
-				//"void main()"
-				//"{"
-				//"	vec4 position = getPosition();"
-				//"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * position;"
-				//""
-				//"	v_texCoord = a_texCoord;"
-				//"	v_texCoord.y = 1.0 - v_texCoord.y;"
-				//"}"
 				,
 				// fragment shader
 				"uniform sampler2D u_texture;"
@@ -495,9 +422,6 @@ void Sprite3D::update(float dt)
 
 		Mat4 matrix = transform * invBindPose;
 		_matrixPalette.push_back(matrix);
-		//_matrixPalette.push_back(Vec4(matrix.m[0][0],matrix.m[1][0],matrix.m[2][0],matrix.m[3][0]));
-		//_matrixPalette.push_back(Vec4(matrix.m[0][1],matrix.m[1][1],matrix.m[2][1],matrix.m[3][1]));
-		//_matrixPalette.push_back(Vec4(matrix.m[0][2],matrix.m[1][2],matrix.m[2][2],matrix.m[3][2]));
 	}
 }
 
@@ -510,7 +434,6 @@ void Sprite3D::render()
 	if (_isC3b && !_isCpuMode) {
 		Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
 		glUniformMatrix4fv(_glData.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
-		//glUniform4fv(_glData.uniformSkinMatrixPalette, _matrixPalette.size(), (GLfloat*)(&_matrixPalette[0]));
 	}
 
 	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);

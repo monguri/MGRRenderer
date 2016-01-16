@@ -40,7 +40,6 @@ private:
 	bool _loopAnimation;
 	float _elapsedTime;
 	std::vector<Mat4> _matrixPalette;
-	//std::vector<Vec4> _matrixPalette;
 	bool _isCpuMode;
 
 	~Sprite3D();

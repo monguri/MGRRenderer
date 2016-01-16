@@ -75,7 +75,6 @@ void BillBoard::calculateBillboardTransform()
 		0.0f,		0.0f,		0.0f,					1.0f
 		);
 	_modelMatrix = billBoardTransform;
-	// TODO:現状表示に成功してない。ここでの_modelMatrixの中身を見たらそれらしいのだが。
 }
 
 } // namespace mgrrenderer

@@ -3,8 +3,8 @@
 namespace mgrrenderer
 {
 
-const Color Color::WHITE = Color((unsigned char)255, (unsigned char)255, (unsigned char)255);
-const Color Color::BLACK = Color((unsigned char)0, (unsigned char)0, (unsigned char)0);
+const Color3B Color3B::WHITE = Color3B(255, 255, 255);
+const Color3B Color3B::BLACK = Color3B(0, 0, 0);
 
 Quaternion::Quaternion(const Vec3& angleVec)
 {

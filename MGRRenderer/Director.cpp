@@ -81,6 +81,11 @@ Camera& Director::getCamera()
 	return getInstance()->getScene().getCamera();
 }
 
+const std::vector<Light*>& Director::getLight()
+{
+	return getInstance()->getScene().getLight();
+}
+
 struct timeval Director::getCurrentTimeOfDay()
 {
 	LARGE_INTEGER freq, count;

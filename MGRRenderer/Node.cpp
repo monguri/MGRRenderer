@@ -16,7 +16,7 @@ std::string ATTRIBUTE_NAME_NORMAL = "a_normal";
 std::string ATTRIBUTE_NAME_BLEND_WEIGHT = "a_blendWeight";
 std::string ATTRIBUTE_NAME_BLEND_INDEX = "a_blendIndex";
 
-Node::Node() : _scale(Vec3(1.0f, 1.0f, 1.0f)), _modelMatrix(Mat4::IDENTITY), _color(Color::WHITE)
+Node::Node() : _scale(Vec3(1.0f, 1.0f, 1.0f)), _modelMatrix(Mat4::IDENTITY), _color(Color3B::WHITE)
 {
 }
 

@@ -6,6 +6,8 @@
 namespace mgrrenderer
 {
 
+class Light;
+
 class Scene final :
 	public Node
 {
@@ -17,10 +19,12 @@ public:
 	void update(float dt);
 	Camera& getCamera() { return _camera; }
 	void setCamera(const Camera& camera) { _camera = camera; } // ‚Ü‚¾‘å‚µ‚ÄƒTƒCƒY‘å‚«‚­‚È‚¢‚Ì‚ÅPOD‚Æ‚µ‚Äˆµ‚¤
+	const std::vector<Light*>& getLight() const {return _light;}
 
 private:
 	std::vector<Node*> _children;
 	Camera _camera;
+	std::vector<Light*> _light;
 };
 
 } // namespace mgrrenderer

@@ -6,6 +6,7 @@ namespace mgrrenderer
 	
 class Camera;
 class LabelAtlas;
+class Light;
 
 class Director
 {
@@ -18,6 +19,8 @@ public:
 	void setScene(const Scene& scene);
 	void update();
 	static Camera& getCamera();
+	static const std::vector<Light*>& getLight();
+
 	void setDisplayStats(bool displayStats) { _displayStats = displayStats; }
 
 private:

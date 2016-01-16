@@ -31,6 +31,7 @@
     <ClInclude Include="FPSFontImage.h" />
     <ClInclude Include="LabelAtlas.h" />
     <ClInclude Include="BillBoard.h" />
+    <ClInclude Include="Light.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Director.cpp" />
@@ -57,5 +58,6 @@
     <ClCompile Include="FPSFontImage.cpp" />
     <ClCompile Include="LabelAtlas.cpp" />
     <ClCompile Include="BillBoard.cpp" />
+    <ClCompile Include="Light.cpp" />
   </ItemGroup>
 </Project>

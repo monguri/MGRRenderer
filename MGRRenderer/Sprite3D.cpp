@@ -3,6 +3,7 @@
 #include "C3bLoader.h"
 #include "Image.h"
 #include "Director.h"
+#include "Light.h"
 
 namespace mgrrenderer
 {
@@ -147,10 +148,11 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			,
 			// fragment shader
 			"uniform sampler2D u_texture;"
+			"uniform vec3 u_ambientLightColor;"
 			"varying vec2 v_texCoord;"
 			"void main()"
 			"{"
-			"	gl_FragColor = texture2D(u_texture, v_texCoord);" // テクスチャ番号は0のみに対応
+			"	gl_FragColor = texture2D(u_texture, v_texCoord) * u_ambientLightColor;" // テクスチャ番号は0のみに対応
 			"}"
 			);
 	}
@@ -220,10 +222,11 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			,
 			// fragment shader
 			"uniform sampler2D u_texture;"
+			"uniform vec3 u_ambientLightColor;"
 			"varying vec2 v_texCoord;"
 			"void main()"
 			"{"
-			"	gl_FragColor = texture2D(u_texture, v_texCoord);" // テクスチャ番号は0のみに対応
+			"	gl_FragColor = texture2D(u_texture, v_texCoord) * u_ambientLightColor;" // テクスチャ番号は0のみに対応
 			"}"
 			);
 	}
@@ -262,6 +265,17 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		{
 			return false;
 		}
+	}
+
+	_glData.uniformAmbientLightColor = glGetUniformLocation(_glData.shaderProgram, "u_ambientLightColor");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	if (_glData.uniformAmbientLightColor < 0)
+	{
+		return false;
 	}
 
 	return true;
@@ -408,6 +422,11 @@ void Sprite3D::render()
 	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
 	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+	// TODO:現状、ライトは1番目についてるやつだけ。それをアンビエントライトとして適用
+	const Color3B& lightColor = Director::getLight()[0]->getColor();
+	glUniform3f(_glData.uniformAmbientLightColor, lightColor.r / 255, lightColor.g / 255, lightColor.b / 255);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);

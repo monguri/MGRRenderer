@@ -22,8 +22,8 @@ public:
 	const Mat4& getModelMatrix() const { return _modelMatrix; }
 	void setModelMatrix(const Mat4& mat) { _modelMatrix = mat; }
 	Mat4 getRotationMatrix() const;
-	Color getColor() const { return _color; }
-	void setColor(const Color& color) { _color = color; }
+	const Color3B& getColor() const { return _color; }
+	void setColor(const Color3B& color) { _color = color; }
 
 protected:
 	Node();
@@ -43,7 +43,7 @@ private:
 	Quaternion _rotation;
 	Vec3 _scale;
 	Mat4 _modelMatrix;
-	Color _color;
+	Color3B _color;
 
 	// TODO:本来はdtはスケジューラに渡せばいいのだが、今は各ノードでupdateメソッドでアニメーションをやってるのでdtをvisitとupdateに渡している
 	GLint compileShader(GLuint shader, const GLchar* source) const;

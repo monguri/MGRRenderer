@@ -135,31 +135,27 @@ struct Vec3
 	}
 };
 
-struct Color:
-	public Vec3
+struct Color3B
 {
-	static const Color WHITE;
-	static const Color BLACK;
+	static const Color3B WHITE;
+	static const Color3B BLACK;
 
-	Color(float rVal, float gVal, float bVal)
+	GLubyte r;
+	GLubyte g;
+	GLubyte b;
+
+	Color3B(GLubyte rVal, GLubyte gVal, GLubyte bVal) : r(rVal), g(gVal), b(bVal)
 	{
-		Logger::logAssert(0.0f <= rVal && rVal <= 1.0f, "Color3Fに指定した値が不正 r = %.1f", rVal);
-		Logger::logAssert(0.0f <= gVal && gVal <= 1.0f, "Color3Fに指定した値が不正 g = %.1f", gVal);
-		Logger::logAssert(0.0f <= bVal && bVal <= 1.0f, "Color3Fに指定した値が不正 b = %.1f", bVal);
-		// TODO:初期化リストではなぜか初期化できなかった
-		r = rVal;
-		g = gVal;
-		b = bVal;
 	}
+};
 
-	Color(unsigned char rVal, unsigned char gVal, unsigned char bVal)
+struct Color3F
+{
+	Vec3 color;
+
+	Color3F(const Color3B& color3B) : color(color3B.r / 255, color3B.g / 255, color3B.b / 255)
 	{
-		// TODO:初期化リストではなぜか初期化できなかった
-		r = rVal / 255.0f;
-		g = gVal / 255.0f;
-		b = bVal / 255.0f;
 	}
-
 };
 
 struct Vec4
@@ -630,6 +626,7 @@ struct OpenGLProgramData
 	GLint uniformViewMatrix;
 	GLint uniformProjectionMatrix;
 	GLint uniformSkinMatrixPalette;
+	GLint uniformAmbientLightColor;
 };
 
 enum class AttributeLocation : int

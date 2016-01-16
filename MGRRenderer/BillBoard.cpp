@@ -19,7 +19,7 @@ void BillBoard::visit(float dt)
 {
 	update(dt);
 
-	_modelMatrix = Mat4::createTransform(_position, _rotation, _scale);
+	setModelMatrix(Mat4::createTransform(getPosition(), getRotation(), getScale()));
 	calculateBillboardTransform();
 
 	render();
@@ -74,7 +74,7 @@ void BillBoard::calculateBillboardTransform()
 		x.z * xlen,	y.z * ylen,	-cameraDir.z * zlen,	billBoardWorldMat.m[3][2],
 		0.0f,		0.0f,		0.0f,					1.0f
 		);
-	_modelMatrix = billBoardTransform;
+	setModelMatrix(billBoardTransform);
 }
 
 } // namespace mgrrenderer

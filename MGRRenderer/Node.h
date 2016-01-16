@@ -19,12 +19,15 @@ public:
 	void setScale(float scale) { _scale = Vec3(scale, scale, scale); };
 	const Mat4& getModelMatrix() const { return _modelMatrix; }
 	Mat4 getRotationMatrix() const;
+	Color getColor() const { return _color; }
+	void setColor(const Color& color) { _color = color; }
 
 protected:
 	Vec3 _position;
 	Quaternion _rotation;
 	Vec3 _scale;
 	Mat4 _modelMatrix;
+	Color _color;
 
 	Node();
 

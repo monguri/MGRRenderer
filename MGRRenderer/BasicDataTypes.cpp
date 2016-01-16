@@ -3,6 +3,9 @@
 namespace mgrrenderer
 {
 
+const Color Color::WHITE = Color((unsigned char)255, (unsigned char)255, (unsigned char)255);
+const Color Color::BLACK = Color((unsigned char)0, (unsigned char)0, (unsigned char)0);
+
 Quaternion::Quaternion(const Vec3& angleVec)
 {
 	float halfRadianX = convertDegreeToRadian(angleVec.x / 2.0f);

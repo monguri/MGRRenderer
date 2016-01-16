@@ -135,6 +135,33 @@ struct Vec3
 	}
 };
 
+struct Color:
+	public Vec3
+{
+	static const Color WHITE;
+	static const Color BLACK;
+
+	Color(float rVal, float gVal, float bVal)
+	{
+		Logger::logAssert(0.0f <= rVal && rVal <= 1.0f, "Color3Fに指定した値が不正 r = %.1f", rVal);
+		Logger::logAssert(0.0f <= gVal && gVal <= 1.0f, "Color3Fに指定した値が不正 g = %.1f", gVal);
+		Logger::logAssert(0.0f <= bVal && bVal <= 1.0f, "Color3Fに指定した値が不正 b = %.1f", bVal);
+		// TODO:初期化リストではなぜか初期化できなかった
+		r = rVal;
+		g = gVal;
+		b = bVal;
+	}
+
+	Color(unsigned char rVal, unsigned char gVal, unsigned char bVal)
+	{
+		// TODO:初期化リストではなぜか初期化できなかった
+		r = rVal / 255.0f;
+		g = gVal / 255.0f;
+		b = bVal / 255.0f;
+	}
+
+};
+
 struct Vec4
 {
 	union

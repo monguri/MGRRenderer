@@ -745,6 +745,9 @@ struct OpenGLProgramData
 	GLint uniformAmbientLightColor;
 	GLint uniformDirectionalLightColor;
 	GLint uniformDirectionalLightDirection;
+	GLint uniformPointLightColor;
+	GLint uniformPointLightPosition;
+	GLint uniformPointLightRangeInverse;
 };
 
 enum class AttributeLocation : int

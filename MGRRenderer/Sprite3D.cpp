@@ -139,13 +139,17 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"attribute vec2 a_texCoord;"
 			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
+			"varying vec3 v_vertexToPointLightDirection;"
 			"uniform mat4 u_modelMatrix;"
 			"uniform mat4 u_viewMatrix;"
 			"uniform mat4 u_projectionMatrix;"
 			"uniform mat4 u_normalMatrix;"
+			"uniform vec3 u_pointLightPosition;"
 			"void main()"
 			"{"
-			"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;"
+			"	vec4 worldPosition = u_modelMatrix * a_position;"
+			"	v_vertexToPointLightDirection = u_pointLightPosition - worldPosition.xyz;"
+			"	gl_Position = u_projectionMatrix * u_viewMatrix * worldPosition;"
 			"	v_normal = u_normalMatrix * a_normal;"
 			"	v_texCoord = a_texCoord;"
 			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
@@ -156,8 +160,11 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"uniform vec3 u_ambientLightColor;"
 			"uniform vec3 u_directionalLightColor;"
 			"uniform vec3 u_directionalLightDirection;"
+			"uniform vec3 u_pointLightColor;"
+			"uniform float u_pointLightRangeInverse;"
 			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
+			"varying vec3 v_vertexToPointLightDirection;"
 			""
 			"vec3 computeLightedColor(vec3 normalVector, vec3 lightDirection, vec3 lightColor, float attenuation)"
 			"{"
@@ -169,8 +176,14 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"void main()"
 			"{"
 			"	vec4 combinedColor = vec4(u_ambientLightColor, 1.0);"
+			""
 			"	vec3 normal = normalize(v_normal.xyz);" // データ形式の時点でnormalizeされてない法線がある模様
 			"	combinedColor.rgb += computeLightedColor(normal, -u_directionalLightDirection, u_directionalLightColor, 1.0);"
+			""
+			"	vec3 dir = v_vertexToPointLightDirection * u_pointLightRangeInverse;"
+			"	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);"
+			"	combinedColor.rgb += computeLightedColor(normal, normalize(v_vertexToPointLightDirection), u_pointLightColor, attenuation);"
+			""
 			"	gl_FragColor = texture2D(u_texture, v_texCoord) * combinedColor;" // テクスチャ番号は0のみに対応
 			"}"
 			);
@@ -205,10 +218,12 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"uniform mat4 u_viewMatrix;"
 			"uniform mat4 u_projectionMatrix;"
 			"uniform mat4 u_normalMatrix;"
+			"uniform vec3 u_pointLightPosition;"
 			"uniform mat4 u_matrixPalette[SKINNING_JOINT_COUNT];"
 			""
 			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
+			"varying vec3 v_vertexToPointLightDirection;"
 			""
 			"vec4 getPosition()"
 			"{"
@@ -237,7 +252,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			""
 			"void main()"
 			"{"
-			"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * getPosition();"
+			"	vec4 worldPosition = u_modelMatrix * getPosition();"
+			"	v_vertexToPointLightDirection = u_pointLightPosition - worldPosition.xyz;"
+			"	gl_Position = u_projectionMatrix * u_viewMatrix * worldPosition;"
 			"	vec4 normal = vec4(a_normal, 1.0);"
 			"	v_normal = u_normalMatrix * normal;"
 			"	v_texCoord = a_texCoord;"
@@ -249,8 +266,11 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"uniform vec3 u_directionalLightColor;"
 			"uniform vec3 u_directionalLightDirection;"
 			"uniform vec3 u_ambientLightColor;"
+			"uniform vec3 u_pointLightColor;"
+			"uniform float u_pointLightRangeInverse;"
 			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
+			"varying vec3 v_vertexToPointLightDirection;"
 			""
 			"vec3 computeLightedColor(vec3 normalVector, vec3 lightDirection, vec3 lightColor, float attenuation)"
 			"{"
@@ -262,8 +282,14 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"void main()"
 			"{"
 			"	vec4 combinedColor = vec4(u_ambientLightColor, 1.0);"
+			""
 			"	vec3 normal = normalize(v_normal.xyz);" // データ形式の時点でnormalizeされてない法線がある模様
 			"	combinedColor.rgb += computeLightedColor(normal, -u_directionalLightDirection, u_directionalLightColor, 1.0);"
+			""
+			"	vec3 dir = v_vertexToPointLightDirection * u_pointLightRangeInverse;"
+			"	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);"
+			"	combinedColor.rgb += computeLightedColor(normal, normalize(v_vertexToPointLightDirection), u_pointLightColor, attenuation);"
+			""
 			"	gl_FragColor = texture2D(u_texture, v_texCoord) * combinedColor;" // テクスチャ番号は0のみに対応
 			"}"
 			);
@@ -334,6 +360,39 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 
 	if (_glData.uniformDirectionalLightDirection < 0)
+	{
+		return false;
+	}
+
+	_glData.uniformPointLightColor = glGetUniformLocation(_glData.shaderProgram, "u_pointLightColor");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	if (_glData.uniformPointLightColor < 0)
+	{
+		return false;
+	}
+
+	_glData.uniformPointLightPosition = glGetUniformLocation(_glData.shaderProgram, "u_pointLightPosition");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	if (_glData.uniformPointLightPosition < 0)
+	{
+		return false;
+	}
+
+	_glData.uniformPointLightRangeInverse = glGetUniformLocation(_glData.shaderProgram, "u_pointLightRangeInverse");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	if (_glData.uniformPointLightRangeInverse < 0)
 	{
 		return false;
 	}
@@ -518,6 +577,18 @@ void Sprite3D::render()
 			Vec3 direction = dirLight->getDirection();
 			direction.normalize();
 			glUniform3fv(_glData.uniformDirectionalLightDirection, 1, (GLfloat*)&direction);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+		}
+			break;
+		case LightType::POINT: {
+			glUniform3f(_glData.uniformPointLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform3fv(_glData.uniformPointLightPosition, 1, (GLfloat*)&light->getPosition());
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			PointLight* pointLight = static_cast<PointLight*>(light);
+			glUniform1f(_glData.uniformPointLightRangeInverse, 1.0f / pointLight->getRange());
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 		}
 			break;

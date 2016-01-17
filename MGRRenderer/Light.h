@@ -11,6 +11,7 @@ enum class LightType : int
 
 	AMBIENT,
 	DIRECTION,
+	POINT,
 
 	NUM_LIGHT_TYPE,
 };
@@ -51,6 +52,19 @@ public:
 
 private:
 	Vec3 _direction;
+};
+
+class PointLight :
+	public Light
+{
+public:
+	PointLight(const Vec3& position, const Color3B& color, float range);
+
+	LightType getLightType() const override { return LightType::POINT; };
+	float getRange() const { return _range; }
+
+private:
+	float _range;
 };
 
 } // namespace mgrrenderer

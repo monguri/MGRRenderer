@@ -17,4 +17,10 @@ DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) 
 	setColor(color);
 }
 
+PointLight::PointLight(const Vec3& position, const Color3B& color, float range) : _range(range)
+{
+	setPosition(position);
+	setColor(color);
+}
+
 } // namespace mgrrenderer

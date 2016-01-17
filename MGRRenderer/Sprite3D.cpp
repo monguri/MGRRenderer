@@ -148,6 +148,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;"
 			"	v_normal = u_normalMatrix * a_normal;"
 			"	v_texCoord = a_texCoord;"
+			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
 			"}"
 			,
 			// fragment shader
@@ -541,11 +542,11 @@ void Sprite3D::render()
 
 	if (_isObj)
 	{
-		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DTextureCoordinates), (GLvoid*)&_vertices[0].position);
+		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].position);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
-		glVertexAttribPointer((GLuint)AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DTextureCoordinates), (GLvoid*)&_vertices[0].normal);
+		glVertexAttribPointer((GLuint)AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
-		glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
+		glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 	}
 	else if (_isC3b)

@@ -191,7 +191,7 @@ void initialize()
 	Sprite3D* sprite3DObjNode = new Sprite3D();
 	isSucceeded = sprite3DObjNode->initWithModel("../Resources/boss1.obj");
 	sprite3DObjNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 100, WINDOW_HEIGHT / 2.0f - 100, 0)); // カメラのデフォルトの視点位置から少しずれた場所に置いた
-	sprite3DObjNode->setScale(5.0f);
+	sprite3DObjNode->setScale(10.0f);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 	sprite3DObjNode->setTexture("../Resources/boss.png");
 

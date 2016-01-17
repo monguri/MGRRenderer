@@ -160,20 +160,17 @@ namespace ObjLoader
 		Logger::logAssert(allNormals.size() > vi.vnIdx, "インデックスの値が配列数を超えた。");
 		Logger::logAssert(allTexCoords.size() > vi.vtIdx, "インデックスの値が配列数を超えた。");
 
-		Position3DTextureCoordinates vertex;
+		Position3DNormalTextureCoordinates vertex;
 		vertex.position = allPositions[vi.vIdx];
-		//mesh.positions.push_back(allPositions[vi.vIdx]);
 
-		//TODO: normalsには未対応
-		//if (vi.vnIdx >= 0) // faceにnormalは必ずあるとは限らない
-		//{
-		//	vertex.normal = allNormals[vi.vnIdx];
-		//}
-		//else
-		//{
-		//	//TODO:現状、vnインデックスの省略には未対応
-		//	Logger::logAssert(false);
-		//}
+		if (vi.vnIdx >= 0) // faceにnormalは必ずあるとは限らない
+		{
+			vertex.normal = allNormals[vi.vnIdx];
+		}
+		else
+		{
+			Logger::logAssert(false, "現状、vnインデックスの省略には未対応");
+		}
 
 		Logger::logAssert(vi.vtIdx >= 0, "現状、vtインデックスの省略には未対応");
 		vertex.textureCoordinate = allTexCoords[vi.vtIdx];

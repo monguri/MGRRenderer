@@ -134,12 +134,12 @@ GLint Node::compileShader(GLuint shader, const GLchar* source) const
 		{
 			GLchar* errorMsg = (GLchar*)calloc(errorLen, sizeof(GLchar));
 			glGetShaderInfoLog(shader, errorLen, nullptr, errorMsg);
-			std::cout << errorMsg;
+			Logger::log(errorMsg);
 			free(errorMsg);
 		}
 		else
 		{
-			std::cout << "compile error but no info.";
+			Logger::log("compile error but no info.");
 		}
 	}
 
@@ -195,12 +195,12 @@ GLuint Node::createShaderProgram(const GLuint vertexShader, const GLuint fragmen
 		{
 			GLchar* errorMsg = (GLchar*)calloc(errorLen, sizeof(GLchar));
 			glGetProgramInfoLog(ret, errorLen, nullptr, errorMsg);
-			std::cout << errorMsg;
+			Logger::log(errorMsg);
 			free(errorMsg);
 		}
 		else
 		{
-			std::cout << "link error but no info.";
+			Logger::log("link error but no info.");
 		}
 	}
 	Logger::logAssert(linkResult == GL_TRUE, "シェーダリンク失敗。");

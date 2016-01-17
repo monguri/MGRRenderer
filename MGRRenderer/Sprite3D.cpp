@@ -135,24 +135,42 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			// vertex shader
 			// ModelDataしか使わない場合
 			"attribute vec4 a_position;"
+			"attribute vec4 a_normal;"
 			"attribute vec2 a_texCoord;"
+			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
 			"uniform mat4 u_modelMatrix;"
 			"uniform mat4 u_viewMatrix;"
 			"uniform mat4 u_projectionMatrix;"
+			"uniform mat4 u_normalMatrix;"
 			"void main()"
 			"{"
 			"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;"
+			"	v_normal = u_normalMatrix * a_normal;"
 			"	v_texCoord = a_texCoord;"
 			"}"
 			,
 			// fragment shader
 			"uniform sampler2D u_texture;"
 			"uniform vec3 u_ambientLightColor;"
+			"uniform vec3 u_directionalLightColor;"
+			"uniform vec3 u_directionalLightDirection;"
+			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
+			""
+			"vec3 computeLightedColor(vec3 normalVector, vec3 lightDirection, vec3 lightColor, float attenuation)"
+			"{"
+			"	float diffuse = max(dot(normalVector, lightDirection), 0.0);"
+			"	vec3 diffuseColor = lightColor * diffuse * attenuation;"
+			"	return diffuseColor;"
+			"}"
+			""
 			"void main()"
 			"{"
-			"	gl_FragColor = texture2D(u_texture, v_texCoord) * u_ambientLightColor;" // テクスチャ番号は0のみに対応
+			"	vec4 combinedColor = vec4(u_ambientLightColor, 1.0);"
+			"	vec3 normal = normalize(v_normal.xyz);" // データ形式の時点でnormalizeされてない法線がある模様
+			"	combinedColor.rgb += computeLightedColor(normal, -u_directionalLightDirection, u_directionalLightColor, 1.0);"
+			"	gl_FragColor = texture2D(u_texture, v_texCoord) * combinedColor;" // テクスチャ番号は0のみに対応
 			"}"
 			);
 	}
@@ -175,6 +193,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			//"}"
 			//// アニメーションを使う場合
 			"attribute vec3 a_position;" // これがvec3になっているのに注意 TODO:なぜなのか？
+			"attribute vec3 a_normal;"
 			"attribute vec2 a_texCoord;"
 			"attribute vec4 a_blendWeight;"
 			"attribute vec4 a_blendIndex;"
@@ -184,8 +203,10 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"uniform mat4 u_modelMatrix;"
 			"uniform mat4 u_viewMatrix;"
 			"uniform mat4 u_projectionMatrix;"
+			"uniform mat4 u_normalMatrix;"
 			"uniform mat4 u_matrixPalette[SKINNING_JOINT_COUNT];"
 			""
+			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
 			""
 			"vec4 getPosition()"
@@ -216,17 +237,33 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"void main()"
 			"{"
 			"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * getPosition();"
+			"	vec4 normal = vec4(a_normal, 1.0);"
+			"	v_normal = u_normalMatrix * normal;"
 			"	v_texCoord = a_texCoord;"
 			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
 			"}"
 			,
 			// fragment shader
 			"uniform sampler2D u_texture;"
+			"uniform vec3 u_directionalLightColor;"
+			"uniform vec3 u_directionalLightDirection;"
 			"uniform vec3 u_ambientLightColor;"
+			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
+			""
+			"vec3 computeLightedColor(vec3 normalVector, vec3 lightDirection, vec3 lightColor, float attenuation)"
+			"{"
+			"	float diffuse = max(dot(normalVector, lightDirection), 0.0);"
+			"	vec3 diffuseColor = lightColor * diffuse * attenuation;"
+			"	return diffuseColor;"
+			"}"
+			""
 			"void main()"
 			"{"
-			"	gl_FragColor = texture2D(u_texture, v_texCoord) * u_ambientLightColor;" // テクスチャ番号は0のみに対応
+			"	vec4 combinedColor = vec4(u_ambientLightColor, 1.0);"
+			"	vec3 normal = normalize(v_normal.xyz);" // データ形式の時点でnormalizeされてない法線がある模様
+			"	combinedColor.rgb += computeLightedColor(normal, -u_directionalLightDirection, u_directionalLightColor, 1.0);"
+			"	gl_FragColor = texture2D(u_texture, v_texCoord) * combinedColor;" // テクスチャ番号は0のみに対応
 			"}"
 			);
 	}
@@ -274,6 +311,39 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 
 	if (_glData.uniformAmbientLightColor < 0)
+	{
+		return false;
+	}
+
+	_glData.uniformDirectionalLightColor = glGetUniformLocation(_glData.shaderProgram, "u_directionalLightColor");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	if (_glData.uniformDirectionalLightColor < 0)
+	{
+		return false;
+	}
+
+	_glData.uniformDirectionalLightDirection = glGetUniformLocation(_glData.shaderProgram, "u_directionalLightDirection");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	if (_glData.uniformDirectionalLightDirection < 0)
+	{
+		return false;
+	}
+
+	_glData.uniformNormalMatrix = glGetUniformLocation(_glData.shaderProgram, "u_normalMatrix");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	if (_glData.uniformNormalMatrix < 0)
 	{
 		return false;
 	}
@@ -424,12 +494,40 @@ void Sprite3D::render()
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
-	// TODO:現状、ライトは1番目についてるやつだけ。それをアンビエントライトとして適用
-	const Color3B& lightColor = Director::getLight()[0]->getColor();
-	glUniform3f(_glData.uniformAmbientLightColor, lightColor.r / 255, lightColor.g / 255, lightColor.b / 255);
+	const Mat4& normalMatrix = calculateNormalMatrix(getModelMatrix());
+	glUniformMatrix4fv(_glData.uniformNormalMatrix, 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
+
+	// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
+	for (Light* light : Director::getLight())
+	{
+		const Color3B& lightColor = light->getColor();
+		float intensity = light->getIntensity();
+
+		switch (light->getLightType())
+		{
+		case LightType::AMBIENT:
+			glUniform3f(_glData.uniformAmbientLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+			break;
+		case LightType::DIRECTION: {
+			glUniform3f(_glData.uniformDirectionalLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
+			Vec3 direction = dirLight->getDirection();
+			direction.normalize();
+			glUniform3fv(_glData.uniformDirectionalLightDirection, 1, (GLfloat*)&direction);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+		}
+			break;
+		default:
+			break;
+		}
+	}
+	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
-	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
+	glEnableVertexAttribArray((GLuint)AttributeLocation::NORMAL);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray((GLuint)AttributeLocation::BLEND_WEIGHT);
@@ -444,6 +542,8 @@ void Sprite3D::render()
 	if (_isObj)
 	{
 		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DTextureCoordinates), (GLvoid*)&_vertices[0].position);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+		glVertexAttribPointer((GLuint)AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DTextureCoordinates), (GLvoid*)&_vertices[0].normal);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 		glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
@@ -465,6 +565,18 @@ void Sprite3D::render()
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+}
+
+Mat4 Sprite3D::calculateNormalMatrix(const Mat4& modelMatrix)
+{
+	Mat4 normalMatrix = modelMatrix;
+	normalMatrix.m[3][0] = 0.0f;
+	normalMatrix.m[3][1] = 0.0f;
+	normalMatrix.m[3][2] = 0.0f;
+	normalMatrix.m[3][3] = 1.0f;
+	normalMatrix.inverse();
+	normalMatrix.transpose();
+	return normalMatrix;
 }
 
 } // namespace mgrrenderer

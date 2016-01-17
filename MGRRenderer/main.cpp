@@ -159,10 +159,10 @@ void initialize()
 	//spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
 	//Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 	// TODO:Œ»ó•\¦‚É¬Œ÷‚µ‚Ä‚È‚¢
-	BillBoard* spriteNode = new BillBoard();
-	isSucceeded = spriteNode->init("../Resources/Hello.png", BillBoard::Mode::VIEW_PLANE_ORIENTED);
-	spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
-	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
+	//BillBoard* spriteNode = new BillBoard();
+	//isSucceeded = spriteNode->init("../Resources/Hello.png", BillBoard::Mode::VIEW_PLANE_ORIENTED);
+	//spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
+	//Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
 
 	std::vector<Point3DData> positionAndPointSize3D {
@@ -203,12 +203,19 @@ void initialize()
 	sprite3DC3tNode->startAnimation("Take 001", true);
 	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
+
 	Scene* scene = new Scene();
 	scene->init();
+	Light* defaultLight = scene->getDefaultLight();
+	defaultLight->setIntensity(0.3f);
+
+	DirectionalLight* directionalLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
+	scene->addLight(directionalLight);
+
 	//scene->pushNode(pointNode);
 	//scene->pushNode(lineNode);
 	//scene->pushNode(polygonNode);
-	scene->pushNode(spriteNode);
+	//scene->pushNode(spriteNode);
 	scene->pushNode(point3DNode);
 	scene->pushNode(line3DNode);
 	scene->pushNode(polygon3DNode);

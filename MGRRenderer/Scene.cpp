@@ -25,7 +25,12 @@ void Scene::init()
 
 	// デフォルトでアンビエントライトを持たせる
 	AmbientLight* defaultLight = new (std::nothrow) AmbientLight(Color3B::WHITE);
-	_light.push_back(defaultLight);
+	addLight(defaultLight);
+}
+
+void Scene::addLight(Light* light)
+{
+	_light.push_back(light);
 }
 
 void Scene::pushNode(Node* node)

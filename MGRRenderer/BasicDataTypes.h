@@ -51,7 +51,8 @@ struct Vec2
 	Vec2& operator/=(float a) { Logger::logAssert(a != 0.0, "0で除算している。"); x /= a; y /= a; return *this; }
 	bool operator==(const Vec2& v) const { return (x == v.x && y == v.y); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Vec2& v) const { return (x != v.x || y != v.y);}
-	void normalize() {
+	void normalize()
+	{
 		float n = x * x + y * y;
 		if (n == 1.0f)
 		{
@@ -138,6 +139,13 @@ struct Vec3
 struct Color3B
 {
 	static const Color3B WHITE;
+	static const Color3B RED;
+	static const Color3B GREEN;
+	static const Color3B BLUE;
+	static const Color3B YELLOW;
+	static const Color3B MAGENTA;
+	static const Color3B ORANGE;
+	static const Color3B GRAY;
 	static const Color3B BLACK;
 
 	GLubyte r;
@@ -311,6 +319,57 @@ struct Mat4
 	{
 		memcpy(m[0], mat[0], 4 * 4);
 	}
+
+	Mat4& operator*=(float a)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			for (int j = 0; j < 4; ++j)
+			{
+				m[i][j] *= a;
+			}
+		}
+		return *this;
+	}
+
+	Mat4& operator/=(float a)
+	{
+		Logger::logAssert(a != 0.0, "0で除算している。");
+		for (int i = 0; i < 4; ++i)
+		{
+			for (int j = 0; j < 4; ++j)
+			{
+				m[i][j] /= a;
+			}
+		}
+		return *this;
+	} //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
+
+	const Mat4 operator*(float a) const
+	{
+		Mat4 ret;
+		for (int i = 0; i < 4; ++i)
+		{
+			for (int j = 0; j < 4; ++j)
+			{
+				ret.m[i][j] = a * m[i][j];
+			}
+		}
+		return ret;
+	}
+	const Mat4 operator/(float a) const
+	{
+		Logger::logAssert(a != 0.0, "0で除算している。");
+		Mat4 ret;
+		for (int i = 0; i < 4; ++i)
+		{
+			for (int j = 0; j < 4; ++j)
+			{
+				ret.m[i][j] = m[i][j] / a;
+			}
+		}
+		return ret;
+	} //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
 
 	const Vec4 operator*(const Vec4& v) const
 	{
@@ -545,6 +604,43 @@ struct Mat4
 
 		memcpy(this, &mat, sizeof(Mat4));
 	}
+
+	bool inverse()
+	{
+		float a0 = m[0][0] * m[1][1] - m[0][1] * m[1][0];
+		float a1 = m[0][0] * m[1][2] - m[0][2] * m[1][0];
+		float a2 = m[0][0] * m[1][3] - m[0][3] * m[1][0];
+		float a3 = m[0][1] * m[1][2] - m[0][2] * m[1][1];
+		float a4 = m[0][1] * m[1][3] - m[0][3] * m[1][1];
+		float a5 = m[0][2] * m[1][3] - m[0][3] * m[1][2];
+
+		float b0 = m[2][0] * m[3][1] - m[2][1] * m[3][0];
+		float b1 = m[2][0] * m[3][2] - m[2][2] * m[3][0];
+		float b2 = m[2][0] * m[3][3] - m[2][3] * m[3][0];
+		float b3 = m[2][1] * m[3][2] - m[2][2] * m[3][1];
+		float b4 = m[2][1] * m[3][3] - m[2][3] * m[3][1];
+		float b5 = m[2][2] * m[3][3] - m[2][3] * m[3][2];
+
+		float det = a0 * b5 - a1 * b4 + a2 * b3 - a4 * b1 + a5 * b0;
+
+		// Close to zero. cannot inverse.
+		if (fabs(det) <= FLOAT_TOLERANCE)
+		{
+			return false;
+		}
+
+		Mat4 inverse = Mat4(
+			m[1][1] * b5 - m[1][2] * b4 + m[1][3] * b3, -m[1][0] * b5 + m[1][2] * b2 - m[1][3] * b1, m[1][0] * b4 - m[1][1] * b2 + m[1][3] * b0, -m[1][0] * b3 + m[1][1] * b1 - m[1][2] * b0,
+			-m[0][1] * b5 + m[0][2] * b4 - m[0][3] * b3, m[0][0] * b5 - m[0][2] * b2 + m[0][3] * b1, -m[0][0] * b4 + m[0][1] * b2 - m[0][3] * b0, m[0][0] * b3 - m[0][1] * b1 + m[0][2] * b0,
+			m[3][1] * a5 - m[3][2] * a4 + m[3][3] * a3, -m[3][0] * a5 + m[3][2] * a2 - m[3][3] * a1, m[3][0] * a4 - m[3][1] * a2 + m[3][3] * a0, -m[3][0] * a3 + m[3][1] * a1 - m[3][2] * a0,
+			-m[2][1] * a5 + m[2][2] * a4 - m[2][3] * a3, m[2][0] * a5 - m[2][2] * a2 + m[2][3] * a1, -m[2][0] * a4 + m[2][1] * a2 - m[2][3] * a0, m[2][0] * a3 - m[2][1] * a1 + m[2][2] * a0
+		);
+
+		inverse /= det;
+		memcpy(this, &inverse, sizeof(Mat4));
+
+		return true;
+	}
 };
 
 struct Size
@@ -615,6 +711,25 @@ struct Position3DTextureCoordinates
 	{}
 };
 
+struct Position3DNormalTextureCoordinates
+{
+	Vec3 position;
+	Vec3 normal;
+	Vec2 textureCoordinate;
+
+	Position3DNormalTextureCoordinates() :
+	position(Vec3()),
+	normal(Vec3()),
+	textureCoordinate(Vec2())
+	{}
+
+	Position3DNormalTextureCoordinates(const Vec3& pos, const Vec3& n, const Vec2& texCoord) :
+	position(pos),
+	normal(n),
+	textureCoordinate(texCoord)
+	{}
+};
+
 struct OpenGLProgramData
 {
 	GLuint vertexShader;
@@ -624,9 +739,12 @@ struct OpenGLProgramData
 	GLint uniformTexture;
 	GLint uniformModelMatrix;
 	GLint uniformViewMatrix;
+	GLint uniformNormalMatrix;
 	GLint uniformProjectionMatrix;
 	GLint uniformSkinMatrixPalette;
 	GLint uniformAmbientLightColor;
+	GLint uniformDirectionalLightColor;
+	GLint uniformDirectionalLightDirection;
 };
 
 enum class AttributeLocation : int

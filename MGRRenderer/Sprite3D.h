@@ -28,7 +28,7 @@ private:
 	Texture* _texture;
 	
 	// TODO:現状objのみに使っている。I/FをObjLoaderとC3bLoaderで合わせよう
-	std::vector<Position3DTextureCoordinates> _vertices;
+	std::vector<Position3DNormalTextureCoordinates> _vertices;
 
 	// TODO:現状c3t/c3bのみに使っている。I/FをObjLoaderとC3bLoaderで合わせよう
 	std::vector<unsigned short> _indices;
@@ -43,8 +43,9 @@ private:
 
 	~Sprite3D();
 	void update(float dt) override;
-	void render() override;
 	C3bLoader::NodeData* findJointByName(const std::string& jointName, const std::vector<C3bLoader::NodeData*> children);
+	void render() override;
+	Mat4 calculateNormalMatrix(const Mat4& modelMatrix);
 };
 
 } // namespace mgrrenderer

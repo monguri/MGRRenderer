@@ -4,6 +4,13 @@ namespace mgrrenderer
 {
 
 const Color3B Color3B::WHITE = Color3B(255, 255, 255);
+const Color3B Color3B::RED = Color3B(255, 0, 0);
+const Color3B Color3B::GREEN = Color3B(0, 255, 0);
+const Color3B Color3B::BLUE = Color3B(0, 0, 255);
+const Color3B Color3B::YELLOW = Color3B(255, 255, 0);
+const Color3B Color3B::MAGENTA = Color3B(255, 0, 255);
+const Color3B Color3B::ORANGE = Color3B(255, 127, 255);
+const Color3B Color3B::GRAY = Color3B(166, 166, 166);
 const Color3B Color3B::BLACK = Color3B(0, 0, 0);
 
 Quaternion::Quaternion(const Vec3& angleVec)

@@ -15,7 +15,7 @@ namespace ObjLoader
 	{
 		std::string name;
 		//TODO:Œ»ó‚Å‚Ívn‚É‚Í‚Ü‚¾‘Î‰‚µ‚È‚¢
-		std::vector<Position3DTextureCoordinates> vertices;
+		std::vector<Position3DNormalTextureCoordinates> vertices;
 		std::vector<unsigned short> indices;
 		std::vector<int> materialIndices;
 	};

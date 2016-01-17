@@ -15,3 +15,4 @@
 #include "Sprite3D.h"
 #include "LabelAtlas.h"
 #include "BillBoard.h"
+#include "Light.h"

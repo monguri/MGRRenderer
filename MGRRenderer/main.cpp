@@ -214,9 +214,13 @@ void initialize()
 	//directionalLight->setIntensity(0.7f);
 	//scene->addLight(directionalLight);
 
-	PointLight* pointLight = new (std::nothrow) PointLight(Vec3(300, 300, 300), Color3B::WHITE, 100000);
-	pointLight->setIntensity(0.7f);
-	scene->addLight(pointLight);
+	//PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);
+	////pointLight->setIntensity(0.7f);
+	//scene->addLight(pointLight);
+
+	SpotLight* spotLight = new (std::nothrow) SpotLight(Vec3(1000, 1000, 1000), Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE, 10000, 0.0, 0.5);
+	spotLight->setIntensity(0.7f);
+	scene->addLight(spotLight);
 
 	//scene->pushNode(pointNode);
 	//scene->pushNode(lineNode);

@@ -12,6 +12,7 @@ enum class LightType : int
 	AMBIENT,
 	DIRECTION,
 	POINT,
+	SPOT,
 
 	NUM_LIGHT_TYPE,
 };
@@ -64,7 +65,27 @@ public:
 	float getRange() const { return _range; }
 
 private:
+	// 減衰率計算に用いる、光の届く範囲　正しい物理計算だと無限遠まで届くが、そうでないモデルをcocosが使ってるのでそれを採用
 	float _range;
+};
+
+class SpotLight :
+	public Light
+{
+public:
+	SpotLight(const Vec3& position, const Vec3& direction, const Color3B& color, float range, float innerAngle, float outerAngle);
+
+	LightType getLightType() const override { return LightType::SPOT; };
+	const Vec3& getDirection() const { return _direction; }
+	float getRange() const { return _range; }
+	float getInnerAngleCos() const { return _innerAngleCos; }
+	float getOuterAngleCos() const { return _outerAngleCos; }
+
+private:
+	Vec3 _direction;
+	float _range;
+	float _innerAngleCos;
+	float _outerAngleCos;
 };
 
 } // namespace mgrrenderer

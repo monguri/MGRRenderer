@@ -140,15 +140,18 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
 			"varying vec3 v_vertexToPointLightDirection;"
+			"varying vec3 v_vertexToSpotLightDirection;"
 			"uniform mat4 u_modelMatrix;"
 			"uniform mat4 u_viewMatrix;"
 			"uniform mat4 u_projectionMatrix;"
 			"uniform mat4 u_normalMatrix;"
 			"uniform vec3 u_pointLightPosition;"
+			"uniform vec3 u_spotLightPosition;"
 			"void main()"
 			"{"
 			"	vec4 worldPosition = u_modelMatrix * a_position;"
 			"	v_vertexToPointLightDirection = u_pointLightPosition - worldPosition.xyz;"
+			"	v_vertexToSpotLightDirection = u_spotLightPosition - worldPosition.xyz;"
 			"	gl_Position = u_projectionMatrix * u_viewMatrix * worldPosition;"
 			"	v_normal = u_normalMatrix * a_normal;"
 			"	v_texCoord = a_texCoord;"
@@ -162,9 +165,15 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"uniform vec3 u_directionalLightDirection;"
 			"uniform vec3 u_pointLightColor;"
 			"uniform float u_pointLightRangeInverse;"
+			"uniform vec3 u_spotLightColor;"
+			"uniform vec3 u_spotLightDirection;"
+			"uniform float u_spotLightRangeInverse;"
+			"uniform float u_spotLightInnerAngleCos;"
+			"uniform float u_spotLightOuterAngleCos;"
 			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
 			"varying vec3 v_vertexToPointLightDirection;"
+			"varying vec3 v_vertexToSpotLightDirection;"
 			""
 			"vec3 computeLightedColor(vec3 normalVector, vec3 lightDirection, vec3 lightColor, float attenuation)"
 			"{"
@@ -183,6 +192,14 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	vec3 dir = v_vertexToPointLightDirection * u_pointLightRangeInverse;"
 			"	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);"
 			"	combinedColor.rgb += computeLightedColor(normal, normalize(v_vertexToPointLightDirection), u_pointLightColor, attenuation);"
+			""
+			"	dir = v_vertexToSpotLightDirection * u_spotLightRangeInverse;"
+			"	attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);"
+			"	vec3 vertexToSpotLightDirection = normalize(v_vertexToSpotLightDirection);"
+			"	float spotCurrentAngleCos = dot(u_spotLightDirection, -vertexToSpotLightDirection);"
+			"	attenuation *= smoothstep(u_spotLightOuterAngleCos, u_spotLightInnerAngleCos, spotCurrentAngleCos);"
+			"	attenuation = clamp(attenuation, 0.0, 1.0);"
+			"	combinedColor.rgb += computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor, attenuation);"
 			""
 			"	gl_FragColor = texture2D(u_texture, v_texCoord) * combinedColor;" // テクスチャ番号は0のみに対応
 			"}"
@@ -219,11 +236,13 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"uniform mat4 u_projectionMatrix;"
 			"uniform mat4 u_normalMatrix;"
 			"uniform vec3 u_pointLightPosition;"
+			"uniform vec3 u_spotLightPosition;"
 			"uniform mat4 u_matrixPalette[SKINNING_JOINT_COUNT];"
 			""
 			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
 			"varying vec3 v_vertexToPointLightDirection;"
+			"varying vec3 v_vertexToSpotLightDirection;"
 			""
 			"vec4 getPosition()"
 			"{"
@@ -254,6 +273,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"{"
 			"	vec4 worldPosition = u_modelMatrix * getPosition();"
 			"	v_vertexToPointLightDirection = u_pointLightPosition - worldPosition.xyz;"
+			"	v_vertexToSpotLightDirection = u_spotLightPosition - worldPosition.xyz;"
 			"	gl_Position = u_projectionMatrix * u_viewMatrix * worldPosition;"
 			"	vec4 normal = vec4(a_normal, 1.0);"
 			"	v_normal = u_normalMatrix * normal;"
@@ -268,9 +288,15 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"uniform vec3 u_ambientLightColor;"
 			"uniform vec3 u_pointLightColor;"
 			"uniform float u_pointLightRangeInverse;"
+			"uniform vec3 u_spotLightColor;"
+			"uniform vec3 u_spotLightDirection;"
+			"uniform float u_spotLightRangeInverse;"
+			"uniform float u_spotLightInnerAngleCos;"
+			"uniform float u_spotLightOuterAngleCos;"
 			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
 			"varying vec3 v_vertexToPointLightDirection;"
+			"varying vec3 v_vertexToSpotLightDirection;"
 			""
 			"vec3 computeLightedColor(vec3 normalVector, vec3 lightDirection, vec3 lightColor, float attenuation)"
 			"{"
@@ -289,6 +315,14 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	vec3 dir = v_vertexToPointLightDirection * u_pointLightRangeInverse;"
 			"	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);"
 			"	combinedColor.rgb += computeLightedColor(normal, normalize(v_vertexToPointLightDirection), u_pointLightColor, attenuation);"
+			""
+			"	dir = v_vertexToSpotLightDirection * u_spotLightRangeInverse;"
+			"	attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);"
+			"	vec3 vertexToSpotLightDirection = normalize(v_vertexToSpotLightDirection);"
+			"	float spotCurrentAngleCos = dot(u_spotLightDirection, -vertexToSpotLightDirection);"
+			"	attenuation *= smoothstep(u_spotLightOuterAngleCos, u_spotLightInnerAngleCos, spotCurrentAngleCos);"
+			"	attenuation = clamp(attenuation, 0.0, 1.0);"
+			"	combinedColor.rgb += computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor, attenuation);"
 			""
 			"	gl_FragColor = texture2D(u_texture, v_texCoord) * combinedColor;" // テクスチャ番号は0のみに対応
 			"}"
@@ -393,6 +427,72 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 
 	if (_glData.uniformPointLightRangeInverse < 0)
+	{
+		return false;
+	}
+
+	_glData.uniformSpotLightColor = glGetUniformLocation(_glData.shaderProgram, "u_spotLightColor");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	if (_glData.uniformSpotLightColor < 0)
+	{
+		return false;
+	}
+
+	_glData.uniformSpotLightPosition = glGetUniformLocation(_glData.shaderProgram, "u_spotLightPosition");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	if (_glData.uniformSpotLightPosition < 0)
+	{
+		return false;
+	}
+
+	_glData.uniformSpotLightRangeInverse = glGetUniformLocation(_glData.shaderProgram, "u_spotLightRangeInverse");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	if (_glData.uniformSpotLightRangeInverse < 0)
+	{
+		return false;
+	}
+
+	_glData.uniformSpotLightDirection = glGetUniformLocation(_glData.shaderProgram, "u_spotLightDirection");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	if (_glData.uniformSpotLightDirection < 0)
+	{
+		return false;
+	}
+
+	_glData.uniformSpotLightInnerAngleCos = glGetUniformLocation(_glData.shaderProgram, "u_spotLightInnerAngleCos");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	if (_glData.uniformSpotLightInnerAngleCos < 0)
+	{
+		return false;
+	}
+
+	_glData.uniformSpotLightOuterAngleCos = glGetUniformLocation(_glData.shaderProgram, "u_spotLightOuterAngleCos");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	if (_glData.uniformSpotLightOuterAngleCos < 0)
 	{
 		return false;
 	}
@@ -592,6 +692,28 @@ void Sprite3D::render()
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 		}
 			break;
+		case LightType::SPOT: {
+			glUniform3f(_glData.uniformSpotLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform3fv(_glData.uniformSpotLightPosition, 1, (GLfloat*)&light->getPosition());
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			SpotLight* spotLight = static_cast<SpotLight*>(light);
+			Vec3 direction = spotLight->getDirection();
+			direction.normalize();
+			glUniform3fv(_glData.uniformSpotLightDirection, 1, (GLfloat*)&direction);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform1f(_glData.uniformSpotLightRangeInverse, 1.0f / spotLight->getRange());
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform1f(_glData.uniformSpotLightInnerAngleCos, spotLight->getInnerAngleCos());
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform1f(_glData.uniformSpotLightOuterAngleCos, spotLight->getOuterAngleCos());
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+		}
 		default:
 			break;
 		}

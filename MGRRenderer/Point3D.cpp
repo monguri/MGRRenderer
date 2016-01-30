@@ -28,9 +28,10 @@ void Point3D::initWithPointArray(const std::vector<Point3DData>& pointArray)
 		"}"
 		,
 		// fragment shader
+		"uniform vec3 u_multipleColor;"
 		"void main()"
 		"{"
-		"	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);"
+		"	gl_FragColor = vec4(u_multipleColor, 1.0);"
 		"}"
 		);
 
@@ -42,6 +43,9 @@ void Point3D::initWithPointArray(const std::vector<Point3DData>& pointArray)
 void Point3D::render()
 {
 	glUseProgram(_glData.shaderProgram);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+	glUniform3f(_glData.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);

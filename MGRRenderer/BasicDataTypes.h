@@ -744,6 +744,7 @@ struct OpenGLProgramData
 	GLuint fragmentShader;
 	GLuint shaderProgram;
 	GLint attributeTextureCoordinates;
+	GLint uniformMultipleColor;
 	GLint uniformTexture;
 	GLint uniformCameraPosition;
 	GLint uniformModelMatrix;

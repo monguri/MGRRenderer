@@ -166,6 +166,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			,
 			// fragment shader
 			"uniform sampler2D u_texture;"
+			"uniform vec3 u_multipleColor;"
 			"uniform vec3 u_ambientLightColor;"
 			"uniform vec3 u_directionalLightColor;"
 			"uniform vec3 u_directionalLightDirection;"
@@ -207,7 +208,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	attenuation = clamp(attenuation, 0.0, 1.0);"
 			"	combinedColor.rgb += computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor, attenuation);"
 			""
-			"	gl_FragColor = texture2D(u_texture, v_texCoord) * combinedColor;" // テクスチャ番号は0のみに対応
+			"	gl_FragColor = texture2D(u_texture, v_texCoord) * vec4(u_multipleColor, 0.0) * combinedColor;" // テクスチャ番号は0のみに対応
 			"}"
 			);
 	}
@@ -292,6 +293,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			,
 			// fragment shader
 			"uniform sampler2D u_texture;"
+			"uniform vec3 u_multipleColor;"
 			"uniform vec3 u_directionalLightColor;"
 			"uniform vec3 u_directionalLightDirection;"
 			"uniform vec3 u_ambientLightColor;"
@@ -354,7 +356,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	attenuation = clamp(attenuation, 0.0, 1.0);"
 			"	combinedColor.rgb += computeLightedColor(normal, vertexToSpotLightDirection, cameraDirection, u_spotLightColor, u_materialAmbient, u_materialDiffuse, u_materialSpecular, u_materialShininess, attenuation);"
 			""
-			"	gl_FragColor = texture2D(u_texture, v_texCoord) * combinedColor;" // テクスチャ番号は0のみに対応
+			"	gl_FragColor = texture2D(u_texture, v_texCoord) * vec4(u_multipleColor, 1.0) * combinedColor;" // テクスチャ番号は0のみに対応
 			"}"
 			);
 	}
@@ -752,6 +754,9 @@ void Sprite3D::render()
 {
 	// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
 	glUseProgram(_glData.shaderProgram);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+	glUniform3f(_glData.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	// 行列の設定

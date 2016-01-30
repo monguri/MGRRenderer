@@ -49,9 +49,10 @@ bool LabelAtlas::init(const std::string& string, const Texture* texture, int ite
 		// fragment shader
 		"uniform sampler2D texture;"
 		"varying vec2 v_texCoord;"
+		"uniform vec3 u_multipleColor;"
 		"void main()"
 		"{"
-		"	gl_FragColor = texture2D(texture, v_texCoord);" // テクスチャ番号は0のみに対応
+		"	gl_FragColor = texture2D(texture, v_texCoord) * vec4(u_multipleColor, 1.0);" // テクスチャ番号は0のみに対応
 		"}"
 		);
 
@@ -137,6 +138,9 @@ void LabelAtlas::render()
 	}
 
 	glUseProgram(_glData.shaderProgram);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+	glUniform3f(_glData.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);

@@ -136,6 +136,7 @@ void initialize()
 	//	Point2DData(80.0f, 60.0f, 15.0f),
 	//};
 	//Point2D* pointNode = new Point2D();
+	//pointNode->setColor(Color3B::RED);
 	//pointNode->initWithPointArray(positionAndPointSize);
 
 	//std::vector<Vec2> lineVertices{
@@ -143,6 +144,7 @@ void initialize()
 	//	Vec2(320.0f, 480.0f), Vec2(320.0f, 0.0f),
 	//};
 	//Line2D* lineNode = new Line2D();
+	//lineNode->setColor(Color3B::GREEN);
 	//isSucceeded = lineNode->initWithVertexArray(lineVertices);
 	//Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
@@ -151,6 +153,7 @@ void initialize()
 	//	Vec2(240.0f, 420.0f), Vec2(80.0f, 300.0f), Vec2(240.0f, 300.0f),
 	//};
 	//Polygon2D* polygonNode = new Polygon2D();
+	//polygonNode->setColor(Color3B::BLUE);
 	//isSucceeded = polygonNode->initWithVertexArray(polygonVertices);
 	//Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
@@ -170,6 +173,7 @@ void initialize()
 		Point3DData(80.0f, 80.0f, 240.0f, 15.0f),
 	};
 	Point3D* point3DNode = new Point3D();
+	point3DNode->setColor(Color3B::RED);
 	point3DNode->initWithPointArray(positionAndPointSize3D);
 
 	std::vector<Vec3> lineVertices3D {
@@ -177,6 +181,7 @@ void initialize()
 		Vec3(320.0f, 480.0f, 360.0f), Vec3(320.0f, 0.0f, -360.0f),
 	};
 	Line3D* line3DNode = new Line3D();
+	line3DNode->setColor(Color3B::GREEN);
 	isSucceeded = line3DNode->initWithVertexArray(lineVertices3D);
 	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
@@ -185,8 +190,17 @@ void initialize()
 		Vec3(240.0f, 420.0f, -120.0f), Vec3(-80.0f, 300.0f, 120.0f), Vec3(240.0f, 420.0f, -120.0f),
 	};
 	Polygon3D* polygon3DNode = new Polygon3D();
+	polygon3DNode->setColor(Color3B::BLUE);
 	isSucceeded = polygon3DNode->initWithVertexArray(polygonVertices3D);
 	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
+
+	std::vector<Vec3> planeVertices3D {
+		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, 320.0f),
+		Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, -320.0f),
+	};
+	Polygon3D* plane3DNode = new Polygon3D();
+	isSucceeded = plane3DNode->initWithVertexArray(planeVertices3D);
+	Logger::logAssert(plane3DNode, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
 	Sprite3D* sprite3DObjNode = new Sprite3D();
 	isSucceeded = sprite3DObjNode->initWithModel("../Resources/boss1.obj");
@@ -229,6 +243,7 @@ void initialize()
 	scene->pushNode(point3DNode);
 	scene->pushNode(line3DNode);
 	scene->pushNode(polygon3DNode);
+	scene->pushNode(plane3DNode);
 	scene->pushNode(sprite3DObjNode);
 	scene->pushNode(sprite3DC3tNode);
 

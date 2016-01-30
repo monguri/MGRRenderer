@@ -65,25 +65,25 @@ OpenGLProgramData Node::createOpenGLProgram(const GLchar* vertexShaderSource, co
 void Node::destroyOpenGLProgram(const OpenGLProgramData& programData) const
 {
 	glUseProgram(0);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glDeleteProgram(programData.shaderProgram);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	Logger::logAssert(glIsProgram(programData.shaderProgram) == GL_FALSE, "シェーダプログラムが既に破棄されている");
 
 	glDeleteShader(programData.vertexShader);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glDeleteShader(programData.fragmentShader);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 }
 
 GLuint Node::createVertexShader(const GLchar* source) const
 {
 	GLuint ret = glCreateShader(GL_VERTEX_SHADER);
 	Logger::logAssert(ret != 0, "シェーダ作成失敗");
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	if (ret == 0)
 	{
 		return ret;
@@ -103,7 +103,7 @@ GLuint Node::createFragmentShader(const GLchar* source) const
 {
 	GLuint ret = glCreateShader(GL_FRAGMENT_SHADER);
 	Logger::logAssert(ret != 0, "シェーダプログラム作成失敗。");
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	if (ret == 0)
 	{
 		return ret;
@@ -150,16 +150,16 @@ GLuint Node::createShaderProgram(const GLuint vertexShader, const GLuint fragmen
 {
 	GLuint ret = glCreateProgram();
 	Logger::logAssert(ret != 0, "シェーダプログラム生成失敗");
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	if (ret == 0)
 	{
 		return 0;
 	}
 
 	glAttachShader(ret, vertexShader);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	glAttachShader(ret, fragmentShader);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	// 固定のattribute変数文字列を固定のattribute変数IDに結びつける
 	static const struct Attribute {

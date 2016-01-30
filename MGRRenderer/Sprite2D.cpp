@@ -92,18 +92,18 @@ void Sprite2D::render()
 {
 	// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
 	glUseProgram(_glData.shaderProgram);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
 	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray(_glData.attributeTextureCoordinates);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.position);
 	glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.textureCoordinate);

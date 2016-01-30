@@ -121,6 +121,12 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		C3bLoader::MaterialData* materialData = materialDatas->materialDatas[0];
 		const C3bLoader::TextureData& texture = materialData->textures[0];
 		setTexture(texture.fileName);
+		_ambient = materialData->ambient;
+		_diffuse = materialData->diffuse;
+		_specular = materialData->specular;
+		//_emissive = materialData->emissive;
+		//_opacity = materialData->opacity;
+		_shininess = materialData->shininess;
 
 		delete materialDatas;
 	}
@@ -153,7 +159,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	v_vertexToPointLightDirection = u_pointLightPosition - worldPosition.xyz;"
 			"	v_vertexToSpotLightDirection = u_spotLightPosition - worldPosition.xyz;"
 			"	gl_Position = u_projectionMatrix * u_viewMatrix * worldPosition;"
-			"	v_normal = u_normalMatrix * a_normal;"
+			"	v_normal = u_normalMatrix * a_normal;" // scale変換に対応するためにモデル行列の逆行列を転置したものを用いる
 			"	v_texCoord = a_texCoord;"
 			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
 			"}"
@@ -234,15 +240,17 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"uniform mat4 u_modelMatrix;"
 			"uniform mat4 u_viewMatrix;"
 			"uniform mat4 u_projectionMatrix;"
-			"uniform mat4 u_normalMatrix;"
+			"uniform mat4 u_normalMatrix;" // scale変換に対応するためにモデル行列の逆行列を転置したものを用いる
 			"uniform vec3 u_pointLightPosition;"
 			"uniform vec3 u_spotLightPosition;"
+			"uniform vec3 u_cameraPosition;"
 			"uniform mat4 u_matrixPalette[SKINNING_JOINT_COUNT];"
 			""
 			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
 			"varying vec3 v_vertexToPointLightDirection;"
 			"varying vec3 v_vertexToSpotLightDirection;"
+			"varying vec3 v_vertexToCameraDirection;"
 			""
 			"vec4 getPosition()"
 			"{"
@@ -274,6 +282,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	vec4 worldPosition = u_modelMatrix * getPosition();"
 			"	v_vertexToPointLightDirection = u_pointLightPosition - worldPosition.xyz;"
 			"	v_vertexToSpotLightDirection = u_spotLightPosition - worldPosition.xyz;"
+			"	v_vertexToCameraDirection = u_cameraPosition - worldPosition.xyz;"
 			"	gl_Position = u_projectionMatrix * u_viewMatrix * worldPosition;"
 			"	vec4 normal = vec4(a_normal, 1.0);"
 			"	v_normal = u_normalMatrix * normal;"
@@ -293,16 +302,34 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"uniform float u_spotLightRangeInverse;"
 			"uniform float u_spotLightInnerAngleCos;"
 			"uniform float u_spotLightOuterAngleCos;"
+			"uniform vec3 u_materialAmbient;"
+			"uniform vec3 u_materialDiffuse;"
+			"uniform vec3 u_materialSpecular;"
+			"uniform float u_materialShininess;"
+			"uniform vec3 u_materialEmissive;"
+			"uniform float u_materialOpacity;"
 			"varying vec4 v_normal;"
 			"varying vec2 v_texCoord;"
 			"varying vec3 v_vertexToPointLightDirection;"
 			"varying vec3 v_vertexToSpotLightDirection;"
+			"varying vec3 v_vertexToCameraDirection;"
 			""
-			"vec3 computeLightedColor(vec3 normalVector, vec3 lightDirection, vec3 lightColor, float attenuation)"
+			"vec3 computeLightedColor(vec3 normalVector, vec3 lightDirection, vec3 cameraDirection, vec3 lightColor, vec3 ambient, vec3 diffuse, vec3 specular, float shininess, float attenuation)"
 			"{"
-			"	float diffuse = max(dot(normalVector, lightDirection), 0.0);"
-			"	vec3 diffuseColor = lightColor * diffuse * attenuation;"
-			"	return diffuseColor;"
+			"	vec3 ambientColor = lightColor * ambient * attenuation;"
+			""
+			"	float intensityPerUnitArea = max(dot(normalVector, lightDirection), 0.0);"
+			""
+			"	vec3 diffuseColor = lightColor * diffuse * intensityPerUnitArea * attenuation;"
+			""
+			"	vec3 reflectedLightDirection = reflect(-lightDirection, normalVector);"
+			"	vec3 specularColor = vec3(0.0, 0.0, 0.0);"
+			"	if (intensityPerUnitArea > 0.0)"
+			"	{"
+			"		specularColor = lightColor * specular * pow(max(dot(reflectedLightDirection, cameraDirection), 0.0), shininess);"
+			"	}"
+			""
+			"	return ambientColor + diffuseColor + specularColor;"
 			"}"
 			""
 			"void main()"
@@ -310,11 +337,14 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	vec4 combinedColor = vec4(u_ambientLightColor, 1.0);"
 			""
 			"	vec3 normal = normalize(v_normal.xyz);" // データ形式の時点でnormalizeされてない法線がある模様
-			"	combinedColor.rgb += computeLightedColor(normal, -u_directionalLightDirection, u_directionalLightColor, 1.0);"
+			""
+			"	vec3 cameraDirection = normalize(v_vertexToCameraDirection);"
+			""
+			"	combinedColor.rgb += computeLightedColor(normal, -u_directionalLightDirection, cameraDirection, u_directionalLightColor, u_materialAmbient, u_materialDiffuse, u_materialSpecular, u_materialShininess, 1.0);"
 			""
 			"	vec3 dir = v_vertexToPointLightDirection * u_pointLightRangeInverse;"
 			"	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);"
-			"	combinedColor.rgb += computeLightedColor(normal, normalize(v_vertexToPointLightDirection), u_pointLightColor, attenuation);"
+			"	combinedColor.rgb += computeLightedColor(normal, normalize(v_vertexToPointLightDirection), cameraDirection, u_pointLightColor, u_materialAmbient, u_materialDiffuse, u_materialSpecular, u_materialShininess, attenuation);"
 			""
 			"	dir = v_vertexToSpotLightDirection * u_spotLightRangeInverse;"
 			"	attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);"
@@ -322,7 +352,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	float spotCurrentAngleCos = dot(u_spotLightDirection, -vertexToSpotLightDirection);"
 			"	attenuation *= smoothstep(u_spotLightOuterAngleCos, u_spotLightInnerAngleCos, spotCurrentAngleCos);"
 			"	attenuation = clamp(attenuation, 0.0, 1.0);"
-			"	combinedColor.rgb += computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor, attenuation);"
+			"	combinedColor.rgb += computeLightedColor(normal, vertexToSpotLightDirection, cameraDirection, u_spotLightColor, u_materialAmbient, u_materialDiffuse, u_materialSpecular, u_materialShininess, attenuation);"
 			""
 			"	gl_FragColor = texture2D(u_texture, v_texCoord) * combinedColor;" // テクスチャ番号は0のみに対応
 			"}"
@@ -508,6 +538,86 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		return false;
 	}
 
+	if (_isC3b)
+	{
+		_glData.uniformCameraPosition = glGetUniformLocation(_glData.shaderProgram, "u_cameraPosition");
+		if (glGetError() != GL_NO_ERROR)
+		{
+			return false;
+		}
+
+		if (_glData.uniformCameraPosition < 0)
+		{
+			return false;
+		}
+
+		_glData.uniformMaterialAmbient = glGetUniformLocation(_glData.shaderProgram, "u_materialAmbient");
+		if (glGetError() != GL_NO_ERROR)
+		{
+			return false;
+		}
+
+		if (_glData.uniformMaterialAmbient < 0)
+		{
+			return false;
+		}
+
+		_glData.uniformMaterialDiffuse = glGetUniformLocation(_glData.shaderProgram, "u_materialDiffuse");
+		if (glGetError() != GL_NO_ERROR)
+		{
+			return false;
+		}
+
+		if (_glData.uniformMaterialDiffuse < 0)
+		{
+			return false;
+		}
+
+		_glData.uniformMaterialSpecular = glGetUniformLocation(_glData.shaderProgram, "u_materialSpecular");
+		if (glGetError() != GL_NO_ERROR)
+		{
+			return false;
+		}
+
+		if (_glData.uniformMaterialSpecular < 0)
+		{
+			return false;
+		}
+
+		_glData.uniformMaterialShininess = glGetUniformLocation(_glData.shaderProgram, "u_materialShininess");
+		if (glGetError() != GL_NO_ERROR)
+		{
+			return false;
+		}
+
+		if (_glData.uniformMaterialShininess < 0)
+		{
+			return false;
+		}
+
+		//_glData.uniformMaterialEmissive = glGetUniformLocation(_glData.shaderProgram, "u_materialEmissive");
+		//if (glGetError() != GL_NO_ERROR)
+		//{
+		//	return false;
+		//}
+
+		//if (_glData.uniformMaterialEmissive < 0)
+		//{
+		//	return false;
+		//}
+
+		//_glData.uniformMaterialOpacity = glGetUniformLocation(_glData.shaderProgram, "u_materialOpacity");
+		//if (glGetError() != GL_NO_ERROR)
+		//{
+		//	return false;
+		//}
+
+		//if (_glData.uniformMaterialOpacity < 0)
+		//{
+		//	return false;
+		//}
+	}
+
 	return true;
 }
 
@@ -644,11 +754,7 @@ void Sprite3D::render()
 	glUseProgram(_glData.shaderProgram);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
-	if (_isC3b) {
-		Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
-		glUniformMatrix4fv(_glData.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
-	}
-
+	// 行列の設定
 	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
 	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
@@ -657,6 +763,7 @@ void Sprite3D::render()
 	const Mat4& normalMatrix = calculateNormalMatrix(getModelMatrix());
 	glUniformMatrix4fv(_glData.uniformNormalMatrix, 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
 
+	// ライトの設定
 	// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
 	for (Light* light : Director::getLight())
 	{
@@ -684,7 +791,7 @@ void Sprite3D::render()
 			glUniform3f(_glData.uniformPointLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
-			glUniform3fv(_glData.uniformPointLightPosition, 1, (GLfloat*)&light->getPosition());
+			glUniform3fv(_glData.uniformPointLightPosition, 1, (GLfloat*)&light->getPosition()); // ライトについてはローカル座標でなくワールド座標である前提
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
 			PointLight* pointLight = static_cast<PointLight*>(light);
@@ -718,6 +825,8 @@ void Sprite3D::render()
 			break;
 		}
 	}
+
+	// 頂点属性の設定
 	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 
@@ -753,6 +862,37 @@ void Sprite3D::render()
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
 			offset += attrib.size;
 		}
+	}
+
+	// スキニングのマトリックスパレットの設定
+	if (_isC3b) {
+		Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
+		glUniformMatrix4fv(_glData.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
+	}
+
+	// TODO:monguri:実装
+	if (_isC3b) {
+		glUniform3fv(_glData.uniformCameraPosition, 1, (GLfloat*)&Director::getCamera().getPosition());
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glUniform3fv(_glData.uniformMaterialAmbient, 1, (GLfloat*)&_ambient);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glUniform3fv(_glData.uniformMaterialDiffuse, 1, (GLfloat*)&_diffuse);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glUniform3fv(_glData.uniformMaterialSpecular, 1, (GLfloat*)&_specular);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glUniform1f(_glData.uniformMaterialShininess, _shininess);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		//glUniform3fv(_glData.uniformMaterialEmissive, 1, (GLfloat*)&_emissive);
+		//Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		//glUniform1f(_glData.uniformMaterialOpacity, 1, (GLfloat*)&_emissive);
+		//Logger::logAssert(glGetError() == GL_NO_ERROR, "OepnGL処理でエラー発生 glGetError()=%d", glGetError());
+
 	}
 
 	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());

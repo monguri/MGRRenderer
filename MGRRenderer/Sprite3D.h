@@ -26,6 +26,12 @@ private:
 	OpenGLProgramData _glData;
 	//TODO: Textureは今のところモデルファイルで指定できない。一枚のみに対応
 	Texture* _texture;
+	Color3F _ambient;
+	Color3F _diffuse;
+	Color3F _specular;
+	float _shininess;
+	//Color3F _emissive;
+	//float _opacity;
 	
 	// TODO:現状objのみに使っている。I/FをObjLoaderとC3bLoaderで合わせよう
 	std::vector<Position3DNormalTextureCoordinates> _vertices;

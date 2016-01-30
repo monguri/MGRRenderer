@@ -601,6 +601,33 @@ namespace C3bLoader
 				material->textures.push_back(texture);
 			}
 			
+			const rapidjson::Value& ambientVal = materialVal["ambient"];
+			Logger::logAssert(ambientVal.Size() == 3, "ambient‚Ìfloat‚ª3‚Â‚Å‚È‚¢");
+			material->ambient.color.r = ambientVal[0].GetDouble();
+			material->ambient.color.g = ambientVal[1].GetDouble();
+			material->ambient.color.b = ambientVal[2].GetDouble();
+
+			const rapidjson::Value& diffuseVal = materialVal["diffuse"];
+			Logger::logAssert(diffuseVal.Size() == 3, "diffuse‚Ìfloat‚ª3‚Â‚Å‚È‚¢");
+			material->diffuse.color.r = diffuseVal[0].GetDouble();
+			material->diffuse.color.g = diffuseVal[1].GetDouble();
+			material->diffuse.color.b = diffuseVal[2].GetDouble();
+
+			const rapidjson::Value& specularVal = materialVal["specular"];
+			Logger::logAssert(specularVal.Size() == 3, "specular‚Ìfloat‚ª3‚Â‚Å‚È‚¢");
+			material->specular.color.r = specularVal[0].GetDouble();
+			material->specular.color.g = specularVal[1].GetDouble();
+			material->specular.color.b = specularVal[2].GetDouble();
+
+			const rapidjson::Value& emissiveVal = materialVal["emissive"];
+			Logger::logAssert(emissiveVal.Size() == 3, "emissive‚Ìfloat‚ª3‚Â‚Å‚È‚¢");
+			material->emissive.color.r = emissiveVal[0].GetDouble();
+			material->emissive.color.g = emissiveVal[1].GetDouble();
+			material->emissive.color.b = emissiveVal[2].GetDouble();
+
+			material->opacity = materialVal["opacity"].GetDouble();
+			material->shininess = materialVal["shininess"].GetDouble();
+
 			outMaterialDatas.materialDatas.push_back(material);
 		}
 		

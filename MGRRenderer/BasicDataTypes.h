@@ -161,7 +161,15 @@ struct Color3F
 {
 	Vec3 color;
 
+	Color3F()
+	{
+	}
+
 	Color3F(const Color3B& color3B) : color(color3B.r / 255, color3B.g / 255, color3B.b / 255)
+	{
+	}
+
+	Color3F(float r, float g, float b) : color(r, g, b)
 	{
 	}
 };
@@ -737,6 +745,7 @@ struct OpenGLProgramData
 	GLuint shaderProgram;
 	GLint attributeTextureCoordinates;
 	GLint uniformTexture;
+	GLint uniformCameraPosition;
 	GLint uniformModelMatrix;
 	GLint uniformViewMatrix;
 	GLint uniformNormalMatrix;
@@ -754,6 +763,12 @@ struct OpenGLProgramData
 	GLint uniformSpotLightRangeInverse;
 	GLint uniformSpotLightInnerAngleCos;
 	GLint uniformSpotLightOuterAngleCos;
+	GLint uniformMaterialAmbient;
+	GLint uniformMaterialDiffuse;
+	GLint uniformMaterialSpecular;
+	GLint uniformMaterialEmissive;
+	GLint uniformMaterialOpacity;
+	GLint uniformMaterialShininess;
 };
 
 enum class AttributeLocation : int

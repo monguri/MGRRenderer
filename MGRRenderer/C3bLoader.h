@@ -79,8 +79,14 @@ namespace C3bLoader
 
 	struct MaterialData
 	{
-		std::vector<TextureData> textures;
 		std::string id;
+		std::vector<TextureData> textures;
+		Color3F ambient;
+		Color3F diffuse;
+		Color3F specular;
+		float shininess;
+		Color3F emissive;
+		float opacity;
 	};
 
 	struct MaterialDatas

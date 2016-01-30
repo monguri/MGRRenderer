@@ -655,15 +655,21 @@ namespace C3bLoader
 			material->id = binary.readString();
 
 			// diffuse(3), ambient(3), emissive(3), opacity(1), specular(3), shininess(1)
-			// g‚Á‚Ä‚È‚¢
-			float color[14];
-			readCount = binary.read(color, 4, 14);
+			float parameter[14];
+			readCount = binary.read(parameter, 4, 14);
 			if (readCount != 14)
 			{
 				delete material;
 				outMaterialDatas.resetData();
 				return "warning: Failed to read Materialdata: color";
 			}
+
+			material->diffuse = Color3F(parameter[0], parameter[1], parameter[2]);
+			material->ambient = Color3F(parameter[3], parameter[4], parameter[5]);
+			material->emissive = Color3F(parameter[6], parameter[7], parameter[8]);
+			material->opacity = parameter[9];
+			material->specular = Color3F(parameter[10], parameter[11], parameter[12]);
+			material->shininess = parameter[13];
 
 			unsigned int numTexture;
 			readCount = binary.read(&numTexture, 4, 1);

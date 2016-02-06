@@ -23,7 +23,13 @@ private:
 	bool _isObj;
 	bool _isC3b;
 
+	GLuint _depthTexture;
+	GLuint _frameBufferForShadowMap;
+	GLint _uniformLightViewMatrix;
+	GLint _uniformShadowTexture;
+
 	OpenGLProgramData _glData;
+	OpenGLProgramData _glDataForShadowMap;
 	//TODO: Textureは今のところモデルファイルで指定できない。一枚のみに対応
 	Texture* _texture;
 	Color3F _ambient;

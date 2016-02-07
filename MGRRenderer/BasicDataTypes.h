@@ -658,6 +658,22 @@ struct Size
 
 	Size() : width(0), height(0) {}
 	Size(float width, float height) : width(width), height(height) {}
+
+	const Size operator*(float a) const
+	{
+		Size ret;
+		ret.width = width * a;
+		ret.height = height * a;
+		return ret;
+	}
+	const Size operator/(float a) const
+	{
+		Logger::logAssert(a != 0.0, "0‚ÅœZ‚µ‚Ä‚¢‚éB");
+		Size ret;
+		ret.width = width / a;
+		ret.height = height / a;
+		return ret;
+	} //TODO:CCMathBase‚ÌMATH_TOLELRANCE‚İ‚½‚¢‚Ìl—¶‚µ‚Ä‚È‚¢
 };
 
 struct Rect

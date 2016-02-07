@@ -367,10 +367,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	vec4 depthCheck = v_lightPosition / v_lightPosition.w;"
 			"	depthCheck = depthCheck / 2.0 + 0.5;"
 			"	float textureDepth = texture2D(u_shadowTexture, depthCheck.xy).z;"
-			"	if (depthCheck.z > textureDepth + 0.0075)" // TODO:後で修正
-			//"	if (depthCheck.z > textureDepth + 0.028)" // TODO:後で修正。僕の場合は0.028がちょうどよかった。floatの精度の問題と思われる。
+			"	if (depthCheck.z > textureDepth + 0.001)" // TODO:後で修正
 			"	{"
-			"		gl_FragColor.rgb *= 0.0;" // TODO:これも定数かけるなんて中途半端。後で修正。僕は0.5にしている。
+			"		gl_FragColor.rgb *= 0.5;" // TODO:これも定数かけるなんて中途半端。後で修正。僕は0.5にしている。
 			"	}"
 			"}"
 			);
@@ -703,6 +702,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		}
 	}
 
+	// デプステクスチャ作成
 	glGenTextures(1, &_depthTexture);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	Logger::logAssert(_depthTexture != 0, "デプステクスチャ生成失敗");
@@ -722,7 +722,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-
+	// デプステクスチャに描画するためのフレームバッファ作成
 	glGenFramebuffers(1, &_frameBufferForShadowMap);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	Logger::logAssert(_frameBufferForShadowMap != 0, "フレームバッファ生成失敗");
@@ -824,8 +824,6 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
-
-	glEnable(GL_CULL_FACE);
 
 	return true;
 }
@@ -973,6 +971,11 @@ void Sprite3D::renderShadowMap()
 	glUseProgram(_glDataForShadowMap.shaderProgram);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
+	// 行列の設定
+	glUniformMatrix4fv(_glDataForShadowMap.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+	glUniformMatrix4fv(_glDataForShadowMap.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
 	for (Light* light : Director::getLight())
 	{
 		switch (light->getLightType())
@@ -985,7 +988,16 @@ void Sprite3D::renderShadowMap()
 			direction.normalize();
 			// TODO:とりあえず影つけはDirectionalLightのみを想定
 			// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
-			glUniformMatrix4fv(_glDataForShadowMap.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Mat4::createLookAt(direction * (-1), Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f)).m);
+			glUniformMatrix4fv(
+				_glDataForShadowMap.uniformViewMatrix,
+				1,
+				GL_FALSE,
+				(GLfloat*)Mat4::createLookAt(
+					direction * (-1) * Director::getInstance()->getWindowSize().width + getPosition(), // 近すぎるとカメラに入らないので適度に離す
+					getPosition(),
+					Vec3(0.0f, 1.0f, 0.0f)
+				).m
+			);
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 			// TODO:Vec3やMat4に頭につける-演算子作らないと
 		}
@@ -1026,7 +1038,6 @@ void Sprite3D::renderShadowMap()
 	glUniformMatrix4fv(_glDataForShadowMap.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-	glCullFace(GL_BACK); //TODO:よくわからんけどとりあえず本の真似
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
@@ -1080,7 +1091,16 @@ void Sprite3D::renderWithShadowMap()
 
 			// TODO:とりあえず影つけはDirectionalLightのみを想定
 			// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
-			glUniformMatrix4fv(_uniformLightViewMatrix, 1, GL_FALSE, (GLfloat*)Mat4::createLookAt(direction * (-1), Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f)).m);
+			glUniformMatrix4fv(
+				_uniformLightViewMatrix,
+				1,
+				GL_FALSE,
+				(GLfloat*)Mat4::createLookAt(
+					direction * (-1) * Director::getInstance()->getWindowSize().width + getPosition(), // 近すぎるとカメラに入らないので適度に離す
+					getPosition(),
+					Vec3(0.0f, 1.0f, 0.0f)
+				).m
+			);
 			// TODO:Vec3やMat4に頭につける-演算子作らないと
 		}
 			break;
@@ -1202,8 +1222,6 @@ void Sprite3D::renderWithShadowMap()
 
 	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glCullFace(GL_BACK); //TODO:よくわからんけどとりあえず本の真似
 
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());

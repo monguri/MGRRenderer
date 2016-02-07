@@ -233,6 +233,11 @@ void initialize()
 	sprite3DC3tNode->startAnimation("Take 001", true);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
+	// TODO:シャドウマップをビルボードで描画したかったが機能してない
+	//BillBoard* depthTextureBillBoard = new BillBoard();
+	//depthTextureBillBoard->init(sprite3DC3tNode->_depthTexture, Director::getInstance()->getWindowSize() / 4, Texture::PixelFormat::RGBA4444, BillBoard::Mode::VIEW_PLANE_ORIENTED); // pixelformatは適当
+	//depthTextureBillBoard->setPosition(Vec3(WINDOW_WIDTH / 2.0f + 100, WINDOW_HEIGHT / 2.0f, 0));
+	//Director::getInstance()->getScene().pushNode(depthTextureBillBoard);
 
 	Scene* scene = new Scene();
 	scene->init();
@@ -265,6 +270,7 @@ void initialize()
 	scene->pushNode(plane3DNode3);
 	//scene->pushNode(sprite3DObjNode);
 	scene->pushNode(sprite3DC3tNode);
+	//scene->pushNode(depthTextureBillBoard); // TODO:深度テクスチャをうまく表示できない
 
 	Director::getInstance()->setScene(*scene);
 }

@@ -41,7 +41,7 @@ bool Line2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
 	return true;
 }
 
-void Line2D::render()
+void Line2D::renderWithShadowMap()
 {
 	glUseProgram(_glData.shaderProgram);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGLˆ—‚ÅƒGƒ‰[”­¶ glGetError()=%d", glGetError());

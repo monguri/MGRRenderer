@@ -40,7 +40,7 @@ void Point3D::initWithPointArray(const std::vector<Point3DData>& pointArray)
 	Logger::logAssert(_attributePointSize >= 0, "アトリビュート変数の取得に失敗");
 }
 
-void Point3D::render()
+void Point3D::renderWithShadowMap()
 {
 	glUseProgram(_glData.shaderProgram);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());

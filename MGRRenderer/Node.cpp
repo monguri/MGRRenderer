@@ -20,21 +20,17 @@ Node::Node() : _scale(Vec3(1.0f, 1.0f, 1.0f)), _modelMatrix(Mat4::IDENTITY), _co
 {
 }
 
-void Node::visit(float dt)
-{
-	update(dt);
-
-	_modelMatrix = Mat4::createTransform(_position, _rotation, _scale);
-
-	render();
-}
-
 void Node::update(float dt)
 {
-	// 何もしない
 }
 
-void Node::render()
+void Node::renderShadowMap()
+{
+	// updateの次に呼ばれる前提でモデル行列計算する
+	_modelMatrix = Mat4::createTransform(_position, _rotation, _scale);
+}
+
+void Node::renderWithShadowMap()
 {
 	// 何もしない
 }

@@ -19,7 +19,7 @@ private:
 	std::vector<Vec2> _vertexArray;
 
 	~Polygon2D();
-	void render() override;
+	void renderWithShadowMap() override;
 };
 
 } // namespace mgrrenderer

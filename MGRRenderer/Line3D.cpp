@@ -42,7 +42,7 @@ bool Line3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	return true;
 }
 
-void Line3D::render()
+void Line3D::renderWithShadowMap()
 {
 	glUseProgram(_glData.shaderProgram);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGLˆ—‚ÅƒGƒ‰[”­¶ glGetError()=%d", glGetError());

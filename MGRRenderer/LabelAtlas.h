@@ -15,6 +15,7 @@ public:
 	~LabelAtlas();
 	bool init(const std::string& string, const Texture* texture, int itemWidth, int itemHeight, char mapStartChararcter);
 	void setString(const std::string& string);
+	void renderWithShadowMap() override;
 
 private:
 	OpenGLProgramData _glData;
@@ -26,8 +27,6 @@ private:
 	int _itemWidth;
 	int _itemHeight;
 	Camera _camera;
-
-	void render() override;
 };
 
 } // namespace mgrrenderer

@@ -17,13 +17,20 @@ public:
 	void setTexture(const std::string& filePath);
 	void startAnimation(const std::string& animationName, bool loop = false);
 	void stopAnimation();
+	// TODO:一次的にpublicに
+	GLuint _depthTexture;
 
 private:
 	// TODO:とりあえずフラグで動作を切り替えている
 	bool _isObj;
 	bool _isC3b;
 
+	GLuint _frameBufferForShadowMap;
+	GLint _uniformLightViewMatrix;
+	GLint _uniformShadowTexture;
+
 	OpenGLProgramData _glData;
+	OpenGLProgramData _glDataForShadowMap;
 	//TODO: Textureは今のところモデルファイルで指定できない。一枚のみに対応
 	Texture* _texture;
 	Color3F _ambient;
@@ -50,7 +57,8 @@ private:
 	~Sprite3D();
 	void update(float dt) override;
 	C3bLoader::NodeData* findJointByName(const std::string& jointName, const std::vector<C3bLoader::NodeData*> children);
-	void render() override;
+	void renderShadowMap() override;
+	void renderWithShadowMap() override;
 	Mat4 calculateNormalMatrix(const Mat4& modelMatrix);
 };
 

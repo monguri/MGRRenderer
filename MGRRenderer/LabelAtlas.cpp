@@ -129,7 +129,7 @@ void LabelAtlas::setString(const std::string& string)
 	}
 }
 
-void LabelAtlas::render()
+void LabelAtlas::renderWithShadowMap()
 {
 	if (_indices.size() == 0)
 	{

@@ -26,8 +26,16 @@ bool Sprite2D::init(const std::string& filePath)
 	Image image; // ImageはCPU側のメモリを使っているのでこのスコープで解放されてもよいものだからスタックに取る
 	image.initWithFilePath(filePath);
 
+	Texture* texture = new Texture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
+	texture->initWithImage(image);
+
+	return initWithTexture(texture->getTextureId(), texture->getContentSize(), Texture::getDefaultPixelFormat());
+}
+
+bool Sprite2D::initWithTexture(GLuint textureId, const Size& contentSize, Texture::PixelFormat format)
+{
 	_texture = new Texture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
-	_texture->initWithImage(image);
+	_texture->initWithTexture(textureId, contentSize, format);
 
 	//TODO: 乗算する頂点カラーには対応しない
 
@@ -79,17 +87,17 @@ bool Sprite2D::init(const std::string& filePath)
 
 	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
 	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
-	_quadrangle.bottomRight.position = Vec2(_texture->getContentSize().width, 0.0f);
+	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
 	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 1.0f);
-	_quadrangle.topLeft.position = Vec2(0.0f, _texture->getContentSize().height);
+	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
 	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 0.0f);
-	_quadrangle.topRight.position = Vec2(_texture->getContentSize().width, _texture->getContentSize().height);
+	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
 	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 0.0f);
 
 	return true;
 }
 
-void Sprite2D::render()
+void Sprite2D::renderWithShadowMap()
 {
 	// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
 	glUseProgram(_glData.shaderProgram);

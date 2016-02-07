@@ -39,7 +39,7 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 	Logger::logAssert(_attributePointSize >= 0, "アトリビュート変数の取得に失敗");
 }
 
-void Point2D::render()
+void Point2D::renderWithShadowMap()
 {
 	glUseProgram(_glData.shaderProgram);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());

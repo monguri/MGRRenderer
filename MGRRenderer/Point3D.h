@@ -27,7 +27,7 @@ private:
 	std::vector<Point3DData> _pointArray;
 
 	~Point3D();
-	void render() override;
+	void renderWithShadowMap() override;
 };
 
 } // namespace mgrrenderer

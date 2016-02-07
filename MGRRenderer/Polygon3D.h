@@ -17,7 +17,7 @@ private:
 	std::vector<Vec3> _vertexArray;
 
 	~Polygon3D();
-	void render() override;
+	void renderWithShadowMap() override;
 };
 
 } // namespace mgrrenderer

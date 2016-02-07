@@ -20,7 +20,9 @@ public:
 
 	BillBoard();
 	bool init(const std::string& filePath, Mode mode);
-	void visit(float dt) override;
+	// よそですでに作成済みのテクスチャのtextureIdを使う場合
+	bool init(GLuint textureId, const Size& contentSize, Texture::PixelFormat format, Mode mode);
+	void renderShadowMap() override;
 
 private:
 	Mode _mode;

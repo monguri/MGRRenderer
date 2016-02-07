@@ -194,20 +194,36 @@ void initialize()
 	isSucceeded = polygon3DNode->initWithVertexArray(polygonVertices3D);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
-	std::vector<Vec3> planeVertices3D {
-		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, 320.0f),
-		Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, -320.0f),
+	std::vector<Vec3> planeVertices3D1 {
+		Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, 320.0f),
+		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, -320.0f),
 	};
-	Polygon3D* plane3DNode = new Polygon3D();
-	isSucceeded = plane3DNode->initWithVertexArray(planeVertices3D);
-	Logger::logAssert(plane3DNode, "ノードの初期化失敗");
+	Polygon3D* plane3DNode1 = new Polygon3D();
+	isSucceeded = plane3DNode1->initWithVertexArray(planeVertices3D1);
+	Logger::logAssert(plane3DNode1, "ノードの初期化失敗");
 
-	Sprite3D* sprite3DObjNode = new Sprite3D();
-	isSucceeded = sprite3DObjNode->initWithModel("../Resources/boss1.obj");
-	sprite3DObjNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 100, WINDOW_HEIGHT / 2.0f - 100, 0)); // カメラのデフォルトの視点位置から少しずれた場所に置いた
-	sprite3DObjNode->setScale(10.0f);
-	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
-	sprite3DObjNode->setTexture("../Resources/boss.png");
+	std::vector<Vec3> planeVertices3D2 {
+		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, 320.0f),
+		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, -320.0f),
+	};
+	Polygon3D* plane3DNode2 = new Polygon3D();
+	isSucceeded = plane3DNode2->initWithVertexArray(planeVertices3D2);
+	Logger::logAssert(plane3DNode2, "ノードの初期化失敗");
+
+	std::vector<Vec3> planeVertices3D3 {
+		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, -320.0f),
+		Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 320.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, -320.0f),
+	};
+	Polygon3D* plane3DNode3 = new Polygon3D();
+	isSucceeded = plane3DNode3->initWithVertexArray(planeVertices3D3);
+	Logger::logAssert(plane3DNode3, "ノードの初期化失敗");
+
+	//Sprite3D* sprite3DObjNode = new Sprite3D();
+	//isSucceeded = sprite3DObjNode->initWithModel("../Resources/boss1.obj");
+	//sprite3DObjNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 100, WINDOW_HEIGHT / 2.0f - 100, 0)); // カメラのデフォルトの視点位置から少しずれた場所に置いた
+	//sprite3DObjNode->setScale(10.0f);
+	//Logger::logAssert(isSucceeded, "ノードの初期化失敗");
+	//sprite3DObjNode->setTexture("../Resources/boss.png");
 
 	Sprite3D* sprite3DC3tNode = new Sprite3D();
 	isSucceeded = sprite3DC3tNode->initWithModel("../Resources/orc.c3b");
@@ -217,15 +233,21 @@ void initialize()
 	sprite3DC3tNode->startAnimation("Take 001", true);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
+	// TODO:シャドウマップをビルボードで描画したかったが機能してない
+	//BillBoard* depthTextureBillBoard = new BillBoard();
+	//depthTextureBillBoard->init(sprite3DC3tNode->_depthTexture, Director::getInstance()->getWindowSize() / 4, Texture::PixelFormat::RGBA4444, BillBoard::Mode::VIEW_PLANE_ORIENTED); // pixelformatは適当
+	//depthTextureBillBoard->setPosition(Vec3(WINDOW_WIDTH / 2.0f + 100, WINDOW_HEIGHT / 2.0f, 0));
+	//Director::getInstance()->getScene().pushNode(depthTextureBillBoard);
 
 	Scene* scene = new Scene();
 	scene->init();
 	Light* defaultLight = scene->getDefaultLight();
-	defaultLight->setIntensity(0.3f);
+	//defaultLight->setIntensity(0.3f);
+	defaultLight->setIntensity(0.0f);
 	defaultLight->setColor(Color3B::WHITE);
 
 	DirectionalLight* directionalLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
-	directionalLight->setIntensity(0.7f);
+	directionalLight->setIntensity(1.0f);
 	scene->addLight(directionalLight);
 
 	//PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);
@@ -243,9 +265,12 @@ void initialize()
 	scene->pushNode(point3DNode);
 	scene->pushNode(line3DNode);
 	scene->pushNode(polygon3DNode);
-	scene->pushNode(plane3DNode);
-	scene->pushNode(sprite3DObjNode);
+	scene->pushNode(plane3DNode1);
+	scene->pushNode(plane3DNode2);
+	scene->pushNode(plane3DNode3);
+	//scene->pushNode(sprite3DObjNode);
 	scene->pushNode(sprite3DC3tNode);
+	//scene->pushNode(depthTextureBillBoard); // TODO:深度テクスチャをうまく表示できない
 
 	Director::getInstance()->setScene(*scene);
 }

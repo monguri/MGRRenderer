@@ -40,11 +40,28 @@ void Scene::pushNode(Node* node)
 
 void Scene::update(float dt)
 {
-	_camera.visit(dt);
+	_camera.update(dt);
 
 	for (Node* child : _children)
 	{
-		child->visit(dt);
+		child->update(dt);
+	}
+
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	_camera.renderShadowMap();
+
+	for (Node* child : _children)
+	{
+		child->renderShadowMap();
+	}
+
+	_camera.renderWithShadowMap();
+
+	for (Node* child : _children)
+	{
+		child->renderWithShadowMap();
 	}
 }
 

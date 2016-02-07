@@ -14,9 +14,10 @@ public:
 	Sprite2D();
 	~Sprite2D();
 	bool init(const std::string& filePath);
+	bool initWithTexture(GLuint textureId, const Size& contentSize, Texture::PixelFormat format);
 
 protected:
-	void render() override;
+	void renderWithShadowMap() override;
 
 private:
 	OpenGLProgramData _glData;

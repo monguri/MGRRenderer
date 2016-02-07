@@ -41,7 +41,7 @@ bool Polygon2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
 	return true;
 }
 
-void Polygon2D::render()
+void Polygon2D::renderWithShadowMap()
 {
 	glUseProgram(_glData.shaderProgram);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGLˆ—‚ÅƒGƒ‰[”­¶ glGetError()=%d", glGetError());

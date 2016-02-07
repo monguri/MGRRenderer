@@ -147,6 +147,50 @@ ERR:
 	return false;
 }
 
+bool Texture::initWithTexture(GLuint textureId, const Size& contentSize, PixelFormat format)
+{
+	GLint maxTextureSize = 0;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+
+	if (contentSize.width > maxTextureSize || contentSize.height > maxTextureSize)
+	{	
+		return false;
+	}
+
+	const PixelFormatInfo& info = _pixelFormatInfoTable.at(format);
+
+	unsigned int bytesPerRow = contentSize.width * info.bitPerPixel / 8;
+	if (bytesPerRow % 8 == 0)
+	{
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+	}
+	else if (bytesPerRow % 4 == 0)
+	{
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	}
+	else if (bytesPerRow % 2 == 0)
+	{
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+	}
+	else
+	{
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	}
+	GLenum err = glGetError();
+	if (err != GL_NO_ERROR)
+	{
+		return false;
+	}
+
+	_textureId = textureId;
+	_contentSize = contentSize;
+	_pixelWidth = contentSize.width;
+	_pixelHeight = contentSize.height;
+	_hasPremultipliedAlpha = true; // 適当にデフォルト値へ
+
+	return true;
+}
+
 Texture::PixelFormat Texture::convertDataToFormat(const unsigned char* data, ssize_t dataLen, PixelFormat fromFormat, PixelFormat toFormat, unsigned char** outData, ssize_t* outDataLen)
 {
 	if (fromFormat == toFormat || fromFormat == PixelFormat::AUTO)
@@ -487,6 +531,11 @@ void Texture::convertRGBA8888ToRGBA4444(const unsigned char* data, ssize_t dataL
 			| (data[i + 2] & 0x00F0) // B
 			| (data[i + 3] & 0x00F0) >> 4; // A
 	}
+}
+
+Texture::PixelFormat Texture::getDefaultPixelFormat()
+{
+	return _defaultPixelFormat;
 }
 
 void Texture::setDefaultPixelFormat(PixelFormat format)

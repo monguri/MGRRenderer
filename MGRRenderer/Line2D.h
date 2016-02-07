@@ -17,7 +17,7 @@ private:
 	OpenGLProgramData _glData;
 	std::vector<Vec2> _vertexArray;
 
-	void render() override;
+	void renderWithShadowMap() override;
 };
 
 } // namespace mgrrenderer

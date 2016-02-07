@@ -10,7 +10,9 @@ class Node
 {
 public:
 	// TODO:本来はdtはスケジューラに渡せばいいのだが、今は各ノードでupdateメソッドでアニメーションをやってるのでdtをvisitとupdateに渡している
-	virtual void visit(float dt);
+	virtual void update(float dt);
+	virtual void renderShadowMap();
+	virtual void renderWithShadowMap();
 	const Vec3& getPosition() const { return _position; }
 	virtual void setPosition(const Vec3& position) { _position = position; };
 	const Quaternion& getRotation() const { return _rotation; }
@@ -35,8 +37,6 @@ protected:
 	GLuint createVertexShader(const GLchar* source) const;
 	GLuint createFragmentShader(const GLchar* source) const;
 	GLuint createShaderProgram(const GLuint vertexShader, const GLuint fragmentShader) const;
-	virtual void update(float dt);
-	virtual void render();
 
 private:
 	Vec3 _position;

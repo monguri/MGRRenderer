@@ -15,14 +15,17 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 	return successed;
 }
 
-void BillBoard::visit(float dt)
+bool BillBoard::init(GLuint textureId, const Size& contentSize, Texture::PixelFormat format, Mode mode)
 {
-	update(dt);
+	bool successed = Sprite2D::initWithTexture(textureId, contentSize, format);
+	_mode = mode;
+	return successed;
+}
 
+void BillBoard::renderShadowMap()
+{
 	setModelMatrix(Mat4::createTransform(getPosition(), getRotation(), getScale()));
 	calculateBillboardTransform();
-
-	render();
 }
 
 void BillBoard::calculateBillboardTransform()

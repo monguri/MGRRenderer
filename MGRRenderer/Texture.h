@@ -66,9 +66,11 @@ public:
 	~Texture();
 	bool initWithImage(const Image& image);
 	bool initWithImage(const Image& image, PixelFormat format);
+	bool initWithTexture(GLuint textureId, const Size& contentSize, PixelFormat format);
 
 	GLuint getTextureId() const { return _textureId; }
 	const Size& getContentSize() const { return _contentSize; }
+	static PixelFormat getDefaultPixelFormat();
 	static void setDefaultPixelFormat(PixelFormat format);
 
 	struct PixelFormatInfo

@@ -44,7 +44,6 @@ void Director::init(const Size& windowSize)
 	calculateDeltaTime();
 
 	_windowSize = windowSize;
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	// TODO:2D描画しかしないときもデプステストをONにしている
 	glEnable(GL_DEPTH_TEST);
 	// OpenGL側でやるビューポート変換のためのパラメータを渡す
@@ -65,8 +64,6 @@ void Director::setScene(const Scene& scene)
 void Director::update()
 {
 	float dt = calculateDeltaTime();
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	_scene.update(dt);
 
@@ -157,7 +154,10 @@ void Director::updateStats(float dt)
 	if (_FPSLabel != nullptr)
 	{
 		// FPSラベルはどこにもaddChildしないのでここでvisitを呼んで描画する
-		_FPSLabel->visit(dt);
+		// 影は関係ないので一気に全パス描画してしまう
+		_FPSLabel->update(dt);
+		_FPSLabel->renderShadowMap();
+		_FPSLabel->renderWithShadowMap();
 	}
 }
 

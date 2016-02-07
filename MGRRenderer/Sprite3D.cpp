@@ -367,10 +367,10 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	vec4 depthCheck = v_lightPosition / v_lightPosition.w;"
 			"	depthCheck = depthCheck / 2.0 + 0.5;"
 			"	float textureDepth = texture2D(u_shadowTexture, depthCheck.xy).z;"
-			//"	if (depthCheck.z > textureDepth + 0.0075)" // TODO:後で修正
-			"	if (depthCheck.z > textureDepth + 0.028)" // TODO:後で修正。僕の場合は0.028がちょうどよかった。floatの精度の問題と思われる。
+			"	if (depthCheck.z > textureDepth + 0.0075)" // TODO:後で修正
+			//"	if (depthCheck.z > textureDepth + 0.028)" // TODO:後で修正。僕の場合は0.028がちょうどよかった。floatの精度の問題と思われる。
 			"	{"
-			"		gl_FragColor.rgb *= 0.5;" // TODO:これも定数かけるなんて中途半端。後で修正。僕は0.5にしている。
+			"		gl_FragColor.rgb *= 0.0;" // TODO:これも定数かけるなんて中途半端。後で修正。僕は0.5にしている。
 			"	}"
 			"}"
 			);
@@ -722,6 +722,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+
 	glGenFramebuffers(1, &_frameBufferForShadowMap);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	Logger::logAssert(_frameBufferForShadowMap != 0, "フレームバッファ生成失敗");
@@ -759,7 +760,6 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		"uniform mat4 u_projectionMatrix;"
 		"uniform mat4 u_matrixPalette[SKINNING_JOINT_COUNT];"
 		""
-		"varying vec4 v_lightPosition;"
 		"varying vec2 v_texCoord;"
 		""
 		"vec4 getPosition()"
@@ -878,6 +878,8 @@ C3bLoader::NodeData* Sprite3D::findJointByName(const std::string& jointName, con
 
 void Sprite3D::update(float dt)
 {
+	Node::update(dt);
+
 	if (!_isC3b) {
 		return;
 	}
@@ -957,18 +959,16 @@ void Sprite3D::update(float dt)
 	}
 }
 
-void Sprite3D::render()
+void Sprite3D::renderShadowMap()
 {
-	////
-	//// シャドウマップの描画
-	////
-	glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferForShadowMap);
+	Node::renderShadowMap();
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferForShadowMap);
 
 	//TODO:シャドウマップの大きさは画面サイズと同じにしている
 	glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(_glDataForShadowMap.shaderProgram);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
@@ -1031,15 +1031,12 @@ void Sprite3D::render()
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
+}
 
+void Sprite3D::renderWithShadowMap()
+{
+	Node::renderWithShadowMap();
 
-
-
-
-
-	//
-	// シャドウマップを利用した影つきの描画
-	//
 	//glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
 
 	// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
@@ -1196,15 +1193,17 @@ void Sprite3D::render()
 
 	}
 
-	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
 	if (_isC3b) {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, _depthTexture);
 		glUniform1i(_uniformShadowTexture, 1);
 		glActiveTexture(GL_TEXTURE0);
 	}
+
+	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+	glCullFace(GL_BACK); //TODO:よくわからんけどとりあえず本の真似
 
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());

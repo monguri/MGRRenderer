@@ -17,15 +17,12 @@ public:
 	void setTexture(const std::string& filePath);
 	void startAnimation(const std::string& animationName, bool loop = false);
 	void stopAnimation();
-	// TODO:ˆêŸ“I‚Épublic‚É
-	GLuint _depthTexture;
 
 private:
 	// TODO:‚Æ‚è‚ ‚¦‚¸ƒtƒ‰ƒO‚Å“®ì‚ğØ‚è‘Ö‚¦‚Ä‚¢‚é
 	bool _isObj;
 	bool _isC3b;
 
-	GLuint _frameBufferForShadowMap;
 	GLint _uniformLightViewMatrix;
 	GLint _uniformShadowTexture;
 

@@ -367,7 +367,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	vec4 depthCheck = v_lightPosition / v_lightPosition.w;"
 			"	depthCheck = depthCheck / 2.0 + 0.5;"
 			"	float textureDepth = texture2D(u_shadowTexture, depthCheck.xy).z;"
-			"	if (depthCheck.z > textureDepth + 0.001)" // TODO:後で修正
+			"	if (depthCheck.z > textureDepth + 0.0003)" // TODO:後で修正
 			"	{"
 			"		gl_FragColor.rgb *= 0.5;" // TODO:これも定数かけるなんて中途半端。後で修正。僕は0.5にしている。
 			"	}"
@@ -702,40 +702,6 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		}
 	}
 
-	// デプステクスチャ作成
-	glGenTextures(1, &_depthTexture);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	Logger::logAssert(_depthTexture != 0, "デプステクスチャ生成失敗");
-
-	glBindTexture(GL_TEXTURE_2D, _depthTexture);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	//TODO: 適当にデプステクスチャ解像度はウインドウサイズと同じにしておく
-	const Size& windowSize = Director::getInstance()->getWindowSize();
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, windowSize.width, windowSize.height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// デプステクスチャに描画するためのフレームバッファ作成
-	glGenFramebuffers(1, &_frameBufferForShadowMap);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	Logger::logAssert(_frameBufferForShadowMap != 0, "フレームバッファ生成失敗");
-
-	glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferForShadowMap);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	Logger::logAssert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "デプスシャドウ用のフレームバッファが完成してない");
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファに戻す
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	_glDataForShadowMap = createOpenGLProgram(
 		// vertex shader
@@ -961,20 +927,8 @@ void Sprite3D::renderShadowMap()
 {
 	Node::renderShadowMap();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferForShadowMap);
-
-	//TODO:シャドウマップの大きさは画面サイズと同じにしている
-	glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glUseProgram(_glDataForShadowMap.shaderProgram);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	// 行列の設定
-	glUniformMatrix4fv(_glDataForShadowMap.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-	glUniformMatrix4fv(_glDataForShadowMap.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	bool makeShadowMap = false;
+	DirectionalLight::ShadowMapData shadowMapData;
 
 	for (Light* light : Director::getLight())
 	{
@@ -984,22 +938,13 @@ void Sprite3D::renderShadowMap()
 			break;
 		case LightType::DIRECTION: {
 			DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
-			Vec3 direction = dirLight->getDirection();
-			direction.normalize();
 			// TODO:とりあえず影つけはDirectionalLightのみを想定
 			// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
-			glUniformMatrix4fv(
-				_glDataForShadowMap.uniformViewMatrix,
-				1,
-				GL_FALSE,
-				(GLfloat*)Mat4::createLookAt(
-					direction * (-1) * Director::getInstance()->getWindowSize().width + getPosition(), // 近すぎるとカメラに入らないので適度に離す
-					getPosition(),
-					Vec3(0.0f, 1.0f, 0.0f)
-				).m
-			);
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-			// TODO:Vec3やMat4に頭につける-演算子作らないと
+			if (dirLight->hasShadowMap())
+			{
+				makeShadowMap = true;
+				shadowMapData = dirLight->getShadowMapData();
+			}
 		}
 			break;
 		case LightType::POINT: {
@@ -1011,6 +956,36 @@ void Sprite3D::renderShadowMap()
 			break;
 		}
 	}
+
+	if (!makeShadowMap)
+	{
+		// シャドウマップを必要とするライトがなければ何もしない
+		return;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowMapData.frameBufferId);
+
+	//TODO:シャドウマップの大きさは画面サイズと同じにしている
+	glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glUseProgram(_glDataForShadowMap.shaderProgram);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+	glUniformMatrix4fv(
+		_glDataForShadowMap.uniformViewMatrix,
+		1,
+		GL_FALSE,
+		(GLfloat*)shadowMapData.viewMatrix.m
+	);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	// TODO:Vec3やMat4に頭につける-演算子作らないと
+
+	// 行列の設定
+	glUniformMatrix4fv(_glDataForShadowMap.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+	glUniformMatrix4fv(_glDataForShadowMap.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	// 頂点属性の設定
 	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
@@ -1091,17 +1066,23 @@ void Sprite3D::renderWithShadowMap()
 
 			// TODO:とりあえず影つけはDirectionalLightのみを想定
 			// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
-			glUniformMatrix4fv(
-				_uniformLightViewMatrix,
-				1,
-				GL_FALSE,
-				(GLfloat*)Mat4::createLookAt(
-					direction * (-1) * Director::getInstance()->getWindowSize().width + getPosition(), // 近すぎるとカメラに入らないので適度に離す
-					getPosition(),
-					Vec3(0.0f, 1.0f, 0.0f)
-				).m
-			);
-			// TODO:Vec3やMat4に頭につける-演算子作らないと
+			if (dirLight->hasShadowMap())
+			{
+				glUniformMatrix4fv(
+					_uniformLightViewMatrix,
+					1,
+					GL_FALSE,
+					(GLfloat*)dirLight->getShadowMapData().viewMatrix.m
+				);
+				// TODO:Vec3やMat4に頭につける-演算子作らないと
+
+				if (_isC3b) {
+					glActiveTexture(GL_TEXTURE1);
+					glBindTexture(GL_TEXTURE_2D, dirLight->getShadowMapData().textureId);
+					glUniform1i(_uniformShadowTexture, 1);
+					glActiveTexture(GL_TEXTURE0);
+				}
+			}
 		}
 			break;
 		case LightType::POINT: {
@@ -1211,13 +1192,6 @@ void Sprite3D::renderWithShadowMap()
 		//glUniform1f(_glData.uniformMaterialOpacity, 1, (GLfloat*)&_emissive);
 		//Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-	}
-
-	if (_isC3b) {
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, _depthTexture);
-		glUniform1i(_uniformShadowTexture, 1);
-		glActiveTexture(GL_TEXTURE0);
 	}
 
 	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());

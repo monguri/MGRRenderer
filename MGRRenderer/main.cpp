@@ -248,6 +248,7 @@ void initialize()
 
 	DirectionalLight* directionalLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
 	directionalLight->setIntensity(1.0f);
+	directionalLight->prepareShadowMap(sprite3DC3tNode->getPosition(), WINDOW_WIDTH, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addLight(directionalLight);
 
 	//PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);

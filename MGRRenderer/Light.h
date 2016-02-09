@@ -46,13 +46,27 @@ class DirectionalLight :
 	public Light
 {
 public:
+	struct ShadowMapData
+	{
+		Mat4 viewMatrix;
+		GLuint frameBufferId;
+		GLuint textureId;
+
+		ShadowMapData() : frameBufferId(0), textureId(0) {};
+	};
+
 	DirectionalLight(const Vec3& direction, const Color3B& color);
 
 	LightType getLightType() const override { return LightType::DIRECTION; };
 	const Vec3& getDirection() const { return _direction; }
+	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
+	void prepareShadowMap(const Vec3& targetPosition, float cameraDistanceFromTarget, const Size& size);
+	bool hasShadowMap() const { return _hasShadowMap; }
 
 private:
+	bool _hasShadowMap;
 	Vec3 _direction;
+	ShadowMapData _shadowMapData;
 };
 
 class PointLight :

@@ -688,6 +688,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		//	return false;
 		//}
 
+		// TODO:ƒ‰ƒCƒg‚Ì”»’è“ü‚ê‚È‚¢‚Æ
 		_uniformLightViewMatrix = glGetUniformLocation(_glData.shaderProgram, "u_lightViewMatrix");
 		if (glGetError() != GL_NO_ERROR)
 		{

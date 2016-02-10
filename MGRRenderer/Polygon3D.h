@@ -16,6 +16,9 @@ private:
 	OpenGLProgramData _glData;
 	std::vector<Vec3> _vertexArray;
 
+	GLint _uniformLightViewMatrix;
+	GLint _uniformShadowTexture;
+
 	~Polygon3D();
 	void renderWithShadowMap() override;
 };

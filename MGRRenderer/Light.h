@@ -25,6 +25,11 @@ public:
 	virtual LightType getLightType() const = 0;
 	float getIntensity() const { return _intensity; }
 	void setIntensity(float intensity) { _intensity = intensity; }
+	virtual bool hasShadowMap() const = 0;
+	virtual void beginRenderShadowMap() = 0;
+	virtual void endRenderShadowMap() = 0;
+	virtual void beginRenderWithShadowMap() = 0;
+	virtual void endRenderWithShadowMap() = 0;
 
 protected:
 	Light();
@@ -40,6 +45,12 @@ public:
 	AmbientLight(const Color3B& color);
 
 	LightType getLightType() const override { return LightType::AMBIENT; };
+
+	bool hasShadowMap() const override { return false; } // シャドウマップはアンビエントライトには使えない
+	void beginRenderShadowMap() override {};
+	void endRenderShadowMap() override {};
+	void beginRenderWithShadowMap() override {};
+	void endRenderWithShadowMap() override {};
 };
 
 class DirectionalLight :
@@ -61,7 +72,11 @@ public:
 	const Vec3& getDirection() const { return _direction; }
 	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 	void prepareShadowMap(const Vec3& targetPosition, float cameraDistanceFromTarget, const Size& size);
-	bool hasShadowMap() const { return _hasShadowMap; }
+	bool hasShadowMap() const override { return _hasShadowMap; }
+	void beginRenderShadowMap() override;
+	void endRenderShadowMap() override;
+	void beginRenderWithShadowMap() override;
+	void endRenderWithShadowMap() override;
 
 private:
 	bool _hasShadowMap;
@@ -77,6 +92,7 @@ public:
 
 	LightType getLightType() const override { return LightType::POINT; };
 	float getRange() const { return _range; }
+	bool hasShadowMap() const override { return false; } // シャドウマップはポイントライトには使えない
 
 private:
 	// 減衰率計算に用いる、光の届く範囲　正しい物理計算だと無限遠まで届くが、そうでないモデルをcocosが使ってるのでそれを採用
@@ -94,6 +110,11 @@ public:
 	float getRange() const { return _range; }
 	float getInnerAngleCos() const { return _innerAngleCos; }
 	float getOuterAngleCos() const { return _outerAngleCos; }
+	bool hasShadowMap() const override { return false; } // シャドウマップはスポットライトには使えない
+	void beginRenderShadowMap() override {};
+	void endRenderShadowMap() override {};
+	void beginRenderWithShadowMap() override {};
+	void endRenderWithShadowMap() override {};
 
 private:
 	Vec3 _direction;

@@ -69,6 +69,33 @@ void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float camera
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 }
 
+void DirectionalLight::beginRenderShadowMap()
+{
+	Logger::logAssert(hasShadowMap(), "beginRenderShadowMap呼び出しはシャドウマップを使う前提");
+
+	glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().frameBufferId);
+
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void DirectionalLight::endRenderShadowMap()
+{
+	Logger::logAssert(hasShadowMap(), "endRenderShadowMap呼び出しはシャドウマップを使う前提");
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
+}
+
+void DirectionalLight::beginRenderWithShadowMap()
+{
+
+}
+
+void DirectionalLight::endRenderWithShadowMap()
+{
+
+}
+
 PointLight::PointLight(const Vec3& position, const Color3B& color, float range) : _range(range)
 {
 	setPosition(position);

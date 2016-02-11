@@ -1004,11 +1004,6 @@ void Sprite3D::renderShadowMap()
 		return;
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowMapData.frameBufferId);
-
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	glUseProgram(_glDataForShadowMap.shaderProgram);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
@@ -1068,8 +1063,6 @@ void Sprite3D::renderShadowMap()
 
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
 }
 
 void Sprite3D::renderWithShadowMap()

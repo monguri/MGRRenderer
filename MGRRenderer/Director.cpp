@@ -158,9 +158,11 @@ void Director::updateStats(float dt)
 	{
 		// FPSƒ‰ƒxƒ‹‚Í‚Ç‚±‚É‚àaddChild‚µ‚È‚¢‚Ì‚Å‚±‚±‚Åvisit‚ðŒÄ‚ñ‚Å•`‰æ‚·‚é
 		// ‰e‚ÍŠÖŒW‚È‚¢‚Ì‚Åˆê‹C‚É‘SƒpƒX•`‰æ‚µ‚Ä‚µ‚Ü‚¤
+		glDisable(GL_DEPTH_TEST);
 		_FPSLabel->update(dt);
 		_FPSLabel->renderShadowMap();
 		_FPSLabel->renderWithShadowMap();
+		glEnable(GL_DEPTH_TEST);
 	}
 }
 

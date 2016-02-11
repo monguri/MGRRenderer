@@ -148,8 +148,10 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"varying vec2 v_texCoord;"
 			"varying vec3 v_vertexToPointLightDirection;"
 			"varying vec3 v_vertexToSpotLightDirection;"
+			"varying vec4 v_lightPosition;"
 			"uniform mat4 u_modelMatrix;"
 			"uniform mat4 u_viewMatrix;"
+			"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
 			"uniform mat4 u_projectionMatrix;"
 			"uniform mat4 u_normalMatrix;"
 			"uniform vec3 u_pointLightPosition;"
@@ -163,10 +165,12 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	v_normal = u_normalMatrix * a_normal;" // scale変換に対応するためにモデル行列の逆行列を転置したものを用いる
 			"	v_texCoord = a_texCoord;"
 			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
+			"	v_lightPosition = u_projectionMatrix * u_lightViewMatrix * worldPosition;"
 			"}"
 			,
 			// fragment shader
 			"uniform sampler2D u_texture;"
+			"uniform sampler2D u_shadowTexture;"
 			"uniform vec3 u_multipleColor;"
 			"uniform vec3 u_ambientLightColor;"
 			"uniform vec3 u_directionalLightColor;"
@@ -182,6 +186,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"varying vec2 v_texCoord;"
 			"varying vec3 v_vertexToPointLightDirection;"
 			"varying vec3 v_vertexToSpotLightDirection;"
+			"varying vec4 v_lightPosition;"
 			""
 			"vec3 computeLightedColor(vec3 normalVector, vec3 lightDirection, vec3 lightColor, float attenuation)"
 			"{"
@@ -210,6 +215,14 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	combinedColor.rgb += computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor, attenuation);"
 			""
 			"	gl_FragColor = texture2D(u_texture, v_texCoord) * vec4(u_multipleColor, 0.0) * combinedColor;" // テクスチャ番号は0のみに対応
+			""
+			"	vec4 depthCheck = v_lightPosition / v_lightPosition.w;"
+			"	depthCheck = depthCheck / 2.0 + 0.5;"
+			"	float textureDepth = texture2D(u_shadowTexture, depthCheck.xy).z;"
+			"	if (depthCheck.z > textureDepth + 0.0003)" // TODO:後で修正
+			"	{"
+			"		gl_FragColor.rgb *= 0.5;" // TODO:これも定数かけるなんて中途半端。後で修正。僕は0.5にしている。
+			"	}"
 			"}"
 			);
 	}
@@ -415,19 +428,19 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			Logger::logAssert(false, "シェーダから変数確保失敗。");
 			return false;
 		}
+	}
 
-		_uniformShadowTexture = glGetUniformLocation(_glData.shaderProgram, "u_shadowTexture");
-		if (glGetError() != GL_NO_ERROR)
-		{
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-			return false;
-		}
+	_uniformShadowTexture = glGetUniformLocation(_glData.shaderProgram, "u_shadowTexture");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		return false;
+	}
 
-		if (_uniformShadowTexture < 0)
-		{
-			Logger::logAssert(false, "シェーダから変数確保失敗。");
-			return false;
-		}
+	if (_uniformShadowTexture < 0)
+	{
+		Logger::logAssert(false, "シェーダから変数確保失敗。");
+		return false;
 	}
 
 	_glData.uniformAmbientLightColor = glGetUniformLocation(_glData.shaderProgram, "u_ambientLightColor");
@@ -687,84 +700,108 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		//{
 		//	return false;
 		//}
-
-		// TODO:ライトの判定入れないと
-		_uniformLightViewMatrix = glGetUniformLocation(_glData.shaderProgram, "u_lightViewMatrix");
-		if (glGetError() != GL_NO_ERROR)
-		{
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-			return false;
-		}
-
-		if (_uniformLightViewMatrix < 0)
-		{
-			Logger::logAssert(false, "シェーダから変数確保失敗。");
-			return false;
-		}
 	}
 
 
-	_glDataForShadowMap = createOpenGLProgram(
-		// vertex shader
-		// ModelDataしか使わない場合
-		//"attribute vec4 a_position;"
-		//"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
-		//"uniform mat4 u_viewMatrix;"
-		//"uniform mat4 u_projectionMatrix;"
-		//"void main()"
-		//"{"
-		//"	gl_Position = u_projectionMatrix * u_lightViewMatrix * u_modelMatrix * getPosition();"
-		//"}"
-		//// アニメーションを使う場合
-		"attribute vec3 a_position;" // これがvec3になっているのに注意 TODO:なぜなのか？
-		"attribute vec4 a_blendWeight;"
-		"attribute vec4 a_blendIndex;"
-		""
-		"const int SKINNING_JOINT_COUNT = 60;" // TODO:なぜ60個までなのか？
-		""
-		"uniform mat4 u_modelMatrix;"
-		"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
-		"uniform mat4 u_projectionMatrix;"
-		"uniform mat4 u_matrixPalette[SKINNING_JOINT_COUNT];"
-		""
-		"varying vec2 v_texCoord;"
-		""
-		"vec4 getPosition()"
-		"{"
-		"	mat4 skinMatrix = u_matrixPalette[int(a_blendIndex[0])] * a_blendWeight[0];"
-		""
-		"	if (a_blendWeight[1] > 0.0)"
-		"	{"
-		"		skinMatrix += u_matrixPalette[int(a_blendIndex[1])] * a_blendWeight[1];"
-		""
-		"		if (a_blendWeight[2] > 0.0)"
-		"		{"
-		"			skinMatrix += u_matrixPalette[int(a_blendIndex[2])] * a_blendWeight[2];"
-		""
-		"			if (a_blendWeight[3] > 0.0)"
-		"			{"
-		"				skinMatrix += u_matrixPalette[int(a_blendIndex[3])] * a_blendWeight[3];"
-		"			}"
-		"		}"
-		"	}"
-		""
-		"	vec4 position = vec4(a_position, 1.0);"
-		"	vec4 skinnedPosition = skinMatrix * position;"
-		"	skinnedPosition.w = 1.0;"
-		"	return skinnedPosition;"
-		"}"
-		""
-		"void main()"
-		"{"
-		"	gl_Position = u_projectionMatrix * u_lightViewMatrix * u_modelMatrix * getPosition();"
-		"}"
-		,
-		// fragment shader
-		"void main()"
-		"{"
-		"	gl_FragColor = vec4(gl_FragCoord.z);"
-		"}"
-	);
+	// TODO:ライトの判定入れないと
+	_uniformLightViewMatrix = glGetUniformLocation(_glData.shaderProgram, "u_lightViewMatrix");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		return false;
+	}
+
+	if (_uniformLightViewMatrix < 0)
+	{
+		Logger::logAssert(false, "シェーダから変数確保失敗。");
+		return false;
+	}
+
+	if (_isObj)
+	{
+		_glDataForShadowMap = createOpenGLProgram(
+			// vertex shader
+			// ModelDataしか使わない場合
+			"attribute vec4 a_position;"
+			"uniform mat4 u_modelMatrix;"
+			"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
+			"uniform mat4 u_projectionMatrix;"
+			"void main()"
+			"{"
+			"	gl_Position = u_projectionMatrix * u_lightViewMatrix * u_modelMatrix * a_position;"
+			"}"
+			,
+			// fragment shader
+			"void main()"
+			"{"
+			"	gl_FragColor = vec4(gl_FragCoord.z);"
+			"}"
+		);
+	}
+	else if (_isC3b)
+	{
+		_glDataForShadowMap = createOpenGLProgram(
+			// vertex shader
+			// ModelDataしか使わない場合
+			//"attribute vec4 a_position;"
+			//"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
+			//"uniform mat4 u_viewMatrix;"
+			//"uniform mat4 u_projectionMatrix;"
+			//"void main()"
+			//"{"
+			//"	gl_Position = u_projectionMatrix * u_lightViewMatrix * u_modelMatrix * getPosition();"
+			//"}"
+			//// アニメーションを使う場合
+			"attribute vec3 a_position;" // これがvec3になっているのに注意 TODO:なぜなのか？
+			"attribute vec4 a_blendWeight;"
+			"attribute vec4 a_blendIndex;"
+			""
+			"const int SKINNING_JOINT_COUNT = 60;" // TODO:なぜ60個までなのか？
+			""
+			"uniform mat4 u_modelMatrix;"
+			"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
+			"uniform mat4 u_projectionMatrix;"
+			"uniform mat4 u_matrixPalette[SKINNING_JOINT_COUNT];"
+			""
+			"varying vec2 v_texCoord;"
+			""
+			"vec4 getPosition()"
+			"{"
+			"	mat4 skinMatrix = u_matrixPalette[int(a_blendIndex[0])] * a_blendWeight[0];"
+			""
+			"	if (a_blendWeight[1] > 0.0)"
+			"	{"
+			"		skinMatrix += u_matrixPalette[int(a_blendIndex[1])] * a_blendWeight[1];"
+			""
+			"		if (a_blendWeight[2] > 0.0)"
+			"		{"
+			"			skinMatrix += u_matrixPalette[int(a_blendIndex[2])] * a_blendWeight[2];"
+			""
+			"			if (a_blendWeight[3] > 0.0)"
+			"			{"
+			"				skinMatrix += u_matrixPalette[int(a_blendIndex[3])] * a_blendWeight[3];"
+			"			}"
+			"		}"
+			"	}"
+			""
+			"	vec4 position = vec4(a_position, 1.0);"
+			"	vec4 skinnedPosition = skinMatrix * position;"
+			"	skinnedPosition.w = 1.0;"
+			"	return skinnedPosition;"
+			"}"
+			""
+			"void main()"
+			"{"
+			"	gl_Position = u_projectionMatrix * u_lightViewMatrix * u_modelMatrix * getPosition();"
+			"}"
+			,
+			// fragment shader
+			"void main()"
+			"{"
+			"	gl_FragColor = vec4(gl_FragCoord.z);"
+			"}"
+		);
+	}
 
 	_glDataForShadowMap.uniformViewMatrix = glGetUniformLocation(_glDataForShadowMap.shaderProgram, "u_lightViewMatrix");
 	if (glGetError() != GL_NO_ERROR)
@@ -779,17 +816,20 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		return false;
 	}
 
-	_glDataForShadowMap.uniformSkinMatrixPalette = glGetUniformLocation(_glDataForShadowMap.shaderProgram, "u_matrixPalette");
-	if (glGetError() != GL_NO_ERROR)
+	if (_isC3b)
 	{
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		return false;
-	}
+		_glDataForShadowMap.uniformSkinMatrixPalette = glGetUniformLocation(_glDataForShadowMap.shaderProgram, "u_matrixPalette");
+		if (glGetError() != GL_NO_ERROR)
+		{
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+			return false;
+		}
 
-	if (_glDataForShadowMap.uniformSkinMatrixPalette < 0)
-	{
-		Logger::logAssert(false, "シェーダから変数確保失敗。");
-		return false;
+		if (_glDataForShadowMap.uniformSkinMatrixPalette < 0)
+		{
+			Logger::logAssert(false, "シェーダから変数確保失敗。");
+			return false;
+		}
 	}
 
 	return true;
@@ -966,8 +1006,6 @@ void Sprite3D::renderShadowMap()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, shadowMapData.frameBufferId);
 
-	//TODO:シャドウマップの大きさは画面サイズと同じにしている
-	glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -999,20 +1037,34 @@ void Sprite3D::renderShadowMap()
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
-	
-	Logger::logAssert(_isC3b, "シャドウマップ使用するときはobj未対応");
-	C3bLoader::MeshData* meshData = _meshDatas->meshDatas[0];
-	for (int i = 0, offset = 0; i < meshData->numAttribute; ++i)
+	if (_isObj)
 	{
-		const C3bLoader::MeshVertexAttribute& attrib = meshData->attributes[i];
-		glVertexAttribPointer((GLuint)attrib.location, attrib.size, attrib.type, GL_FALSE, _perVertexByteSize, (GLvoid*)&meshData->vertices[offset]);
+		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].position);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		offset += attrib.size;
+		glVertexAttribPointer((GLuint)AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	}
+	else if (_isC3b)
+	{
+		// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
+		C3bLoader::MeshData* meshData = _meshDatas->meshDatas[0];
+		for (int i = 0, offset = 0; i < meshData->numAttribute; ++i)
+		{
+			const C3bLoader::MeshVertexAttribute& attrib = meshData->attributes[i];
+			glVertexAttribPointer((GLuint)attrib.location, attrib.size, attrib.type, GL_FALSE, _perVertexByteSize, (GLvoid*)&meshData->vertices[offset]);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+			offset += attrib.size;
+		}
 	}
 
-	Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
-	glUniformMatrix4fv(_glDataForShadowMap.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	// スキニングのマトリックスパレットの設定
+	if (_isC3b) {
+		Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
+		glUniformMatrix4fv(_glDataForShadowMap.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	}
 
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
@@ -1023,8 +1075,6 @@ void Sprite3D::renderShadowMap()
 void Sprite3D::renderWithShadowMap()
 {
 	Node::renderWithShadowMap();
-
-	//glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
 
 	// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
 	glUseProgram(_glData.shaderProgram);
@@ -1192,7 +1242,6 @@ void Sprite3D::renderWithShadowMap()
 
 		//glUniform1f(_glData.uniformMaterialOpacity, 1, (GLfloat*)&_emissive);
 		//Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
 	}
 
 	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());

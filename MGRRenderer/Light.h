@@ -87,6 +87,8 @@ public:
 	LightType getLightType() const override { return LightType::POINT; };
 	float getRange() const { return _range; }
 	bool hasShadowMap() const override { return false; } // シャドウマップはポイントライトには使えない
+	void beginRenderShadowMap() override {};
+	void endRenderShadowMap() override {};
 
 private:
 	// 減衰率計算に用いる、光の届く範囲　正しい物理計算だと無限遠まで届くが、そうでないモデルをcocosが使ってるのでそれを採用

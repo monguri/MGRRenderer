@@ -194,25 +194,26 @@ void initialize()
 	isSucceeded = polygon3DNode->initWithVertexArray(polygonVertices3D);
 	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
+	// 1.0f‚¸‚Â‹«ŠEü‚ğ‚¸‚ç‚·‚±‚Æ‚Å‹«ŠEü‚ğŒ©‚¦‚é‚æ‚¤‚É‚µ‚Ä‚¢@‚é
 	std::vector<Vec3> planeVertices3D1 {
-		Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, 320.0f),
-		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, -320.0f),
+		Vec3(WINDOW_WIDTH / 2.0f + 320.0f, -1.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, -1.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, -1.0f, 320.0f),
+		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, -1.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, -1.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, -1.0f, -320.0f),
 	};
 	Polygon3D* plane3DNode1 = new Polygon3D();
 	isSucceeded = plane3DNode1->initWithVertexArray(planeVertices3D1);
 	Logger::logAssert(plane3DNode1, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
 	std::vector<Vec3> planeVertices3D2 {
-		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, 320.0f),
-		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, -320.0f),
+		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 1.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 1.0f, -320.0f + 1.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, 320.0f),
+		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, -320.0f + 1.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 1.0f, -320.0f + 1.0f),
 	};
 	Polygon3D* plane3DNode2 = new Polygon3D();
 	isSucceeded = plane3DNode2->initWithVertexArray(planeVertices3D2);
 	Logger::logAssert(plane3DNode2, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
 	std::vector<Vec3> planeVertices3D3 {
-		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, -320.0f),
-		Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 320.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 0.0f, -320.0f),
+		Vec3(WINDOW_WIDTH / 2.0f - 320.0f + 1.0f, 1.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 1.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f + 1.0f, 320.0f, -320.0f),
+		Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 320.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f + 1.0f, 320.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 1.0f, -320.0f),
 	};
 	Polygon3D* plane3DNode3 = new Polygon3D();
 	isSucceeded = plane3DNode3->initWithVertexArray(planeVertices3D3);

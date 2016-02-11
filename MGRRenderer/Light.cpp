@@ -86,16 +86,6 @@ void DirectionalLight::endRenderShadowMap()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
 }
 
-void DirectionalLight::beginRenderWithShadowMap()
-{
-
-}
-
-void DirectionalLight::endRenderWithShadowMap()
-{
-
-}
-
 PointLight::PointLight(const Vec3& position, const Color3B& color, float range) : _range(range)
 {
 	setPosition(position);

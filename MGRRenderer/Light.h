@@ -28,8 +28,6 @@ public:
 	virtual bool hasShadowMap() const = 0;
 	virtual void beginRenderShadowMap() = 0;
 	virtual void endRenderShadowMap() = 0;
-	virtual void beginRenderWithShadowMap() = 0;
-	virtual void endRenderWithShadowMap() = 0;
 
 protected:
 	Light();
@@ -49,8 +47,6 @@ public:
 	bool hasShadowMap() const override { return false; } // シャドウマップはアンビエントライトには使えない
 	void beginRenderShadowMap() override {};
 	void endRenderShadowMap() override {};
-	void beginRenderWithShadowMap() override {};
-	void endRenderWithShadowMap() override {};
 };
 
 class DirectionalLight :
@@ -75,8 +71,6 @@ public:
 	bool hasShadowMap() const override { return _hasShadowMap; }
 	void beginRenderShadowMap() override;
 	void endRenderShadowMap() override;
-	void beginRenderWithShadowMap() override;
-	void endRenderWithShadowMap() override;
 
 private:
 	bool _hasShadowMap;
@@ -113,8 +107,6 @@ public:
 	bool hasShadowMap() const override { return false; } // シャドウマップはスポットライトには使えない
 	void beginRenderShadowMap() override {};
 	void endRenderShadowMap() override {};
-	void beginRenderWithShadowMap() override {};
-	void endRenderWithShadowMap() override {};
 
 private:
 	Vec3 _direction;

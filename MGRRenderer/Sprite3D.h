@@ -24,6 +24,7 @@ private:
 	bool _isC3b;
 
 	GLint _uniformLightViewMatrix;
+	GLint _uniformDepthBiasMatrix;
 	GLint _uniformShadowTexture;
 
 	OpenGLProgramData _glData;

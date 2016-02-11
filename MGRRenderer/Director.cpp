@@ -45,9 +45,12 @@ void Director::init(const Size& windowSize)
 
 	_windowSize = windowSize;
 	// TODO:2D描画しかしないときもデプステストをONにしている
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 	// OpenGL側でやるビューポート変換のためのパラメータを渡す
 	glViewport(0, 0, windowSize.width, windowSize.height);
+
+	Logger::log("GPU vendor: %s\nGPU:%s\nOpenGL version:%s\nGLSLversion:%s", glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 	// デフォルトのピクセルフォーマットをRGBA8888に。
 	Texture::setDefaultPixelFormat(Texture::PixelFormat::RGBA8888);

@@ -153,6 +153,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"uniform mat4 u_viewMatrix;"
 			"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
 			"uniform mat4 u_projectionMatrix;"
+			"uniform mat4 u_depthBiasMatrix;"
 			"uniform mat4 u_normalMatrix;"
 			"uniform vec3 u_pointLightPosition;"
 			"uniform vec3 u_spotLightPosition;"
@@ -165,12 +166,12 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	v_normal = u_normalMatrix * a_normal;" // scale変換に対応するためにモデル行列の逆行列を転置したものを用いる
 			"	v_texCoord = a_texCoord;"
 			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
-			"	v_lightPosition = u_projectionMatrix * u_lightViewMatrix * worldPosition;"
+			"	v_lightPosition = u_depthBiasMatrix * u_projectionMatrix * u_lightViewMatrix * worldPosition;"
 			"}"
 			,
 			// fragment shader
 			"uniform sampler2D u_texture;"
-			"uniform sampler2D u_shadowTexture;"
+			"uniform sampler2DShadow u_shadowTexture;"
 			"uniform vec3 u_multipleColor;"
 			"uniform vec3 u_ambientLightColor;"
 			"uniform vec3 u_directionalLightColor;"
@@ -197,14 +198,15 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			""
 			"void main()"
 			"{"
-			"	vec4 combinedColor = vec4(u_ambientLightColor, 1.0);"
+			"	vec4 ambientLightColor = vec4(u_ambientLightColor, 1.0);"
 			""
 			"	vec3 normal = normalize(v_normal.xyz);" // データ形式の時点でnormalizeされてない法線がある模様
-			"	combinedColor.rgb += computeLightedColor(normal, -u_directionalLightDirection, u_directionalLightColor, 1.0);"
+			"	vec4 diffuseSpecularLightColor = vec4(0.0, 0.0, 0.0, 1.0);"
+			"	diffuseSpecularLightColor.rgb += computeLightedColor(normal, -u_directionalLightDirection, u_directionalLightColor, 1.0);"
 			""
 			"	vec3 dir = v_vertexToPointLightDirection * u_pointLightRangeInverse;"
 			"	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);"
-			"	combinedColor.rgb += computeLightedColor(normal, normalize(v_vertexToPointLightDirection), u_pointLightColor, attenuation);"
+			"	diffuseSpecularLightColor.rgb += computeLightedColor(normal, normalize(v_vertexToPointLightDirection), u_pointLightColor, attenuation);"
 			""
 			"	dir = v_vertexToSpotLightDirection * u_spotLightRangeInverse;"
 			"	attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);"
@@ -212,17 +214,10 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	float spotCurrentAngleCos = dot(u_spotLightDirection, -vertexToSpotLightDirection);"
 			"	attenuation *= smoothstep(u_spotLightOuterAngleCos, u_spotLightInnerAngleCos, spotCurrentAngleCos);"
 			"	attenuation = clamp(attenuation, 0.0, 1.0);"
-			"	combinedColor.rgb += computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor, attenuation);"
+			"	diffuseSpecularLightColor.rgb += computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor, attenuation);"
 			""
-			"	gl_FragColor = texture2D(u_texture, v_texCoord) * vec4(u_multipleColor, 0.0) * combinedColor;" // テクスチャ番号は0のみに対応
-			""
-			"	vec4 depthCheck = v_lightPosition / v_lightPosition.w;"
-			"	depthCheck = depthCheck / 2.0 + 0.5;"
-			"	float textureDepth = texture2D(u_shadowTexture, depthCheck.xy).z;"
-			"	if (depthCheck.z > textureDepth + 0.0003)" // TODO:後で修正
-			"	{"
-			"		gl_FragColor.rgb *= 0.5;" // TODO:これも定数かけるなんて中途半端。後で修正。僕は0.5にしている。
-			"	}"
+			"	float outShadowFlag = textureProj(u_shadowTexture, v_lightPosition);"
+			"	gl_FragColor = texture2D(u_texture, v_texCoord) * vec4(u_multipleColor, 1.0) * vec4((diffuseSpecularLightColor.rgb * outShadowFlag + ambientLightColor.rgb), 1.0);" // テクスチャ番号は0のみに対応
 			"}"
 			);
 	}
@@ -256,6 +251,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
 			"uniform mat4 u_viewMatrix;"
 			"uniform mat4 u_projectionMatrix;"
+			"uniform mat4 u_depthBiasMatrix;"
 			"uniform mat4 u_normalMatrix;" // scale変換に対応するためにモデル行列の逆行列を転置したものを用いる
 			"uniform vec3 u_pointLightPosition;"
 			"uniform vec3 u_spotLightPosition;"
@@ -305,12 +301,12 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	v_normal = u_normalMatrix * normal;"
 			"	v_texCoord = a_texCoord;"
 			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
-			"	v_lightPosition = u_projectionMatrix * u_lightViewMatrix * u_modelMatrix * getPosition();"
+			"	v_lightPosition = u_depthBiasMatrix * u_projectionMatrix * u_lightViewMatrix * u_modelMatrix * getPosition();"
 			"}"
 			,
 			// fragment shader
 			"uniform sampler2D u_texture;"
-			"uniform sampler2D u_shadowTexture;"
+			"uniform sampler2DShadow u_shadowTexture;"
 			"uniform vec3 u_multipleColor;"
 			"uniform vec3 u_directionalLightColor;"
 			"uniform vec3 u_directionalLightDirection;"
@@ -355,17 +351,18 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			""
 			"void main()"
 			"{"
-			"	vec4 combinedColor = vec4(u_ambientLightColor, 1.0);"
+			"	vec4 ambientLightColor = vec4(u_ambientLightColor, 1.0);"
 			""
 			"	vec3 normal = normalize(v_normal.xyz);" // データ形式の時点でnormalizeされてない法線がある模様
 			""
 			"	vec3 cameraDirection = normalize(v_vertexToCameraDirection);"
 			""
-			"	combinedColor.rgb += computeLightedColor(normal, -u_directionalLightDirection, cameraDirection, u_directionalLightColor, u_materialAmbient, u_materialDiffuse, u_materialSpecular, u_materialShininess, 1.0);"
+			"	vec4 diffuseSpecularLightColor = vec4(0.0, 0.0, 0.0, 1.0);"
+			"	diffuseSpecularLightColor.rgb += computeLightedColor(normal, -u_directionalLightDirection, cameraDirection, u_directionalLightColor, u_materialAmbient, u_materialDiffuse, u_materialSpecular, u_materialShininess, 1.0);"
 			""
 			"	vec3 dir = v_vertexToPointLightDirection * u_pointLightRangeInverse;"
 			"	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);"
-			"	combinedColor.rgb += computeLightedColor(normal, normalize(v_vertexToPointLightDirection), cameraDirection, u_pointLightColor, u_materialAmbient, u_materialDiffuse, u_materialSpecular, u_materialShininess, attenuation);"
+			"	diffuseSpecularLightColor.rgb += computeLightedColor(normal, normalize(v_vertexToPointLightDirection), cameraDirection, u_pointLightColor, u_materialAmbient, u_materialDiffuse, u_materialSpecular, u_materialShininess, attenuation);"
 			""
 			"	dir = v_vertexToSpotLightDirection * u_spotLightRangeInverse;"
 			"	attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);"
@@ -373,17 +370,10 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	float spotCurrentAngleCos = dot(u_spotLightDirection, -vertexToSpotLightDirection);"
 			"	attenuation *= smoothstep(u_spotLightOuterAngleCos, u_spotLightInnerAngleCos, spotCurrentAngleCos);"
 			"	attenuation = clamp(attenuation, 0.0, 1.0);"
-			"	combinedColor.rgb += computeLightedColor(normal, vertexToSpotLightDirection, cameraDirection, u_spotLightColor, u_materialAmbient, u_materialDiffuse, u_materialSpecular, u_materialShininess, attenuation);"
+			"	diffuseSpecularLightColor.rgb += computeLightedColor(normal, vertexToSpotLightDirection, cameraDirection, u_spotLightColor, u_materialAmbient, u_materialDiffuse, u_materialSpecular, u_materialShininess, attenuation);"
 			""
-			"	gl_FragColor = texture2D(u_texture, v_texCoord) * vec4(u_multipleColor, 1.0) * combinedColor;" // テクスチャ番号は0のみに対応
-			""
-			"	vec4 depthCheck = v_lightPosition / v_lightPosition.w;"
-			"	depthCheck = depthCheck / 2.0 + 0.5;"
-			"	float textureDepth = texture2D(u_shadowTexture, depthCheck.xy).z;"
-			"	if (depthCheck.z > textureDepth + 0.0003)" // TODO:後で修正
-			"	{"
-			"		gl_FragColor.rgb *= 0.5;" // TODO:これも定数かけるなんて中途半端。後で修正。僕は0.5にしている。
-			"	}"
+			"	float outShadowFlag = textureProj(u_shadowTexture, v_lightPosition);"
+			"	gl_FragColor = texture2D(u_texture, v_texCoord) * vec4(u_multipleColor, 1.0) * vec4((diffuseSpecularLightColor.rgb * outShadowFlag + ambientLightColor.rgb), 1.0);" // テクスチャ番号は0のみに対応
 			"}"
 			);
 	}
@@ -612,6 +602,19 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		return false;
 	}
 
+	_uniformDepthBiasMatrix = glGetUniformLocation(_glData.shaderProgram, "u_depthBiasMatrix");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		return false;
+	}
+
+	if (_uniformDepthBiasMatrix < 0)
+	{
+		Logger::logAssert(false, "シェーダから変数確保失敗。");
+		return false;
+	}
+
 	if (_isC3b)
 	{
 		_glData.uniformCameraPosition = glGetUniformLocation(_glData.shaderProgram, "u_cameraPosition");
@@ -733,8 +736,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			,
 			// fragment shader
 			"void main()"
-			"{"
-			"	gl_FragColor = vec4(gl_FragCoord.z);"
+			"{" // 何もせずとも深度は自動で書き込まれる 
 			"}"
 		);
 	}
@@ -797,8 +799,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			,
 			// fragment shader
 			"void main()"
-			"{"
-			"	gl_FragColor = vec4(gl_FragCoord.z);"
+			"{" // 何もせずとも深度は自動で書き込まれる 
 			"}"
 		);
 	}
@@ -1117,6 +1118,15 @@ void Sprite3D::renderWithShadowMap()
 					1,
 					GL_FALSE,
 					(GLfloat*)dirLight->getShadowMapData().viewMatrix.m
+				);
+
+				static const Mat4& depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 0.5f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 1.0f));
+
+				glUniformMatrix4fv(
+					_uniformDepthBiasMatrix,
+					1,
+					GL_FALSE,
+					(GLfloat*)depthBiasMatrix.m
 				);
 				// TODO:Vec3やMat4に頭につける-演算子作らないと
 

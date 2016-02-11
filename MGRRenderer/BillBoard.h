@@ -23,6 +23,7 @@ public:
 	// よそですでに作成済みのテクスチャのtextureIdを使う場合
 	bool init(GLuint textureId, const Size& contentSize, Texture::PixelFormat format, Mode mode);
 	void renderShadowMap() override;
+	void renderWithShadowMap() override;
 
 private:
 	Mode _mode;

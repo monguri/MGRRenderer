@@ -1068,6 +1068,8 @@ void Sprite3D::renderShadowMap()
 
 void Sprite3D::renderWithShadowMap()
 {
+	glEnable(GL_DEPTH_TEST);
+
 	Node::renderWithShadowMap();
 
 	// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？

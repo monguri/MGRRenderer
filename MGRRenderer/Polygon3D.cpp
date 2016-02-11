@@ -85,6 +85,8 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 
 void Polygon3D::renderWithShadowMap()
 {
+	glEnable(GL_DEPTH_TEST);
+
 	glUseProgram(_glData.shaderProgram);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGLˆ—‚ÅƒGƒ‰[”­¶ glGetError()=%d", glGetError());
 

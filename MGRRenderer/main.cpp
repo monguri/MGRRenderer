@@ -131,37 +131,37 @@ void initialize()
 
 	// 各ノードの作成はDirector::initの後に呼ぶ。Director::initのもっているウィンドウサイズを使用する場合があるので。
 
-	//std::vector<Point2DData> positionAndPointSize{
-	//	Point2DData(320.0f, 240.0f, 15.0f),
-	//	Point2DData(80.0f, 60.0f, 15.0f),
-	//};
-	//Point2D* pointNode = new Point2D();
-	//pointNode->setColor(Color3B::RED);
-	//pointNode->initWithPointArray(positionAndPointSize);
+	std::vector<Point2DData> positionAndPointSize{
+		Point2DData(320.0f, 240.0f, 15.0f),
+		Point2DData(80.0f, 60.0f, 15.0f),
+	};
+	Point2D* pointNode = new Point2D();
+	pointNode->setColor(Color3B::RED);
+	pointNode->initWithPointArray(positionAndPointSize);
 
-	//std::vector<Vec2> lineVertices{
-	//	Vec2(0.0f, 240.0f), Vec2(640.0f, 240.0f),
-	//	Vec2(320.0f, 480.0f), Vec2(320.0f, 0.0f),
-	//};
-	//Line2D* lineNode = new Line2D();
-	//lineNode->setColor(Color3B::GREEN);
-	//isSucceeded = lineNode->initWithVertexArray(lineVertices);
-	//Logger::logAssert(isSucceeded, "ノードの初期化失敗");
+	std::vector<Vec2> lineVertices{
+		Vec2(0.0f, 240.0f), Vec2(640.0f, 240.0f),
+		Vec2(320.0f, 480.0f), Vec2(320.0f, 0.0f),
+	};
+	Line2D* lineNode = new Line2D();
+	lineNode->setColor(Color3B::GREEN);
+	isSucceeded = lineNode->initWithVertexArray(lineVertices);
+	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
-	//std::vector<Vec2> polygonVertices{
-	//	Vec2(80.0f, 420.0f), Vec2(80.0f, 300.0f), Vec2(240.0f, 420.0f),
-	//	Vec2(240.0f, 420.0f), Vec2(80.0f, 300.0f), Vec2(240.0f, 300.0f),
-	//};
-	//Polygon2D* polygonNode = new Polygon2D();
-	//polygonNode->setColor(Color3B::BLUE);
-	//isSucceeded = polygonNode->initWithVertexArray(polygonVertices);
-	//Logger::logAssert(isSucceeded, "ノードの初期化失敗");
+	std::vector<Vec2> polygonVertices{
+		Vec2(80.0f, 420.0f), Vec2(80.0f, 300.0f), Vec2(240.0f, 420.0f),
+		Vec2(240.0f, 420.0f), Vec2(80.0f, 300.0f), Vec2(240.0f, 300.0f),
+	};
+	Polygon2D* polygonNode = new Polygon2D();
+	polygonNode->setColor(Color3B::BLUE);
+	isSucceeded = polygonNode->initWithVertexArray(polygonVertices);
+	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
-	//Sprite2D* spriteNode = new Sprite2D();
-	//isSucceeded = spriteNode->init("../Resources/Hello.png");
-	//spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
-	//Logger::logAssert(isSucceeded, "ノードの初期化失敗");
-	// TODO:現状表示に成功してない
+	Sprite2D* spriteNode = new Sprite2D();
+	isSucceeded = spriteNode->init("../Resources/Hello.png");
+	spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
+	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
+	//// TODO:現状表示に成功してない
 	//BillBoard* spriteNode = new BillBoard();
 	//isSucceeded = spriteNode->init("../Resources/Hello.png", BillBoard::Mode::VIEW_PLANE_ORIENTED);
 	//spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
@@ -243,8 +243,7 @@ void initialize()
 	Scene* scene = new Scene();
 	scene->init();
 	Light* defaultLight = scene->getDefaultLight();
-	//defaultLight->setIntensity(0.3f);
-	defaultLight->setIntensity(0.0f);
+	defaultLight->setIntensity(0.3f);
 	defaultLight->setColor(Color3B::WHITE);
 
 	DirectionalLight* directionalLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
@@ -252,18 +251,18 @@ void initialize()
 	directionalLight->prepareShadowMap(sprite3DC3tNode->getPosition(), WINDOW_WIDTH, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addLight(directionalLight);
 
-	//PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);
+	////PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);
 	////pointLight->setIntensity(0.7f);
-	//scene->addLight(pointLight);
+	////scene->addLight(pointLight);
 
 	//SpotLight* spotLight = new (std::nothrow) SpotLight(Vec3(1000, 1000, 1000), Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE, 10000, 0.0, 0.5);
 	//spotLight->setIntensity(0.7f);
 	//scene->addLight(spotLight);
 
-	//scene->pushNode(pointNode);
-	//scene->pushNode(lineNode);
-	//scene->pushNode(polygonNode);
-	//scene->pushNode(spriteNode);
+	scene->pushNode(pointNode);
+	scene->pushNode(lineNode);
+	scene->pushNode(polygonNode);
+	scene->pushNode(spriteNode);
 	scene->pushNode(point3DNode);
 	scene->pushNode(line3DNode);
 	scene->pushNode(polygon3DNode);

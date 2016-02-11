@@ -81,6 +81,11 @@ Camera& Director::getCamera()
 	return getInstance()->getScene().getCamera();
 }
 
+const Camera& Director::getCameraFor2D()
+{
+	return getInstance()->getScene().getCameraFor2D();
+}
+
 const std::vector<Light*>& Director::getLight()
 {
 	return getInstance()->getScene().getLight();

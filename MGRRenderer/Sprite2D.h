@@ -17,12 +17,10 @@ public:
 	bool initWithTexture(GLuint textureId, const Size& contentSize, Texture::PixelFormat format);
 
 protected:
-	void renderWithShadowMap() override;
-
-private:
 	OpenGLProgramData _glData;
 	Texture* _texture;
 	Quadrangle2D _quadrangle;
+	void renderWithShadowMap() override;
 };
 
 } // namespace mgrrenderer

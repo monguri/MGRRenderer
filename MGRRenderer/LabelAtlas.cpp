@@ -27,9 +27,6 @@ bool LabelAtlas::init(const std::string& string, const Texture* texture, int ite
 	_itemWidth = itemWidth;
 	_itemHeight = itemHeight;
 
-	// TODO:Directorにセットしたカメラを動かすと位置が動いてしまうため、とりあえず中でデフォルトのカメラを保持する
-	_camera.initAsDefault();
-
 	setString(string);
 
 	_glData = createOpenGLProgram(
@@ -137,6 +134,8 @@ void LabelAtlas::renderWithShadowMap()
 		return;
 	}
 
+	glDisable(GL_DEPTH_TEST);
+
 	glUseProgram(_glData.shaderProgram);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
@@ -144,8 +143,8 @@ void LabelAtlas::renderWithShadowMap()
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)_camera.getViewMatrix().m);
-	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)_camera.getProjectionMatrix().m);
+	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getViewMatrix().m);
+	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getProjectionMatrix().m);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);

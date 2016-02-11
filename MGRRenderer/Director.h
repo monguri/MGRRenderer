@@ -19,6 +19,7 @@ public:
 	void setScene(const Scene& scene);
 	void update();
 	static Camera& getCamera();
+	static const Camera& getCameraFor2D();
 	static const std::vector<Light*>& getLight();
 
 	void setDisplayStats(bool displayStats) { _displayStats = displayStats; }

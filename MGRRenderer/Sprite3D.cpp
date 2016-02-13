@@ -1085,7 +1085,7 @@ void Sprite3D::renderWithShadowMap()
 	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-	const Mat4& normalMatrix = calculateNormalMatrix(getModelMatrix());
+	const Mat4& normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
 	glUniformMatrix4fv(_glData.uniformNormalMatrix, 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
 
 	// ライトの設定
@@ -1132,12 +1132,10 @@ void Sprite3D::renderWithShadowMap()
 				);
 				// TODO:Vec3やMat4に頭につける-演算子作らないと
 
-				if (_isC3b) {
-					glActiveTexture(GL_TEXTURE1);
-					glBindTexture(GL_TEXTURE_2D, dirLight->getShadowMapData().textureId);
-					glUniform1i(_uniformShadowTexture, 1);
-					glActiveTexture(GL_TEXTURE0);
-				}
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, dirLight->getShadowMapData().textureId);
+				glUniform1i(_uniformShadowTexture, 1);
+				glActiveTexture(GL_TEXTURE0);
 			}
 		}
 			break;
@@ -1255,18 +1253,6 @@ void Sprite3D::renderWithShadowMap()
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-Mat4 Sprite3D::calculateNormalMatrix(const Mat4& modelMatrix)
-{
-	Mat4 normalMatrix = modelMatrix;
-	normalMatrix.m[3][0] = 0.0f;
-	normalMatrix.m[3][1] = 0.0f;
-	normalMatrix.m[3][2] = 0.0f;
-	normalMatrix.m[3][3] = 1.0f;
-	normalMatrix.inverse();
-	normalMatrix.transpose();
-	return normalMatrix;
 }
 
 } // namespace mgrrenderer

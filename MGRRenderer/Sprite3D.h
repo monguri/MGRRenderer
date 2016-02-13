@@ -57,7 +57,6 @@ private:
 	C3bLoader::NodeData* findJointByName(const std::string& jointName, const std::vector<C3bLoader::NodeData*> children);
 	void renderShadowMap() override;
 	void renderWithShadowMap() override;
-	Mat4 calculateNormalMatrix(const Mat4& modelMatrix);
 };
 
 } // namespace mgrrenderer

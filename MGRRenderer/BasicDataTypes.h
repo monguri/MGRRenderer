@@ -649,6 +649,18 @@ struct Mat4
 
 		return true;
 	}
+
+	static Mat4 createNormalMatrix(const Mat4& modelMatrix)
+	{
+		Mat4 normalMatrix = modelMatrix;
+		normalMatrix.m[3][0] = 0.0f;
+		normalMatrix.m[3][1] = 0.0f;
+		normalMatrix.m[3][2] = 0.0f;
+		normalMatrix.m[3][3] = 1.0f;
+		normalMatrix.inverse();
+		normalMatrix.transpose();
+		return normalMatrix;
+	}
 };
 
 struct Size

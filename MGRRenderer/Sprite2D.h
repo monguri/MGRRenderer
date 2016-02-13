@@ -15,6 +15,7 @@ public:
 	~Sprite2D();
 	bool init(const std::string& filePath);
 	bool initWithTexture(GLuint textureId, const Size& contentSize, Texture::PixelFormat format);
+	const Texture* getTexture() const { return _texture; }
 
 protected:
 	OpenGLProgramData _glData;

@@ -15,8 +15,10 @@ public:
 private:
 	OpenGLProgramData _glData;
 	std::vector<Vec3> _vertexArray;
+	std::vector<Vec3> _normalArray;
 
 	GLint _uniformLightViewMatrix;
+	GLint _uniformDepthBiasMatrix;
 	GLint _uniformShadowTexture;
 
 	~Polygon3D();

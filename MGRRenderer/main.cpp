@@ -187,7 +187,6 @@ void initialize()
 
 	std::vector<Vec3> polygonVertices3D {
 		Vec3(80.0f, 420.0f, 120.0f), Vec3(80.0f, 300.0f, -120.0f), Vec3(240.0f, 420.0f, 120.0f),
-		Vec3(240.0f, 420.0f, -120.0f), Vec3(-80.0f, 300.0f, 120.0f), Vec3(240.0f, 420.0f, -120.0f),
 	};
 	Polygon3D* polygon3DNode = new Polygon3D();
 	polygon3DNode->setColor(Color3B::BLUE);
@@ -241,15 +240,14 @@ void initialize()
 	defaultLight->setColor(Color3B::WHITE);
 
 	DirectionalLight* directionalLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
-	directionalLight->setIntensity(1.0f);
+	directionalLight->setIntensity(0.7f);
 	directionalLight->prepareShadowMap(sprite3DC3tNode->getPosition(), WINDOW_WIDTH, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addLight(directionalLight);
 
 	// TODO:シャドウマップをスプライトで描画したかったが機能してない
 	Sprite2D* depthTextureSprite = new Sprite2D();
-	const Size& contentSize = Director::getInstance()->getWindowSize() / 3.0f;
+	const Size& contentSize = Director::getInstance()->getWindowSize() / 4.0f;
 	depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().textureId, contentSize, Texture::PixelFormat::RGBA8888); // pixelformatは適当
-	//depthTextureSprite->initWithTexture(spriteNode->getTexture()->getTextureId(), contentSize, Texture::PixelFormat::RGBA8888); // pixelformatは適当
 	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 
 

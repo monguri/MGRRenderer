@@ -241,7 +241,7 @@ void initialize()
 
 	DirectionalLight* directionalLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
 	directionalLight->setIntensity(0.7f);
-	directionalLight->prepareShadowMap(sprite3DC3tNode->getPosition(), WINDOW_WIDTH, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+	directionalLight->prepareShadowMap(sprite3DC3tNode->getPosition(), WINDOW_HEIGHT / 1.1566f, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addLight(directionalLight);
 
 	// TODO:シャドウマップをスプライトで描画したかったが機能してない

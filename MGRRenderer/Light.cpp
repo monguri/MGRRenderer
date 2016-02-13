@@ -28,6 +28,9 @@ void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float camera
 		Vec3(0.0f, 1.0f, 0.0f) // とりあえずy方向を上にして固定
 	);
 
+	//_shadowMapData.projectionMatrix = Mat4::createPerspective(60.0, size.width / size.height, 10, cameraDistanceFromTaret + size.height / 2.0f);
+	_shadowMapData.projectionMatrix = Mat4::createPerspective(60.0, size.width / size.height, 10, 10000.0f);
+
 	// デプステクスチャ作成
 	glGenTextures(1, &_shadowMapData.textureId);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());

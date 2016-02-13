@@ -56,6 +56,7 @@ public:
 	struct ShadowMapData
 	{
 		Mat4 viewMatrix;
+		Mat4 projectionMatrix;
 		GLuint frameBufferId;
 		GLuint textureId;
 

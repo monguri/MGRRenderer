@@ -20,6 +20,7 @@ private:
 	std::vector<Vec3> _normalArray;
 
 	GLint _uniformLightViewMatrix;
+	GLint _uniformLightProjectionMatrix;
 	GLint _uniformDepthBiasMatrix;
 	GLint _uniformShadowTexture;
 

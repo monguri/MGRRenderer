@@ -152,6 +152,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"uniform mat4 u_modelMatrix;"
 			"uniform mat4 u_viewMatrix;"
 			"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
+			"uniform mat4 u_lightProjectionMatrix;" // 影付けに使うライトをカメラに見立てたプロジェクション行列
 			"uniform mat4 u_projectionMatrix;"
 			"uniform mat4 u_depthBiasMatrix;"
 			"uniform mat4 u_normalMatrix;"
@@ -166,7 +167,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	v_normal = u_normalMatrix * a_normal;" // scale変換に対応するためにモデル行列の逆行列を転置したものを用いる
 			"	v_texCoord = a_texCoord;"
 			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
-			"	v_lightPosition = u_depthBiasMatrix * u_projectionMatrix * u_lightViewMatrix * worldPosition;"
+			"	v_lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * worldPosition;"
 			"}"
 			,
 			// fragment shader
@@ -249,6 +250,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			""
 			"uniform mat4 u_modelMatrix;"
 			"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
+			"uniform mat4 u_lightProjectionMatrix;" // 影付けに使うライトをカメラに見立てたプロジェクション行列
 			"uniform mat4 u_viewMatrix;"
 			"uniform mat4 u_projectionMatrix;"
 			"uniform mat4 u_depthBiasMatrix;"
@@ -301,7 +303,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	v_normal = u_normalMatrix * normal;"
 			"	v_texCoord = a_texCoord;"
 			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
-			"	v_lightPosition = u_depthBiasMatrix * u_projectionMatrix * u_lightViewMatrix * u_modelMatrix * getPosition();"
+			"	v_lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * u_modelMatrix * getPosition();"
 			"}"
 			,
 			// fragment shader
@@ -720,6 +722,19 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		return false;
 	}
 
+	_uniformLightProjectionMatrix = glGetUniformLocation(_glData.shaderProgram, "u_lightProjectionMatrix");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		return false;
+	}
+
+	if (_uniformLightProjectionMatrix < 0)
+	{
+		Logger::logAssert(false, "シェーダから変数確保失敗。");
+		return false;
+	}
+
 	if (_isObj)
 	{
 		_glDataForShadowMap = createOpenGLProgram(
@@ -728,10 +743,10 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"attribute vec4 a_position;"
 			"uniform mat4 u_modelMatrix;"
 			"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
-			"uniform mat4 u_projectionMatrix;"
+			"uniform mat4 u_lightProjectionMatrix;"
 			"void main()"
 			"{"
-			"	gl_Position = u_projectionMatrix * u_lightViewMatrix * u_modelMatrix * a_position;"
+			"	gl_Position = u_lightProjectionMatrix * u_lightViewMatrix * u_modelMatrix * a_position;"
 			"}"
 			,
 			// fragment shader
@@ -762,7 +777,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			""
 			"uniform mat4 u_modelMatrix;"
 			"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
-			"uniform mat4 u_projectionMatrix;"
+			"uniform mat4 u_lightProjectionMatrix;"
 			"uniform mat4 u_matrixPalette[SKINNING_JOINT_COUNT];"
 			""
 			"varying vec2 v_texCoord;"
@@ -794,7 +809,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			""
 			"void main()"
 			"{"
-			"	gl_Position = u_projectionMatrix * u_lightViewMatrix * u_modelMatrix * getPosition();"
+			"	gl_Position = u_lightProjectionMatrix * u_lightViewMatrix * u_modelMatrix * getPosition();"
 			"}"
 			,
 			// fragment shader
@@ -812,6 +827,19 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 
 	if (_glDataForShadowMap.uniformViewMatrix < 0)
+	{
+		Logger::logAssert(false, "シェーダから変数確保失敗。");
+		return false;
+	}
+
+	_glDataForShadowMap.uniformProjectionMatrix = glGetUniformLocation(_glDataForShadowMap.shaderProgram, "u_lightProjectionMatrix");
+	if (glGetError() != GL_NO_ERROR)
+	{
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		return false;
+	}
+
+	if (_glDataForShadowMap.uniformProjectionMatrix < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
@@ -969,6 +997,8 @@ void Sprite3D::renderShadowMap()
 {
 	Node::renderShadowMap();
 
+	glEnable(GL_DEPTH_TEST);
+
 	bool makeShadowMap = false;
 	DirectionalLight::ShadowMapData shadowMapData;
 
@@ -1008,6 +1038,9 @@ void Sprite3D::renderShadowMap()
 	glUseProgram(_glDataForShadowMap.shaderProgram);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
+
+	// 行列の設定
+	glUniformMatrix4fv(_glDataForShadowMap.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
 	glUniformMatrix4fv(
 		_glDataForShadowMap.uniformViewMatrix,
 		1,
@@ -1016,10 +1049,12 @@ void Sprite3D::renderShadowMap()
 	);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	// TODO:Vec3やMat4に頭につける-演算子作らないと
-
-	// 行列の設定
-	glUniformMatrix4fv(_glDataForShadowMap.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-	glUniformMatrix4fv(_glDataForShadowMap.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+	glUniformMatrix4fv(
+		_glDataForShadowMap.uniformProjectionMatrix,
+		1,
+		GL_FALSE,
+		(GLfloat*)shadowMapData.projectionMatrix.m
+	);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	// 頂点属性の設定
@@ -1068,9 +1103,9 @@ void Sprite3D::renderShadowMap()
 
 void Sprite3D::renderWithShadowMap()
 {
-	glEnable(GL_DEPTH_TEST);
-
 	Node::renderWithShadowMap();
+
+	glEnable(GL_DEPTH_TEST);
 
 	// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
 	glUseProgram(_glData.shaderProgram);
@@ -1120,6 +1155,13 @@ void Sprite3D::renderWithShadowMap()
 					1,
 					GL_FALSE,
 					(GLfloat*)dirLight->getShadowMapData().viewMatrix.m
+				);
+
+				glUniformMatrix4fv(
+					_uniformLightProjectionMatrix,
+					1,
+					GL_FALSE,
+					(GLfloat*)dirLight->getShadowMapData().projectionMatrix.m
 				);
 
 				static const Mat4& depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 0.5f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 1.0f));

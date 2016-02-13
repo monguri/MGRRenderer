@@ -234,12 +234,6 @@ void initialize()
 	sprite3DC3tNode->startAnimation("Take 001", true);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
-	// TODO:シャドウマップをビルボードで描画したかったが機能してない
-	//BillBoard* depthTextureBillBoard = new BillBoard();
-	//depthTextureBillBoard->init(sprite3DC3tNode->_depthTexture, Director::getInstance()->getWindowSize() / 4, Texture::PixelFormat::RGBA4444, BillBoard::Mode::VIEW_PLANE_ORIENTED); // pixelformatは適当
-	//depthTextureBillBoard->setPosition(Vec3(WINDOW_WIDTH / 2.0f + 100, WINDOW_HEIGHT / 2.0f, 0));
-	//Director::getInstance()->getScene().pushNode(depthTextureBillBoard);
-
 	Scene* scene = new Scene();
 	scene->init();
 	Light* defaultLight = scene->getDefaultLight();
@@ -251,6 +245,14 @@ void initialize()
 	directionalLight->prepareShadowMap(sprite3DC3tNode->getPosition(), WINDOW_WIDTH, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addLight(directionalLight);
 
+	// TODO:シャドウマップをスプライトで描画したかったが機能してない
+	Sprite2D* depthTextureSprite = new Sprite2D();
+	const Size& contentSize = Director::getInstance()->getWindowSize() / 3.0f;
+	depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().textureId, contentSize, Texture::PixelFormat::RGBA8888); // pixelformatは適当
+	//depthTextureSprite->initWithTexture(spriteNode->getTexture()->getTextureId(), contentSize, Texture::PixelFormat::RGBA8888); // pixelformatは適当
+	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
+
+
 	////PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);
 	////pointLight->setIntensity(0.7f);
 	////scene->addLight(pointLight);
@@ -259,10 +261,6 @@ void initialize()
 	//spotLight->setIntensity(0.7f);
 	//scene->addLight(spotLight);
 
-	scene->pushNode(pointNode);
-	scene->pushNode(lineNode);
-	scene->pushNode(polygonNode);
-	scene->pushNode(spriteNode);
 	scene->pushNode(point3DNode);
 	scene->pushNode(line3DNode);
 	scene->pushNode(polygon3DNode);
@@ -271,7 +269,11 @@ void initialize()
 	scene->pushNode(plane3DNode3);
 	scene->pushNode(sprite3DObjNode);
 	scene->pushNode(sprite3DC3tNode);
-	//scene->pushNode(depthTextureBillBoard); // TODO:深度テクスチャをうまく表示できない
+	//scene->pushNode(pointNode);
+	//scene->pushNode(lineNode);
+	//scene->pushNode(polygonNode);
+	//scene->pushNode(spriteNode);
+	scene->pushNode(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない
 
 	Director::getInstance()->setScene(*scene);
 }

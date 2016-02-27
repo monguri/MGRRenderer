@@ -44,9 +44,11 @@ void Director::init(const Size& windowSize)
 	calculateDeltaTime();
 
 	_windowSize = windowSize;
-	// TODO:2D描画しかしないときもデプステストをONにしている
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
+	// TODO:ブレンドが必要ない時もブレンドをONにしている
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// OpenGL側でやるビューポート変換のためのパラメータを渡す
 	glViewport(0, 0, windowSize.width, windowSize.height);
 

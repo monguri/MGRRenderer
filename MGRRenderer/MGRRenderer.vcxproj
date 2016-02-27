@@ -36,6 +36,7 @@
     <ClInclude Include="MGRRenderer.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="ObjLoader.h" />
+    <ClInclude Include="Particle3D.h" />
     <ClInclude Include="Point2D.h" />
     <ClInclude Include="Point3D.h" />
     <ClInclude Include="Polygon2D.h" />
@@ -63,6 +64,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="ObjLoader.cpp" />
+    <ClCompile Include="Particle3D.cpp" />
     <ClCompile Include="Point2D.cpp" />
     <ClCompile Include="Point3D.cpp" />
     <ClCompile Include="Polygon2D.cpp" />

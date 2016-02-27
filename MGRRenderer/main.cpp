@@ -193,7 +193,7 @@ void initialize()
 	isSucceeded = polygon3DNode->initWithVertexArray(polygonVertices3D);
 	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
-	// 1.0f‚¸‚Â‹«ŠEü‚ğ‚¸‚ç‚·‚±‚Æ‚Å‹«ŠEü‚ğŒ©‚¦‚é‚æ‚¤‚É‚µ‚Ä‚¢@‚é
+	// 1.0f‚¸‚Â‹«ŠEü‚ğ‚¸‚ç‚·‚±‚Æ‚Å‹«ŠEü‚ğŒ©‚¦‚é‚æ‚¤‚É‚µ‚Ä‚¢‚é
 	std::vector<Vec3> planeVertices3D1 {
 		Vec3(WINDOW_WIDTH / 2.0f + 320.0f, -1.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, -1.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, -1.0f, 320.0f),
 		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, -1.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, -1.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, -1.0f, -320.0f),
@@ -233,6 +233,19 @@ void initialize()
 	sprite3DC3tNode->startAnimation("Take 001", true);
 	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
 
+	Particle3D::Parameter parameter;
+	parameter.gravity = Vec3(0.0f, -100.0f, 0.0f);
+	parameter.initVelocity = Vec3(30.0f, 300.0f, 0.0f);
+	parameter.lifeTime = 100.0f;
+	parameter.numParticle = 1;
+	parameter.textureFilePath = "../Resources/bluewater.png";
+	parameter.pointSize = 15.0;
+
+	Particle3D* particle3DNode = new Particle3D();
+	isSucceeded = particle3DNode->initWithParameter(parameter);
+	particle3DNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 200.0f, WINDOW_HEIGHT / 2.0f - 300.0f, 0));
+	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»¸”s");
+
 	Scene* scene = new Scene();
 	scene->init();
 	Light* defaultLight = scene->getDefaultLight();
@@ -267,6 +280,7 @@ void initialize()
 	scene->pushNode(plane3DNode3);
 	scene->pushNode(sprite3DObjNode);
 	scene->pushNode(sprite3DC3tNode);
+	scene->pushNode(particle3DNode);
 	//scene->pushNode(pointNode);
 	//scene->pushNode(lineNode);
 	//scene->pushNode(polygonNode);

@@ -16,3 +16,4 @@
 #include "LabelAtlas.h"
 #include "BillBoard.h"
 #include "Light.h"
+#include "Particle3D.h"

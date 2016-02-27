@@ -235,9 +235,9 @@ void initialize()
 
 	Particle3D::Parameter parameter;
 	parameter.gravity = Vec3(0.0f, -100.0f, 0.0f);
-	parameter.initVelocity = Vec3(30.0f, 300.0f, 0.0f);
+	parameter.initVelocity = 300.0f;
 	parameter.lifeTime = 100.0f;
-	parameter.numParticle = 1;
+	parameter.numParticle = 50;
 	parameter.textureFilePath = "../Resources/bluewater.png";
 	parameter.pointSize = 15.0;
 

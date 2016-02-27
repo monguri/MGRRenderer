@@ -2,6 +2,8 @@
 #include "Director.h"
 #include "Texture.h"
 #include "Image.h"
+// srand関数のため
+#include <time.h>
 
 namespace mgrrenderer
 {
@@ -11,7 +13,6 @@ _texture(nullptr),
 _elapsedTime(0.0f),
 _uniformGravity(-1),
 _uniformLifeTime(-1),
-_uniformInitVelocity(-1),
 _uniformPointSize(-1)
 {
 }
@@ -44,24 +45,48 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 	// vec3で埋まるので、初期値の(0,0,0)で埋まっている
 	_vertexArray.resize(parameter.numParticle);
 
+	// 初期速度ベクトルをある程度ランダムで分散させて作成する
+	_initVelocityArray.resize(parameter.numParticle);
+
+	//TODO: lerpはシェーダの方が光束らしいがとりあえずCPU側で
+	srand((unsigned int)time(nullptr));
+
+	for (int i = 0; i < _parameter.numParticle; ++i)
+	{
+		float t1 = (float)rand() / RAND_MAX;
+		float t2 = (float)rand() / RAND_MAX;
+		float t3 = (float)rand() / RAND_MAX;
+		// TODO:ここらへんの分散は適当。こういうのもパラメータで設定できるようにしたい
+		float theta = PI_OVER2 / 8.0f * t1;
+		float phi = PI_OVER2 * 4.0f * t2;
+		float absVelocity = _parameter.initVelocity * (0.9f * t3 + 1.1f * (1.0f - t3));
+
+		Vec3 initVelocity;
+		initVelocity.x = sinf(theta) * cosf(phi) * absVelocity;
+		initVelocity.y = cosf(theta) * absVelocity;
+		initVelocity.x = sinf(theta) * sinf(phi) * absVelocity;
+
+		_initVelocityArray[i] = initVelocity;
+	}
+
 	// とりあえず設定量のパーティクルをふきだしたらそれで終わりにする
 	// TODO:ふきだしたパーティクルを再利用するようにしたい
 	_glData = createOpenGLProgram(
 		// vertex shader
 		"attribute vec4 a_position;"
+		"attribute vec3 a_initVelocity;"
 		"uniform mat4 u_modelMatrix;"
 		"uniform mat4 u_viewMatrix;"
 		"uniform mat4 u_projectionMatrix;"
 		"uniform vec3 u_gravity;"
 		"uniform float u_elapsedTime;"
 		"uniform float u_lifeTime;"
-		"uniform vec3 u_initVelocity;"
 		"uniform float u_pointSize;"
 		"varying float v_opacity;"
 		"void main()"
 		"{"
 		"	vec4 position = a_position;"
-		"	position.xyz += u_initVelocity * u_elapsedTime + u_gravity * u_elapsedTime * u_elapsedTime / 2.0;"
+		"	position.xyz += a_initVelocity * u_elapsedTime + u_gravity * u_elapsedTime * u_elapsedTime / 2.0;"
 		"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * position;"
 		"	v_opacity = 1.0 - u_elapsedTime / u_lifeTime;"
 		"	gl_PointSize = u_pointSize;"
@@ -114,13 +139,13 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 		return false;
 	}
 
-	_uniformInitVelocity = glGetUniformLocation(_glData.shaderProgram, "u_initVelocity");
+	_attributeInitVelocity = glGetAttribLocation(_glData.shaderProgram, "a_initVelocity");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		return false;
 	}
 
-	if (_uniformInitVelocity < 0)
+	if (_attributeInitVelocity < 0)
 	{
 		return false;
 	}
@@ -172,8 +197,7 @@ void Particle3D::renderWithShadowMap()
 
 	glUniform3fv(_uniformGravity, 1, (GLfloat*)&_parameter.gravity);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	glUniform3fv(_uniformInitVelocity, 1, (GLfloat*)&_parameter.initVelocity);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
 	glUniform1f(_uniformLifeTime, _parameter.lifeTime);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	glUniform1f(_uniformPointSize, _parameter.pointSize);
@@ -183,12 +207,16 @@ void Particle3D::renderWithShadowMap()
 
 	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	glEnableVertexAttribArray(_attributeInitVelocity);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glVertexAttribPointer((GLuint)AttributeLocation::POSITION, sizeof(_vertexArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_vertexArray[0]);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	glVertexAttribPointer(_attributeInitVelocity, sizeof(_initVelocityArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_initVelocityArray[0]);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
-	glDrawArrays(GL_POINTS, 0, _vertexArray.size());
+	glDrawArrays(GL_POINTS, 0, _parameter.numParticle);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 }
 

@@ -11,10 +11,11 @@ class Particle3D :
 {
 public:
 	struct Parameter {
+		// TODO:–³ŒÀ•úo‚ª‚Å‚«‚Ä‚È‚¢B
 		int numParticle;
 		Vec3 gravity;
 		float lifeTime;
-		Vec3 initVelocity;
+		float initVelocity;
 		std::string textureFilePath;
 		float pointSize;
 	};
@@ -27,11 +28,12 @@ private:
 	Parameter _parameter;
 	Texture* _texture;
 	std::vector<Vec3> _vertexArray;
+	std::vector<Vec3> _initVelocityArray;
 	float _elapsedTime;
 
 	GLint _uniformGravity;
 	GLint _uniformLifeTime;
-	GLint _uniformInitVelocity;
+	GLint _attributeInitVelocity;
 	GLint _uniformPointSize;
 	GLint _uniformElapsedTime;
 

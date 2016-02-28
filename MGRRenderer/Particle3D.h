@@ -11,7 +11,8 @@ class Particle3D :
 {
 public:
 	struct Parameter {
-		// TODO:無限放出ができてない。
+		bool loopFlag;
+		// ループモードの時は秒間あたりの放出数。そうでないときは全放出数。
 		int numParticle;
 		Vec3 gravity;
 		float lifeTime;
@@ -29,13 +30,14 @@ private:
 	Texture* _texture;
 	std::vector<Vec3> _vertexArray;
 	std::vector<Vec3> _initVelocityArray;
-	float _elapsedTime;
+	std::vector<float> _elapsedTimeArray;
+	int _elapsedTimeMs; // msで扱ってintにしている
 
 	GLint _uniformGravity;
 	GLint _uniformLifeTime;
 	GLint _attributeInitVelocity;
 	GLint _uniformPointSize;
-	GLint _uniformElapsedTime;
+	GLint _attributeElapsedTime;
 
 	~Particle3D();
 

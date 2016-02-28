@@ -10,7 +10,7 @@ namespace mgrrenderer
 
 Particle3D::Particle3D() :
 _texture(nullptr),
-_elapsedTime(0.0f),
+_elapsedTimeMs(0.0f),
 _uniformGravity(-1),
 _uniformLifeTime(-1),
 _uniformPointSize(-1)
@@ -43,15 +43,16 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 	_texture->initWithImage(image);
 
 	// vec3で埋まるので、初期値の(0,0,0)で埋まっている
-	_vertexArray.resize(parameter.numParticle);
-
-	// 初期速度ベクトルをある程度ランダムで分散させて作成する
-	_initVelocityArray.resize(parameter.numParticle);
+	int numParticle = _parameter.loopFlag ? parameter.numParticle * parameter.lifeTime : parameter.numParticle;
+	_vertexArray.resize(numParticle);
+	_initVelocityArray.resize(numParticle);
+	_elapsedTimeArray.resize(numParticle);
 
 	//TODO: lerpはシェーダの方が光束らしいがとりあえずCPU側で
+	// 初期速度ベクトルをある程度ランダムで分散させて作成する
 	srand((unsigned int)time(nullptr));
 
-	for (int i = 0; i < _parameter.numParticle; ++i)
+	for (int i = 0; i < numParticle; ++i)
 	{
 		float t1 = (float)rand() / RAND_MAX;
 		float t2 = (float)rand() / RAND_MAX;
@@ -64,9 +65,19 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 		Vec3 initVelocity;
 		initVelocity.x = sinf(theta) * cosf(phi) * absVelocity;
 		initVelocity.y = cosf(theta) * absVelocity;
-		initVelocity.x = sinf(theta) * sinf(phi) * absVelocity;
+		initVelocity.z = sinf(theta) * sinf(phi) * absVelocity;
 
 		_initVelocityArray[i] = initVelocity;
+
+		if (_parameter.loopFlag)
+		{
+			// lifeTime以上であることが、パーティクルが再利用可能になっている条件。lifeTimeのときはオパシティは0になっている
+			_elapsedTimeArray[i] = _parameter.lifeTime;
+		}
+		else
+		{
+			_elapsedTimeArray[i] = 0.0f;
+		}
 	}
 
 	// とりあえず設定量のパーティクルをふきだしたらそれで終わりにする
@@ -75,20 +86,20 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 		// vertex shader
 		"attribute vec4 a_position;"
 		"attribute vec3 a_initVelocity;"
+		"attribute float a_elapsedTime;"
 		"uniform mat4 u_modelMatrix;"
 		"uniform mat4 u_viewMatrix;"
 		"uniform mat4 u_projectionMatrix;"
 		"uniform vec3 u_gravity;"
-		"uniform float u_elapsedTime;"
 		"uniform float u_lifeTime;"
 		"uniform float u_pointSize;"
 		"varying float v_opacity;"
 		"void main()"
 		"{"
 		"	vec4 position = a_position;"
-		"	position.xyz += a_initVelocity * u_elapsedTime + u_gravity * u_elapsedTime * u_elapsedTime / 2.0;"
+		"	position.xyz += a_initVelocity * a_elapsedTime + u_gravity * a_elapsedTime * a_elapsedTime / 2.0;"
 		"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * position;"
-		"	v_opacity = 1.0 - u_elapsedTime / u_lifeTime;"
+		"	v_opacity = 1.0 - a_elapsedTime / u_lifeTime;"
 		"	gl_PointSize = u_pointSize;"
 		"}"
 		,
@@ -161,13 +172,13 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 		return false;
 	}
 
-	_uniformElapsedTime = glGetUniformLocation(_glData.shaderProgram, "u_elapsedTime");
+	_attributeElapsedTime = glGetAttribLocation(_glData.shaderProgram, "a_elapsedTime");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		return false;
 	}
 
-	if (_uniformElapsedTime < 0)
+	if (_attributeElapsedTime < 0)
 	{
 		return false;
 	}
@@ -177,7 +188,52 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 
 void Particle3D::update(float dt)
 {
-	_elapsedTime += dt;
+	if (_parameter.loopFlag)
+	{
+		// %演算子をつかうために1000倍してmsで扱う
+		_elapsedTimeMs += dt * 1000;
+
+		int timePerEmit = (int)(1.0f / _parameter.numParticle * 1000);
+
+		if (_elapsedTimeMs > timePerEmit)
+		{
+			int numParticle = _parameter.numParticle * _parameter.lifeTime;
+			for (int i = 0; i < numParticle; ++i)
+			{
+				_elapsedTimeArray[i] += dt;
+			}
+
+			int numEmit = _elapsedTimeMs / timePerEmit;
+			if (numEmit <= 0)
+			{
+				return;
+			}
+
+			_elapsedTimeMs %= timePerEmit;
+
+			int emitCount = 0;
+			for (int i = 0; i < numParticle; ++i)
+			{
+				// lifeTimeを超えたものは再利用する
+				if (_elapsedTimeArray[i] > _parameter.lifeTime)
+				{
+					_elapsedTimeArray[i] = 0;
+					emitCount++;
+					if (emitCount >= numEmit)
+					{
+						break;
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < _parameter.numParticle; ++i)
+		{
+			_elapsedTimeArray[i] += dt;
+		}
+	}
 }
 
 void Particle3D::renderWithShadowMap()
@@ -202,21 +258,25 @@ void Particle3D::renderWithShadowMap()
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	glUniform1f(_uniformPointSize, _parameter.pointSize);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	glUniform1f(_uniformElapsedTime, _elapsedTime);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	glEnableVertexAttribArray(_attributeInitVelocity);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	glEnableVertexAttribArray(_attributeElapsedTime);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glVertexAttribPointer((GLuint)AttributeLocation::POSITION, sizeof(_vertexArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_vertexArray[0]);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	glVertexAttribPointer(_attributeInitVelocity, sizeof(_initVelocityArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_initVelocityArray[0]);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	glVertexAttribPointer(_attributeElapsedTime, sizeof(_elapsedTimeArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_elapsedTimeArray[0]);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
-	glDrawArrays(GL_POINTS, 0, _parameter.numParticle);
+
+	int numParticle = _parameter.loopFlag ? _parameter.numParticle * _parameter.lifeTime : _parameter.numParticle;
+	glDrawArrays(GL_POINTS, 0, numParticle);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 }
 

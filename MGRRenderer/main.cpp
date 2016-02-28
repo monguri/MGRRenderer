@@ -234,12 +234,13 @@ void initialize()
 	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»Ž¸”s");
 
 	Particle3D::Parameter parameter;
+	parameter.loopFlag = true;
 	parameter.gravity = Vec3(0.0f, -100.0f, 0.0f);
 	parameter.initVelocity = 300.0f;
-	parameter.lifeTime = 100.0f;
-	parameter.numParticle = 50;
+	parameter.lifeTime = 10.0f;
+	parameter.numParticle = 100;
 	parameter.textureFilePath = "../Resources/bluewater.png";
-	parameter.pointSize = 15.0;
+	parameter.pointSize = 5.0f;
 
 	Particle3D* particle3DNode = new Particle3D();
 	isSucceeded = particle3DNode->initWithParameter(parameter);

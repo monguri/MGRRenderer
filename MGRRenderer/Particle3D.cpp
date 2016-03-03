@@ -81,7 +81,6 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 	}
 
 	// とりあえず設定量のパーティクルをふきだしたらそれで終わりにする
-	// TODO:ふきだしたパーティクルを再利用するようにしたい
 	_glData = createOpenGLProgram(
 		// vertex shader
 		"attribute vec4 a_position;"

@@ -2,6 +2,7 @@
 #include "Node.h"
 #include "BasicDataTypes.h"
 #include "Texture.h"
+#include "CustomRenderCommand.h"
 #include <string>
 
 namespace mgrrenderer
@@ -19,6 +20,7 @@ public:
 
 protected:
 	OpenGLProgramData _glData;
+	CustomRenderCommand _renderCommand;
 	Texture* _texture;
 	Quadrangle2D _quadrangle;
 	void renderWithShadowMap() override;

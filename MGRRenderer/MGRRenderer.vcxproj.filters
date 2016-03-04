@@ -33,6 +33,9 @@
     <ClInclude Include="BillBoard.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Particle3D.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RenderCommand.h" />
+    <ClInclude Include="CustomRenderCommand.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Director.cpp" />
@@ -61,5 +64,8 @@
     <ClCompile Include="BillBoard.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Particle3D.cpp" />
+    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RenderCommand.cpp" />
+    <ClCompile Include="CustomRenderCommand.cpp" />
   </ItemGroup>
 </Project>

@@ -24,6 +24,7 @@
     <ClInclude Include="BinaryReader.h" />
     <ClInclude Include="C3bLoader.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CustomRenderCommand.h" />
     <ClInclude Include="Director.h" />
     <ClInclude Include="FileUtility.h" />
     <ClInclude Include="FPSFontImage.h" />
@@ -41,6 +42,8 @@
     <ClInclude Include="Point3D.h" />
     <ClInclude Include="Polygon2D.h" />
     <ClInclude Include="Polygon3D.h" />
+    <ClInclude Include="RenderCommand.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Sprite2D.h" />
     <ClInclude Include="Sprite3D.h" />
@@ -52,6 +55,7 @@
     <ClCompile Include="BinaryReader.cpp" />
     <ClCompile Include="C3bLoader.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CustomRenderCommand.cpp" />
     <ClCompile Include="Director.cpp" />
     <ClCompile Include="FileUtility.cpp" />
     <ClCompile Include="FPSFontImage.cpp" />
@@ -69,6 +73,8 @@
     <ClCompile Include="Point3D.cpp" />
     <ClCompile Include="Polygon2D.cpp" />
     <ClCompile Include="Polygon3D.cpp" />
+    <ClCompile Include="RenderCommand.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Sprite2D.cpp" />
     <ClCompile Include="Sprite3D.cpp" />

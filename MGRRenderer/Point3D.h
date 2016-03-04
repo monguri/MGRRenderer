@@ -1,6 +1,7 @@
 #pragma once
 #include "Node.h"
 #include "BasicDataTypes.h"
+#include "CustomRenderCommand.h"
 #include <vector>
 
 namespace mgrrenderer
@@ -22,6 +23,7 @@ public:
 
 private:
 	OpenGLProgramData _glData;
+	CustomRenderCommand _renderCommand;
 	GLint _attributePointSize;
 
 	std::vector<Point3DData> _pointArray;

@@ -1,11 +1,11 @@
 #pragma once
 #include "Node.h"
 #include "BasicDataTypes.h"
+#include "CustomRenderCommand.h"
 #include <vector>
 
 namespace mgrrenderer
 {
-
 
 struct Point2DData
 {
@@ -22,6 +22,7 @@ public:
 
 private:
 	OpenGLProgramData _glData;
+	CustomRenderCommand _renderCommand;
 	GLint _attributePointSize;
 
 	std::vector<Point2DData> _pointArray;

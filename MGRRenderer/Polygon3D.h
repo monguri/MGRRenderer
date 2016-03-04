@@ -1,6 +1,7 @@
 #pragma once
 #include "Node.h"
 #include "BasicDataTypes.h"
+#include "CustomRenderCommand.h"
 #include <vector>
 
 namespace mgrrenderer
@@ -23,6 +24,8 @@ private:
 	GLint _uniformLightProjectionMatrix;
 	GLint _uniformDepthBiasMatrix;
 	GLint _uniformShadowTexture;
+
+	CustomRenderCommand _renderCommand;
 
 	~Polygon3D();
 	void renderShadowMap() override;

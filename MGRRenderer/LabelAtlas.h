@@ -1,6 +1,7 @@
 #pragma once
 #include "Node.h"
 #include "BasicDataTypes.h"
+#include "CustomRenderCommand.h"
 
 namespace mgrrenderer
 {
@@ -18,6 +19,7 @@ public:
 
 private:
 	OpenGLProgramData _glData;
+	CustomRenderCommand _renderCommand;
 	char _mapStartCharacter;
 	std::string _string;
 	const Texture* _texture;

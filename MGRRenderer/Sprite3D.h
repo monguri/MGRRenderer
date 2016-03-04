@@ -4,6 +4,7 @@
 #include "Node.h"
 #include "Texture.h"
 #include "C3bLoader.h"
+#include "CustomRenderCommand.h"
 
 namespace mgrrenderer
 {
@@ -30,6 +31,7 @@ private:
 
 	OpenGLProgramData _glData;
 	OpenGLProgramData _glDataForShadowMap;
+	CustomRenderCommand _renderCommand;
 	//TODO: Textureは今のところモデルファイルで指定できない。一枚のみに対応
 	Texture* _texture;
 	Color3F _ambient;

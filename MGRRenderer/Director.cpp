@@ -44,6 +44,10 @@ void Director::init(const Size& windowSize)
 	calculateDeltaTime();
 
 	_windowSize = windowSize;
+
+	// TODO:後で描画関係の初期化処理はこの中にまとめる
+	_renderer.initView();
+
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 	// TODO:ブレンドが必要ない時もブレンドをONにしている
@@ -72,10 +76,17 @@ void Director::update()
 
 	_scene.update(dt);
 
+	_renderer.render();
+
 	if (_displayStats)
 	{
 		updateStats(dt);
 	}
+}
+
+Renderer& Director::getRenderer()
+{
+	return getInstance()->_renderer;
 }
 
 Camera& Director::getCamera()

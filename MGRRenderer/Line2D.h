@@ -1,6 +1,7 @@
 #pragma once
 #include "Node.h"
 #include "BasicDataTypes.h"
+#include "CustomRenderCommand.h"
 #include <vector>
 
 namespace mgrrenderer
@@ -13,10 +14,11 @@ public:
 	bool initWithVertexArray(const std::vector<Vec2>& vertexArray);
 
 private:
-	~Line2D();
 	OpenGLProgramData _glData;
+	CustomRenderCommand _renderCommand;
 	std::vector<Vec2> _vertexArray;
 
+	~Line2D();
 	void renderWithShadowMap() override;
 };
 

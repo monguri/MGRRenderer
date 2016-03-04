@@ -1103,198 +1103,203 @@ void Sprite3D::renderShadowMap()
 
 void Sprite3D::renderWithShadowMap()
 {
-	Node::renderWithShadowMap();
-
-	glEnable(GL_DEPTH_TEST);
-
-	// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
-	glUseProgram(_glData.shaderProgram);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glUniform3f(_glData.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	// 行列の設定
-	glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-	glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
-	glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	const Mat4& normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
-	glUniformMatrix4fv(_glData.uniformNormalMatrix, 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
-
-	// ライトの設定
-	// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
-	for (Light* light : Director::getLight())
+	_renderCommand.init([=]
 	{
-		const Color3B& lightColor = light->getColor();
-		float intensity = light->getIntensity();
+		Node::renderWithShadowMap();
 
-		switch (light->getLightType())
+		glEnable(GL_DEPTH_TEST);
+
+		// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
+		glUseProgram(_glData.shaderProgram);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glUniform3f(_glData.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		// 行列の設定
+		glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
+		glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		const Mat4& normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
+		glUniformMatrix4fv(_glData.uniformNormalMatrix, 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
+
+		// ライトの設定
+		// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
+		for (Light* light : Director::getLight())
 		{
-		case LightType::AMBIENT:
-			glUniform3f(_glData.uniformAmbientLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-			break;
-		case LightType::DIRECTION: {
-			glUniform3f(_glData.uniformDirectionalLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+			const Color3B& lightColor = light->getColor();
+			float intensity = light->getIntensity();
 
-			DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
-			Vec3 direction = dirLight->getDirection();
-			direction.normalize();
-			glUniform3fv(_glData.uniformDirectionalLightDirection, 1, (GLfloat*)&direction);
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-			// TODO:とりあえず影つけはDirectionalLightのみを想定
-			// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
-			if (dirLight->hasShadowMap())
+			switch (light->getLightType())
 			{
-				glUniformMatrix4fv(
-					_uniformLightViewMatrix,
-					1,
-					GL_FALSE,
-					(GLfloat*)dirLight->getShadowMapData().viewMatrix.m
-				);
+			case LightType::AMBIENT:
+				glUniform3f(_glData.uniformAmbientLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				break;
+			case LightType::DIRECTION: {
+				glUniform3f(_glData.uniformDirectionalLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-				glUniformMatrix4fv(
-					_uniformLightProjectionMatrix,
-					1,
-					GL_FALSE,
-					(GLfloat*)dirLight->getShadowMapData().projectionMatrix.m
-				);
+				DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
+				Vec3 direction = dirLight->getDirection();
+				direction.normalize();
+				glUniform3fv(_glData.uniformDirectionalLightDirection, 1, (GLfloat*)&direction);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-				static const Mat4& depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 0.5f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 1.0f));
+				// TODO:とりあえず影つけはDirectionalLightのみを想定
+				// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
+				if (dirLight->hasShadowMap())
+				{
+					glUniformMatrix4fv(
+						_uniformLightViewMatrix,
+						1,
+						GL_FALSE,
+						(GLfloat*)dirLight->getShadowMapData().viewMatrix.m
+					);
 
-				glUniformMatrix4fv(
-					_uniformDepthBiasMatrix,
-					1,
-					GL_FALSE,
-					(GLfloat*)depthBiasMatrix.m
-				);
-				// TODO:Vec3やMat4に頭につける-演算子作らないと
+					glUniformMatrix4fv(
+						_uniformLightProjectionMatrix,
+						1,
+						GL_FALSE,
+						(GLfloat*)dirLight->getShadowMapData().projectionMatrix.m
+					);
 
-				glActiveTexture(GL_TEXTURE1);
-				glBindTexture(GL_TEXTURE_2D, dirLight->getShadowMapData().textureId);
-				glUniform1i(_uniformShadowTexture, 1);
-				glActiveTexture(GL_TEXTURE0);
+					static const Mat4& depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 0.5f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 1.0f));
+
+					glUniformMatrix4fv(
+						_uniformDepthBiasMatrix,
+						1,
+						GL_FALSE,
+						(GLfloat*)depthBiasMatrix.m
+					);
+					// TODO:Vec3やMat4に頭につける-演算子作らないと
+
+					glActiveTexture(GL_TEXTURE1);
+					glBindTexture(GL_TEXTURE_2D, dirLight->getShadowMapData().textureId);
+					glUniform1i(_uniformShadowTexture, 1);
+					glActiveTexture(GL_TEXTURE0);
+				}
+			}
+				break;
+			case LightType::POINT: {
+				glUniform3f(_glData.uniformPointLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+				glUniform3fv(_glData.uniformPointLightPosition, 1, (GLfloat*)&light->getPosition()); // ライトについてはローカル座標でなくワールド座標である前提
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+				PointLight* pointLight = static_cast<PointLight*>(light);
+				glUniform1f(_glData.uniformPointLightRangeInverse, 1.0f / pointLight->getRange());
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+			}
+				break;
+			case LightType::SPOT: {
+				glUniform3f(_glData.uniformSpotLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+				glUniform3fv(_glData.uniformSpotLightPosition, 1, (GLfloat*)&light->getPosition());
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+				SpotLight* spotLight = static_cast<SpotLight*>(light);
+				Vec3 direction = spotLight->getDirection();
+				direction.normalize();
+				glUniform3fv(_glData.uniformSpotLightDirection, 1, (GLfloat*)&direction);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+				glUniform1f(_glData.uniformSpotLightRangeInverse, 1.0f / spotLight->getRange());
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+				glUniform1f(_glData.uniformSpotLightInnerAngleCos, spotLight->getInnerAngleCos());
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+				glUniform1f(_glData.uniformSpotLightOuterAngleCos, spotLight->getOuterAngleCos());
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+			}
+			default:
+				break;
 			}
 		}
-			break;
-		case LightType::POINT: {
-			glUniform3f(_glData.uniformPointLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-			glUniform3fv(_glData.uniformPointLightPosition, 1, (GLfloat*)&light->getPosition()); // ライトについてはローカル座標でなくワールド座標である前提
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-			PointLight* pointLight = static_cast<PointLight*>(light);
-			glUniform1f(_glData.uniformPointLightRangeInverse, 1.0f / pointLight->getRange());
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		}
-			break;
-		case LightType::SPOT: {
-			glUniform3f(_glData.uniformSpotLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-			glUniform3fv(_glData.uniformSpotLightPosition, 1, (GLfloat*)&light->getPosition());
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-			SpotLight* spotLight = static_cast<SpotLight*>(light);
-			Vec3 direction = spotLight->getDirection();
-			direction.normalize();
-			glUniform3fv(_glData.uniformSpotLightDirection, 1, (GLfloat*)&direction);
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-			glUniform1f(_glData.uniformSpotLightRangeInverse, 1.0f / spotLight->getRange());
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-			glUniform1f(_glData.uniformSpotLightInnerAngleCos, spotLight->getInnerAngleCos());
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-			glUniform1f(_glData.uniformSpotLightOuterAngleCos, spotLight->getOuterAngleCos());
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		}
-		default:
-			break;
-		}
-	}
-
-	// 頂点属性の設定
-	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glEnableVertexAttribArray((GLuint)AttributeLocation::NORMAL);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glEnableVertexAttribArray((GLuint)AttributeLocation::BLEND_WEIGHT);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glEnableVertexAttribArray((GLuint)AttributeLocation::BLEND_INDEX);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glEnableVertexAttribArray(_glData.attributeTextureCoordinates);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	if (_isObj)
-	{
-		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].position);
+		// 頂点属性の設定
+		glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glVertexAttribPointer((GLuint)AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
+
+		glEnableVertexAttribArray((GLuint)AttributeLocation::NORMAL);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
+
+		glEnableVertexAttribArray((GLuint)AttributeLocation::BLEND_WEIGHT);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	}
-	else if (_isC3b)
-	{
-		// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
-		C3bLoader::MeshData* meshData = _meshDatas->meshDatas[0];
-		for (int i = 0, offset = 0; i < meshData->numAttribute; ++i)
+
+		glEnableVertexAttribArray((GLuint)AttributeLocation::BLEND_INDEX);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glEnableVertexAttribArray(_glData.attributeTextureCoordinates);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		if (_isObj)
 		{
-			const C3bLoader::MeshVertexAttribute& attrib = meshData->attributes[i];
-			glVertexAttribPointer((GLuint)attrib.location, attrib.size, attrib.type, GL_FALSE, _perVertexByteSize, (GLvoid*)&meshData->vertices[offset]);
+			glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].position);
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-			offset += attrib.size;
+			glVertexAttribPointer((GLuint)AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+			glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		}
-	}
+		else if (_isC3b)
+		{
+			// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
+			C3bLoader::MeshData* meshData = _meshDatas->meshDatas[0];
+			for (int i = 0, offset = 0; i < meshData->numAttribute; ++i)
+			{
+				const C3bLoader::MeshVertexAttribute& attrib = meshData->attributes[i];
+				glVertexAttribPointer((GLuint)attrib.location, attrib.size, attrib.type, GL_FALSE, _perVertexByteSize, (GLvoid*)&meshData->vertices[offset]);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				offset += attrib.size;
+			}
+		}
 
-	// スキニングのマトリックスパレットの設定
-	if (_isC3b) {
-		Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
-		glUniformMatrix4fv(_glData.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
+		// スキニングのマトリックスパレットの設定
+		if (_isC3b) {
+			Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
+			glUniformMatrix4fv(_glData.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		}
+
+		// TODO:monguri:実装
+		if (_isC3b) {
+			glUniform3fv(_glData.uniformCameraPosition, 1, (GLfloat*)&Director::getCamera().getPosition());
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform3fv(_glData.uniformMaterialAmbient, 1, (GLfloat*)&_ambient);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform3fv(_glData.uniformMaterialDiffuse, 1, (GLfloat*)&_diffuse);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform3fv(_glData.uniformMaterialSpecular, 1, (GLfloat*)&_specular);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform1f(_glData.uniformMaterialShininess, _shininess);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			//glUniform3fv(_glData.uniformMaterialEmissive, 1, (GLfloat*)&_emissive);
+			//Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			//glUniform1f(_glData.uniformMaterialOpacity, 1, (GLfloat*)&_emissive);
+			//Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		}
+
+		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	}
 
-	// TODO:monguri:実装
-	if (_isC3b) {
-		glUniform3fv(_glData.uniformCameraPosition, 1, (GLfloat*)&Director::getCamera().getPosition());
+		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		glBindTexture(GL_TEXTURE_2D, 0);
+	});
 
-		glUniform3fv(_glData.uniformMaterialAmbient, 1, (GLfloat*)&_ambient);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-		glUniform3fv(_glData.uniformMaterialDiffuse, 1, (GLfloat*)&_diffuse);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-		glUniform3fv(_glData.uniformMaterialSpecular, 1, (GLfloat*)&_specular);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-		glUniform1f(_glData.uniformMaterialShininess, _shininess);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-		//glUniform3fv(_glData.uniformMaterialEmissive, 1, (GLfloat*)&_emissive);
-		//Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-		//glUniform1f(_glData.uniformMaterialOpacity, 1, (GLfloat*)&_emissive);
-		//Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	}
-
-	glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	glBindTexture(GL_TEXTURE_2D, 0);
+	Director::getRenderer().addCommand(&_renderCommand);
 }
 
 } // namespace mgrrenderer

@@ -1,5 +1,6 @@
 #pragma once
 #include "Node.h"
+#include "CustomRenderCommand.h"
 
 namespace mgrrenderer
 {
@@ -26,6 +27,7 @@ public:
 
 private:
 	OpenGLProgramData _glData;
+	CustomRenderCommand _renderCommand;
 	Parameter _parameter;
 	Texture* _texture;
 	std::vector<Vec3> _vertexArray;

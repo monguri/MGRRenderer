@@ -1,5 +1,6 @@
 #pragma once
 #include "Scene.h"
+#include "Renderer.h"
 
 namespace mgrrenderer
 {
@@ -18,6 +19,7 @@ public:
 	Scene& getScene() { return _scene; }
 	void setScene(const Scene& scene);
 	void update();
+	static Renderer& getRenderer();
 	static Camera& getCamera();
 	static const Camera& getCameraFor2D();
 	static const std::vector<Light*>& getLight();
@@ -27,6 +29,7 @@ public:
 private:
 	static Director* _instance;
 	Scene _scene;
+	Renderer _renderer;
 	Size _windowSize;
 	struct timeval _lastUpdateTime;
 	bool _displayStats;

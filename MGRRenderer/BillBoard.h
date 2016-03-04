@@ -1,5 +1,6 @@
 #pragma once
 #include "Sprite2D.h"
+#include "CustomRenderCommand.h"
 
 namespace mgrrenderer
 {
@@ -27,6 +28,7 @@ public:
 
 private:
 	Mode _mode;
+	CustomRenderCommand _renderCommand;
 
 	void calculateBillboardTransform();
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include "BasicDataTypes.h"
 #include <vector>
 #include <stack>
 
@@ -11,7 +12,7 @@ class Renderer final
 {
 public:
 	Renderer();
-	void initView();
+	void initView(const Size& windowSize);
 	// TODO:moveコンストラクタ使う？
 	void addCommand(RenderCommand* command);
 	void render();

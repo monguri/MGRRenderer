@@ -46,15 +46,7 @@ void Director::init(const Size& windowSize)
 	_windowSize = windowSize;
 
 	// TODO:後で描画関係の初期化処理はこの中にまとめる
-	_renderer.initView();
-
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glEnable(GL_DEPTH_TEST);
-	// TODO:ブレンドが必要ない時もブレンドをONにしている
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	// OpenGL側でやるビューポート変換のためのパラメータを渡す
-	glViewport(0, 0, windowSize.width, windowSize.height);
+	_renderer.initView(windowSize);
 
 	Logger::log("GPU vendor: %s\nGPU:%s\nOpenGL version:%s\nGLSLversion:%s", glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
 

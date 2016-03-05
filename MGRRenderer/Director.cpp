@@ -76,12 +76,12 @@ void Director::update()
 
 	_scene.update(dt);
 
-	_renderer.render();
-
 	if (_displayStats)
 	{
 		updateStats(dt);
 	}
+
+	_renderer.render();
 }
 
 Renderer& Director::getRenderer()

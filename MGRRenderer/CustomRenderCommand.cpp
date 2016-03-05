@@ -3,7 +3,7 @@
 namespace mgrrenderer
 {
 
-void CustomRenderCommand::init(const std::function<void()> function)
+void CustomRenderCommand::init(const std::function<void()>& function)
 {
 	_function = function;
 }

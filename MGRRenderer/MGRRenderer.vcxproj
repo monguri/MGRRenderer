@@ -28,6 +28,8 @@
     <ClInclude Include="Director.h" />
     <ClInclude Include="FileUtility.h" />
     <ClInclude Include="FPSFontImage.h" />
+    <ClInclude Include="GroupBeginRenderCommand.h" />
+    <ClInclude Include="GroupEndRenderCommand.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="LabelAtlas.h" />
     <ClInclude Include="Light.h" />
@@ -59,6 +61,8 @@
     <ClCompile Include="Director.cpp" />
     <ClCompile Include="FileUtility.cpp" />
     <ClCompile Include="FPSFontImage.cpp" />
+    <ClCompile Include="GroupBeginRenderCommand.cpp" />
+    <ClCompile Include="GroupEndRenderCommand.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="LabelAtlas.cpp" />
     <ClCompile Include="Light.cpp" />

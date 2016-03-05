@@ -9,6 +9,8 @@ public:
 	enum class Type : int
 	{
 		NONE = -1,
+		GROUP_BEGIN,
+		GROUP_END,
 		CUSTOM,
 		NUM_TYPES
 	};

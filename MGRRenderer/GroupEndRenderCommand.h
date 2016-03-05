@@ -5,17 +5,16 @@
 namespace mgrrenderer
 {
 
-class CustomRenderCommand final : public RenderCommand
+class GroupEndRenderCommand : public RenderCommand
 {
 public:
-	~CustomRenderCommand() override {}
+	~GroupEndRenderCommand() override {}
 	void init(const std::function<void()>& function);
-	RenderCommand::Type getType() override { return RenderCommand::Type::CUSTOM; };
+	RenderCommand::Type getType() override { return RenderCommand::Type::GROUP_END; };
+	void execute() override;
 
 private:
 	std::function<void()> _function;
-
-	void execute() override;
 };
 
 } // namespace mgrrenderer

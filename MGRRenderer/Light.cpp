@@ -78,23 +78,33 @@ void DirectionalLight::beginRenderShadowMap()
 {
 	Logger::logAssert(hasShadowMap(), "beginRenderShadowMap呼び出しはシャドウマップを使う前提");
 
-	glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().frameBufferId);
+	_beginRenderCommand.init([=]
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().frameBufferId);
 
-	glClear(GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT);
 
-	//TODO:シャドウマップの大きさは画面サイズと同じにしている
-	glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
+		//TODO:シャドウマップの大きさは画面サイズと同じにしている
+		glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+	});
+
+	Director::getRenderer().addCommand(&_beginRenderCommand);
 }
 
 void DirectionalLight::endRenderShadowMap()
 {
 	Logger::logAssert(hasShadowMap(), "endRenderShadowMap呼び出しはシャドウマップを使う前提");
 
-	glDisable(GL_CULL_FACE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
+	_endRenderCommand.init([=]
+	{
+		glDisable(GL_CULL_FACE);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
+	});
+
+	Director::getRenderer().addCommand(&_endRenderCommand);
 }
 
 PointLight::PointLight(const Vec3& position, const Color3B& color, float range) : _range(range)

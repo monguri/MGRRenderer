@@ -389,79 +389,84 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 
 void Polygon3D::renderShadowMap()
 {
-	Node::renderShadowMap();
-
-	glEnable(GL_DEPTH_TEST);
-
-	bool makeShadowMap = false;
-	DirectionalLight::ShadowMapData shadowMapData;
-
-	for (Light* light : Director::getLight())
+	_renderShadowMapCommand.init([=]
 	{
-		switch (light->getLightType())
+		Node::renderShadowMap();
+
+		glEnable(GL_DEPTH_TEST);
+
+		bool makeShadowMap = false;
+		DirectionalLight::ShadowMapData shadowMapData;
+
+		for (Light* light : Director::getLight())
 		{
-		case LightType::AMBIENT:
-			break;
-		case LightType::DIRECTION: {
-			DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
-			// TODO:とりあえず影つけはDirectionalLightのみを想定
-			// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
-			if (dirLight->hasShadowMap())
+			switch (light->getLightType())
 			{
-				makeShadowMap = true;
-				shadowMapData = dirLight->getShadowMapData();
+			case LightType::AMBIENT:
+				break;
+			case LightType::DIRECTION: {
+				DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
+				// TODO:とりあえず影つけはDirectionalLightのみを想定
+				// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
+				if (dirLight->hasShadowMap())
+				{
+					makeShadowMap = true;
+					shadowMapData = dirLight->getShadowMapData();
+				}
+			}
+				break;
+			case LightType::POINT: {
+			}
+				break;
+			case LightType::SPOT: {
+			}
+			default:
+				break;
 			}
 		}
-			break;
-		case LightType::POINT: {
+
+		if (!makeShadowMap)
+		{
+			// シャドウマップを必要とするライトがなければ何もしない
+			return;
 		}
-			break;
-		case LightType::SPOT: {
-		}
-		default:
-			break;
-		}
-	}
 
-	if (!makeShadowMap)
-	{
-		// シャドウマップを必要とするライトがなければ何もしない
-		return;
-	}
-
-	glUseProgram(_glDataForShadowMap.shaderProgram);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		glUseProgram(_glDataForShadowMap.shaderProgram);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 
-	glUniformMatrix4fv(_glDataForShadowMap.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-	glUniformMatrix4fv(
-		_glDataForShadowMap.uniformViewMatrix,
-		1,
-		GL_FALSE,
-		(GLfloat*)shadowMapData.viewMatrix.m
-	);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	// TODO:Vec3やMat4に頭につける-演算子作らないと
-	glUniformMatrix4fv(
-		_glDataForShadowMap.uniformProjectionMatrix,
-		1,
-		GL_FALSE,
-		(GLfloat*)shadowMapData.projectionMatrix.m
-	);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		glUniformMatrix4fv(_glDataForShadowMap.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(
+			_glDataForShadowMap.uniformViewMatrix,
+			1,
+			GL_FALSE,
+			(GLfloat*)shadowMapData.viewMatrix.m
+		);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		// TODO:Vec3やMat4に頭につける-演算子作らないと
+		glUniformMatrix4fv(
+			_glDataForShadowMap.uniformProjectionMatrix,
+			1,
+			GL_FALSE,
+			(GLfloat*)shadowMapData.projectionMatrix.m
+		);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	glEnableVertexAttribArray((GLuint)AttributeLocation::NORMAL);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		glEnableVertexAttribArray((GLuint)AttributeLocation::NORMAL);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-	glVertexAttribPointer((GLuint)AttributeLocation::POSITION, sizeof(_vertexArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_vertexArray[0]);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	glVertexAttribPointer((GLuint)AttributeLocation::NORMAL, sizeof(_normalArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_normalArray[0]);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, sizeof(_vertexArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_vertexArray[0]);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		glVertexAttribPointer((GLuint)AttributeLocation::NORMAL, sizeof(_normalArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_normalArray[0]);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)_vertexArray.size());
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)_vertexArray.size());
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	});
+
+	Director::getRenderer().addCommand(&_renderShadowMapCommand);
 }
 
 void Polygon3D::renderWithShadowMap()

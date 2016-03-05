@@ -28,6 +28,7 @@ public:
 
 private:
 	Mode _mode;
+	CustomRenderCommand _renderShadowMapCommand;
 	CustomRenderCommand _renderCommand;
 
 	void calculateBillboardTransform();

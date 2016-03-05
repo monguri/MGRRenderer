@@ -995,110 +995,115 @@ void Sprite3D::update(float dt)
 
 void Sprite3D::renderShadowMap()
 {
-	Node::renderShadowMap();
-
-	glEnable(GL_DEPTH_TEST);
-
-	bool makeShadowMap = false;
-	DirectionalLight::ShadowMapData shadowMapData;
-
-	for (Light* light : Director::getLight())
+	_renderShadowMapCommand.init([=]
 	{
-		switch (light->getLightType())
+		Node::renderShadowMap();
+
+		glEnable(GL_DEPTH_TEST);
+
+		bool makeShadowMap = false;
+		DirectionalLight::ShadowMapData shadowMapData;
+
+		for (Light* light : Director::getLight())
 		{
-		case LightType::AMBIENT:
-			break;
-		case LightType::DIRECTION: {
-			DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
-			// TODO:とりあえず影つけはDirectionalLightのみを想定
-			// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
-			if (dirLight->hasShadowMap())
+			switch (light->getLightType())
 			{
-				makeShadowMap = true;
-				shadowMapData = dirLight->getShadowMapData();
+			case LightType::AMBIENT:
+				break;
+			case LightType::DIRECTION: {
+				DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
+				// TODO:とりあえず影つけはDirectionalLightのみを想定
+				// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
+				if (dirLight->hasShadowMap())
+				{
+					makeShadowMap = true;
+					shadowMapData = dirLight->getShadowMapData();
+				}
+			}
+				break;
+			case LightType::POINT: {
+			}
+				break;
+			case LightType::SPOT: {
+			}
+			default:
+				break;
 			}
 		}
-			break;
-		case LightType::POINT: {
-		}
-			break;
-		case LightType::SPOT: {
-		}
-		default:
-			break;
-		}
-	}
 
-	if (!makeShadowMap)
-	{
-		// シャドウマップを必要とするライトがなければ何もしない
-		return;
-	}
-
-	glUseProgram(_glDataForShadowMap.shaderProgram);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-
-	// 行列の設定
-	glUniformMatrix4fv(_glDataForShadowMap.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-	glUniformMatrix4fv(
-		_glDataForShadowMap.uniformViewMatrix,
-		1,
-		GL_FALSE,
-		(GLfloat*)shadowMapData.viewMatrix.m
-	);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	// TODO:Vec3やMat4に頭につける-演算子作らないと
-	glUniformMatrix4fv(
-		_glDataForShadowMap.uniformProjectionMatrix,
-		1,
-		GL_FALSE,
-		(GLfloat*)shadowMapData.projectionMatrix.m
-	);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	// 頂点属性の設定
-	glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glEnableVertexAttribArray((GLuint)AttributeLocation::BLEND_WEIGHT);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glEnableVertexAttribArray((GLuint)AttributeLocation::BLEND_INDEX);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
-	if (_isObj)
-	{
-		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].position);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glVertexAttribPointer((GLuint)AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	}
-	else if (_isC3b)
-	{
-		// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
-		C3bLoader::MeshData* meshData = _meshDatas->meshDatas[0];
-		for (int i = 0, offset = 0; i < meshData->numAttribute; ++i)
+		if (!makeShadowMap)
 		{
-			const C3bLoader::MeshVertexAttribute& attrib = meshData->attributes[i];
-			glVertexAttribPointer((GLuint)attrib.location, attrib.size, attrib.type, GL_FALSE, _perVertexByteSize, (GLvoid*)&meshData->vertices[offset]);
-			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-			offset += attrib.size;
+			// シャドウマップを必要とするライトがなければ何もしない
+			return;
 		}
-	}
 
-	// スキニングのマトリックスパレットの設定
-	if (_isC3b) {
-		Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
-		glUniformMatrix4fv(_glDataForShadowMap.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
+		glUseProgram(_glDataForShadowMap.shaderProgram);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	}
 
-	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		// 行列の設定
+		glUniformMatrix4fv(_glDataForShadowMap.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(
+			_glDataForShadowMap.uniformViewMatrix,
+			1,
+			GL_FALSE,
+			(GLfloat*)shadowMapData.viewMatrix.m
+		);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		// TODO:Vec3やMat4に頭につける-演算子作らないと
+		glUniformMatrix4fv(
+			_glDataForShadowMap.uniformProjectionMatrix,
+			1,
+			GL_FALSE,
+			(GLfloat*)shadowMapData.projectionMatrix.m
+		);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		// 頂点属性の設定
+		glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glEnableVertexAttribArray((GLuint)AttributeLocation::BLEND_WEIGHT);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glEnableVertexAttribArray((GLuint)AttributeLocation::BLEND_INDEX);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
+		if (_isObj)
+		{
+			glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].position);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+			glVertexAttribPointer((GLuint)AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+			glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		}
+		else if (_isC3b)
+		{
+			// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
+			C3bLoader::MeshData* meshData = _meshDatas->meshDatas[0];
+			for (int i = 0, offset = 0; i < meshData->numAttribute; ++i)
+			{
+				const C3bLoader::MeshVertexAttribute& attrib = meshData->attributes[i];
+				glVertexAttribPointer((GLuint)attrib.location, attrib.size, attrib.type, GL_FALSE, _perVertexByteSize, (GLvoid*)&meshData->vertices[offset]);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				offset += attrib.size;
+			}
+		}
+
+		// スキニングのマトリックスパレットの設定
+		if (_isC3b) {
+			Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
+			glUniformMatrix4fv(_glDataForShadowMap.uniformSkinMatrixPalette, _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		}
+
+		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	});
+
+	Director::getRenderer().addCommand(&_renderShadowMapCommand);
 }
 
 void Sprite3D::renderWithShadowMap()

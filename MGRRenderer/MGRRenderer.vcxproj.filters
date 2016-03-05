@@ -36,6 +36,8 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderCommand.h" />
     <ClInclude Include="CustomRenderCommand.h" />
+    <ClInclude Include="GroupBeginRenderCommand.h" />
+    <ClInclude Include="GroupEndRenderCommand.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Director.cpp" />
@@ -67,5 +69,7 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RenderCommand.cpp" />
     <ClCompile Include="CustomRenderCommand.cpp" />
+    <ClCompile Include="GroupBeginRenderCommand.cpp" />
+    <ClCompile Include="GroupEndRenderCommand.cpp" />
   </ItemGroup>
 </Project>

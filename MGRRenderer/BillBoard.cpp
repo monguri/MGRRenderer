@@ -17,8 +17,13 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 
 void BillBoard::renderShadowMap()
 {
-	setModelMatrix(Mat4::createTransform(getPosition(), getRotation(), getScale()));
-	calculateBillboardTransform();
+	_renderShadowMapCommand.init([=]
+	{
+		setModelMatrix(Mat4::createTransform(getPosition(), getRotation(), getScale()));
+		calculateBillboardTransform();
+	});
+
+	Director::getRenderer().addCommand(&_renderShadowMapCommand);
 }
 
 void BillBoard::calculateBillboardTransform()

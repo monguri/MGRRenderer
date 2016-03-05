@@ -25,6 +25,7 @@ private:
 	GLint _uniformDepthBiasMatrix;
 	GLint _uniformShadowTexture;
 
+	CustomRenderCommand _renderShadowMapCommand;
 	CustomRenderCommand _renderCommand;
 
 	~Polygon3D();

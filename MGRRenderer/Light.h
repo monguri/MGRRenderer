@@ -1,6 +1,8 @@
 #pragma once
 #include "Node.h"
 #include "BasicDataTypes.h"
+#include "GroupBeginRenderCommand.h"
+#include "GroupEndRenderCommand.h"
 
 namespace mgrrenderer
 {
@@ -77,6 +79,8 @@ private:
 	bool _hasShadowMap;
 	Vec3 _direction;
 	ShadowMapData _shadowMapData;
+	GroupBeginRenderCommand _beginRenderCommand;
+	GroupEndRenderCommand _endRenderCommand;
 };
 
 class PointLight :

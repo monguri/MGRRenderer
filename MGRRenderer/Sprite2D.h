@@ -13,7 +13,7 @@ class Sprite2D :
 {
 public:
 	Sprite2D();
-	~Sprite2D();
+	virtual ~Sprite2D();
 	bool init(const std::string& filePath);
 	bool initWithTexture(GLuint textureId, const Size& contentSize, Texture::PixelFormat format);
 	const Texture* getTexture() const { return _texture; }

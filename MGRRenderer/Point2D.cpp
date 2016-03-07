@@ -4,16 +4,11 @@
 namespace mgrrenderer
 {
 
-Point2D::~Point2D()
-{
-	destroyOpenGLProgram(_glData);
-}
-
 void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 {
 	_pointArray = pointArray;
 
-	_glData = createOpenGLProgram(
+	_glProgram.initWithShaderString(
 		// vertex shader
 		"attribute vec4 a_position;"
 		"attribute float a_point_size;"
@@ -34,7 +29,7 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 		"}"
 		);
 
-	_attributePointSize = glGetAttribLocation(_glData.shaderProgram, "a_point_size");
+	_attributePointSize = glGetAttribLocation(_glProgram.shaderProgram, "a_point_size");
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	Logger::logAssert(_attributePointSize >= 0, "アトリビュート変数の取得に失敗");
 }
@@ -45,15 +40,15 @@ void Point2D::renderWithShadowMap()
 	{
 		glDisable(GL_DEPTH_TEST);
 
-		glUseProgram(_glData.shaderProgram);
+		glUseProgram(_glProgram.shaderProgram);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniform3f(_glData.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
+		glUniform3f(_glProgram.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-		glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getViewMatrix().m);
-		glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getProjectionMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getProjectionMatrix().m);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);

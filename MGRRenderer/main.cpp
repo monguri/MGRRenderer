@@ -282,10 +282,10 @@ void initialize()
 	scene->pushNode(sprite3DObjNode);
 	scene->pushNode(sprite3DC3tNode);
 	scene->pushNode(particle3DNode);
-	//scene->pushNode(pointNode);
-	//scene->pushNode(lineNode);
-	//scene->pushNode(polygonNode);
-	//scene->pushNode(spriteNode);
+	scene->pushNode(pointNode);
+	scene->pushNode(lineNode);
+	scene->pushNode(polygonNode);
+	scene->pushNode(spriteNode);
 	scene->pushNode(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない
 
 	Director::getInstance()->setScene(*scene);

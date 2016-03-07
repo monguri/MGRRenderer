@@ -1,6 +1,7 @@
 #pragma once
 #include "Node.h"
 #include "BasicDataTypes.h"
+#include "GLProgram.h"
 #include "CustomRenderCommand.h"
 #include <vector>
 
@@ -22,13 +23,12 @@ public:
 	void initWithPointArray(const std::vector<Point3DData>& pointArray);
 
 private:
-	OpenGLProgramData _glData;
+	GLProgram _glProgram;
 	CustomRenderCommand _renderCommand;
 	GLint _attributePointSize;
 
 	std::vector<Point3DData> _pointArray;
 
-	~Point3D();
 	void renderWithShadowMap() override;
 };
 

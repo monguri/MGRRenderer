@@ -1,6 +1,4 @@
 #pragma once
-#include <gles/include/glew.h>
-#include <glfw3/include/glfw3.h>
 #include "BasicDataTypes.h"
 
 namespace mgrrenderer
@@ -30,23 +28,12 @@ public:
 protected:
 	Node();
 
-	// この場所にあるのは変だが、Utilityクラスは後で作ろう
-	OpenGLProgramData createOpenGLProgram(const GLchar* vertexShaderSource, const GLchar* fragmentShaderSource);
-	void destroyOpenGLProgram(const OpenGLProgramData& programData) const;
-
-	GLuint createVertexShader(const GLchar* source) const;
-	GLuint createFragmentShader(const GLchar* source) const;
-	GLuint createShaderProgram(const GLuint vertexShader, const GLuint fragmentShader) const;
-
 private:
 	Vec3 _position;
 	Quaternion _rotation;
 	Vec3 _scale;
 	Mat4 _modelMatrix;
 	Color3B _color;
-
-	// TODO:本来はdtはスケジューラに渡せばいいのだが、今は各ノードでupdateメソッドでアニメーションをやってるのでdtをvisitとupdateに渡している
-	GLint compileShader(GLuint shader, const GLchar* source) const;
 };
 
 } // namespace mgrrenderer

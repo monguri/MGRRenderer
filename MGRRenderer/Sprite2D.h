@@ -1,6 +1,7 @@
 #pragma once
 #include "Node.h"
 #include "BasicDataTypes.h"
+#include "GLProgram.h"
 #include "Texture.h"
 #include "CustomRenderCommand.h"
 #include <string>
@@ -19,7 +20,7 @@ public:
 	const Texture* getTexture() const { return _texture; }
 
 protected:
-	OpenGLProgramData _glData;
+	GLProgram _glProgram;
 	CustomRenderCommand _renderCommand;
 	Texture* _texture;
 	Quadrangle2D _quadrangle;

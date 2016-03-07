@@ -6,11 +6,6 @@
 namespace mgrrenderer
 {
 
-Polygon3D::~Polygon3D()
-{
-	destroyOpenGLProgram(_glData);
-}
-
 bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 {
 	if (vertexArray.size() % 3 != 0)
@@ -42,7 +37,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 
 	// TODO:objのシェーダとほぼ同じ。共通化したい。
-	_glData = createOpenGLProgram(
+	_glProgram.initWithShaderString(
 		// vertex shader
 		"attribute vec4 a_position;"
 		"attribute vec4 a_normal;"
@@ -118,7 +113,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		"}"
 	);
 
-	_uniformShadowTexture = glGetUniformLocation(_glData.shaderProgram, "u_shadowTexture");
+	_uniformShadowTexture = glGetUniformLocation(_glProgram.shaderProgram, "u_shadowTexture");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
@@ -131,176 +126,176 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 
-	_glData.uniformAmbientLightColor = glGetUniformLocation(_glData.shaderProgram, "u_ambientLightColor");
+	_glProgram.uniformAmbientLightColor = glGetUniformLocation(_glProgram.shaderProgram, "u_ambientLightColor");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		return false;
 	}
 
-	if (_glData.uniformAmbientLightColor < 0)
+	if (_glProgram.uniformAmbientLightColor < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
 
-	_glData.uniformDirectionalLightColor = glGetUniformLocation(_glData.shaderProgram, "u_directionalLightColor");
+	_glProgram.uniformDirectionalLightColor = glGetUniformLocation(_glProgram.shaderProgram, "u_directionalLightColor");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		return false;
 	}
 
-	if (_glData.uniformDirectionalLightColor < 0)
+	if (_glProgram.uniformDirectionalLightColor < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
 
-	_glData.uniformDirectionalLightDirection = glGetUniformLocation(_glData.shaderProgram, "u_directionalLightDirection");
+	_glProgram.uniformDirectionalLightDirection = glGetUniformLocation(_glProgram.shaderProgram, "u_directionalLightDirection");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		return false;
 	}
 
-	if (_glData.uniformDirectionalLightDirection < 0)
+	if (_glProgram.uniformDirectionalLightDirection < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
 
-	_glData.uniformPointLightColor = glGetUniformLocation(_glData.shaderProgram, "u_pointLightColor");
+	_glProgram.uniformPointLightColor = glGetUniformLocation(_glProgram.shaderProgram, "u_pointLightColor");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		return false;
 	}
 
-	if (_glData.uniformPointLightColor < 0)
+	if (_glProgram.uniformPointLightColor < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
 
-	_glData.uniformPointLightPosition = glGetUniformLocation(_glData.shaderProgram, "u_pointLightPosition");
+	_glProgram.uniformPointLightPosition = glGetUniformLocation(_glProgram.shaderProgram, "u_pointLightPosition");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		return false;
 	}
 
-	if (_glData.uniformPointLightPosition < 0)
+	if (_glProgram.uniformPointLightPosition < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
 
-	_glData.uniformPointLightRangeInverse = glGetUniformLocation(_glData.shaderProgram, "u_pointLightRangeInverse");
+	_glProgram.uniformPointLightRangeInverse = glGetUniformLocation(_glProgram.shaderProgram, "u_pointLightRangeInverse");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		return false;
 	}
 
-	if (_glData.uniformPointLightRangeInverse < 0)
+	if (_glProgram.uniformPointLightRangeInverse < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
 
-	_glData.uniformSpotLightColor = glGetUniformLocation(_glData.shaderProgram, "u_spotLightColor");
+	_glProgram.uniformSpotLightColor = glGetUniformLocation(_glProgram.shaderProgram, "u_spotLightColor");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		return false;
 	}
 
-	if (_glData.uniformSpotLightColor < 0)
+	if (_glProgram.uniformSpotLightColor < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
 
-	_glData.uniformSpotLightPosition = glGetUniformLocation(_glData.shaderProgram, "u_spotLightPosition");
+	_glProgram.uniformSpotLightPosition = glGetUniformLocation(_glProgram.shaderProgram, "u_spotLightPosition");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		return false;
 	}
 
-	if (_glData.uniformSpotLightPosition < 0)
+	if (_glProgram.uniformSpotLightPosition < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
 
-	_glData.uniformSpotLightRangeInverse = glGetUniformLocation(_glData.shaderProgram, "u_spotLightRangeInverse");
+	_glProgram.uniformSpotLightRangeInverse = glGetUniformLocation(_glProgram.shaderProgram, "u_spotLightRangeInverse");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		return false;
 	}
 
-	if (_glData.uniformSpotLightRangeInverse < 0)
+	if (_glProgram.uniformSpotLightRangeInverse < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
 
-	_glData.uniformSpotLightDirection = glGetUniformLocation(_glData.shaderProgram, "u_spotLightDirection");
+	_glProgram.uniformSpotLightDirection = glGetUniformLocation(_glProgram.shaderProgram, "u_spotLightDirection");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		return false;
 	}
 
-	if (_glData.uniformSpotLightDirection < 0)
+	if (_glProgram.uniformSpotLightDirection < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
 
-	_glData.uniformSpotLightInnerAngleCos = glGetUniformLocation(_glData.shaderProgram, "u_spotLightInnerAngleCos");
+	_glProgram.uniformSpotLightInnerAngleCos = glGetUniformLocation(_glProgram.shaderProgram, "u_spotLightInnerAngleCos");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		return false;
 	}
 
-	if (_glData.uniformSpotLightInnerAngleCos < 0)
+	if (_glProgram.uniformSpotLightInnerAngleCos < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
 
-	_glData.uniformSpotLightOuterAngleCos = glGetUniformLocation(_glData.shaderProgram, "u_spotLightOuterAngleCos");
+	_glProgram.uniformSpotLightOuterAngleCos = glGetUniformLocation(_glProgram.shaderProgram, "u_spotLightOuterAngleCos");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		return false;
 	}
 
-	if (_glData.uniformSpotLightOuterAngleCos < 0)
+	if (_glProgram.uniformSpotLightOuterAngleCos < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
 
-	_glData.uniformNormalMatrix = glGetUniformLocation(_glData.shaderProgram, "u_normalMatrix");
+	_glProgram.uniformNormalMatrix = glGetUniformLocation(_glProgram.shaderProgram, "u_normalMatrix");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		return false;
 	}
 
-	if (_glData.uniformNormalMatrix < 0)
+	if (_glProgram.uniformNormalMatrix < 0)
 	{
 		Logger::logAssert(false, "シェーダから変数確保失敗。");
 		return false;
 	}
 
-	_uniformDepthBiasMatrix = glGetUniformLocation(_glData.shaderProgram, "u_depthBiasMatrix");
+	_uniformDepthBiasMatrix = glGetUniformLocation(_glProgram.shaderProgram, "u_depthBiasMatrix");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
@@ -314,7 +309,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 
 	// TODO:ライトの判定入れないと
-	_uniformLightViewMatrix = glGetUniformLocation(_glData.shaderProgram, "u_lightViewMatrix");
+	_uniformLightViewMatrix = glGetUniformLocation(_glProgram.shaderProgram, "u_lightViewMatrix");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
@@ -327,7 +322,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 
-	_uniformLightProjectionMatrix = glGetUniformLocation(_glData.shaderProgram, "u_lightProjectionMatrix");
+	_uniformLightProjectionMatrix = glGetUniformLocation(_glProgram.shaderProgram, "u_lightProjectionMatrix");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
@@ -340,7 +335,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 
-	_glDataForShadowMap = createOpenGLProgram(
+	_glDataForShadowMap.initWithShaderString(
 		// vertex shader
 		// ModelDataしか使わない場合
 		"attribute vec4 a_position;"
@@ -475,19 +470,19 @@ void Polygon3D::renderWithShadowMap()
 	{
 		glEnable(GL_DEPTH_TEST);
 
-		glUseProgram(_glData.shaderProgram);
+		glUseProgram(_glProgram.shaderProgram);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniform3f(_glData.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
+		glUniform3f(_glProgram.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-		glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
-		glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		const Mat4& normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
-		glUniformMatrix4fv(_glData.uniformNormalMatrix, 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
+		glUniformMatrix4fv(_glProgram.uniformNormalMatrix, 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
 
 		// ライトの設定
 		// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
@@ -499,17 +494,17 @@ void Polygon3D::renderWithShadowMap()
 			switch (light->getLightType())
 			{
 			case LightType::AMBIENT:
-				glUniform3f(_glData.uniformAmbientLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+				glUniform3f(_glProgram.uniformAmbientLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 				break;
 			case LightType::DIRECTION: {
-				glUniform3f(_glData.uniformDirectionalLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+				glUniform3f(_glProgram.uniformDirectionalLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 				DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
 				Vec3 direction = dirLight->getDirection();
 				direction.normalize();
-				glUniform3fv(_glData.uniformDirectionalLightDirection, 1, (GLfloat*)&direction);
+				glUniform3fv(_glProgram.uniformDirectionalLightDirection, 1, (GLfloat*)&direction);
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 				// TODO:とりあえず影つけはDirectionalLightのみを想定
@@ -548,37 +543,37 @@ void Polygon3D::renderWithShadowMap()
 			}
 				break;
 			case LightType::POINT: {
-				glUniform3f(_glData.uniformPointLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+				glUniform3f(_glProgram.uniformPointLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-				glUniform3fv(_glData.uniformPointLightPosition, 1, (GLfloat*)&light->getPosition()); // ライトについてはローカル座標でなくワールド座標である前提
+				glUniform3fv(_glProgram.uniformPointLightPosition, 1, (GLfloat*)&light->getPosition()); // ライトについてはローカル座標でなくワールド座標である前提
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 				PointLight* pointLight = static_cast<PointLight*>(light);
-				glUniform1f(_glData.uniformPointLightRangeInverse, 1.0f / pointLight->getRange());
+				glUniform1f(_glProgram.uniformPointLightRangeInverse, 1.0f / pointLight->getRange());
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 			}
 				break;
 			case LightType::SPOT: {
-				glUniform3f(_glData.uniformSpotLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+				glUniform3f(_glProgram.uniformSpotLightColor, lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-				glUniform3fv(_glData.uniformSpotLightPosition, 1, (GLfloat*)&light->getPosition());
+				glUniform3fv(_glProgram.uniformSpotLightPosition, 1, (GLfloat*)&light->getPosition());
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 				SpotLight* spotLight = static_cast<SpotLight*>(light);
 				Vec3 direction = spotLight->getDirection();
 				direction.normalize();
-				glUniform3fv(_glData.uniformSpotLightDirection, 1, (GLfloat*)&direction);
+				glUniform3fv(_glProgram.uniformSpotLightDirection, 1, (GLfloat*)&direction);
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-				glUniform1f(_glData.uniformSpotLightRangeInverse, 1.0f / spotLight->getRange());
+				glUniform1f(_glProgram.uniformSpotLightRangeInverse, 1.0f / spotLight->getRange());
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-				glUniform1f(_glData.uniformSpotLightInnerAngleCos, spotLight->getInnerAngleCos());
+				glUniform1f(_glProgram.uniformSpotLightInnerAngleCos, spotLight->getInnerAngleCos());
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-				glUniform1f(_glData.uniformSpotLightOuterAngleCos, spotLight->getOuterAngleCos());
+				glUniform1f(_glProgram.uniformSpotLightOuterAngleCos, spotLight->getOuterAngleCos());
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 			}
 			default:

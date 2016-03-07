@@ -1,6 +1,7 @@
 #include "LabelAtlas.h"
 #include "Director.h"
 #include "Texture.h"
+#include "Shaders.h"
 
 namespace mgrrenderer
 {
@@ -29,48 +30,26 @@ bool LabelAtlas::init(const std::string& string, const Texture* texture, int ite
 
 	setString(string);
 
-	_glData = createOpenGLProgram(
-		// vertex shader
-		"attribute vec4 a_position;"
-		"attribute vec2 a_texCoord;"
-		"varying vec2 v_texCoord;"
-		"uniform mat4 u_modelMatrix;"
-		"uniform mat4 u_viewMatrix;"
-		"uniform mat4 u_projectionMatrix;"
-		"void main()"
-		"{"
-		"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;"
-		"	v_texCoord = a_texCoord;"
-		"}"
-		,
-		// fragment shader
-		"uniform sampler2D texture;"
-		"varying vec2 v_texCoord;"
-		"uniform vec3 u_multipleColor;"
-		"void main()"
-		"{"
-		"	gl_FragColor = texture2D(texture, v_texCoord) * vec4(u_multipleColor, 1.0);" // テクスチャ番号は0のみに対応
-		"}"
-		);
+	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR);
 
-	_glData.attributeTextureCoordinates = glGetAttribLocation(_glData.shaderProgram, "a_texCoord");
+	_glProgram.attributeTextureCoordinates = glGetAttribLocation(_glProgram.shaderProgram, "a_texCoord");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		return false;
 	}
 
-	if (_glData.attributeTextureCoordinates < 0)
+	if (_glProgram.attributeTextureCoordinates < 0)
 	{
 		return false;
 	}
 
-	_glData.uniformTexture = glGetUniformLocation(_glData.shaderProgram, "texture");
+	_glProgram.uniformTexture = glGetUniformLocation(_glProgram.shaderProgram, "u_texture");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		return false;
 	}
 
-	if (_glData.uniformTexture < 0)
+	if (_glProgram.uniformTexture < 0)
 	{
 		return false;
 	}
@@ -138,26 +117,26 @@ void LabelAtlas::renderWithShadowMap()
 
 		glDisable(GL_DEPTH_TEST);
 
-		glUseProgram(_glData.shaderProgram);
+		glUseProgram(_glProgram.shaderProgram);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniform3f(_glData.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
+		glUniform3f(_glProgram.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-		glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getViewMatrix().m);
-		glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getProjectionMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getProjectionMatrix().m);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glEnableVertexAttribArray(_glData.attributeTextureCoordinates);
+		glEnableVertexAttribArray(_glProgram.attributeTextureCoordinates);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 
 		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_vertices[0].position);
-		glVertexAttribPointer(_glData.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
+		glVertexAttribPointer(_glProgram.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
 
 		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());

@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include "Node.h"
+#include "GLProgram.h"
 #include "Texture.h"
 #include "C3bLoader.h"
 #include "CustomRenderCommand.h"
@@ -29,8 +30,8 @@ private:
 	GLint _uniformDepthBiasMatrix;
 	GLint _uniformShadowTexture;
 
-	OpenGLProgramData _glData;
-	OpenGLProgramData _glDataForShadowMap;
+	GLProgram _glProgram;
+	GLProgram _glDataForShadowMap;
 	CustomRenderCommand _renderShadowMapCommand;
 	CustomRenderCommand _renderCommand;
 	//TODO: Textureは今のところモデルファイルで指定できない。一枚のみに対応

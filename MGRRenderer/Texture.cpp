@@ -135,7 +135,7 @@ bool Texture::initWithImage(const Image& image, PixelFormat format)
 	// SpriteÇ≈Ç‚Ç¡ÇƒÇΩèàóù
 	//setGLProgramState(GLProgramState::getOrCreateWithGLProgramName(GLProgram::SHADER_NAME_POSITION_TEXTURE_COLOR_NO_MVP));
 
-	//_glData = createOpenGLProgram(
+	//_glProgram = createOpenGLProgram(
 	return true;
 
 ERR:

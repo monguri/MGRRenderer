@@ -1,6 +1,7 @@
 #pragma once
 #include "Node.h"
 #include "BasicDataTypes.h"
+#include "GLProgram.h"
 #include "CustomRenderCommand.h"
 #include <vector>
 
@@ -14,11 +15,10 @@ public:
 	bool initWithVertexArray(const std::vector<Vec3>& vertexArray);
 
 private:
-	OpenGLProgramData _glData;
+	GLProgram _glProgram;
 	CustomRenderCommand _renderCommand;
 	std::vector<Vec3> _vertexArray;
 
-	~Line3D();
 	void renderWithShadowMap() override;
 };
 

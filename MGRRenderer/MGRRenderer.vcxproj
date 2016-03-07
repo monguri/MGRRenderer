@@ -28,8 +28,10 @@
     <ClInclude Include="Director.h" />
     <ClInclude Include="FileUtility.h" />
     <ClInclude Include="FPSFontImage.h" />
+    <ClInclude Include="GLProgram.h" />
     <ClInclude Include="GroupBeginRenderCommand.h" />
     <ClInclude Include="GroupEndRenderCommand.h" />
+    <ClInclude Include="VertexShaderPositionTextureMultiplyColor.glsl" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="LabelAtlas.h" />
     <ClInclude Include="Light.h" />
@@ -47,6 +49,8 @@
     <ClInclude Include="RenderCommand.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="VertexShaderPositionMultiplyColor.glsl" />
+    <ClInclude Include="Shaders.h" />
     <ClInclude Include="Sprite2D.h" />
     <ClInclude Include="Sprite3D.h" />
     <ClInclude Include="Texture.h" />
@@ -61,6 +65,7 @@
     <ClCompile Include="Director.cpp" />
     <ClCompile Include="FileUtility.cpp" />
     <ClCompile Include="FPSFontImage.cpp" />
+    <ClCompile Include="GLProgram.cpp" />
     <ClCompile Include="GroupBeginRenderCommand.cpp" />
     <ClCompile Include="GroupEndRenderCommand.cpp" />
     <ClCompile Include="Image.cpp" />
@@ -80,9 +85,14 @@
     <ClCompile Include="RenderCommand.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Shaders.cpp" />
     <ClCompile Include="Sprite2D.cpp" />
     <ClCompile Include="Sprite3D.cpp" />
     <ClCompile Include="Texture.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FragmentShaderPositionMultiplyColor.glsl" />
+    <None Include="FragmentShaderPositionTextureMultiplyColor.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6BC7B3AF-198E-4A27-9950-D1C347DF439B}</ProjectGuid>

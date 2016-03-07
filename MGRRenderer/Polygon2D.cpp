@@ -1,13 +1,9 @@
 #include "Polygon2D.h"
 #include "Director.h"
+#include "Shaders.h"
 
 namespace mgrrenderer
 {
-
-Polygon2D::~Polygon2D()
-{
-	destroyOpenGLProgram(_glData);
-}
 
 bool Polygon2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
 {
@@ -19,24 +15,7 @@ bool Polygon2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
 
 	_vertexArray = vertexArray;
 
-	_glData = createOpenGLProgram(
-		// vertex shader
-		"attribute vec4 a_position;"
-		"uniform mat4 u_modelMatrix;"
-		"uniform mat4 u_viewMatrix;"
-		"uniform mat4 u_projectionMatrix;"
-		"void main()"
-		"{"
-		"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;"
-		"}"
-		,
-		// fragment shader
-		"uniform vec3 u_multipleColor;"
-		"void main()"
-		"{"
-		"	gl_FragColor = vec4(u_multipleColor, 1.0);"
-		"}"
-		);
+	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_MULTIPLY_COLOR, shader::FRAGMENT_SHADER_POSITION_MULTIPLY_COLOR);
 
 	return true;
 }
@@ -47,15 +26,15 @@ void Polygon2D::renderWithShadowMap()
 	{
 		glDisable(GL_DEPTH_TEST);
 
-		glUseProgram(_glData.shaderProgram);
+		glUseProgram(_glProgram.shaderProgram);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniform3f(_glData.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
+		glUniform3f(_glProgram.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-		glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getViewMatrix().m);
-		glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getProjectionMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getProjectionMatrix().m);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);

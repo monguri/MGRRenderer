@@ -7,6 +7,8 @@
 namespace mgrrenderer
 {
 
+enum class AttributeLocation : int;
+
 namespace C3bLoader
 {
 	struct MeshVertexAttribute

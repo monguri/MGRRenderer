@@ -2,6 +2,7 @@
 #include "FileUtility.h"
 #include "external/json/document.h"
 #include "BinaryReader.h"
+#include "GLProgram.h"
 
 namespace mgrrenderer
 {

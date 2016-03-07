@@ -1,6 +1,6 @@
 #pragma once
 #include "Node.h"
-#include "BasicDataTypes.h"
+#include "GLProgram.h"
 #include "CustomRenderCommand.h"
 
 namespace mgrrenderer
@@ -18,7 +18,7 @@ public:
 	void renderWithShadowMap() override;
 
 private:
-	OpenGLProgramData _glData;
+	GLProgram _glProgram;
 	CustomRenderCommand _renderCommand;
 	char _mapStartCharacter;
 	std::string _string;

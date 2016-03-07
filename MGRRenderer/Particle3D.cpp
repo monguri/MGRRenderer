@@ -81,7 +81,7 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 	}
 
 	// とりあえず設定量のパーティクルをふきだしたらそれで終わりにする
-	_glData = createOpenGLProgram(
+	_glProgram.initWithShaderString(
 		// vertex shader
 		"attribute vec4 a_position;"
 		"attribute vec3 a_initVelocity;"
@@ -116,18 +116,18 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 		"}"
 	);
 
-	_glData.uniformTexture = glGetUniformLocation(_glData.shaderProgram, "u_texture");
+	_glProgram.uniformTexture = glGetUniformLocation(_glProgram.shaderProgram, "u_texture");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		return false;
 	}
 
-	if (_glData.uniformTexture < 0)
+	if (_glProgram.uniformTexture < 0)
 	{
 		return false;
 	}
 
-	_uniformGravity = glGetUniformLocation(_glData.shaderProgram, "u_gravity");
+	_uniformGravity = glGetUniformLocation(_glProgram.shaderProgram, "u_gravity");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		return false;
@@ -138,7 +138,7 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 		return false;
 	}
 
-	_uniformLifeTime = glGetUniformLocation(_glData.shaderProgram, "u_lifeTime");
+	_uniformLifeTime = glGetUniformLocation(_glProgram.shaderProgram, "u_lifeTime");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		return false;
@@ -149,7 +149,7 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 		return false;
 	}
 
-	_attributeInitVelocity = glGetAttribLocation(_glData.shaderProgram, "a_initVelocity");
+	_attributeInitVelocity = glGetAttribLocation(_glProgram.shaderProgram, "a_initVelocity");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		return false;
@@ -160,7 +160,7 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 		return false;
 	}
 
-	_uniformPointSize = glGetUniformLocation(_glData.shaderProgram, "u_pointSize");
+	_uniformPointSize = glGetUniformLocation(_glProgram.shaderProgram, "u_pointSize");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		return false;
@@ -171,7 +171,7 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 		return false;
 	}
 
-	_attributeElapsedTime = glGetAttribLocation(_glData.shaderProgram, "a_elapsedTime");
+	_attributeElapsedTime = glGetAttribLocation(_glProgram.shaderProgram, "a_elapsedTime");
 	if (glGetError() != GL_NO_ERROR)
 	{
 		return false;
@@ -241,15 +241,15 @@ void Particle3D::renderWithShadowMap()
 	{
 		glEnable(GL_DEPTH_TEST);
 
-		glUseProgram(_glData.shaderProgram);
+		glUseProgram(_glProgram.shaderProgram);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniform3f(_glData.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
+		glUniform3f(_glProgram.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniformMatrix4fv(_glData.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-		glUniformMatrix4fv(_glData.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
-		glUniformMatrix4fv(_glData.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgram.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glUniform3fv(_uniformGravity, 1, (GLfloat*)&_parameter.gravity);

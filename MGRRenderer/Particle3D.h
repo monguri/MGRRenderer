@@ -1,5 +1,6 @@
 #pragma once
 #include "Node.h"
+#include "GLProgram.h"
 #include "CustomRenderCommand.h"
 
 namespace mgrrenderer
@@ -26,7 +27,7 @@ public:
 	bool initWithParameter(const Parameter& parameter);
 
 private:
-	OpenGLProgramData _glData;
+	GLProgram _glProgram;
 	CustomRenderCommand _renderCommand;
 	Parameter _parameter;
 	Texture* _texture;

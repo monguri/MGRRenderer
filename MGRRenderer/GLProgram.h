@@ -27,7 +27,6 @@ public:
 	GLuint vertexShader;
 	GLuint fragmentShader;
 	GLuint shaderProgram;
-	GLint attributeTextureCoordinates;
 	GLint uniformMultipleColor;
 	GLint uniformTexture;
 	GLint uniformCameraPosition;

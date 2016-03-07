@@ -32,17 +32,6 @@ bool LabelAtlas::init(const std::string& string, const Texture* texture, int ite
 
 	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR);
 
-	_glProgram.attributeTextureCoordinates = glGetAttribLocation(_glProgram.shaderProgram, "a_texCoord");
-	if (glGetError() != GL_NO_ERROR)
-	{
-		return false;
-	}
-
-	if (_glProgram.attributeTextureCoordinates < 0)
-	{
-		return false;
-	}
-
 	_glProgram.uniformTexture = glGetUniformLocation(_glProgram.shaderProgram, "u_texture");
 	if (glGetError() != GL_NO_ERROR)
 	{
@@ -131,12 +120,12 @@ void LabelAtlas::renderWithShadowMap()
 		glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glEnableVertexAttribArray(_glProgram.attributeTextureCoordinates);
+		glEnableVertexAttribArray((GLuint)AttributeLocation::TEXTURE_COORDINATE);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 
 		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_vertices[0].position);
-		glVertexAttribPointer(_glProgram.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
+		glVertexAttribPointer((GLuint)AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
 
 		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());

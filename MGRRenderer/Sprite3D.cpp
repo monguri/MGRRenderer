@@ -380,19 +380,6 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			);
 	}
 
-	_glProgram.attributeTextureCoordinates = glGetAttribLocation(_glProgram.shaderProgram, "a_texCoord");
-	if (glGetError() != GL_NO_ERROR)
-	{
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		return false;
-	}
-
-	if (_glProgram.attributeTextureCoordinates < 0)
-	{
-		Logger::logAssert(false, "シェーダから変数確保失敗。");
-		return false;
-	}
-
 	_glProgram.uniformTexture = glGetUniformLocation(_glProgram.shaderProgram, "u_texture");
 	if (glGetError() != GL_NO_ERROR)
 	{
@@ -1076,7 +1063,7 @@ void Sprite3D::renderShadowMap()
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 			glVertexAttribPointer((GLuint)AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-			glVertexAttribPointer(_glProgram.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
+			glVertexAttribPointer((GLuint)AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		}
 		else if (_isC3b)
@@ -1240,7 +1227,7 @@ void Sprite3D::renderWithShadowMap()
 		glEnableVertexAttribArray((GLuint)AttributeLocation::BLEND_INDEX);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glEnableVertexAttribArray(_glProgram.attributeTextureCoordinates);
+		glEnableVertexAttribArray((GLuint)AttributeLocation::TEXTURE_COORDINATE);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		if (_isObj)
@@ -1249,7 +1236,7 @@ void Sprite3D::renderWithShadowMap()
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 			glVertexAttribPointer((GLuint)AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-			glVertexAttribPointer(_glProgram.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
+			glVertexAttribPointer((GLuint)AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		}
 		else if (_isC3b)

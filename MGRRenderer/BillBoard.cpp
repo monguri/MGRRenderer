@@ -101,11 +101,11 @@ void BillBoard::renderWithShadowMap()
 		glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glEnableVertexAttribArray(_glProgram.attributeTextureCoordinates);
+		glEnableVertexAttribArray((GLuint)AttributeLocation::TEXTURE_COORDINATE);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.position);
-		glVertexAttribPointer(_glProgram.attributeTextureCoordinates, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.textureCoordinate);
+		glVertexAttribPointer((GLuint)AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.textureCoordinate);
 
 		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

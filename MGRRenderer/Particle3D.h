@@ -36,10 +36,7 @@ private:
 	std::vector<float> _elapsedTimeArray;
 	int _elapsedTimeMs; // ms‚Åˆµ‚Á‚Äint‚É‚µ‚Ä‚¢‚é
 
-	GLint _uniformGravity;
-	GLint _uniformLifeTime;
 	GLint _attributeInitVelocity;
-	GLint _uniformPointSize;
 	GLint _attributeElapsedTime;
 
 	~Particle3D();

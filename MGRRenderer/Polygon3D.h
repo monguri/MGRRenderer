@@ -16,15 +16,10 @@ public:
 
 private:
 	GLProgram _glProgram;
-	GLProgram _glDataForShadowMap;
+	GLProgram _glProgramForShadowMap;
 
 	std::vector<Vec3> _vertexArray;
 	std::vector<Vec3> _normalArray;
-
-	GLint _uniformLightViewMatrix;
-	GLint _uniformLightProjectionMatrix;
-	GLint _uniformDepthBiasMatrix;
-	GLint _uniformShadowTexture;
 
 	CustomRenderCommand _renderShadowMapCommand;
 	CustomRenderCommand _renderCommand;

@@ -10,10 +10,7 @@ namespace mgrrenderer
 
 Particle3D::Particle3D() :
 _texture(nullptr),
-_elapsedTimeMs(0.0f),
-_uniformGravity(-1),
-_uniformLifeTime(-1),
-_uniformPointSize(-1)
+_elapsedTimeMs(0.0f)
 {
 }
 
@@ -116,39 +113,6 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 		"}"
 	);
 
-	_glProgram.uniformTexture = glGetUniformLocation(_glProgram.shaderProgram, "u_texture");
-	if (glGetError() != GL_NO_ERROR)
-	{
-		return false;
-	}
-
-	if (_glProgram.uniformTexture < 0)
-	{
-		return false;
-	}
-
-	_uniformGravity = glGetUniformLocation(_glProgram.shaderProgram, "u_gravity");
-	if (glGetError() != GL_NO_ERROR)
-	{
-		return false;
-	}
-
-	if (_uniformGravity < 0)
-	{
-		return false;
-	}
-
-	_uniformLifeTime = glGetUniformLocation(_glProgram.shaderProgram, "u_lifeTime");
-	if (glGetError() != GL_NO_ERROR)
-	{
-		return false;
-	}
-
-	if (_uniformLifeTime < 0)
-	{
-		return false;
-	}
-
 	_attributeInitVelocity = glGetAttribLocation(_glProgram.shaderProgram, "a_initVelocity");
 	if (glGetError() != GL_NO_ERROR)
 	{
@@ -156,17 +120,6 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 	}
 
 	if (_attributeInitVelocity < 0)
-	{
-		return false;
-	}
-
-	_uniformPointSize = glGetUniformLocation(_glProgram.shaderProgram, "u_pointSize");
-	if (glGetError() != GL_NO_ERROR)
-	{
-		return false;
-	}
-
-	if (_uniformPointSize < 0)
 	{
 		return false;
 	}
@@ -244,20 +197,17 @@ void Particle3D::renderWithShadowMap()
 		glUseProgram(_glProgram.shaderProgram);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniform3f(_glProgram.uniformMultipleColor, getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
+		glUniformMatrix4fv(_glProgram.getUniformLocation(UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgram.getUniformLocation(UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgram.getUniformLocation(UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniformMatrix4fv(_glProgram.uniformModelMatrix, 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-		glUniformMatrix4fv(_glProgram.uniformViewMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
-		glUniformMatrix4fv(_glProgram.uniformProjectionMatrix, 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+		glUniform3fv(_glProgram.getUniformLocation("u_gravity"), 1, (GLfloat*)&_parameter.gravity);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniform3fv(_uniformGravity, 1, (GLfloat*)&_parameter.gravity);
+		glUniform1f(_glProgram.getUniformLocation("u_lifeTime"), _parameter.lifeTime);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-		glUniform1f(_uniformLifeTime, _parameter.lifeTime);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glUniform1f(_uniformPointSize, _parameter.pointSize);
+		glUniform1f(_glProgram.getUniformLocation("u_pointSize"), _parameter.pointSize);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);

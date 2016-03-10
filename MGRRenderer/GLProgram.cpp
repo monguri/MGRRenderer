@@ -6,15 +6,22 @@ namespace mgrrenderer
 {
 
 // TODO:ここに置くのがあまりいいとは思わないがとりあえず
-std::string ATTRIBUTE_NAME_POSITION = "a_position";
-std::string ATTRIBUTE_NAME_COLOR = "a_color";
-std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE = "a_texCoord";
-std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_1 = "a_texCoord1";
-std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_2 = "a_texCoord2";
-std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_3 = "a_texCoord3";
-std::string ATTRIBUTE_NAME_NORMAL = "a_normal";
-std::string ATTRIBUTE_NAME_BLEND_WEIGHT = "a_blendWeight";
-std::string ATTRIBUTE_NAME_BLEND_INDEX = "a_blendIndex";
+static const std::string ATTRIBUTE_NAME_POSITION = "a_position";
+static const std::string ATTRIBUTE_NAME_COLOR = "a_color";
+static const std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE = "a_texCoord";
+static const std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_1 = "a_texCoord1";
+static const std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_2 = "a_texCoord2";
+static const std::string ATTRIBUTE_NAME_TEXTURE_COORDINATE_3 = "a_texCoord3";
+static const std::string ATTRIBUTE_NAME_NORMAL = "a_normal";
+static const std::string ATTRIBUTE_NAME_BLEND_WEIGHT = "a_blendWeight";
+static const std::string ATTRIBUTE_NAME_BLEND_INDEX = "a_blendIndex";
+
+const std::string UNIFORM_NAME_MULTIPLE_COLOR = "u_multipleColor";
+const std::string UNIFORM_NAME_TEXTURE_SAMPLER = "u_texture";
+const std::string UNIFORM_NAME_MODEL_MATRIX = "u_modelMatrix";
+const std::string UNIFORM_NAME_VIEW_MATRIX = "u_viewMatrix";
+const std::string UNIFORM_NAME_NORMAL_MATRIX = "u_normalMatrix";
+const std::string UNIFORM_NAME_PROJECTION_MATRIX = "u_projectionMatrix";
 
 GLProgram::~GLProgram()
 {
@@ -38,11 +45,6 @@ void GLProgram::initWithShaderString(const GLchar* vertexShaderStr, const GLchar
 	vertexShader = createVertexShader(vertexShaderStr);
 	fragmentShader = createFragmentShader(fragmentShaderStr);
 	shaderProgram = createShaderProgram(vertexShader, fragmentShader);
-
-	uniformMultipleColor = glGetUniformLocation(shaderProgram, "u_multipleColor");
-	uniformModelMatrix = glGetUniformLocation(shaderProgram, "u_modelMatrix");
-	uniformViewMatrix = glGetUniformLocation(shaderProgram, "u_viewMatrix");
-	uniformProjectionMatrix = glGetUniformLocation(shaderProgram, "u_projectionMatrix");
 }
 
 GLuint GLProgram::createVertexShader(const GLchar* source) const
@@ -112,7 +114,7 @@ GLint GLProgram::compileShader(GLuint shader, const GLchar* source) const
 	return compileResult;
 }
 
-GLuint GLProgram::createShaderProgram(const GLuint vertexShader, const GLuint fragmentShader) const
+GLuint GLProgram::createShaderProgram(const GLuint vertexShader, const GLuint fragmentShader)
 {
 	GLuint ret = glCreateProgram();
 	Logger::logAssert(ret != 0, "シェーダプログラム生成失敗");
@@ -149,6 +151,7 @@ GLuint GLProgram::createShaderProgram(const GLuint vertexShader, const GLuint fr
 		glBindAttribLocation(ret, (GLuint)attribute.location, attribute.name.c_str());
 	}
 
+
 	glLinkProgram(ret);
 
 	GLint linkResult;
@@ -174,6 +177,67 @@ GLuint GLProgram::createShaderProgram(const GLuint vertexShader, const GLuint fr
 	{
 		return 0;
 	}
+
+
+	// GL_ACTIVE_XX系はリンクしてプログラムが完成した後でないと取得失敗する
+	_uniformList.clear();
+	GLint numUniform;
+	glGetProgramiv(ret, GL_ACTIVE_UNIFORMS, &numUniform);
+
+	if (numUniform > 0)
+	{
+		GLint maxLength;
+		glGetProgramiv(ret, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxLength);
+
+		if (maxLength > 0)
+		{
+			GLchar* uniformName = (GLchar*)alloca(maxLength + 1);
+
+			for (int i = 0; i < numUniform; ++i)
+			{
+				GLint size;
+				GLenum type;
+				GLsizei length;
+				glGetActiveUniform(ret, i, maxLength, &length, &size, &type, uniformName);
+				uniformName[length] = '\0';
+
+				if (length > 3)
+				{
+					// 配列型変数は[]以前の変数名を用いる
+					char* c = strrchr(uniformName, '[');
+					if (c != nullptr)
+					{
+						*c = '\0';
+					}
+				}
+
+				GLint location = glGetUniformLocation(ret, uniformName);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				_uniformList[uniformName] = location;
+			}
+		}
+	}
+	else
+	{
+		GLchar errorLog[1024];
+		glGetProgramInfoLog(ret, sizeof(errorLog), nullptr, errorLog);
+		Logger::log("アクティブなユニフォーム変数が取得できず。errorMsg=%s", errorLog);
+	}
+
 	return ret;
 }
+
+GLint GLProgram::getUniformLocation(const std::string& uniformName) const
+{
+	try
+	{
+		return _uniformList.at(uniformName);
+	}
+	catch (...)
+	{
+		Logger::logAssert(false, "存在しないユニフォーム変数へのアクセス uniformName=%s", uniformName.c_str());
+		return -1;
+	}
+}
+
 } // namespace mgrrenderer

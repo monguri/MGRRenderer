@@ -28,10 +28,6 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 		"	gl_FragColor = vec4(u_multipleColor, 1.0);"
 		"}"
 		);
-
-	_attributePointSize = glGetAttribLocation(_glProgram.shaderProgram, "a_point_size");
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	Logger::logAssert(_attributePointSize >= 0, "アトリビュート変数の取得に失敗");
 }
 
 void Point2D::renderWithShadowMap()
@@ -40,7 +36,7 @@ void Point2D::renderWithShadowMap()
 	{
 		glDisable(GL_DEPTH_TEST);
 
-		glUseProgram(_glProgram.shaderProgram);
+		glUseProgram(_glProgram.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glUniform3f(_glProgram.getUniformLocation(UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
@@ -53,13 +49,13 @@ void Point2D::renderWithShadowMap()
 
 		glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glEnableVertexAttribArray(_attributePointSize);
+		glEnableVertexAttribArray(_glProgram.getAttributeLocation("a_point_size"));
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		// TODO:毎回サイズ計算の割り算をしてるのは無駄
 		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, sizeof(_pointArray[0].point) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point2DData), (GLvoid*)&_pointArray[0].point);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glVertexAttribPointer(_attributePointSize, sizeof(_pointArray[0].pointSize) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point2DData), (GLvoid*)((GLbyte*)&_pointArray[0].pointSize));
+		glVertexAttribPointer(_glProgram.getAttributeLocation("a_point_size"), sizeof(_pointArray[0].pointSize) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point2DData), (GLvoid*)((GLbyte*)&_pointArray[0].pointSize));
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glDrawArrays(GL_POINTS, 0, _pointArray.size());

@@ -36,9 +36,6 @@ private:
 	std::vector<float> _elapsedTimeArray;
 	int _elapsedTimeMs; // ms‚Åˆµ‚Á‚Äint‚É‚µ‚Ä‚¢‚é
 
-	GLint _attributeInitVelocity;
-	GLint _attributeElapsedTime;
-
 	~Particle3D();
 
 	// TODO:‚Æ‚è‚ ‚¦‚¸‚Ü‚¾‚±‚ê‚Ì‰e¶¬‚Í‚µ‚È‚¢

@@ -33,47 +33,27 @@ enum class AttributeLocation : int
 class GLProgram final
 {
 public:
-	//GLint uniformMultipleColor;
-	//GLint uniformTexture;
-	//GLint uniformCameraPosition;
-	//GLint uniformModelMatrix;
-	//GLint uniformViewMatrix;
-	//GLint uniformNormalMatrix;
-	//GLint uniformProjectionMatrix;
-	//GLint uniformSkinMatrixPalette;
-	//GLint uniformAmbientLightColor;
-	//GLint uniformDirectionalLightColor;
-	//GLint uniformDirectionalLightDirection;
-	//GLint uniformPointLightColor;
-	//GLint uniformPointLightPosition;
-	//GLint uniformPointLightRangeInverse;
-	//GLint uniformSpotLightColor;
-	//GLint uniformSpotLightPosition;
-	//GLint uniformSpotLightDirection;
-	//GLint uniformSpotLightRangeInverse;
-	//GLint uniformSpotLightInnerAngleCos;
-	//GLint uniformSpotLightOuterAngleCos;
-	//GLint uniformMaterialAmbient;
-	//GLint uniformMaterialDiffuse;
-	//GLint uniformMaterialSpecular;
-	//GLint uniformMaterialEmissive;
-	//GLint uniformMaterialOpacity;
-	//GLint uniformMaterialShininess;
-	GLuint vertexShader;
-	GLuint fragmentShader;
-	GLuint shaderProgram;
-
+	GLProgram();
 	~GLProgram();
 	void initWithShaderString(const GLchar* vertexShaderStr, const GLchar* fragmentShaderStr);
+	GLuint getAttributeLocation(const std::string& attributeName) const;
 	GLint getUniformLocation(const std::string& uniformName) const;
+	GLuint getShaderProgram() { return _shaderProgram; }
 
 private:
+	GLuint _vertexShader;
+	GLuint _fragmentShader;
+	GLuint _shaderProgram;
+
+	std::unordered_map<std::string, GLuint> _attributeList;
 	std::unordered_map<std::string, GLint> _uniformList;
 
 	GLuint createVertexShader(const GLchar* source) const;
 	GLuint createFragmentShader(const GLchar* source) const;
 	GLuint createShaderProgram(const GLuint vertexShader, const GLuint fragmentShader);
 	GLint compileShader(GLuint shader, const GLchar* source) const;
+	void parseAttributes(GLuint shaderProgram);
+	void parseUniforms(GLuint shaderProgram);
 };
 
 } // namespace mgrrenderer

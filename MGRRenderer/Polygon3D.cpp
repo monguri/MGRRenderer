@@ -178,7 +178,7 @@ void Polygon3D::renderShadowMap()
 			return;
 		}
 
-		glUseProgram(_glProgramForShadowMap.shaderProgram);
+		glUseProgram(_glProgramForShadowMap.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 
@@ -222,7 +222,7 @@ void Polygon3D::renderWithShadowMap()
 	{
 		glEnable(GL_DEPTH_TEST);
 
-		glUseProgram(_glProgram.shaderProgram);
+		glUseProgram(_glProgram.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glUniform3f(_glProgram.getUniformLocation(UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);

@@ -12,14 +12,14 @@ void Point3D::initWithPointArray(const std::vector<Point3DData>& pointArray)
 	_glProgram.initWithShaderString(
 		// vertex shader
 		"attribute vec4 a_position;"
-		"attribute float attr_point_size;"
+		"attribute float a_pointSize;"
 		"uniform mat4 u_modelMatrix;"
 		"uniform mat4 u_viewMatrix;"
 		"uniform mat4 u_projectionMatrix;"
 		"void main()"
 		"{"
 		"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;"
-		"	gl_PointSize = attr_point_size;"
+		"	gl_PointSize = a_pointSize;"
 		"}"
 		,
 		// fragment shader
@@ -29,10 +29,6 @@ void Point3D::initWithPointArray(const std::vector<Point3DData>& pointArray)
 		"	gl_FragColor = vec4(u_multipleColor, 1.0);"
 		"}"
 		);
-
-	_attributePointSize = glGetAttribLocation(_glProgram.shaderProgram, "attr_point_size");
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	Logger::logAssert(_attributePointSize >= 0, "アトリビュート変数の取得に失敗");
 }
 
 void Point3D::renderWithShadowMap()
@@ -41,7 +37,7 @@ void Point3D::renderWithShadowMap()
 	{
 		glEnable(GL_DEPTH_TEST);
 
-		glUseProgram(_glProgram.shaderProgram);
+		glUseProgram(_glProgram.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glUniform3f(_glProgram.getUniformLocation(UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
@@ -54,12 +50,12 @@ void Point3D::renderWithShadowMap()
 
 		glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glEnableVertexAttribArray(_attributePointSize);
+		glEnableVertexAttribArray(_glProgram.getAttributeLocation("a_pointSize"));
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, sizeof(_pointArray[0].point) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point3DData), (GLvoid*)&_pointArray[0].point);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glVertexAttribPointer(_attributePointSize, sizeof(_pointArray[0].pointSize) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point3DData), (GLvoid*)((GLbyte*)&_pointArray[0].pointSize));
+		glVertexAttribPointer(_glProgram.getAttributeLocation("a_pointSize"), sizeof(_pointArray[0].pointSize) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point3DData), (GLvoid*)((GLbyte*)&_pointArray[0].pointSize));
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glDrawArrays(GL_POINTS, 0, _pointArray.size());

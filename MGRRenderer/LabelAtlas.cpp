@@ -95,7 +95,7 @@ void LabelAtlas::renderWithShadowMap()
 
 		glDisable(GL_DEPTH_TEST);
 
-		glUseProgram(_glProgram.shaderProgram);
+		glUseProgram(_glProgram.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGLèàóùÇ≈ÉGÉâÅ[î≠ê∂ glGetError()=%d", glGetError());
 
 		glUniform3f(_glProgram.getUniformLocation(UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);

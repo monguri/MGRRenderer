@@ -113,28 +113,6 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 		"}"
 	);
 
-	_attributeInitVelocity = glGetAttribLocation(_glProgram.shaderProgram, "a_initVelocity");
-	if (glGetError() != GL_NO_ERROR)
-	{
-		return false;
-	}
-
-	if (_attributeInitVelocity < 0)
-	{
-		return false;
-	}
-
-	_attributeElapsedTime = glGetAttribLocation(_glProgram.shaderProgram, "a_elapsedTime");
-	if (glGetError() != GL_NO_ERROR)
-	{
-		return false;
-	}
-
-	if (_attributeElapsedTime < 0)
-	{
-		return false;
-	}
-
 	return true;
 }
 
@@ -194,7 +172,7 @@ void Particle3D::renderWithShadowMap()
 	{
 		glEnable(GL_DEPTH_TEST);
 
-		glUseProgram(_glProgram.shaderProgram);
+		glUseProgram(_glProgram.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glUniformMatrix4fv(_glProgram.getUniformLocation(UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
@@ -212,16 +190,16 @@ void Particle3D::renderWithShadowMap()
 
 		glEnableVertexAttribArray((GLuint)AttributeLocation::POSITION);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glEnableVertexAttribArray(_attributeInitVelocity);
+		glEnableVertexAttribArray(_glProgram.getAttributeLocation("a_initVelocity"));
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glEnableVertexAttribArray(_attributeElapsedTime);
+		glEnableVertexAttribArray(_glProgram.getAttributeLocation("a_elapsedTime"));
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glVertexAttribPointer((GLuint)AttributeLocation::POSITION, sizeof(_vertexArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_vertexArray[0]);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glVertexAttribPointer(_attributeInitVelocity, sizeof(_initVelocityArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_initVelocityArray[0]);
+		glVertexAttribPointer(_glProgram.getAttributeLocation("a_initVelocity"), sizeof(_initVelocityArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_initVelocityArray[0]);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glVertexAttribPointer(_attributeElapsedTime, sizeof(_elapsedTimeArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_elapsedTimeArray[0]);
+		glVertexAttribPointer(_glProgram.getAttributeLocation("a_elapsedTime"), sizeof(_elapsedTimeArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_elapsedTimeArray[0]);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());

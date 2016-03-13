@@ -24,7 +24,6 @@ public:
 private:
 	GLProgram _glProgram;
 	CustomRenderCommand _renderCommand;
-	GLint _attributePointSize;
 
 	std::vector<Point2DData> _pointArray;
 

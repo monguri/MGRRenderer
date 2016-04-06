@@ -34,7 +34,9 @@ Texture::~Texture()
 {
 	if (_textureId != 0)
 	{
+#if defined(MGRRENDERER_USE_OPENGL)
 		glDeleteTextures(1, &_textureId);
+#endif
 		_textureId = 0;
 	}
 }
@@ -52,7 +54,9 @@ bool Texture::initWithImage(const Image& image, PixelFormat format)
 	}
 
 	GLint maxTextureSize = 0;
+#if defined(MGRRENDERER_USE_OPENGL)
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+#endif
 
 	int imageWidth = image.getWidth();
 	int imageHeight = image.getHeight();
@@ -74,6 +78,7 @@ bool Texture::initWithImage(const Image& image, PixelFormat format)
 	const PixelFormatInfo& info = _pixelFormatInfoTable.at(toFormat);
 
 	unsigned int bytesPerRow = imageWidth * info.bitPerPixel / 8;
+#if defined(MGRRENDERER_USE_OPENGL)
 	if (bytesPerRow % 8 == 0)
 	{
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
@@ -90,14 +95,18 @@ bool Texture::initWithImage(const Image& image, PixelFormat format)
 	{
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	}
+#endif
 
 	if (_textureId != 0)
 	{
+#if defined(MGRRENDERER_USE_OPENGL)
 		glDeleteTextures(1, &_textureId);
+#endif
 		_textureId = 0;
 	}
 
 	// TODO:とりあえずMipmap対応はしない
+#if defined(MGRRENDERER_USE_OPENGL)
 	glGenTextures(1, &_textureId);
 	glActiveTexture(GL_TEXTURE0); // TODO:とりあえずGL_TEXTURE0
 	glBindTexture(GL_TEXTURE_2D, _textureId);
@@ -119,6 +128,7 @@ bool Texture::initWithImage(const Image& image, PixelFormat format)
 	{
 		goto ERR;
 	}
+#endif
 	// テクスチャのデータはここで転送完了したので、Imageのもつ画像データは解放されて構わない。CCTextyureCacheでもImageはTexture2D作ったら解放するしね。それなら、別にクラスにしなくてもUtilityクラスでもよかったと思うが、まあデータを中に内包してるクラスの方が扱いやすくはある
 
 	// Imageからデータをもらう
@@ -150,7 +160,9 @@ ERR:
 bool Texture::initWithTexture(GLuint textureId, const Size& contentSize, PixelFormat format)
 {
 	GLint maxTextureSize = 0;
+#if defined(MGRRENDERER_USE_OPENGL)
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+#endif
 
 	if (contentSize.width > maxTextureSize || contentSize.height > maxTextureSize)
 	{	
@@ -160,6 +172,7 @@ bool Texture::initWithTexture(GLuint textureId, const Size& contentSize, PixelFo
 	const PixelFormatInfo& info = _pixelFormatInfoTable.at(format);
 
 	unsigned int bytesPerRow = contentSize.width * info.bitPerPixel / 8;
+#if defined(MGRRENDERER_USE_OPENGL)
 	if (bytesPerRow % 8 == 0)
 	{
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
@@ -181,6 +194,7 @@ bool Texture::initWithTexture(GLuint textureId, const Size& contentSize, PixelFo
 	{
 		return false;
 	}
+#endif
 
 	_textureId = textureId;
 	_contentSize = contentSize;

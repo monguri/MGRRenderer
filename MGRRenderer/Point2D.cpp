@@ -34,6 +34,7 @@ void Point2D::renderWithShadowMap()
 {
 	_renderCommand.init([=]
 	{
+#if defined(MGRRENDERER_USE_OPENGL)
 		glDisable(GL_DEPTH_TEST);
 
 		glUseProgram(_glProgram.getShaderProgram());
@@ -60,6 +61,7 @@ void Point2D::renderWithShadowMap()
 
 		glDrawArrays(GL_POINTS, 0, _pointArray.size());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGLèàóùÇ≈ÉGÉâÅ[î≠ê∂ glGetError()=%d", glGetError());
+#endif
 	});
 
 	Director::getRenderer().addCommand(&_renderCommand);

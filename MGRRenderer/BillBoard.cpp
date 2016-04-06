@@ -84,6 +84,7 @@ void BillBoard::renderWithShadowMap()
 {
 	_renderCommand.init([=]
 	{
+#if defined(MGRRENDERER_USE_OPENGL)
 		glEnable(GL_DEPTH_TEST);
 		
 		// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
@@ -109,6 +110,7 @@ void BillBoard::renderWithShadowMap()
 
 		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+#endif
 	});
 
 	Director::getRenderer().addCommand(&_renderCommand);

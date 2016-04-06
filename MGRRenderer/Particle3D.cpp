@@ -16,7 +16,9 @@ _elapsedTimeMs(0.0f)
 
 Particle3D::~Particle3D()
 {
+#if defined(MGRRENDERER_USE_OPENGL)
 	glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 	if (_texture)
 	{
 		delete _texture;
@@ -26,8 +28,10 @@ Particle3D::~Particle3D()
 
 bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 {
+#if defined(MGRRENDERER_USE_OPENGL)
 	// 一個でもParticle3Dがあったらポイントスプライトを有効にする。これを有効にしないとgl_PointCoordが有効に働かない
 	glEnable(GL_POINT_SPRITE);
+#endif
 
 	_parameter = parameter;
 
@@ -170,6 +174,7 @@ void Particle3D::renderWithShadowMap()
 {
 	_renderCommand.init([=]
 	{
+#if defined(MGRRENDERER_USE_OPENGL)
 		glEnable(GL_DEPTH_TEST);
 
 		glUseProgram(_glProgram.getShaderProgram());
@@ -207,6 +212,7 @@ void Particle3D::renderWithShadowMap()
 		int numParticle = _parameter.loopFlag ? _parameter.numParticle * _parameter.lifeTime : _parameter.numParticle;
 		glDrawArrays(GL_POINTS, 0, numParticle);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+#endif
 	});
 
 	Director::getRenderer().addCommand(&_renderCommand);

@@ -13,7 +13,9 @@ Sprite2D::Sprite2D() : _texture(nullptr)
 
 Sprite2D::~Sprite2D()
 {
+#if defined(MGRRENDERER_USE_OPENGL)
 	glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 	if (_texture)
 	{
 		delete _texture;
@@ -58,6 +60,7 @@ void Sprite2D::renderWithShadowMap()
 {
 	_renderCommand.init([=]
 	{
+#if defined(MGRRENDERER_USE_OPENGL)
 		glDisable(GL_DEPTH_TEST);
 
 		// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
@@ -83,6 +86,7 @@ void Sprite2D::renderWithShadowMap()
 
 		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+#endif
 	});
 
 	Director::getRenderer().addCommand(&_renderCommand);

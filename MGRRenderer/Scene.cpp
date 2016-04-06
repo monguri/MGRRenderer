@@ -77,7 +77,9 @@ void Scene::update(float dt)
 	}
 
 	// ç≈èIìIÇ»ï`âÊ
+#if defined(MGRRENDERER_USE_OPENGL)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
 
 	_camera.renderWithShadowMap();
 

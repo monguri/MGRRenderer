@@ -140,7 +140,9 @@ void Polygon3D::renderShadowMap()
 	{
 		Node::renderShadowMap();
 
+#if defined(MGRRENDERER_USE_OPENGL)
 		glEnable(GL_DEPTH_TEST);
+#endif
 
 		bool makeShadowMap = false;
 		DirectionalLight::ShadowMapData shadowMapData;
@@ -178,6 +180,7 @@ void Polygon3D::renderShadowMap()
 			return;
 		}
 
+#if defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForShadowMap.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
@@ -211,6 +214,7 @@ void Polygon3D::renderShadowMap()
 
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)_vertexArray.size());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+#endif
 	});
 
 	Director::getRenderer().addCommand(&_renderShadowMapCommand);
@@ -220,6 +224,7 @@ void Polygon3D::renderWithShadowMap()
 {
 	_renderCommand.init([=]
 	{
+#if defined(MGRRENDERER_USE_OPENGL)
 		glEnable(GL_DEPTH_TEST);
 
 		glUseProgram(_glProgram.getShaderProgram());
@@ -349,6 +354,7 @@ void Polygon3D::renderWithShadowMap()
 
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)_vertexArray.size());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+#endif
 	});
 
 	Director::getRenderer().addCommand(&_renderCommand);

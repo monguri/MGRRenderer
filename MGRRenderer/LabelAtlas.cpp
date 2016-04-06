@@ -16,7 +16,9 @@ _texture(nullptr)
 
 LabelAtlas::~LabelAtlas()
 {
+#if defined(MGRRENDERER_USE_OPENGL)
 	glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 	_texture = nullptr;
 }
 
@@ -87,6 +89,7 @@ void LabelAtlas::renderWithShadowMap()
 {
 	_renderCommand.init([=]
 	{
+#if defined(MGRRENDERER_USE_OPENGL)
 		if (_indices.size() == 0)
 		{
 			// まだ文字設定をしてないときは描画しない。描画するとglVertexAttribPointerで0インデックスにアクセスするのでエラーになる。
@@ -120,6 +123,7 @@ void LabelAtlas::renderWithShadowMap()
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+#endif
 	});
 
 	Director::getRenderer().addCommand(&_renderCommand);

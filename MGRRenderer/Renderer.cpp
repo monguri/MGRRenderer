@@ -18,6 +18,7 @@ Renderer::Renderer()
 
 void Renderer::initView(const Size& windowSize)
 {
+#if defined(MGRRENDERER_USE_OPENGL)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 	// TODO:ブレンドが必要ない時もブレンドをONにしている
@@ -25,6 +26,7 @@ void Renderer::initView(const Size& windowSize)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// OpenGL側でやるビューポート変換のためのパラメータを渡す
 	glViewport(0, 0, windowSize.width, windowSize.height);
+#endif
 }
 
 void Renderer::addCommand(RenderCommand* command)

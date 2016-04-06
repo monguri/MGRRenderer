@@ -1,5 +1,11 @@
 #pragma once
+
+//#define MGRRENDERER_USE_DIRECT3D
+#define MGRRENDERER_USE_OPENGL
+
+#if defined(MGRRENDERER_USE_OPENGL)
 #include <gles/include/glew.h>
+#endif
 #include <math.h> // fabs‚âfmod‚ðŽg‚¤‚½‚ß
 #include <string>
 #include <vector>

@@ -32,6 +32,7 @@ void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float camera
 	_shadowMapData.projectionMatrix = Mat4::createPerspective(60.0, size.width / size.height, 10, 10000.0f);
 
 	// デプステクスチャ作成
+#if defined(MGRRENDERER_USE_OPENGL)
 	glGenTextures(1, &_shadowMapData.textureId);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	Logger::logAssert(_shadowMapData.textureId != 0, "デプステクスチャ生成失敗");
@@ -72,6 +73,7 @@ void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float camera
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファに戻す
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+#endif
 }
 
 void DirectionalLight::beginRenderShadowMap()
@@ -80,6 +82,7 @@ void DirectionalLight::beginRenderShadowMap()
 
 	_beginRenderCommand.init([=]
 	{
+#if defined(MGRRENDERER_USE_OPENGL)
 		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().frameBufferId);
 
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -89,6 +92,7 @@ void DirectionalLight::beginRenderShadowMap()
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
+#endif
 	});
 
 	Director::getRenderer().addCommand(&_beginRenderCommand);
@@ -100,8 +104,10 @@ void DirectionalLight::endRenderShadowMap()
 
 	_endRenderCommand.init([=]
 	{
+#if defined(MGRRENDERER_USE_OPENGL)
 		glDisable(GL_CULL_FACE);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
+#endif
 	});
 
 	Director::getRenderer().addCommand(&_endRenderCommand);

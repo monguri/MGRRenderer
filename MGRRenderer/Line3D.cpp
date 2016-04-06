@@ -25,6 +25,7 @@ void Line3D::renderWithShadowMap()
 {
 	_renderCommand.init([=]
 	{
+#if defined(MGRRENDERER_USE_OPENGL)
 		glEnable(GL_DEPTH_TEST);
 
 		glUseProgram(_glProgram.getShaderProgram());
@@ -47,6 +48,7 @@ void Line3D::renderWithShadowMap()
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		glDrawArrays(GL_LINES, 0, _vertexArray.size());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+#endif
 	});
 
 	Director::getRenderer().addCommand(&_renderCommand);

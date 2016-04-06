@@ -1,11 +1,11 @@
 #include <iostream>
+#include "MGRRenderer.h"
+
+#if defined(MGRRENDERER_USE_OPENGL)
 #include <gles/include/glew.h>
 #include <glfw3/include/glfw3.h>
+#endif
 
-//#define MGRRENDERER_USE_DIRECT3D
-#define MGRRENDERER_USE_OPENGL
-
-#include "MGRRenderer.h"
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 

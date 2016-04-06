@@ -1,5 +1,6 @@
 #pragma once
 
+//TODO:Macros.h‚ğì‚ë‚¤
 #include "BasicDataTypes.h"
 #include "Logger.h"
 #include "Director.h"

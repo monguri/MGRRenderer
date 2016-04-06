@@ -604,7 +604,9 @@ void Sprite3D::renderShadowMap()
 	{
 		Node::renderShadowMap();
 
+#if defined(MGRRENDERER_USE_OPENGL)
 		glEnable(GL_DEPTH_TEST);
+#endif
 
 		bool makeShadowMap = false;
 		DirectionalLight::ShadowMapData shadowMapData;
@@ -642,9 +644,9 @@ void Sprite3D::renderShadowMap()
 			return;
 		}
 
+#if defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForShadowMap.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
 
 		// 行列の設定
 		glUniformMatrix4fv(_glProgramForShadowMap.getUniformLocation(UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
@@ -706,6 +708,7 @@ void Sprite3D::renderShadowMap()
 
 		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+#endif
 	});
 
 	Director::getRenderer().addCommand(&_renderShadowMapCommand);
@@ -717,6 +720,7 @@ void Sprite3D::renderWithShadowMap()
 	{
 		Node::renderWithShadowMap();
 
+#if defined(MGRRENDERER_USE_OPENGL)
 		glEnable(GL_DEPTH_TEST);
 
 		// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
@@ -907,6 +911,7 @@ void Sprite3D::renderWithShadowMap()
 		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 	});
 
 	Director::getRenderer().addCommand(&_renderCommand);

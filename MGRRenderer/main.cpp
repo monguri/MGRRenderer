@@ -1,6 +1,10 @@
 #include <iostream>
 #include <gles/include/glew.h>
 #include <glfw3/include/glfw3.h>
+
+//#define MGRRENDERER_USE_DIRECT3D
+#define MGRRENDERER_USE_OPENGL
+
 #include "MGRRenderer.h"
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
@@ -31,6 +35,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 //int main()
 //{
+#if defined(MGRRENDERER_USE_OPENGL)
 	glfwSetErrorCallback(fwErrorHandler);
 
 	if (glfwInit() == GL_FALSE)
@@ -63,6 +68,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		std::cerr << "Error: " << glewGetErrorString(err) << std::endl;
 		exit(EXIT_FAILURE);
 	}
+#endif
 
 	// ï`âÊÇÃèâä˙âª
 	initialize();
@@ -77,7 +83,9 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	LARGE_INTEGER nNow;
 	QueryPerformanceCounter(&nLast);
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	while (glfwWindowShouldClose(window) == GL_FALSE)
+#endif
 	{
 		QueryPerformanceCounter(&nNow);
 		if (nNow.QuadPart - nLast.QuadPart > loopInterval.QuadPart)
@@ -87,9 +95,11 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 			// ï`âÊÇÃÉÅÉCÉìÉãÅ[Év
 			render();
 
+#if defined(MGRRENDERER_USE_OPENGL)
 			glfwSwapBuffers(window);
 
 			glfwPollEvents();
+#endif
 		}
 		else
 		{
@@ -100,8 +110,10 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	// ï`âÊÇÃèIóπèàóù
 	finalize();
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	glfwDestroyWindow(window);
 	glfwTerminate();
+#endif
 	exit(EXIT_SUCCESS);
 	return 0;
 }

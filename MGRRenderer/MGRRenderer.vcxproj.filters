@@ -42,6 +42,7 @@
     <ClInclude Include="VertexShaderPositionMultiplyColor.glsl" />
     <ClInclude Include="VertexShaderPositionTextureMultiplyColor.glsl" />
     <ClInclude Include="GLProgram.h" />
+    <ClInclude Include="Config.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Director.cpp" />

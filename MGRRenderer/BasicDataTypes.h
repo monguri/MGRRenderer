@@ -1,7 +1,6 @@
 #pragma once
 
-//#define MGRRENDERER_USE_DIRECT3D
-#define MGRRENDERER_USE_OPENGL
+#include "Config.h"
 
 #if defined(MGRRENDERER_USE_OPENGL)
 #include <gles/include/glew.h>

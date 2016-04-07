@@ -24,6 +24,7 @@
     <ClInclude Include="BinaryReader.h" />
     <ClInclude Include="C3bLoader.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Config.h" />
     <ClInclude Include="CustomRenderCommand.h" />
     <ClInclude Include="Director.h" />
     <ClInclude Include="FileUtility.h" />

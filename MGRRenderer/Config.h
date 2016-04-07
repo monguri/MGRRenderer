@@ -1,0 +1,4 @@
+#pragma once
+
+//#define MGRRENDERER_USE_DIRECT3D
+#define MGRRENDERER_USE_OPENGL

@@ -2,7 +2,10 @@
 #include "Config.h"
 #include "MGRRenderer.h"
 
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+#include <d3dx11.h>
+#include <dxerr.h>
+#elif defined(MGRRENDERER_USE_OPENGL)
 #include <gles/include/glew.h>
 #include <glfw3/include/glfw3.h>
 #endif
@@ -21,7 +24,9 @@ static const int FPS = 60;
 using namespace mgrrenderer;
 
 // 宣言
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowParam, LONG param);
+#elif defined(MGRRENDERER_USE_OPENGL)
 static void fwErrorHandler(int error, const char* description);
 static void fwKeyInputHandler(GLFWwindow* window, int key, int scancode, int action, int mods);
 #endif
@@ -36,9 +41,63 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
-//int main()
-//{
-#if defined(MGRRENDERER_USE_OPENGL)
+	// デバッグ ヒープ マネージャによるメモリ割り当ての追跡方法を設定
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	WCHAR windowClass[] = L"MGRRendererSampleApplication";
+	IDXGISwapChain* swapChain = nullptr;
+
+	// ウインドウ クラスの登録
+	WNDCLASS wndClass;
+	wndClass.style   = CS_HREDRAW | CS_VREDRAW;
+	wndClass.lpfnWndProc  = (WNDPROC)mainWindowProc;
+	wndClass.cbClsExtra  = 0;
+	wndClass.cbWndExtra  = 0;
+	wndClass.hInstance  = hInstance;
+	wndClass.hIcon   = LoadIcon(nullptr, IDI_APPLICATION);
+	wndClass.hCursor   = LoadCursor(nullptr, IDC_ARROW);
+	wndClass.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+	wndClass.lpszMenuName  = nullptr;
+	wndClass.lpszClassName = windowClass;
+
+	if (!RegisterClass(&wndClass))
+	{
+		std::cerr << "Error:" << GetLastError() <<  " RegisterClass failed." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	// メインウィンドウ作成
+	RECT rect;
+	rect.top = 0;
+	rect.left = 0;
+	rect.right = WINDOW_WIDTH;
+	rect.bottom = WINDOW_HEIGHT;
+	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, TRUE);
+
+	HWND handleWindow = CreateWindow(
+		windowClass,
+		L"MGRRendererSampleApplication",
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		rect.right - rect.left,
+		rect.bottom - rect.top,
+		nullptr,
+		nullptr,
+		hInstance,
+		nullptr
+		);
+	if (handleWindow == nullptr)
+	{
+		std::cerr << "Error:" << GetLastError() << " CreateWindow failed." << std::endl;
+	}
+
+	// ウインドウ表示
+	ShowWindow(handleWindow, SW_SHOWNORMAL);
+	UpdateWindow(handleWindow);
+
+#elif defined(MGRRENDERER_USE_OPENGL)
 	glfwSetErrorCallback(fwErrorHandler);
 
 	if (glfwInit() == GL_FALSE)
@@ -86,7 +145,12 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	LARGE_INTEGER nNow;
 	QueryPerformanceCounter(&nLast);
 
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	MSG msg;
+	PeekMessage(&msg, 0, 0, 0, PM_REMOVE);
+
+	while (msg.message != WM_QUIT)
+#elif defined(MGRRENDERER_USE_OPENGL)
 	while (glfwWindowShouldClose(window) == GL_FALSE)
 #endif
 	{
@@ -98,9 +162,20 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 			// 描画のメインループ
 			render();
 
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+			//swapChain->Present(0, 0); // TODO:もしかして、第一引数に秒数入れれば、GLFWみたいに自分でFPSコントロールしなくていいのかも
+
+			// メッセージポーリング
+			if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+#elif defined(MGRRENDERER_USE_OPENGL)
+			// バックバッファとフロントバッファ入れ替え
 			glfwSwapBuffers(window);
 
+			// イベントポーリング
 			glfwPollEvents();
 #endif
 		}
@@ -113,7 +188,9 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	// 描画の終了処理
 	finalize();
 
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	UnregisterClass(windowClass, hInstance);
+#elif defined(MGRRENDERER_USE_OPENGL)
 	glfwDestroyWindow(window);
 	glfwTerminate();
 #endif
@@ -121,7 +198,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	return 0;
 }
 
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowParam, LONG param)
+{
+	//TODO:実装
+	return DefWindowProc(handleWindow, message, windowParam, param);
+}
+#elif defined(MGRRENDERER_USE_OPENGL)
 void fwErrorHandler(int error, const char* description)
 {
 	std::cerr << "glfw Error: " << description << std::endl;

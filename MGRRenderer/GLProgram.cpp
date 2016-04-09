@@ -1,4 +1,5 @@
 #include "GLProgram.h"
+#if defined(MGRRENDERER_USE_OPENGL)
 #include "Logger.h"
 #include <string>
 
@@ -325,3 +326,5 @@ GLint GLProgram::getUniformLocation(const std::string& uniformName) const
 }
 
 } // namespace mgrrenderer
+
+#endif

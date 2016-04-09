@@ -1,4 +1,5 @@
 #pragma once
+
 #include "RenderCommand.h"
 #include <functional>
 

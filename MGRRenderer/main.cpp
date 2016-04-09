@@ -1,4 +1,5 @@
 #include <iostream>
+#include "Config.h"
 #include "MGRRenderer.h"
 
 #if defined(MGRRENDERER_USE_OPENGL)

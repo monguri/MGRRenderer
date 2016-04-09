@@ -1,4 +1,8 @@
 #pragma once
+
+#include "Config.h"
+
+#if defined(MGRRENDERER_USE_OPENGL)
 #include <gles/include/glew.h>
 #include <unordered_map>
 
@@ -57,3 +61,4 @@ private:
 };
 
 } // namespace mgrrenderer
+#endif

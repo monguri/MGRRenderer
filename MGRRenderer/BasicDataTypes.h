@@ -153,11 +153,11 @@ struct Color3B
 	static const Color3B GRAY;
 	static const Color3B BLACK;
 
-	GLubyte r;
-	GLubyte g;
-	GLubyte b;
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
 
-	Color3B(GLubyte rVal, GLubyte gVal, GLubyte bVal) : r(rVal), g(gVal), b(bVal)
+	Color3B(unsigned char rVal, unsigned char gVal, unsigned char bVal) : r(rVal), g(gVal), b(bVal)
 	{
 	}
 };

@@ -1,4 +1,6 @@
 #include "Sprite2D.h"
+#if defined(MGRRENDERER_USE_OPENGL)
+
 #include "FileUtility.h"
 #include "Image.h"
 #include "Director.h"
@@ -93,3 +95,4 @@ void Sprite2D::renderWithShadowMap()
 }
 
 } // namespace mgrrenderer
+#endif

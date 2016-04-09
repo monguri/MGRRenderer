@@ -15,8 +15,10 @@ public:
 	bool initWithVertexArray(const std::vector<Vec3>& vertexArray);
 
 private:
+#if defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
 	GLProgram _glProgramForShadowMap;
+#endif
 
 	std::vector<Vec3> _vertexArray;
 	std::vector<Vec3> _normalArray;

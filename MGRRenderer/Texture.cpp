@@ -1,4 +1,6 @@
 #include "Texture.h"
+
+#if defined(MGRRENDERER_USE_OPENGL)
 #include "Image.h"
 
 
@@ -558,3 +560,4 @@ void Texture::setDefaultPixelFormat(PixelFormat format)
 }
 
 } // namespace mgrrenderer
+#endif

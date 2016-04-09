@@ -31,7 +31,6 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 #if defined(MGRRENDERER_USE_OPENGL)
 	// 一個でもParticle3Dがあったらポイントスプライトを有効にする。これを有効にしないとgl_PointCoordが有効に働かない
 	glEnable(GL_POINT_SPRITE);
-#endif
 
 	_parameter = parameter;
 
@@ -116,6 +115,7 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 		"	}"
 		"}"
 	);
+#endif
 
 	return true;
 }

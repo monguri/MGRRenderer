@@ -59,10 +59,14 @@ public:
 	{
 		Mat4 viewMatrix;
 		Mat4 projectionMatrix;
+#if defined(MGRRENDERER_USE_OPENGL)
 		GLuint frameBufferId;
 		GLuint textureId;
+#endif
 
+#if defined(MGRRENDERER_USE_OPENGL)
 		ShadowMapData() : frameBufferId(0), textureId(0) {};
+#endif
 	};
 
 	DirectionalLight(const Vec3& direction, const Color3B& color);

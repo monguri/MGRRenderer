@@ -21,8 +21,10 @@ static const int FPS = 60;
 using namespace mgrrenderer;
 
 // 宣言
+#if defined(MGRRENDERER_USE_OPENGL)
 static void fwErrorHandler(int error, const char* description);
 static void fwKeyInputHandler(GLFWwindow* window, int key, int scancode, int action, int mods);
+#endif
 static void initialize();
 static void render();
 static void finalize();
@@ -119,6 +121,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	return 0;
 }
 
+#if defined(MGRRENDERER_USE_OPENGL)
 void fwErrorHandler(int error, const char* description)
 {
 	std::cerr << "glfw Error: " << description << std::endl;
@@ -131,6 +134,7 @@ void fwKeyInputHandler(GLFWwindow* window, int key, int scancode, int action, in
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
 }
+#endif
 
 void initialize()
 {
@@ -170,10 +174,12 @@ void initialize()
 	isSucceeded = polygonNode->initWithVertexArray(polygonVertices);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	Sprite2D* spriteNode = new Sprite2D();
 	isSucceeded = spriteNode->init("../Resources/Hello.png");
 	spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
+#endif
 	//// TODO:現状表示に成功してない
 	//BillBoard* spriteNode = new BillBoard();
 	//isSucceeded = spriteNode->init("../Resources/Hello.png", BillBoard::Mode::VIEW_PLANE_ORIENTED);
@@ -231,6 +237,7 @@ void initialize()
 	isSucceeded = plane3DNode3->initWithVertexArray(planeVertices3D3);
 	Logger::logAssert(plane3DNode3, "ノードの初期化失敗");
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	Sprite3D* sprite3DObjNode = new Sprite3D();
 	isSucceeded = sprite3DObjNode->initWithModel("../Resources/boss1.obj");
 	sprite3DObjNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 100, WINDOW_HEIGHT / 2.0f - 100, 0)); // カメラのデフォルトの視点位置から少しずれた場所に置いた
@@ -245,6 +252,7 @@ void initialize()
 	sprite3DC3tNode->setScale(10.0f);
 	sprite3DC3tNode->startAnimation("Take 001", true);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
+#endif
 
 	Particle3D::Parameter parameter;
 	parameter.loopFlag = true;
@@ -266,16 +274,20 @@ void initialize()
 	defaultLight->setIntensity(0.3f);
 	defaultLight->setColor(Color3B::WHITE);
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	DirectionalLight* directionalLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
 	directionalLight->setIntensity(0.7f);
 	directionalLight->prepareShadowMap(sprite3DC3tNode->getPosition(), WINDOW_HEIGHT / 1.1566f, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addLight(directionalLight);
+#endif
 
 	// TODO:シャドウマップをスプライトで描画したかったが機能してない
+#if defined(MGRRENDERER_USE_OPENGL)
 	Sprite2D* depthTextureSprite = new Sprite2D();
 	const Size& contentSize = Director::getInstance()->getWindowSize() / 4.0f;
 	depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().textureId, contentSize, Texture::PixelFormat::RGBA8888); // pixelformatは適当
 	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
+#endif
 
 
 	////PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);
@@ -292,14 +304,18 @@ void initialize()
 	scene->pushNode(plane3DNode1);
 	scene->pushNode(plane3DNode2);
 	scene->pushNode(plane3DNode3);
+#if defined(MGRRENDERER_USE_OPENGL)
 	scene->pushNode(sprite3DObjNode);
 	scene->pushNode(sprite3DC3tNode);
+#endif
 	scene->pushNode(particle3DNode);
 	scene->pushNode(pointNode);
 	scene->pushNode(lineNode);
 	scene->pushNode(polygonNode);
+#if defined(MGRRENDERER_USE_OPENGL)
 	scene->pushNode(spriteNode);
 	scene->pushNode(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない
+#endif
 
 	Director::getInstance()->setScene(*scene);
 }

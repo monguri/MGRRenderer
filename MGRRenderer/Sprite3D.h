@@ -3,12 +3,14 @@
 #include <vector>
 #include "Node.h"
 #include "GLProgram.h"
-#include "Texture.h"
-#include "C3bLoader.h"
 #include "CustomRenderCommand.h"
+#include "C3bLoader.h"
 
+#if defined(MGRRENDERER_USE_OPENGL)
 namespace mgrrenderer
 {
+
+class Texture;
 
 class Sprite3D :
 	public Node
@@ -25,8 +27,10 @@ private:
 	bool _isObj;
 	bool _isC3b;
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
 	GLProgram _glProgramForShadowMap;
+#endif
 	CustomRenderCommand _renderShadowMapCommand;
 	CustomRenderCommand _renderCommand;
 	//TODO: Textureは今のところモデルファイルで指定できない。一枚のみに対応
@@ -60,3 +64,4 @@ private:
 };
 
 } // namespace mgrrenderer
+#endif

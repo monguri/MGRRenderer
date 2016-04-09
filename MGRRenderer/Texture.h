@@ -1,4 +1,8 @@
 #pragma once
+
+#include "Config.h"
+
+#if defined(MGRRENDERER_USE_OPENGL)
 #include "BasicDataTypes.h"
 #include <map>
 
@@ -130,3 +134,4 @@ private:
 };
 
 } // namespace mgrrenderer
+#endif

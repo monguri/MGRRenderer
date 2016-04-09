@@ -18,7 +18,9 @@ public:
 	void renderWithShadowMap() override;
 
 private:
+#if defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
+#endif
 	CustomRenderCommand _renderCommand;
 	char _mapStartCharacter;
 	std::string _string;

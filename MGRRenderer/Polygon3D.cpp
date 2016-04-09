@@ -36,6 +36,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		_normalArray.push_back(normal2);
 	}
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	// TODO:objのシェーダとほぼ同じ。共通化したい。
 	_glProgram.initWithShaderString(
 		// vertex shader
@@ -130,6 +131,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		"{" // 何もせずとも深度は自動で書き込まれる 
 		"}"
 	);
+#endif
 
 	return true;
 }

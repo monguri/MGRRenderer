@@ -9,6 +9,7 @@ void Point3D::initWithPointArray(const std::vector<Point3DData>& pointArray)
 {
 	_pointArray = pointArray;
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	_glProgram.initWithShaderString(
 		// vertex shader
 		"attribute vec4 a_position;"
@@ -29,6 +30,7 @@ void Point3D::initWithPointArray(const std::vector<Point3DData>& pointArray)
 		"	gl_FragColor = vec4(u_multipleColor, 1.0);"
 		"}"
 		);
+#endif
 }
 
 void Point3D::renderWithShadowMap()

@@ -32,7 +32,9 @@ bool LabelAtlas::init(const std::string& string, const Texture* texture, int ite
 
 	setString(string);
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR);
+#endif
 
 	return true;
 }
@@ -41,6 +43,7 @@ void LabelAtlas::setString(const std::string& string)
 {
 	_string = string;
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	// setString‚Ì‰ñ”‚Í­‚È‚¢‚Æ‚¢‚¤‘O’ñ‚Ì‚à‚ÆAˆÈ‰º‚Í–ˆ‰ñŒvŽZ‚µ‚Ä‚¢‚é
 	int itemsPerRow = _texture->getContentSize().width / _itemWidth;
 
@@ -83,6 +86,7 @@ void LabelAtlas::setString(const std::string& string)
 		_indices[6 * i + 4] = 4 * i + 2;
 		_indices[6 * i + 5] = 4 * i + 1;
 	}
+#endif
 }
 
 void LabelAtlas::renderWithShadowMap()

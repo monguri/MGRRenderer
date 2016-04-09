@@ -15,7 +15,9 @@ public:
 	bool initWithVertexArray(const std::vector<Vec3>& vertexArray);
 
 private:
+#if defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
+#endif
 	CustomRenderCommand _renderCommand;
 	std::vector<Vec3> _vertexArray;
 

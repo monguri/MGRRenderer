@@ -2,6 +2,7 @@
 #include "Director.h"
 #include "GLProgram.h"
 
+#if defined(MGRRENDERER_USE_OPENGL)
 namespace mgrrenderer
 {
 
@@ -117,3 +118,4 @@ void BillBoard::renderWithShadowMap()
 }
 
 } // namespace mgrrenderer
+#endif

@@ -16,7 +16,9 @@ bool Line3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 
 	_vertexArray = vertexArray;
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_MULTIPLY_COLOR, shader::FRAGMENT_SHADER_POSITION_MULTIPLY_COLOR);
+#endif
 
 	return true;
 }

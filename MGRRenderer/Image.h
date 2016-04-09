@@ -29,7 +29,9 @@ public:
 	int getWidth() const { return _width; }
 	int getHeight() const { return _height; }
 	bool getHasPremultipliedAlpha() const { return _hasPremultipliedAlpha; }
+#if defined(MGRRENDERER_USE_OPENGL)
 	Texture::PixelFormat getPixelFormat() const { return _pixelFormat; }
+#endif
 
 private:
 	static const ssize_t PNG_SIGNATURE_SIZE = 8;
@@ -37,7 +39,9 @@ private:
 	ssize_t _dataLen;
 	int _width;
 	int _height;
+#if defined(MGRRENDERER_USE_OPENGL)
 	Texture::PixelFormat _pixelFormat;
+#endif
 	bool _hasPremultipliedAlpha;
 
 	Format detectFormat(const unsigned char * data, ssize_t dataLen);

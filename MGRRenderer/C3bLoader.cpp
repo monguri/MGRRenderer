@@ -4,6 +4,7 @@
 #include "BinaryReader.h"
 #include "GLProgram.h"
 
+#if defined(MGRRENDERER_USE_OPENGL)
 namespace mgrrenderer
 {
 
@@ -1980,3 +1981,4 @@ namespace C3bLoader
 } // namespace C3bLoader
 
 } // namespace mgrrenderer
+#endif

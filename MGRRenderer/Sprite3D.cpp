@@ -1,10 +1,11 @@
 #include "Sprite3D.h"
 #include "ObjLoader.h"
-#include "C3bLoader.h"
 #include "Image.h"
+#include "Texture.h"
 #include "Director.h"
 #include "Light.h"
 
+#if defined(MGRRENDERER_USE_OPENGL)
 namespace mgrrenderer
 {
 
@@ -57,6 +58,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_isObj = false;
 	_isC3b = false;
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	const std::string& ext = filePath.substr(filePath.length() - 4, 4);
 	if (ext == ".obj")
 	{
@@ -465,6 +467,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"}"
 		);
 	}
+#endif
 
 	return true;
 }
@@ -918,3 +921,4 @@ void Sprite3D::renderWithShadowMap()
 }
 
 } // namespace mgrrenderer
+#endif

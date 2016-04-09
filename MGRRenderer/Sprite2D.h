@@ -6,6 +6,7 @@
 #include "CustomRenderCommand.h"
 #include <string>
 
+#if defined(MGRRENDERER_USE_OPENGL)
 namespace mgrrenderer
 {
 
@@ -28,3 +29,4 @@ protected:
 };
 
 } // namespace mgrrenderer
+#endif

@@ -21,7 +21,9 @@ _data(nullptr),
 _dataLen(0),
 _width(0),
 _height(0),
+#if defined(MGRRENDERER_USE_OPENGL)
 _pixelFormat(Texture::PixelFormat::NONE),
+#endif
 _hasPremultipliedAlpha(true)
 {
 }
@@ -189,6 +191,7 @@ bool Image::initWithPngData(const unsigned char * data, ssize_t dataLen)
 	bitDepth = png_get_bit_depth(png, info);
 	colorType = png_get_color_type(png, info);
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	switch (colorType)
 	{
 	case PNG_COLOR_TYPE_GRAY:
@@ -206,6 +209,7 @@ bool Image::initWithPngData(const unsigned char * data, ssize_t dataLen)
 	default:
 		break;
 	}
+#endif
 
 	// 一行一行ロードしてメンバに格納
 	png_bytep* rowPointers = static_cast<png_bytep*>(malloc(sizeof(png_bytep) * _height));
@@ -404,6 +408,7 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 		}
 	}
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	// TODO:initWithTGADataの部分を書いてない
 	if (header.type == 2 || header.type == 10)
 	{
@@ -437,6 +442,7 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 			return false;
 		}
 	}
+#endif
 
 	_width = header.width;
 	_height = header.height;
@@ -446,7 +452,9 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 
 void Image::premultiplyAlpha()
 {
+#if defined(MGRRENDERER_USE_OPENGL)
 	Logger::logAssert(_pixelFormat == Texture::PixelFormat::RGBA8888, "pngではアルファの事前乗算はRGBA8888にしか対応させてない");
+#endif
 
 	unsigned int* fourBytes = (unsigned int*)_data;
 	for (int i = 0; i < _width * _height; i++)

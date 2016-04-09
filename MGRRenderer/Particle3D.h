@@ -27,7 +27,9 @@ public:
 	bool initWithParameter(const Parameter& parameter);
 
 private:
+#if defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
+#endif
 	CustomRenderCommand _renderCommand;
 	Parameter _parameter;
 	Texture* _texture;

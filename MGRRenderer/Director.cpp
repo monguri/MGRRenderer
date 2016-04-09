@@ -48,10 +48,12 @@ void Director::init(const Size& windowSize)
 	// TODO:後で描画関係の初期化処理はこの中にまとめる
 	_renderer.initView(windowSize);
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	Logger::log("GPU vendor: %s\nGPU:%s\nOpenGL version:%s\nGLSLversion:%s", glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 	// デフォルトのピクセルフォーマットをRGBA8888に。
 	Texture::setDefaultPixelFormat(Texture::PixelFormat::RGBA8888);
+#endif
 
 	createStatsLabel();
 }
@@ -128,6 +130,7 @@ void Director::createStatsLabel()
 	bool success = image.initWithImageData(FPSFontImage::PNG_DATA, FPSFontImage::getPngDataSize());
 	Logger::logAssert(success, "Imageの初期化に失敗");
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	Texture* texture = new (std::nothrow) Texture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
 	success = texture->initWithImage(image, Texture::PixelFormat::RGBA4444);
 	Logger::logAssert(success, "Textureの初期化に失敗");
@@ -135,6 +138,7 @@ void Director::createStatsLabel()
 	_FPSLabel->init("", texture,
 		12, 32, '.'); // 左の情報は、すでにテクスチャの情報を知っていることからの決め打ち
 	_FPSLabel->setPosition(Vec3(0, 0, 0));
+#endif
 }
 
 void Director::updateStats(float dt)

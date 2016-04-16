@@ -5,13 +5,18 @@
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include <d3dx11.h>
 #include <dxerr.h>
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "d3dx11d.lib") // デバッグ版を使う
+#pragma comment(lib, "dxerr.lib")
+#pragma comment(lib, "dxgi.lib")
 #elif defined(MGRRENDERER_USE_OPENGL)
 #include <gles/include/glew.h>
 #include <glfw3/include/glfw3.h>
 #endif
 
 
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#define STRICT					// 型チェックを厳密に行なう
+#define WIN32_LEAN_AND_MEAN		// ヘッダーからあまり使われない関数を省く
 
 // Windows Header Files:
 #include <windows.h>
@@ -46,25 +51,24 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	WCHAR windowClass[] = L"MGRRendererSampleApplication";
-	IDXGISwapChain* swapChain = nullptr;
 
 	// ウインドウ クラスの登録
 	WNDCLASS wndClass;
-	wndClass.style   = CS_HREDRAW | CS_VREDRAW;
-	wndClass.lpfnWndProc  = (WNDPROC)mainWindowProc;
-	wndClass.cbClsExtra  = 0;
-	wndClass.cbWndExtra  = 0;
-	wndClass.hInstance  = hInstance;
-	wndClass.hIcon   = LoadIcon(nullptr, IDI_APPLICATION);
-	wndClass.hCursor   = LoadCursor(nullptr, IDC_ARROW);
-	wndClass.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-	wndClass.lpszMenuName  = nullptr;
+	wndClass.style = CS_HREDRAW | CS_VREDRAW;
+	wndClass.lpfnWndProc = (WNDPROC)mainWindowProc;
+	wndClass.cbClsExtra = 0;
+	wndClass.cbWndExtra = 0;
+	wndClass.hInstance = hInstance;
+	wndClass.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
+	wndClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wndClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wndClass.lpszMenuName = nullptr;
 	wndClass.lpszClassName = windowClass;
 
 	if (!RegisterClass(&wndClass))
 	{
-		std::cerr << "Error:" << GetLastError() <<  " RegisterClass failed." << std::endl;
-		exit(EXIT_FAILURE);
+		std::cerr << "Error:" << GetLastError() << " RegisterClass failed." << std::endl;
+		PostQuitMessage(EXIT_FAILURE);
 	}
 
 	// メインウィンドウ作成
@@ -81,8 +85,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
-		rect.right - rect.left,
-		rect.bottom - rect.top,
+		WINDOW_WIDTH,
+		WINDOW_HEIGHT,
 		nullptr,
 		nullptr,
 		hInstance,
@@ -91,19 +95,161 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	if (handleWindow == nullptr)
 	{
 		std::cerr << "Error:" << GetLastError() << " CreateWindow failed." << std::endl;
+		PostQuitMessage(EXIT_FAILURE);
 	}
 
 	// ウインドウ表示
 	ShowWindow(handleWindow, SW_SHOWNORMAL);
 	UpdateWindow(handleWindow);
 
+	// デバイスとスワップ チェインの作成
+	DXGI_SWAP_CHAIN_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.BufferCount = 1;
+	desc.BufferDesc.Width = WINDOW_WIDTH;
+	desc.BufferDesc.Height = WINDOW_HEIGHT;
+	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.BufferDesc.RefreshRate.Numerator = 60;
+	desc.BufferDesc.RefreshRate.Denominator = 60;
+	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	desc.OutputWindow = handleWindow;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.Windowed = TRUE;
+	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+	// ハードウェア・デバイスを作成
+	IDXGISwapChain* swapChain = nullptr;
+	ID3D11Device* device = nullptr;
+	ID3D11DeviceContext* context = nullptr;
+	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
+	D3D_FEATURE_LEVEL featureLevelSupported;
+
+	D3D_DRIVER_TYPE driverTypes[] = { D3D_DRIVER_TYPE_HARDWARE, // ハードウェア・デバイス
+									D3D_DRIVER_TYPE_WARP, // WARPデバイス
+									D3D_DRIVER_TYPE_REFERENCE }; // リファレンス・デバイスを作成
+
+	HRESULT result = 0; //TODO:定数にしたい
+	for (D3D_DRIVER_TYPE driverType : driverTypes)
+	{
+		result = D3D11CreateDeviceAndSwapChain(
+			nullptr,
+			driverType,
+			nullptr,
+			D3D11_CREATE_DEVICE_DEBUG, // デフォルトでデバッグにしておく
+			featureLevels,
+			3,
+			D3D11_SDK_VERSION,
+			&desc,
+			&swapChain,
+			&device,
+			&featureLevelSupported,
+			&context
+		);
+
+		if (SUCCEEDED(result))
+		{
+			break;
+		}
+	}
+
+	if (FAILED(result))
+	{
+		std::cerr << "Error:" << GetLastError() << " D3D11CreateDeviceAndSwapChain failed." << std::endl;
+		// TODO:それぞれのエラー処理で解放処理をちゃんと書かないと
+		PostQuitMessage(EXIT_FAILURE);
+	}
+
+	Director::getInstance()->setDirect3dContext(context);
+
+	// スワップ・チェインから最初のバック・バッファを取得する
+	ID3D11Texture2D* backBuffer = nullptr;
+	result = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
+	if (FAILED(result))
+	{
+		std::cerr << "Error:" << GetLastError() << " GetBuffer failed." << std::endl;
+		PostQuitMessage(EXIT_FAILURE);
+	}
+
+	// バック・バッファの描画ターゲット・ビューを作る
+	ID3D11RenderTargetView* renderTargetView = nullptr;
+	result = device->CreateRenderTargetView(backBuffer, nullptr, &renderTargetView);
+	if (FAILED(result))
+	{
+		std::cerr << "Error:" << GetLastError() << " CreateRenderTargetView failed." << std::endl;
+		PostQuitMessage(EXIT_FAILURE);
+	}
+	Director::getInstance()->setDirect3dRenderTarget(renderTargetView);
+
+	// バック・バッファの情報
+	D3D11_TEXTURE2D_DESC descBackBuffer;
+	backBuffer->GetDesc(&descBackBuffer);
+
+	// 深度/ステンシル・テクスチャの作成
+	D3D11_TEXTURE2D_DESC descDepthStencilTexture = descBackBuffer;
+	descDepthStencilTexture.MipLevels = 1;
+	descDepthStencilTexture.ArraySize = 1;
+	descDepthStencilTexture.Format = DXGI_FORMAT_D32_FLOAT;
+	descDepthStencilTexture.Usage = D3D11_USAGE_DEFAULT;
+	descDepthStencilTexture.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	descDepthStencilTexture.CPUAccessFlags = 0;
+	descDepthStencilTexture.MiscFlags = 0;
+
+	ID3D11Texture2D* depthStencilTexture = nullptr;
+	result = device->CreateTexture2D(&descDepthStencilTexture, nullptr, &depthStencilTexture);
+	if (FAILED(result))
+	{
+		std::cerr << "Error:" << GetLastError() << " CreateTexture2D failed." << std::endl;
+		PostQuitMessage(EXIT_FAILURE);
+	}
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDepthStencilView;
+	descDepthStencilView.Format = descDepthStencilTexture.Format;
+	descDepthStencilView.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDepthStencilView.Flags = 0;
+	descDepthStencilView.Texture2D.MipSlice = 0;
+
+	ID3D11DepthStencilView* depthStencilView = nullptr;
+	result = device->CreateDepthStencilView(depthStencilTexture, &descDepthStencilView, &depthStencilView);
+	if (FAILED(result))
+	{
+		std::cerr << "Error:" << GetLastError() << " CreateDepthStencilView failed." << std::endl;
+		PostQuitMessage(EXIT_FAILURE);
+	}
+	Director::getInstance()->setDirect3dDepthStencil(depthStencilView);
+
+	// ビューポートの設定
+	D3D11_VIEWPORT viewport[1];
+	viewport[0].TopLeftX = 0.0f;
+	viewport[0].TopLeftY = 0.0f;
+	viewport[0].Width = WINDOW_WIDTH;
+	viewport[0].Height = WINDOW_HEIGHT;
+	viewport[0].MinDepth = 0.0f;
+	viewport[0].MaxDepth = 1.0f;
+
+	// IDXGIFactoryインターフェイスの取得
+	IDXGIFactory* dxgiFactory = nullptr;
+	result = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory);
+	if (FAILED(result))
+	{
+		std::cerr << "Error:" << GetLastError() << " CreateDXGIFactory failed." << std::endl;
+		PostQuitMessage(EXIT_FAILURE);
+	}
+
+	// [Alt]+[Enter]キーによる画面モード切り替え機能を設定する
+	result = dxgiFactory->MakeWindowAssociation(handleWindow, 0);
+	if (FAILED(result))
+	{
+		std::cerr << "Error:" << GetLastError() << " CreateDXGIFactory failed." << std::endl;
+		PostQuitMessage(EXIT_FAILURE);
+	}
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glfwSetErrorCallback(fwErrorHandler);
 
 	if (glfwInit() == GL_FALSE)
 	{
 		std::cerr << "Can't initilize GLFW" << std::endl;
-		return 1;
+		exit(EXIT_FAILURE);
 	}
 
 	// OpenGL3.2のサンプルでは使用していたが、APIが変わったのかこれを書いているとglCreateShader(GL_VERTEX_SHADER)でGL_INVALID_ENUMエラーが返：る
@@ -135,6 +281,28 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	// 描画の初期化
 	initialize();
 
+	// メインループ
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	MSG msg;
+
+	// TODO:60FPSで回す処理を書いてない
+	do
+	{
+		// メッセージポーリング
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		else
+		{
+			// 描画のメインループ
+			render();
+
+			swapChain->Present(0, 0);
+		}
+	} while (msg.message != WM_QUIT);
+#elif defined(MGRRENDERER_USE_OPENGL)
 	// FPSから1ループの長さの計算
 	LARGE_INTEGER nFreq;
 	QueryPerformanceFrequency(&nFreq);
@@ -145,14 +313,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	LARGE_INTEGER nNow;
 	QueryPerformanceCounter(&nLast);
 
-#if defined(MGRRENDERER_USE_DIRECT3D)
-	MSG msg;
-	PeekMessage(&msg, 0, 0, 0, PM_REMOVE);
-
-	while (msg.message != WM_QUIT)
-#elif defined(MGRRENDERER_USE_OPENGL)
 	while (glfwWindowShouldClose(window) == GL_FALSE)
-#endif
 	{
 		QueryPerformanceCounter(&nNow);
 		if (nNow.QuadPart - nLast.QuadPart > loopInterval.QuadPart)
@@ -162,28 +323,18 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 			// 描画のメインループ
 			render();
 
-#if defined(MGRRENDERER_USE_DIRECT3D)
-			//swapChain->Present(0, 0); // TODO:もしかして、第一引数に秒数入れれば、GLFWみたいに自分でFPSコントロールしなくていいのかも
-
-			// メッセージポーリング
-			if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-#elif defined(MGRRENDERER_USE_OPENGL)
 			// バックバッファとフロントバッファ入れ替え
 			glfwSwapBuffers(window);
 
 			// イベントポーリング
 			glfwPollEvents();
-#endif
 		}
 		else
 		{
 			Sleep(1);
 		}
 	}
+#endif
 
 	// 描画の終了処理
 	finalize();
@@ -201,7 +352,18 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 #if defined(MGRRENDERER_USE_DIRECT3D)
 LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowParam, LONG param)
 {
-	//TODO:実装
+	HRESULT result = S_OK;
+
+	switch (message)
+	{
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		// TODO:解放処理を書いてない
+		return 0;
+	default:
+		//TODO: 他に何が来るのか知らないので処理しない
+		break;
+	}
 	return DefWindowProc(handleWindow, message, windowParam, param);
 }
 #elif defined(MGRRENDERER_USE_OPENGL)

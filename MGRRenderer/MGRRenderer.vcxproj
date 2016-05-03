@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -104,26 +104,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -146,24 +146,24 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(DXSDK_DIR)Lib\x64;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(DXSDK_DIR)Lib\x64;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
@@ -179,7 +179,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32.lib;libpng.lib;libzlib.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;libpng-2015.lib;libzlib.lib;glfw3-2015.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\MGRRenderer\external\gles\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -215,7 +215,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glew32.lib;libpng.lib;libzlib.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;libpng-2015.lib;libzlib.lib;glfw3-2015.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\MGRRenderer\external\gles\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

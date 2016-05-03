@@ -160,6 +160,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		PostQuitMessage(EXIT_FAILURE);
 	}
 
+	Director::getInstance()->setDirect3dDevice(device);
 	Director::getInstance()->setDirect3dContext(context);
 
 	// スワップ・チェインから最初のバック・バッファを取得する
@@ -226,6 +227,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	viewport[0].Height = WINDOW_HEIGHT;
 	viewport[0].MinDepth = 0.0f;
 	viewport[0].MaxDepth = 1.0f;
+	Director::getInstance()->setDirect3dViewport(viewport);
 
 	// IDXGIFactoryインターフェイスの取得
 	IDXGIFactory* dxgiFactory = nullptr;

@@ -170,7 +170,7 @@ struct Color3F
 	{
 	}
 
-	Color3F(const Color3B& color3B) : color(color3B.r / 255, color3B.g / 255, color3B.b / 255)
+	Color3F(const Color3B& color3B) : color(color3B.r / 255.0f, color3B.g / 255.0f, color3B.b / 255.0f)
 	{
 	}
 
@@ -215,6 +215,45 @@ struct Vec4
 	Vec4& operator/=(float a) { Logger::logAssert(a != 0.0, "0で除算している。"); x /= a; y /= a; z /= a; w /= a; return *this; }
 	bool operator==(const Vec4& v) const { return (x == v.x && y == v.y && z == v.z && w == v.w); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Vec4& v) const { return (x != v.x || y != v.y || z != v.z || w != v.w);}
+};
+
+struct Color4B
+{
+	static const Color4B WHITE;
+	static const Color4B RED;
+	static const Color4B GREEN;
+	static const Color4B BLUE;
+	static const Color4B YELLOW;
+	static const Color4B MAGENTA;
+	static const Color4B ORANGE;
+	static const Color4B GRAY;
+	static const Color4B BLACK;
+
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+	unsigned char a;
+
+	Color4B(unsigned char rVal, unsigned char gVal, unsigned char bVal, unsigned char aVal) : r(rVal), g(gVal), b(bVal), a(aVal)
+	{
+	}
+};
+
+struct Color4F
+{
+	Vec4 color;
+
+	Color4F()
+	{
+	}
+
+	Color4F(const Color4B& color4B) : color(color4B.r / 255.0f, color4B.g / 255.0f, color4B.b / 255.0f, color4B.a / 255.0f)
+	{
+	}
+
+	Color4F(float r, float g, float b, float a) : color(r, g, b, a)
+	{
+	}
 };
 
 struct Quaternion {
@@ -304,6 +343,7 @@ struct Mat4
 
 	static const Mat4 IDENTITY;
 	static const Mat4 ZERO;
+	static const Mat4 CHIRARITY_CONVERTER; // 左手系と右手系を切り替えるための行列
 
 	Mat4() {
 		setZero();
@@ -479,23 +519,49 @@ struct Mat4
 	static Mat4 createLookAt(const Vec3& eyePosition, const Vec3& targetPosition, const Vec3& up)
 	{
 		Vec3 upVec = up;
+//#if defined(MGRRENDERER_USE_DIRECT3D)
+//		upVec.z *= -1;
+//#endif
 		upVec.normalize();
 
+//		Vec3 eyePositionVec = eyePosition;
+//		Vec3 targetPositionVec = targetPosition;
+//#if defined(MGRRENDERER_USE_DIRECT3D)
+//		eyePositionVec.z *= -1;
+//		targetPositionVec.z *= -1;
+//#endif
+
+		//Vec3 zAxis = eyePositionVec - targetPositionVec;
 		Vec3 zAxis = eyePosition - targetPosition;
+//#if defined(MGRRENDERER_USE_DIRECT3D)
+//		zAxis *= -1;
+//#endif
 		zAxis.normalize();
 
-		Vec3 xAxis = Vec3::cross(up, zAxis);
+		Vec3 xAxis = Vec3::cross(upVec, zAxis);
 		xAxis.normalize();
 
 		Vec3 yAxis = Vec3::cross(zAxis, xAxis);
 		yAxis.normalize();
 
+//#if defined(MGRRENDERER_USE_DIRECT3D)
+//		// OpenGLの行列に対し、右手系と左手系の座標変換として、z座標だけが-1の単位行列を左右からかけた形
+//		// 最後に転置する
+		//Mat4 mat = Mat4(
+		//	xAxis.x,	xAxis.y,	xAxis.z,	-Vec3::dot(xAxis, eyePositionVec),
+		//	yAxis.x,	yAxis.y,	yAxis.z,	-Vec3::dot(yAxis, eyePositionVec),
+		//	zAxis.x,	zAxis.y,	zAxis.z,	-Vec3::dot(zAxis, eyePositionVec),
+		//	0.0f,		0.0f,		0.0f,		1.0f
+		//	);
+		//return mat;
+//#elif defined(MGRRENDERER_USE_OPENGL)
 		return Mat4(
 			xAxis.x,	xAxis.y,	xAxis.z,	-Vec3::dot(xAxis, eyePosition),
 			yAxis.x,	yAxis.y,	yAxis.z,	-Vec3::dot(yAxis, eyePosition),
 			zAxis.x,	zAxis.y,	zAxis.z,	-Vec3::dot(zAxis, eyePosition),
 			0.0f,		0.0f,		0.0f,		1.0f
 			);
+//#endif
 	}
 
 	static Mat4 createPerspective(float fieldOfView, float aspectRatio, float zNearPlane, float zFarPlane)
@@ -517,12 +583,24 @@ struct Mat4
 		Logger::logAssert(divisor != 0, "0で除算しようとしている。");
 		float factor = 1.0f / divisor;
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		// OpenGLはz座標を[-1, 1]に変換するがDirectXは[0, 1]なのでそこを修正
+		Mat4 mat = Mat4(
+			factor / aspectRatio,	0.0f,	0.0f,							0.0f,
+			0.0f,					factor,	0.0f,							0.0f,
+			0.0f,					0.0f,	zFarPlane * distanceFactor,		zNearPlane * zFarPlane * distanceFactor,	
+			0.0f,					0.0f,	-1.0f,							0.0f
+			);
+		return mat;
+
+#elif defined(MGRRENDERER_USE_OPENGL)
 		return Mat4(
 			factor / aspectRatio,	0.0f,	0.0f,										0.0f,
 			0.0f,					factor,	0.0f,										0.0f,
 			0.0f,					0.0f,	-(zNearPlane + zFarPlane) * distanceFactor,	-2.0f * zNearPlane * zFarPlane * distanceFactor,
-			0.0f,					.0f,	-1.0f,										0.0f
+			0.0f,					0.0f,	-1.0f,										0.0f
 			);
+#endif
 	}
 
 	static Mat4 createOrthographicAtCenter(float width, float height, float zNearPlane, float zFarPlane)
@@ -540,12 +618,23 @@ struct Mat4
 		Logger::logAssert(left != right, "leftとrightが同値");
 		Logger::logAssert(bottom != top, "bottomとtopが同値");
 		Logger::logAssert(zNearPlane != zFarPlane, "ファープレインとニアプレインが同値。");
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		// OpenGLはz座標を[-1, 1]に変換するがDirectXは[0, 1]なのでそこを修正
+		Mat4 mat = Mat4(
+			2 / (right - left),	0.0f,				0.0f,							(left + right) / (left - right),
+			0.0f,				2 / (top - bottom),	0.0f,							(bottom + top) / (bottom - top),
+			0.0f,				0.0f,				1 / (zFarPlane - zNearPlane),	zNearPlane / (zNearPlane - zFarPlane),
+			0.0f,				0.0f,				0.0f,							1.0f	
+			);
+		return mat;
+#elif defined(MGRRENDERER_USE_OPENGL)
 		return Mat4(
 			2 / (right - left),	0.0f,				0.0f,							(left + right) / (left - right),
 			0.0f,				2 / (top - bottom),	0.0f,							(bottom + top) / (bottom - top),
 			0.0f,				0.0f,				2 / (zFarPlane - zNearPlane),	(zNearPlane + zFarPlane) / (zNearPlane - zFarPlane),
 			0.0f,				0.0f,				0.0f,							1.0f	
 			);
+#endif
 	}
 
 	static Mat4 createTranslation(const Vec3& translation)

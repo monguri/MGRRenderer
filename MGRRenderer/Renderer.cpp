@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "Director.h"
 #include "RenderCommand.h"
 #include "GroupBeginRenderCommand.h"
 #include "Logger.h"
@@ -18,7 +19,14 @@ Renderer::Renderer()
 
 void Renderer::initView(const Size& windowSize)
 {
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
+
+	// デフォルトのレンダーターゲットセット
+	ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
+	direct3dContext->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencil());
+#elif defined(MGRRENDERER_USE_OPENGL)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 	// TODO:ブレンドが必要ない時もブレンドをONにしている

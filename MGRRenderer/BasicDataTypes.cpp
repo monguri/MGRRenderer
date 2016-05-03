@@ -13,6 +13,16 @@ const Color3B Color3B::ORANGE = Color3B(255, 127, 255);
 const Color3B Color3B::GRAY = Color3B(166, 166, 166);
 const Color3B Color3B::BLACK = Color3B(0, 0, 0);
 
+const Color4B Color4B::WHITE = Color4B(255, 255, 255, 255);
+const Color4B Color4B::RED = Color4B(255, 0, 0, 255);
+const Color4B Color4B::GREEN = Color4B(0, 255, 0, 255);
+const Color4B Color4B::BLUE = Color4B(0, 0, 255, 255);
+const Color4B Color4B::YELLOW = Color4B(255, 255, 0, 255);
+const Color4B Color4B::MAGENTA = Color4B(255, 0, 255, 255);
+const Color4B Color4B::ORANGE = Color4B(255, 127, 255, 255);
+const Color4B Color4B::GRAY = Color4B(166, 166, 166, 255);
+const Color4B Color4B::BLACK = Color4B(0, 0, 0, 255);
+
 Quaternion::Quaternion(const Vec3& angleVec)
 {
 	float halfRadianX = convertDegreeToRadian(angleVec.x / 2.0f);
@@ -44,6 +54,13 @@ const Mat4 Mat4::ZERO = Mat4(
 							0.0f, 0.0f, 0.0f, 0.0f,
 							0.0f, 0.0f, 0.0f, 0.0f,
 							0.0f, 0.0f, 0.0f, 0.0f
+							);
+
+const Mat4 Mat4::CHIRARITY_CONVERTER = Mat4(
+							1.0f, 0.0f, 0.0f, 0.0f,
+							0.0f, 1.0f, 0.0f, 0.0f,
+							0.0f, 0.0f, -1.0f, 0.0f,
+							0.0f, 0.0f, 0.0f, 1.0f
 							);
 
 } // namespace mgrrenderer

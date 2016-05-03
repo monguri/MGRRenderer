@@ -9,7 +9,16 @@ namespace mgrrenderer
 
 Director* Director::_instance = nullptr;
 
-Director::Director() : _displayStats(false), _accumulatedDeltaTime(0.0f), _FPSLabel(nullptr)
+Director::Director() :
+#if defined(MGRRENDERER_USE_DIRECT3D)
+_direct3dDevice(nullptr),
+_direct3dContext(nullptr),
+_direct3dRenderTarget(nullptr),
+_direct3dDepthStencil(nullptr),
+#endif
+_displayStats(false),
+_accumulatedDeltaTime(0.0f),
+_FPSLabel(nullptr)
 {
 }
 

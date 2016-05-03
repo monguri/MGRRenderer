@@ -18,14 +18,16 @@ class Director
 public:
 	static Director* getInstance();
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	ID3D11Device* getDirect3dDevice() const { return _direct3dDevice; }
+	void setDirect3dDevice(ID3D11Device* device) { _direct3dDevice = device; }
 	ID3D11DeviceContext* getDirect3dContext() const { return _direct3dContext; }
 	void setDirect3dContext(ID3D11DeviceContext* context) { _direct3dContext = context; }
 	ID3D11RenderTargetView* getDirect3dRenderTarget() const { return _direct3dRenderTarget; }
 	void setDirect3dRenderTarget(ID3D11RenderTargetView* target) { _direct3dRenderTarget = target; }
 	ID3D11DepthStencilView* getDirect3dDepthStencil() const { return _direct3dDepthStencil; }
 	void setDirect3dDepthStencil(ID3D11DepthStencilView* view) { _direct3dDepthStencil = view; }
-	const D3D11_VIEWPORT& getDirect3dViewport() const { return _direct3dViewport; }
-	void setDirect3dViewport(const D3D11_VIEWPORT& viewport) { _direct3dViewport = viewport; }
+	D3D11_VIEWPORT* getDirect3dViewport() const { return _direct3dViewport; }
+	void setDirect3dViewport(D3D11_VIEWPORT* viewport) { _direct3dViewport = viewport; }
 #endif
 	void destroy();
 	void init(const Size& windowSize);
@@ -43,10 +45,11 @@ public:
 private:
 	static Director* _instance;
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	ID3D11Device* _direct3dDevice;
 	ID3D11DeviceContext* _direct3dContext;
 	ID3D11RenderTargetView* _direct3dRenderTarget;
 	ID3D11DepthStencilView* _direct3dDepthStencil;
-	D3D11_VIEWPORT _direct3dViewport;
+	D3D11_VIEWPORT* _direct3dViewport;
 #endif
 	Scene _scene;
 	Renderer _renderer;

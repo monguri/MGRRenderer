@@ -519,23 +519,10 @@ struct Mat4
 	static Mat4 createLookAt(const Vec3& eyePosition, const Vec3& targetPosition, const Vec3& up)
 	{
 		Vec3 upVec = up;
-//#if defined(MGRRENDERER_USE_DIRECT3D)
-//		upVec.z *= -1;
-//#endif
 		upVec.normalize();
 
-//		Vec3 eyePositionVec = eyePosition;
-//		Vec3 targetPositionVec = targetPosition;
-//#if defined(MGRRENDERER_USE_DIRECT3D)
-//		eyePositionVec.z *= -1;
-//		targetPositionVec.z *= -1;
-//#endif
 
-		//Vec3 zAxis = eyePositionVec - targetPositionVec;
 		Vec3 zAxis = eyePosition - targetPosition;
-//#if defined(MGRRENDERER_USE_DIRECT3D)
-//		zAxis *= -1;
-//#endif
 		zAxis.normalize();
 
 		Vec3 xAxis = Vec3::cross(upVec, zAxis);
@@ -544,24 +531,12 @@ struct Mat4
 		Vec3 yAxis = Vec3::cross(zAxis, xAxis);
 		yAxis.normalize();
 
-//#if defined(MGRRENDERER_USE_DIRECT3D)
-//		// OpenGLの行列に対し、右手系と左手系の座標変換として、z座標だけが-1の単位行列を左右からかけた形
-//		// 最後に転置する
-		//Mat4 mat = Mat4(
-		//	xAxis.x,	xAxis.y,	xAxis.z,	-Vec3::dot(xAxis, eyePositionVec),
-		//	yAxis.x,	yAxis.y,	yAxis.z,	-Vec3::dot(yAxis, eyePositionVec),
-		//	zAxis.x,	zAxis.y,	zAxis.z,	-Vec3::dot(zAxis, eyePositionVec),
-		//	0.0f,		0.0f,		0.0f,		1.0f
-		//	);
-		//return mat;
-//#elif defined(MGRRENDERER_USE_OPENGL)
 		return Mat4(
 			xAxis.x,	xAxis.y,	xAxis.z,	-Vec3::dot(xAxis, eyePosition),
 			yAxis.x,	yAxis.y,	yAxis.z,	-Vec3::dot(yAxis, eyePosition),
 			zAxis.x,	zAxis.y,	zAxis.z,	-Vec3::dot(zAxis, eyePosition),
 			0.0f,		0.0f,		0.0f,		1.0f
 			);
-//#endif
 	}
 
 	static Mat4 createPerspective(float fieldOfView, float aspectRatio, float zNearPlane, float zFarPlane)
@@ -585,14 +560,12 @@ struct Mat4
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		// OpenGLはz座標を[-1, 1]に変換するがDirectXは[0, 1]なのでそこを修正
-		Mat4 mat = Mat4(
+		return Mat4(
 			factor / aspectRatio,	0.0f,	0.0f,							0.0f,
 			0.0f,					factor,	0.0f,							0.0f,
 			0.0f,					0.0f,	zFarPlane * distanceFactor,		zNearPlane * zFarPlane * distanceFactor,	
 			0.0f,					0.0f,	-1.0f,							0.0f
-			);
-		return mat;
-
+		);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		return Mat4(
 			factor / aspectRatio,	0.0f,	0.0f,										0.0f,
@@ -620,20 +593,19 @@ struct Mat4
 		Logger::logAssert(zNearPlane != zFarPlane, "ファープレインとニアプレインが同値。");
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		// OpenGLはz座標を[-1, 1]に変換するがDirectXは[0, 1]なのでそこを修正
-		Mat4 mat = Mat4(
+		return Mat4(
 			2 / (right - left),	0.0f,				0.0f,							(left + right) / (left - right),
 			0.0f,				2 / (top - bottom),	0.0f,							(bottom + top) / (bottom - top),
 			0.0f,				0.0f,				1 / (zFarPlane - zNearPlane),	zNearPlane / (zNearPlane - zFarPlane),
 			0.0f,				0.0f,				0.0f,							1.0f	
-			);
-		return mat;
+		);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		return Mat4(
 			2 / (right - left),	0.0f,				0.0f,							(left + right) / (left - right),
 			0.0f,				2 / (top - bottom),	0.0f,							(bottom + top) / (bottom - top),
 			0.0f,				0.0f,				2 / (zFarPlane - zNearPlane),	(zNearPlane + zFarPlane) / (zNearPlane - zFarPlane),
 			0.0f,				0.0f,				0.0f,							1.0f	
-			);
+		);
 #endif
 	}
 

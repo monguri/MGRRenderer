@@ -10,8 +10,12 @@ class FileUtility
 {
 // windows依存と切り離すのは後回し
 public:
+	static const int MAX_PATH_LENGTH = 512;
+
 	static FileUtility* getInstance();
 
+	// outPath引数には安全のためサイズMAX_PATH_LENGTHのWCHAR配列を与えることを推奨するが、ぎりぎりのサイズでも動作する
+	static void convertWCHARFilePath(const std::string& inPath, WCHAR outPath[], size_t size);
 	std::string getFullPathForFileName(const std::string& fileName) const;
 	static bool isAbsolutePath(const std::string& path);
 	bool isFileExistInternal(const std::string& path) const;
@@ -21,7 +25,6 @@ public:
 	static std::string convertPathFormatToUnixStyle(const std::string& path);
 
 private:
-	static const int MAX_PATH_LENGTH = 512;
 	static FileUtility* _instance;
 	std::string _resourceRootPath;
 

@@ -10,63 +10,21 @@ namespace mgrrenderer
 Polygon3D::Polygon3D() :
 _vertexBuffer(nullptr),
 _indexBuffer(nullptr),
-_vertexShader(nullptr),
-_inputLayout(nullptr),
-_geometryShader(nullptr),
-_pixelShader(nullptr),
-_blendState(nullptr),
-_rasterizeState(nullptr),
-_depthStencilState(nullptr)
+_inputLayout(nullptr)
 {
 }
 
 Polygon3D::~Polygon3D()
 {
-	if (_depthStencilState != nullptr)
-	{
-		_depthStencilState->Release();
-		_depthStencilState = nullptr;
-	}
-
-	if (_rasterizeState != nullptr)
-	{
-		_rasterizeState->Release();
-		_rasterizeState = nullptr;
-	}
-
-	if (_blendState != nullptr)
-	{
-		_blendState->Release();
-		_blendState = nullptr;
-	}
-
 	for (ID3D11Buffer* constantBuffer : _constantBuffers)
 	{
 		constantBuffer->Release();
-	}
-
-	if (_pixelShader != nullptr)
-	{
-		_pixelShader->Release();
-		_pixelShader = nullptr;
-	}
-
-	if (_geometryShader != nullptr)
-	{
-		_geometryShader->Release();
-		_geometryShader = nullptr;
 	}
 
 	if (_inputLayout != nullptr)
 	{
 		_inputLayout->Release();
 		_inputLayout = nullptr;
-	}
-
-	if (_vertexShader != nullptr)
-	{
-		_vertexShader->Release();
-		_vertexShader = nullptr;
 	}
 
 	if (_indexBuffer != nullptr)
@@ -171,127 +129,20 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 
-	// 頂点シェーダのコードをコンパイル
-	ID3DBlob* blobVS = nullptr;
-	result = D3DX11CompileFromFile(
-		L"Polygon3D.hlsl",
-		nullptr,
-		nullptr,
-		"VS",
-		"vs_4_0",
-		D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
-		0,
-		nullptr,
-		&blobVS,
-		nullptr,
-		nullptr
-	);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d", result);
-		return false;
-	}
-
-	// 頂点シェーダの作成
-	result = direct3dDevice->CreateVertexShader(
-		blobVS->GetBufferPointer(),
-		blobVS->GetBufferSize(),
-		nullptr,
-		&_vertexShader
-	);
-	if (FAILED(result))
-	{
-		blobVS->Release();
-		Logger::logAssert(false, "CreateVertexShader failed. result=%d", result);
-		return false;
-	}
+	_d3dProgram.initWithShaderFile("Polygon3D.hlsl");
 
 	// 入力レイアウトオブジェクトの作成
 	D3D11_INPUT_ELEMENT_DESC layout[] = { {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0} };
 	result = direct3dDevice->CreateInputLayout(
 		layout,
 		_countof(layout), 
-		blobVS->GetBufferPointer(),
-		blobVS->GetBufferSize(),
+		_d3dProgram.getVertexShaderBlob()->GetBufferPointer(),
+		_d3dProgram.getVertexShaderBlob()->GetBufferSize(),
 		&_inputLayout
 	);
-	blobVS->Release();
-	blobVS = nullptr;
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateInputLayout failed. result=%d", result);
-		return false;
-	}
-
-	// ジオメトリシェーダのコンパイル
-	ID3DBlob* blobGS = nullptr;
-	result = D3DX11CompileFromFile(
-		L"Polygon3D.hlsl",
-		nullptr,
-		nullptr,
-		"GS",
-		"gs_4_0",
-		D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
-		0,
-		nullptr,
-		&blobGS,
-		nullptr,
-		nullptr
-	);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d", result);
-		return false;
-	}
-
-	// ジオメトリシェーダの作成
-	result = direct3dDevice->CreateGeometryShader(
-		blobGS->GetBufferPointer(),
-		blobGS->GetBufferSize(),
-		nullptr,
-		&_geometryShader
-	);
-	blobGS->Release();
-	blobGS = nullptr;
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateVertexShader failed. result=%d", result);
-		return false;
-	}
-
-	// ピクセルシェーダのコンパイル
-	ID3DBlob* blobPS = nullptr;
-	result = D3DX11CompileFromFile(
-		L"Polygon3D.hlsl",
-		nullptr,
-		nullptr,
-		"PS",
-		"ps_4_0",
-		D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
-		0,
-		nullptr,
-		&blobPS,
-		nullptr,
-		nullptr
-	);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d", result);
-		return false;
-	}
-
-	// ピクセルシェーダの作成
-	result = direct3dDevice->CreatePixelShader(
-		blobPS->GetBufferPointer(),
-		blobPS->GetBufferSize(),
-		nullptr,
-		&_pixelShader
-	);
-	blobPS->Release();
-	blobPS = nullptr;
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateVertexShader failed. result=%d", result);
 		return false;
 	}
 
@@ -334,62 +185,6 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-
-	// ブレンドステートオブジェクトの作成
-	D3D11_BLEND_DESC blendDesc;
-	ZeroMemory(&blendDesc, sizeof(blendDesc));
-	blendDesc.AlphaToCoverageEnable = FALSE;
-	blendDesc.IndependentBlendEnable = FALSE;
-	blendDesc.RenderTarget[0].BlendEnable = FALSE;
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	result = direct3dDevice->CreateBlendState(&blendDesc, &_blendState);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBlendState failed. result=%d", result);
-		return false;
-	}
-
-	// ラスタライズステートオブジェクトの作成
-	D3D11_RASTERIZER_DESC rasterizeDesc;
-	rasterizeDesc.FillMode = D3D11_FILL_SOLID;
-	rasterizeDesc.CullMode = D3D11_CULL_NONE;
-	rasterizeDesc.FrontCounterClockwise = FALSE;
-	rasterizeDesc.DepthBias = 0;
-	rasterizeDesc.DepthBiasClamp = 0;
-	rasterizeDesc.SlopeScaledDepthBias = 0;
-	rasterizeDesc.DepthClipEnable = TRUE;
-	rasterizeDesc.ScissorEnable = FALSE;
-	rasterizeDesc.MultisampleEnable = FALSE;
-	rasterizeDesc.AntialiasedLineEnable = FALSE;
-	result = direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeState);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
-		return false;
-	}
-
-	// 深度、ステンシルステートオブジェクトの作成
-	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-	depthStencilDesc.DepthEnable = TRUE;
-	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-	depthStencilDesc.StencilEnable = FALSE;
-	depthStencilDesc.StencilReadMask = 0;
-	depthStencilDesc.StencilWriteMask = 0;
-	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_NEVER;
-	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_NEVER;
-	result = direct3dDevice->CreateDepthStencilState(&depthStencilDesc, &_depthStencilState);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateDepthStencilState failed. result=%d", result);
 		return false;
 	}
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -650,21 +445,21 @@ void Polygon3D::renderWithShadowMap()
 		direct3dContext->IASetInputLayout(_inputLayout);
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		direct3dContext->VSSetShader(_vertexShader, nullptr, 0);
+		direct3dContext->VSSetShader(_d3dProgram.getVertexShader(), nullptr, 0);
 		direct3dContext->VSSetConstantBuffers(0, 4, _constantBuffers);
 
-		direct3dContext->GSSetShader(_geometryShader, nullptr, 0);
+		direct3dContext->GSSetShader(_d3dProgram.getGeometryShader(), nullptr, 0);
 		direct3dContext->GSSetConstantBuffers(0, 4, _constantBuffers);
 
-		direct3dContext->RSSetState(_rasterizeState);
+		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
 
-		direct3dContext->PSSetShader(_pixelShader, nullptr, 0);
+		direct3dContext->PSSetShader(_d3dProgram.getPixelShader(), nullptr, 0);
 		direct3dContext->PSSetConstantBuffers(0, 4, _constantBuffers);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(_blendState, blendFactor, 0xffffffff);
+		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);
 
-		direct3dContext->OMSetDepthStencilState(_depthStencilState, 0);
+		direct3dContext->OMSetDepthStencilState(_d3dProgram.getDepthStancilState(), 0);
 
 		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)

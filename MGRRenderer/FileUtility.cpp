@@ -45,6 +45,11 @@ std::string FileUtility::convertPathFormatToUnixStyle(const std::string& path)
 	return ret;
 }
 
+void FileUtility::convertWCHARFilePath(const std::string& inPath, WCHAR outPath[], size_t size)
+{
+	MultiByteToWideChar(CP_UTF8, 0, inPath.c_str(), -1, outPath, size);
+}
+
 std::string FileUtility::getFullPathForFileName(const std::string& fileName) const
 {
 	if (fileName.empty())
@@ -93,7 +98,7 @@ bool FileUtility::isFileExistInternal(const std::string& path) const
 	}
 
 	WCHAR utf16buf[MAX_PATH_LENGTH] = {0};
-	MultiByteToWideChar(CP_UTF8, 0, strPath.c_str(), -1, utf16buf, sizeof(utf16buf) / sizeof(utf16buf[0]));
+	convertWCHARFilePath(path, utf16buf, MAX_PATH_LENGTH);
 
 	DWORD attribute = GetFileAttributesW(utf16buf);
 	if (attribute == INVALID_FILE_ATTRIBUTES || (attribute & FILE_ATTRIBUTE_DIRECTORY))
@@ -115,7 +120,7 @@ unsigned char* FileUtility::getFileData(const std::string& fileName, ssize_t* si
 	isValidFileNameAtWindows(fullPath, fileName);
 	
 	WCHAR wcharFullPath[MAX_PATH_LENGTH] = {0};
-	MultiByteToWideChar(CP_UTF8, 0, fullPath.c_str(), -1, wcharFullPath, sizeof(wcharFullPath) / sizeof(wcharFullPath[0]));
+	convertWCHARFilePath(fullPath, wcharFullPath, MAX_PATH_LENGTH);
 
 	// fopenÇ…äYìñÇ∑ÇÈèàóù
 	HANDLE fileHandle = CreateFileW(wcharFullPath, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, nullptr);

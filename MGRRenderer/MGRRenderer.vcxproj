@@ -26,6 +26,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="CustomRenderCommand.h" />
+    <ClInclude Include="D3DProgram.h" />
     <ClInclude Include="Director.h" />
     <ClInclude Include="FileUtility.h" />
     <ClInclude Include="FPSFontImage.h" />
@@ -63,6 +64,7 @@
     <ClCompile Include="C3bLoader.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CustomRenderCommand.cpp" />
+    <ClCompile Include="D3DProgram.cpp" />
     <ClCompile Include="Director.cpp" />
     <ClCompile Include="FileUtility.cpp" />
     <ClCompile Include="FPSFontImage.cpp" />

@@ -43,6 +43,7 @@
     <ClInclude Include="VertexShaderPositionTextureMultiplyColor.glsl" />
     <ClInclude Include="GLProgram.h" />
     <ClInclude Include="Config.h" />
+    <ClInclude Include="D3DProgram.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Director.cpp" />
@@ -78,6 +79,7 @@
     <ClCompile Include="GroupEndRenderCommand.cpp" />
     <ClCompile Include="GLProgram.cpp" />
     <ClCompile Include="Shaders.cpp" />
+    <ClCompile Include="D3DProgram.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderPositionMultiplyColor.glsl" />

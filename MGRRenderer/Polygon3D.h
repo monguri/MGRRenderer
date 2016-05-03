@@ -1,11 +1,13 @@
 #pragma once
 #include "Node.h"
 #include "BasicDataTypes.h"
-#include "GLProgram.h"
 #include "CustomRenderCommand.h"
 #include <vector>
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include <d3dx11.h>
+#include "D3DProgram.h"
+#elif defined(MGRRENDERER_USE_OPENGL)
+#include "GLProgram.h"
 #endif
 
 namespace mgrrenderer
@@ -23,16 +25,11 @@ public:
 
 private:
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	D3DProgram _d3dProgram;
 	ID3D11Buffer* _vertexBuffer;
 	ID3D11Buffer* _indexBuffer;
-	ID3D11VertexShader* _vertexShader;
 	ID3D11InputLayout* _inputLayout;
-	ID3D11GeometryShader* _geometryShader;
-	ID3D11PixelShader* _pixelShader;
 	ID3D11Buffer* _constantBuffers[4];
-	ID3D11BlendState* _blendState;
-	ID3D11RasterizerState* _rasterizeState;
-	ID3D11DepthStencilState* _depthStencilState;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
 	GLProgram _glProgramForShadowMap;

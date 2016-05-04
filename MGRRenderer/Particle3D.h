@@ -6,7 +6,9 @@
 namespace mgrrenderer
 {
 
-class Texture;
+#if defined(MGRRENDERER_USE_OPENGL)
+class GLTexture;
+#endif
 
 class Particle3D :
 	public Node
@@ -29,10 +31,10 @@ public:
 private:
 #if defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
+	GLTexture* _texture;
 #endif
 	CustomRenderCommand _renderCommand;
 	Parameter _parameter;
-	Texture* _texture;
 	std::vector<Vec3> _vertexArray;
 	std::vector<Vec3> _initVelocityArray;
 	std::vector<float> _elapsedTimeArray;

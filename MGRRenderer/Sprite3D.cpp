@@ -1,9 +1,11 @@
 #include "Sprite3D.h"
 #include "ObjLoader.h"
 #include "Image.h"
-#include "Texture.h"
 #include "Director.h"
 #include "Light.h"
+#if defined(MGRRENDERER_USE_OPENGL)
+#include "GLTexture.h"
+#endif
 
 #if defined(MGRRENDERER_USE_OPENGL)
 namespace mgrrenderer
@@ -478,8 +480,8 @@ void Sprite3D::setTexture(const std::string& filePath)
 	Image image; // ImageはCPU側のメモリを使っているのでこのスコープで解放されてもよいものだからスタックに取る
 	image.initWithFilePath(filePath);
 
-	_texture = new Texture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
-	_texture->initWithImage(image);
+	_texture = new GLTexture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
+	static_cast<Texture*>(_texture)->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
 }
 
 void Sprite3D::startAnimation(const std::string& animationName, bool loop /* = false*/)

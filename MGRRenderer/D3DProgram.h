@@ -14,7 +14,7 @@ public:
 	D3DProgram();
 	~D3DProgram();
 
-	void initWithShaderFile(const std::string& path);
+	void initWithShaderFile(const std::string& path, bool depthTestEnable);
 	ID3D11VertexShader* getVertexShader() const { return _vertexShader; }
 	ID3DBlob* getVertexShaderBlob() const { return _vertexShaderBlob; };
 	ID3D11GeometryShader* getGeometryShader() const { return _geometryShader; }

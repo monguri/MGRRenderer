@@ -421,12 +421,10 @@ void initialize()
 	isSucceeded = polygonNode->initWithVertexArray(polygonVertices);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
-#if defined(MGRRENDERER_USE_OPENGL)
 	Sprite2D* spriteNode = new Sprite2D();
 	isSucceeded = spriteNode->init("../Resources/Hello.png");
 	spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
-#endif
 	//// TODO:現状表示に成功してない
 	//BillBoard* spriteNode = new BillBoard();
 	//isSucceeded = spriteNode->init("../Resources/Hello.png", BillBoard::Mode::VIEW_PLANE_ORIENTED);
@@ -466,7 +464,7 @@ void initialize()
 	};
 	Polygon3D* plane3DNode1 = new Polygon3D();
 	isSucceeded = plane3DNode1->initWithVertexArray(planeVertices3D1);
-	Logger::logAssert(plane3DNode1, "ノードの初期化失敗");
+	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 	std::vector<Vec3> planeVertices3D2 {
 		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 1.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 1.0f, -320.0f + 1.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, 320.0f),
@@ -482,7 +480,7 @@ void initialize()
 	};
 	Polygon3D* plane3DNode3 = new Polygon3D();
 	isSucceeded = plane3DNode3->initWithVertexArray(planeVertices3D3);
-	Logger::logAssert(plane3DNode3, "ノードの初期化失敗");
+	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 #if defined(MGRRENDERER_USE_OPENGL)
 	Sprite3D* sprite3DObjNode = new Sprite3D();
@@ -532,7 +530,7 @@ void initialize()
 #if defined(MGRRENDERER_USE_OPENGL)
 	Sprite2D* depthTextureSprite = new Sprite2D();
 	const Size& contentSize = Director::getInstance()->getWindowSize() / 4.0f;
-	depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().textureId, contentSize, Texture::PixelFormat::RGBA8888); // pixelformatは適当
+	depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().textureId, contentSize, TextureUtility::PixelFormat::RGBA8888); // pixelformatは適当
 	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 #endif
 
@@ -559,8 +557,8 @@ void initialize()
 	scene->pushNode(pointNode);
 	scene->pushNode(lineNode);
 	scene->pushNode(polygonNode);
-#if defined(MGRRENDERER_USE_OPENGL)
 	scene->pushNode(spriteNode);
+#if defined(MGRRENDERER_USE_OPENGL)
 	scene->pushNode(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない
 #endif
 

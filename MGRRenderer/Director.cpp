@@ -1,8 +1,11 @@
 #include "Director.h"
 #include "Image.h"
-#include "Texture.h"
+#include "TextureUtility.h"
 #include "FPSFontImage.h"
 #include "LabelAtlas.h"
+#if defined(MGRRENDERER_USE_OPENGL)
+#include "GLTexture.h"
+#endif
 
 namespace mgrrenderer
 {
@@ -61,7 +64,7 @@ void Director::init(const Size& windowSize)
 	Logger::log("GPU vendor: %s\nGPU:%s\nOpenGL version:%s\nGLSLversion:%s", glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 	// デフォルトのピクセルフォーマットをRGBA8888に。
-	Texture::setDefaultPixelFormat(Texture::PixelFormat::RGBA8888);
+	GLTexture::setDefaultPixelFormat(TextureUtility::PixelFormat::RGBA8888);
 #endif
 
 	createStatsLabel();
@@ -140,8 +143,8 @@ void Director::createStatsLabel()
 	Logger::logAssert(success, "Imageの初期化に失敗");
 
 #if defined(MGRRENDERER_USE_OPENGL)
-	Texture* texture = new (std::nothrow) Texture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
-	success = texture->initWithImage(image, Texture::PixelFormat::RGBA4444);
+	GLTexture* texture = new (std::nothrow) GLTexture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
+	success = texture->initWithImage(image, TextureUtility::PixelFormat::RGBA4444);
 	Logger::logAssert(success, "Textureの初期化に失敗");
 
 	_FPSLabel->init("", texture,
@@ -170,7 +173,9 @@ void Director::updateStats(float dt)
 			char buffer[30]; // 30はcocosのshowStatsの真似
 
 			sprintf_s(buffer, "%.1f / %.3f", fps, avgDeltaTime);
+#if defined(MGRRENDERER_USE_OPENGL)
 			_FPSLabel->setString(buffer);
+#endif
 		}
 
 		//Logger::log("%.1f / %.3f", fps, avgDeltaTime);

@@ -2,10 +2,14 @@
 #include <string>
 //TODO:ssize_tÇÃÇΩÇﬂ
 #include "BasicDataTypes.h"
-#include "Texture.h"
 
 namespace mgrrenderer
 {
+
+namespace TextureUtility
+{
+enum class PixelFormat;
+}
 
 class Image final
 {
@@ -13,7 +17,6 @@ public:
 	enum class Format : int
 	{
 		UNKNOWN = -1,
-		// åªèÛpngÇæÇØÇ…ëŒâû
 		PNG,
 		TGA,
 		NUM_FORMATS,
@@ -29,9 +32,7 @@ public:
 	int getWidth() const { return _width; }
 	int getHeight() const { return _height; }
 	bool getHasPremultipliedAlpha() const { return _hasPremultipliedAlpha; }
-#if defined(MGRRENDERER_USE_OPENGL)
-	Texture::PixelFormat getPixelFormat() const { return _pixelFormat; }
-#endif
+	TextureUtility::PixelFormat getPixelFormat() const { return _pixelFormat; }
 
 private:
 	static const ssize_t PNG_SIGNATURE_SIZE = 8;
@@ -39,9 +40,7 @@ private:
 	ssize_t _dataLen;
 	int _width;
 	int _height;
-#if defined(MGRRENDERER_USE_OPENGL)
-	Texture::PixelFormat _pixelFormat;
-#endif
+	TextureUtility::PixelFormat _pixelFormat;
 	bool _hasPremultipliedAlpha;
 
 	Format detectFormat(const unsigned char * data, ssize_t dataLen);

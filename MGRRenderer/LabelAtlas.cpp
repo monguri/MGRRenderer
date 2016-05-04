@@ -1,16 +1,18 @@
 #include "LabelAtlas.h"
 #include "Director.h"
-#include "Texture.h"
+#include "GLTexture.h"
 #include "Shaders.h"
 
 namespace mgrrenderer
 {
 
 LabelAtlas::LabelAtlas() :
+#if defined(MGRRENDERER_USE_OPENGL)
+_texture(nullptr),
+#endif
 _mapStartCharacter(0),
 _itemWidth(0),
-_itemHeight(0),
-_texture(nullptr)
+_itemHeight(0)
 {
 }
 
@@ -18,11 +20,12 @@ LabelAtlas::~LabelAtlas()
 {
 #if defined(MGRRENDERER_USE_OPENGL)
 	glBindTexture(GL_TEXTURE_2D, 0);
-#endif
 	_texture = nullptr;
+#endif
 }
 
-bool LabelAtlas::init(const std::string& string, const Texture* texture, int itemWidth, int itemHeight, char mapStartChararcter)
+#if defined(MGRRENDERER_USE_OPENGL)
+bool LabelAtlas::init(const std::string& string, const GLTexture* texture, int itemWidth, int itemHeight, char mapStartChararcter)
 {
 	_texture = texture;
 
@@ -32,9 +35,7 @@ bool LabelAtlas::init(const std::string& string, const Texture* texture, int ite
 
 	setString(string);
 
-#if defined(MGRRENDERER_USE_OPENGL)
 	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR);
-#endif
 
 	return true;
 }
@@ -43,7 +44,6 @@ void LabelAtlas::setString(const std::string& string)
 {
 	_string = string;
 
-#if defined(MGRRENDERER_USE_OPENGL)
 	// setString‚Ì‰ñ”‚Í­‚È‚¢‚Æ‚¢‚¤‘O’ñ‚Ì‚à‚ÆAˆÈ‰º‚Í–ˆ‰ñŒvŽZ‚µ‚Ä‚¢‚é
 	int itemsPerRow = _texture->getContentSize().width / _itemWidth;
 
@@ -86,8 +86,8 @@ void LabelAtlas::setString(const std::string& string)
 		_indices[6 * i + 4] = 4 * i + 2;
 		_indices[6 * i + 5] = 4 * i + 1;
 	}
-#endif
 }
+#endif
 
 void LabelAtlas::renderWithShadowMap()
 {

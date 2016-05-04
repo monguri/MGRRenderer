@@ -62,7 +62,7 @@ D3DProgram::~D3DProgram()
 	}
 }
 
-void D3DProgram::initWithShaderFile(const std::string & path)
+void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnable)
 {
 	WCHAR wPath[FileUtility::MAX_PATH_LENGTH] = { 0 };
 	FileUtility::convertWCHARFilePath(path, wPath, FileUtility::MAX_PATH_LENGTH);
@@ -208,7 +208,7 @@ void D3DProgram::initWithShaderFile(const std::string & path)
 
 	// 深度、ステンシルステートオブジェクトの作成
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-	depthStencilDesc.DepthEnable = TRUE;
+	depthStencilDesc.DepthEnable = (depthTestEnable ? TRUE : FALSE);
 	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
 	depthStencilDesc.StencilEnable = FALSE;

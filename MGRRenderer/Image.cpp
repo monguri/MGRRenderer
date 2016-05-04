@@ -1,5 +1,6 @@
 #include "Image.h"
 #include "FileUtility.h"
+#include "TextureUtility.h"
 
 extern "C"
 {
@@ -22,7 +23,7 @@ _dataLen(0),
 _width(0),
 _height(0),
 #if defined(MGRRENDERER_USE_OPENGL)
-_pixelFormat(Texture::PixelFormat::NONE),
+_pixelFormat(TextureUtility::PixelFormat::NONE),
 #endif
 _hasPremultipliedAlpha(true)
 {
@@ -195,16 +196,16 @@ bool Image::initWithPngData(const unsigned char * data, ssize_t dataLen)
 	switch (colorType)
 	{
 	case PNG_COLOR_TYPE_GRAY:
-		_pixelFormat = Texture::PixelFormat::I8;
+		_pixelFormat = TextureUtility::PixelFormat::I8;
 		break;
 	case PNG_COLOR_TYPE_GRAY_ALPHA:
-		_pixelFormat = Texture::PixelFormat::AI88;
+		_pixelFormat = TextureUtility::PixelFormat::AI88;
 		break;
 	case PNG_COLOR_TYPE_RGB:
-		_pixelFormat = Texture::PixelFormat::RGB888;
+		_pixelFormat = TextureUtility::PixelFormat::RGB888;
 		break;
 	case PNG_COLOR_TYPE_RGB_ALPHA:
-		_pixelFormat = Texture::PixelFormat::RGBA8888;
+		_pixelFormat = TextureUtility::PixelFormat::RGBA8888;
 		break;
 	default:
 		break;
@@ -408,21 +409,20 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 		}
 	}
 
-#if defined(MGRRENDERER_USE_OPENGL)
 	// TODO:initWithTGADataの部分を書いてない
 	if (header.type == 2 || header.type == 10)
 	{
 		if (header.pixelDepth == 16)
 		{
-			_pixelFormat = Texture::PixelFormat::RGB5A1;
+			_pixelFormat = TextureUtility::PixelFormat::RGB5A1;
 		}
 		else if (header.pixelDepth == 24)
 		{
-			_pixelFormat = Texture::PixelFormat::RGB888;
+			_pixelFormat = TextureUtility::PixelFormat::RGB888;
 		}
 		else if (header.pixelDepth == 32)
 		{
-			_pixelFormat = Texture::PixelFormat::RGBA8888;
+			_pixelFormat = TextureUtility::PixelFormat::RGBA8888;
 		}
 		else
 		{
@@ -434,7 +434,7 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 	{
 		if (header.pixelDepth == 8)
 		{
-			_pixelFormat = Texture::PixelFormat::I8;
+			_pixelFormat = TextureUtility::PixelFormat::I8;
 		}
 		else
 		{
@@ -442,7 +442,6 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 			return false;
 		}
 	}
-#endif
 
 	_width = header.width;
 	_height = header.height;
@@ -453,7 +452,7 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 void Image::premultiplyAlpha()
 {
 #if defined(MGRRENDERER_USE_OPENGL)
-	Logger::logAssert(_pixelFormat == Texture::PixelFormat::RGBA8888, "pngではアルファの事前乗算はRGBA8888にしか対応させてない");
+	Logger::logAssert(_pixelFormat == TextureUtility::PixelFormat::RGBA8888, "pngではアルファの事前乗算はRGBA8888にしか対応させてない");
 #endif
 
 	unsigned int* fourBytes = (unsigned int*)_data;

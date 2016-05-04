@@ -10,7 +10,9 @@
 namespace mgrrenderer
 {
 
-class Texture;
+#if defined(MGRRENDERER_USE_OPENGL)
+class GLTexture;
+#endif
 
 class Sprite3D :
 	public Node
@@ -30,11 +32,11 @@ private:
 #if defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
 	GLProgram _glProgramForShadowMap;
+	GLTexture* _texture;
 #endif
 	CustomRenderCommand _renderShadowMapCommand;
 	CustomRenderCommand _renderCommand;
 	//TODO: Textureは今のところモデルファイルで指定できない。一枚のみに対応
-	Texture* _texture;
 	Color3F _ambient;
 	Color3F _diffuse;
 	Color3F _specular;

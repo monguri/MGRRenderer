@@ -1,6 +1,10 @@
 #include "BillBoard.h"
 #include "Director.h"
 #include "GLProgram.h"
+#if defined(MGRRENDERER_USE_OPENGL)
+#include "GLTexture.h"
+#endif
+
 
 #if defined(MGRRENDERER_USE_OPENGL)
 namespace mgrrenderer

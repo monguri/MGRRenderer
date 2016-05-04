@@ -27,12 +27,15 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="CustomRenderCommand.h" />
     <ClInclude Include="D3DProgram.h" />
+    <ClInclude Include="D3DTexture.h" />
     <ClInclude Include="Director.h" />
     <ClInclude Include="FileUtility.h" />
     <ClInclude Include="FPSFontImage.h" />
     <ClInclude Include="GLProgram.h" />
+    <ClInclude Include="GLTexture.h" />
     <ClInclude Include="GroupBeginRenderCommand.h" />
     <ClInclude Include="GroupEndRenderCommand.h" />
+    <ClInclude Include="TextureUtility.h" />
     <ClInclude Include="VertexShaderPositionTextureMultiplyColor.glsl" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="LabelAtlas.h" />
@@ -65,10 +68,12 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CustomRenderCommand.cpp" />
     <ClCompile Include="D3DProgram.cpp" />
+    <ClCompile Include="D3DTexture.cpp" />
     <ClCompile Include="Director.cpp" />
     <ClCompile Include="FileUtility.cpp" />
     <ClCompile Include="FPSFontImage.cpp" />
     <ClCompile Include="GLProgram.cpp" />
+    <ClCompile Include="GLTexture.cpp" />
     <ClCompile Include="GroupBeginRenderCommand.cpp" />
     <ClCompile Include="GroupEndRenderCommand.cpp" />
     <ClCompile Include="Image.cpp" />
@@ -92,6 +97,7 @@
     <ClCompile Include="Sprite2D.cpp" />
     <ClCompile Include="Sprite3D.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureUtility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderPositionMultiplyColor.glsl" />

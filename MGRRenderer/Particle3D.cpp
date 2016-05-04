@@ -1,16 +1,20 @@
 #include "Particle3D.h"
 #include "Director.h"
-#include "Texture.h"
 #include "Image.h"
 // srand関数のため
 #include <time.h>
+#if defined(MGRRENDERER_USE_OPENGL)
+#include "GLTexture.h"
+#endif
 
 namespace mgrrenderer
 {
 
 Particle3D::Particle3D() :
+#if defined(MGRRENDERER_USE_OPENGL)
 _texture(nullptr),
-_elapsedTimeMs(0.0f)
+#endif
+_elapsedTimeMs(0)
 {
 }
 
@@ -18,12 +22,13 @@ Particle3D::~Particle3D()
 {
 #if defined(MGRRENDERER_USE_OPENGL)
 	glBindTexture(GL_TEXTURE_2D, 0);
-#endif
+
 	if (_texture)
 	{
 		delete _texture;
 		_texture = nullptr;
 	}
+#endif
 }
 
 bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
@@ -39,8 +44,8 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 	Image image; // ImageはCPU側のメモリを使っているのでこのスコープで解放されてもよいものだからスタックに取る
 	image.initWithFilePath(parameter.textureFilePath);
 
-	_texture = new Texture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
-	_texture->initWithImage(image);
+	_texture = new GLTexture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
+	static_cast<Texture*>(_texture)->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
 
 	// vec3で埋まるので、初期値の(0,0,0)で埋まっている
 	int numParticle = _parameter.loopFlag ? parameter.numParticle * parameter.lifeTime : parameter.numParticle;

@@ -1,4 +1,5 @@
 #include "Shaders.h"
+#if defined(MGRRENDERER_USE_OPENGL)
 
 namespace mgrrenderer
 {
@@ -21,3 +22,4 @@ namespace shader
 } // namespace shader
 
 } // namespace mgrrenderer
+#endif

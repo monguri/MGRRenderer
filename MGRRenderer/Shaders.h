@@ -1,4 +1,6 @@
 #pragma once
+#include "Config.h"
+#if defined(MGRRENDERER_USE_OPENGL)
 #include <gles/include/glew.h>
 
 namespace mgrrenderer
@@ -15,3 +17,4 @@ extern const char* FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR;
 } // namespace shader
 
 } // namespace mgrrenderer
+#endif

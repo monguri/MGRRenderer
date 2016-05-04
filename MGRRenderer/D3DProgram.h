@@ -14,6 +14,7 @@ public:
 	D3DProgram();
 	~D3DProgram();
 
+	//void initWithShaderString(const std::string& shaderStr, bool depthTestEnable); // STRINGFYで文字列扱いしちゃうとGPUデバッグできなくなるのでシェーダはファイルで扱う
 	void initWithShaderFile(const std::string& path, bool depthTestEnable);
 	ID3D11VertexShader* getVertexShader() const { return _vertexShader; }
 	ID3DBlob* getVertexShaderBlob() const { return _vertexShaderBlob; };

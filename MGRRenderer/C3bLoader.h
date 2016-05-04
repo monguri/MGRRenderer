@@ -4,7 +4,6 @@
 #include <map>
 #include "BasicDataTypes.h"
 
-#if defined(MGRRENDERER_USE_OPENGL)
 namespace mgrrenderer
 {
 
@@ -12,6 +11,7 @@ enum class AttributeLocation : int;
 
 namespace C3bLoader
 {
+#if defined(MGRRENDERER_USE_OPENGL)
 	struct MeshVertexAttribute
 	{
 		// attribute size
@@ -23,6 +23,7 @@ namespace C3bLoader
 		//size in bytes
 		int attributeSizeBytes;
 	};
+#endif
 
 	struct MeshData
 	{
@@ -33,7 +34,9 @@ namespace C3bLoader
 		std::vector<std::string> subMeshIds;
 		//std::vector<AABB> subMeshAABB;
 		size_t numSubMesh;
+#if defined(MGRRENDERER_USE_OPENGL)
 		std::vector<MeshVertexAttribute> attributes;
+#endif
 		size_t numAttribute;
 	};
 
@@ -76,8 +79,10 @@ namespace C3bLoader
 		std::string id;
 		std::string fileName;
 		Usage type;
+#if defined(MGRRENDERER_USE_OPENGL)
 		GLenum wrapS;
 		GLenum wrapT;
+#endif
 	};
 
 	struct MaterialData
@@ -415,4 +420,3 @@ namespace C3bLoader
 } // namespace C3bLoader
 
 } // namespace mgrrenderer
-#endif

@@ -7,14 +7,15 @@
 #include "GLTexture.h"
 #endif
 
-#if defined(MGRRENDERER_USE_OPENGL)
 namespace mgrrenderer
 {
 
 Sprite3D::Sprite3D() :
 _isObj(false),
 _isC3b(false),
+#if defined(MGRRENDERER_USE_OPENGL)
 _texture(nullptr),
+#endif
 _meshDatas(nullptr),
 _nodeDatas(nullptr),
 _perVertexByteSize(0),
@@ -48,11 +49,13 @@ Sprite3D::~Sprite3D()
 		_meshDatas = nullptr;
 	}
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	if (_texture != nullptr)
 	{
 		delete _texture;
 		_texture = nullptr;
 	}
+#endif
 }
 
 bool Sprite3D::initWithModel(const std::string& filePath)
@@ -480,8 +483,12 @@ void Sprite3D::setTexture(const std::string& filePath)
 	Image image; // ImageはCPU側のメモリを使っているのでこのスコープで解放されてもよいものだからスタックに取る
 	image.initWithFilePath(filePath);
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	// TODO:実装
+#elif defined(MGRRENDERER_USE_OPENGL)
 	_texture = new GLTexture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
 	static_cast<Texture*>(_texture)->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
+#endif
 }
 
 void Sprite3D::startAnimation(const std::string& animationName, bool loop /* = false*/)
@@ -923,4 +930,3 @@ void Sprite3D::renderWithShadowMap()
 }
 
 } // namespace mgrrenderer
-#endif

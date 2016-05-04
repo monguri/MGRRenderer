@@ -6,7 +6,6 @@
 #include "CustomRenderCommand.h"
 #include "C3bLoader.h"
 
-#if defined(MGRRENDERER_USE_OPENGL)
 namespace mgrrenderer
 {
 
@@ -66,4 +65,3 @@ private:
 };
 
 } // namespace mgrrenderer
-#endif

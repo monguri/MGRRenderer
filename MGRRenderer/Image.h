@@ -29,6 +29,8 @@ public:
 
 	unsigned char* getData() const { return _data; };
 	ssize_t getDataLength() const { return _dataLen; };
+	unsigned char* getRawData() const { return _rawData; };
+	ssize_t getRawDataLength() const { return _rawDataLen; };
 	int getWidth() const { return _width; }
 	int getHeight() const { return _height; }
 	bool getHasPremultipliedAlpha() const { return _hasPremultipliedAlpha; }
@@ -38,6 +40,9 @@ private:
 	static const ssize_t PNG_SIGNATURE_SIZE = 8;
 	unsigned char* _data;
 	ssize_t _dataLen;
+	// ヘッダ情報や圧縮のない生の画像データ
+	unsigned char* _rawData;
+	ssize_t _rawDataLen;
 	int _width;
 	int _height;
 	TextureUtility::PixelFormat _pixelFormat;

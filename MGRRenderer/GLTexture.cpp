@@ -58,7 +58,7 @@ GLTexture::~GLTexture()
 
 bool GLTexture::initWithImage(const Image& image, TextureUtility::PixelFormat format)
 {
-	if (image.getData() == nullptr)
+	if (image.getRawData() == nullptr)
 	{
 		return false;
 	}
@@ -76,7 +76,7 @@ bool GLTexture::initWithImage(const Image& image, TextureUtility::PixelFormat fo
 	unsigned char* convertedData = nullptr;
 	ssize_t convertedDataLen = 0;
 	TextureUtility::PixelFormat pixelFormat = (format == TextureUtility::PixelFormat::NONE || format == TextureUtility::PixelFormat::AUTO) ? image.getPixelFormat() : format;
-	TextureUtility::PixelFormat toFormat = convertDataToFormat(image.getData(), image.getDataLength(), image.getPixelFormat(), pixelFormat, &convertedData, &convertedDataLen);
+	TextureUtility::PixelFormat toFormat = convertDataToFormat(image.getRawData(), image.getRawDataLength(), image.getPixelFormat(), pixelFormat, &convertedData, &convertedDataLen);
 	if (toFormat != pixelFormat)
 	{
 		goto ERR;
@@ -138,7 +138,7 @@ bool GLTexture::initWithImage(const Image& image, TextureUtility::PixelFormat fo
 	return true;
 
 ERR:
-	if (convertedData != nullptr && convertedData != image.getData())
+	if (convertedData != nullptr && convertedData != image.getRawData())
 	{
 		free(convertedData);
 	}

@@ -20,6 +20,8 @@ typedef struct
 Image::Image() :
 _data(nullptr),
 _dataLen(0),
+_rawData(nullptr),
+_rawDataLen(0),
 _width(0),
 _height(0),
 #if defined(MGRRENDERER_USE_OPENGL)
@@ -31,6 +33,11 @@ _hasPremultipliedAlpha(true)
 
 Image::~Image()
 {
+	if (_rawData != nullptr)
+	{
+		free(_rawData);
+	}
+
 	if (_data != nullptr)
 	{
 		free(_data);
@@ -45,14 +52,18 @@ bool Image::initWithFilePath(const std::string& filePath)
 	unsigned char* fileData = fileUtil->getFileData(fullPath, &fileSize);
 	// libpng、libjpegによってrawデータに変換
 
+	// _data, _dataLenはinitWithImageData内で格納している
 	bool isSucceeded = initWithImageData(fileData, fileSize);
-	delete fileData;
+	free(fileData);
 	return isSucceeded;
 }
 
 bool Image::initWithImageData(const unsigned char* data, ssize_t dataLen)
 {
 	// libpng、libjpegによってrawデータに変換
+	_data = static_cast<unsigned char*>(malloc(dataLen));
+	memcpy(_data, data, dataLen);
+	_dataLen = dataLen;
 
 	Format format = detectFormat(data, dataLen);
 	bool isSucceeded = false;
@@ -64,7 +75,7 @@ bool Image::initWithImageData(const unsigned char* data, ssize_t dataLen)
 	default:
 		// フォーマットのわからないものはtgaとして読んでみる。tgaはファイル内にtga形式であることを示すものが必ずしもあるわけでない
 		isSucceeded = initWithTgaData(data, dataLen);
-		//TODO: _fileDataのヘッダとフッタを除いた部分を_dataにコピーする形式なのでヘッダとフッタは解放しないと
+		//TODO: _fileDataのヘッダとフッタを除いた部分を_rawDataにコピーする形式なのでヘッダとフッタは解放しないと
 		if (!isSucceeded)
 		{
 			Logger::log("unsupport image format.");
@@ -216,9 +227,9 @@ bool Image::initWithPngData(const unsigned char * data, ssize_t dataLen)
 	png_bytep* rowPointers = static_cast<png_bytep*>(malloc(sizeof(png_bytep) * _height));
 	png_size_t rowSize = png_get_rowbytes(png, info);
 
-	_dataLen = rowSize * _height;
-	_data = static_cast<unsigned char*>(malloc(_dataLen * sizeof(unsigned char)));
-	if (_data == nullptr)
+	_rawDataLen = rowSize * _height;
+	_rawData = static_cast<unsigned char*>(malloc(_rawDataLen * sizeof(unsigned char)));
+	if (_rawData == nullptr)
 	{
 		if (rowPointers == nullptr)
 		{
@@ -230,7 +241,7 @@ bool Image::initWithPngData(const unsigned char * data, ssize_t dataLen)
 
 	for (unsigned short i = 0; i < _height; ++i)
 	{
-		rowPointers[i] = _data + i * rowSize;
+		rowPointers[i] = _rawData + i * rowSize;
 	}
 	png_read_image(png, rowPointers);
 
@@ -323,8 +334,8 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 		unsigned int index = 0;
 
 		unsigned int total = header.width * header.height;
-		_dataLen = sizeof(unsigned char) * total * mode;
-		_data = static_cast<unsigned char*>(malloc(_dataLen));
+		_rawDataLen = sizeof(unsigned char) * total * mode;
+		_rawData = static_cast<unsigned char*>(malloc(_rawDataLen));
 		for (int i = 0; i < total; ++i)
 		{
 			bool readPixel = false;
@@ -379,7 +390,7 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 			}
 
 			// add the pixel to our image
-			memcpy(&_data[index], color, mode);
+			memcpy(&_rawData[index], color, mode);
 			index += mode;
 		}
 	}
@@ -388,23 +399,23 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 		step = headerSize;
 
 		// RLE圧縮されていないとき
-		_dataLen = sizeof(unsigned char) * header.width * header.height * mode;
-		if (dataLen < headerSize + _dataLen)
+		_rawDataLen = sizeof(unsigned char) * header.width * header.height * mode;
+		if (dataLen < headerSize + _rawDataLen)
 		{
 			return false;
 		}
 
-		_data = static_cast<unsigned char*>(malloc(_dataLen));
-		memcpy(_data, data + step, _dataLen);
+		_rawData = static_cast<unsigned char*>(malloc(_rawDataLen));
+		memcpy(_rawData, data + step, _rawDataLen);
 
 		// mode=3(or4)はRGA(A)だが、TGAはBGR(A)形式なのでRとBを入れ替えておく
 		if (mode >= 3)
 		{
-			for (int i = 0; i < _dataLen; i += mode)
+			for (int i = 0; i < _rawDataLen; i += mode)
 			{
-				unsigned char b = _data[i];
-				_data[i] = _data[i + 2];
-				_data[i + 2] = b;
+				unsigned char b = _rawData[i];
+				_rawData[i] = _rawData[i + 2];
+				_rawData[i + 2] = b;
 			}
 		}
 	}
@@ -455,10 +466,10 @@ void Image::premultiplyAlpha()
 	Logger::logAssert(_pixelFormat == TextureUtility::PixelFormat::RGBA8888, "pngではアルファの事前乗算はRGBA8888にしか対応させてない");
 #endif
 
-	unsigned int* fourBytes = (unsigned int*)_data;
+	unsigned int* fourBytes = (unsigned int*)_rawData;
 	for (int i = 0; i < _width * _height; i++)
 	{
-		unsigned char* p = _data + i * 4;
+		unsigned char* p = _rawData + i * 4;
 		// TODO:これくらいのことはGPUでやってもいいんじゃないかなあ。まあ、わざわざ転送するのもなんだけど。
 		fourBytes[i] = premultiplyAlpha(p[0], p[1], p[2], p[3]);
 	}

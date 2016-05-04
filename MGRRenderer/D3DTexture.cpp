@@ -36,9 +36,7 @@ bool D3DTexture::initWithImage(const Image& image, TextureUtility::PixelFormat f
 		return false;
 	}
 
-	HRESULT result = 0;
-	//D3DX11CreateShaderResourceViewFromMemory(Director::getInstance()->getDirect3dDevice(), (LPCVOID)image.getData(), (SIZE_T)image.getDataLength(), nullptr, nullptr, &_resourceView, &result);
-	D3DX11CreateShaderResourceViewFromFile(Director::getInstance()->getDirect3dDevice(), L"..\\Resources\\Hello.png", nullptr, nullptr, &_resourceView, &result);
+	HRESULT result = D3DX11CreateShaderResourceViewFromMemory(Director::getInstance()->getDirect3dDevice(), (LPCVOID)image.getData(), (SIZE_T)image.getDataLength(), nullptr, nullptr, &_resourceView, nullptr);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "D3DX11CreateShaderResourceViewFromMemory failed. result=%d", result);

@@ -142,7 +142,7 @@ bool Sprite2D::init(const std::string& filePath)
 	}
 
 	bool depthEnable = false;
-	_d3dProgram.initWithShaderFile("PositionTextureMultiplyColor2D.hlsl", depthEnable);
+	_d3dProgram.initWithShaderFile("PositionTextureMultiplyColor.hlsl", depthEnable);
 
 	// 入力レイアウトオブジェクトの作成
 	D3D11_INPUT_ELEMENT_DESC layout[] = {

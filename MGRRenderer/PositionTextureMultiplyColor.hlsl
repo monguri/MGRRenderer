@@ -23,7 +23,7 @@ SamplerState _samplerState : register(s0);
 
 struct VS_INPUT
 {
-	float2 position : POSITION;
+	float3 position : POSITION;
 	float2 texCoord : TEX_COORD;
 };
 
@@ -43,7 +43,7 @@ GS_INPUT VS(VS_INPUT input)
 {
 	GS_INPUT output;
 
-	float4 position = float4(input.position, 0.0, 1.0);
+	float4 position = float4(input.position, 1.0);
 	output.position = mul(position, _model);
 	output.position = mul(output.position, _view);
 

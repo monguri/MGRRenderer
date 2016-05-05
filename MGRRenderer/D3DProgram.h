@@ -11,6 +11,17 @@ namespace mgrrenderer
 class D3DProgram final
 {
 public:
+	// TODO:‚±‚±‚É’u‚­‚Ì‚ª‚ ‚Ü‚è‚¢‚¢‚Æ‚ÍŽv‚í‚È‚¢‚ª‚Æ‚è‚ ‚¦‚¸
+	static const std::string SEMANTIC_POSITION;
+	static const std::string SEMANTIC_COLOR;
+	static const std::string SEMANTIC_TEXTURE_COORDINATE;
+	static const std::string SEMANTIC_TEXTURE_COORDINATE_1;
+	static const std::string SEMANTIC_TEXTURE_COORDINATE_2;
+	static const std::string SEMANTIC_TEXTURE_COORDINATE_3;
+	static const std::string SEMANTIC_NORMAL;
+	static const std::string SEMANTIC_BLEND_WEIGHT;
+	static const std::string SEMANTIC_BLEND_INDEX;
+
 	D3DProgram();
 	~D3DProgram();
 

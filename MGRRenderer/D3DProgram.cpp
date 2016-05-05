@@ -6,6 +6,16 @@
 
 namespace mgrrenderer
 {
+const std::string D3DProgram::SEMANTIC_POSITION = "POSITION";
+const std::string D3DProgram::SEMANTIC_COLOR = "COLOR";
+const std::string D3DProgram::SEMANTIC_TEXTURE_COORDINATE = "TEX_COORD";
+const std::string D3DProgram::SEMANTIC_TEXTURE_COORDINATE_1 = "TEX_COORD1";
+const std::string D3DProgram::SEMANTIC_TEXTURE_COORDINATE_2 = "TEX_COORD2";
+const std::string D3DProgram::SEMANTIC_TEXTURE_COORDINATE_3 = "TEX_COORD3";
+const std::string D3DProgram::SEMANTIC_NORMAL = "NORMAL";
+const std::string D3DProgram::SEMANTIC_BLEND_WEIGHT = "BLEND_WEIGHT";
+const std::string D3DProgram::SEMANTIC_BLEND_INDEX = "BLEND_INDEX";
+
 D3DProgram::D3DProgram() :
 _vertexShader(nullptr),
 _vertexShaderBlob(nullptr),

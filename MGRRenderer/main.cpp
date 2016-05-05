@@ -482,7 +482,6 @@ void initialize()
 	isSucceeded = plane3DNode3->initWithVertexArray(planeVertices3D3);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
-#if defined(MGRRENDERER_USE_OPENGL)
 	Sprite3D* sprite3DObjNode = new Sprite3D();
 	isSucceeded = sprite3DObjNode->initWithModel("../Resources/boss1.obj");
 	sprite3DObjNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 100, WINDOW_HEIGHT / 2.0f - 100, 0)); // カメラのデフォルトの視点位置から少しずれた場所に置いた
@@ -490,6 +489,7 @@ void initialize()
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 	sprite3DObjNode->setTexture("../Resources/boss.png");
 
+#if defined(MGRRENDERER_USE_OPENGL)
 	Sprite3D* sprite3DC3tNode = new Sprite3D();
 	isSucceeded = sprite3DC3tNode->initWithModel("../Resources/orc.c3b");
 	sprite3DC3tNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)); // カメラのデフォルトの視点位置に置いた
@@ -549,8 +549,8 @@ void initialize()
 	scene->pushNode(plane3DNode1);
 	scene->pushNode(plane3DNode2);
 	scene->pushNode(plane3DNode3);
-#if defined(MGRRENDERER_USE_OPENGL)
 	scene->pushNode(sprite3DObjNode);
+#if defined(MGRRENDERER_USE_OPENGL)
 	scene->pushNode(sprite3DC3tNode);
 #endif
 	scene->pushNode(particle3DNode);

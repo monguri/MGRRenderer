@@ -2,14 +2,20 @@
 #include <string>
 #include <vector>
 #include "Node.h"
-#include "GLProgram.h"
 #include "CustomRenderCommand.h"
 #include "C3bLoader.h"
+#if defined(MGRRENDERER_USE_DIRECT3D)
+#include "D3DProgram.h"
+#elif defined(MGRRENDERER_USE_OPENGL)
+#include "GLProgram.h"
+#endif
 
 namespace mgrrenderer
 {
 
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+class D3DTexture;
+#elif defined(MGRRENDERER_USE_OPENGL)
 class GLTexture;
 #endif
 
@@ -28,7 +34,14 @@ private:
 	bool _isObj;
 	bool _isC3b;
 
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	D3DProgram _d3dProgram;
+	ID3D11Buffer* _vertexBuffer;
+	ID3D11Buffer* _indexBuffer;
+	ID3D11InputLayout* _inputLayout;
+	ID3D11Buffer* _constantBuffers[4];
+	D3DTexture* _texture;
+#elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
 	GLProgram _glProgramForShadowMap;
 	GLTexture* _texture;
@@ -46,8 +59,9 @@ private:
 	// TODO:現状objのみに使っている。I/FをObjLoaderとC3bLoaderで合わせよう
 	std::vector<Position3DNormalTextureCoordinates> _vertices;
 
-	// TODO:現状c3t/c3bのみに使っている。I/FをObjLoaderとC3bLoaderで合わせよう
 	std::vector<unsigned short> _indices;
+
+	// TODO:現状c3t/c3bのみに使っている。I/FをObjLoaderとC3bLoaderで合わせよう
 	C3bLoader::MeshDatas* _meshDatas;
 	C3bLoader::NodeDatas* _nodeDatas;
 	size_t _perVertexByteSize;

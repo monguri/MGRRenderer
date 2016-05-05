@@ -65,10 +65,11 @@ bool Sprite2D::init(const std::string& filePath)
 	Image image; // ImageはCPU側のメモリを使っているのでこのスコープで解放されてもよいものだからスタックに取る
 	image.initWithFilePath(filePath);
 
+	// TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	_texture = new D3DTexture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
+	_texture = new D3DTexture();
 #elif defined(MGRRENDERER_USE_OPENGL)
-	_texture = new GLTexture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
+	_texture = new GLTexture();
 #endif
 
 	Texture* texture = _texture;

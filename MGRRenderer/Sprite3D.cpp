@@ -3,7 +3,9 @@
 #include "Image.h"
 #include "Director.h"
 #include "Light.h"
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+#include "D3DTexture.h"
+#elif defined(MGRRENDERER_USE_OPENGL)
 #include "GLTexture.h"
 #endif
 
@@ -13,9 +15,12 @@ namespace mgrrenderer
 Sprite3D::Sprite3D() :
 _isObj(false),
 _isC3b(false),
-#if defined(MGRRENDERER_USE_OPENGL)
-_texture(nullptr),
+#if defined(MGRRENDERER_USE_DIRECT3D)
+_vertexBuffer(nullptr),
+_indexBuffer(nullptr),
+_inputLayout(nullptr),
 #endif
+_texture(nullptr),
 _meshDatas(nullptr),
 _nodeDatas(nullptr),
 _perVertexByteSize(0),
@@ -28,7 +33,6 @@ _elapsedTime(0.0f)
 
 Sprite3D::~Sprite3D()
 {
-
 	_currentAnimation = nullptr;
 
 	if (_animationDatas != nullptr)
@@ -49,13 +53,38 @@ Sprite3D::~Sprite3D()
 		_meshDatas = nullptr;
 	}
 
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	for (ID3D11Buffer* constantBuffer : _constantBuffers)
+	{
+		constantBuffer->Release();
+	}
+
+	if (_inputLayout != nullptr)
+	{
+		_inputLayout->Release();
+		_inputLayout = nullptr;
+	}
+
+	if (_indexBuffer != nullptr)
+	{
+		_indexBuffer->Release();
+		_indexBuffer = nullptr;
+	}
+
+	if (_vertexBuffer != nullptr)
+	{
+		_vertexBuffer->Release();
+		_vertexBuffer = nullptr;
+	}
+#elif defined(MGRRENDERER_USE_OPENGL)
+	glBindTexture(GL_TEXTURE_2D, 0);
+#endif
+
 	if (_texture != nullptr)
 	{
 		delete _texture;
 		_texture = nullptr;
 	}
-#endif
 }
 
 bool Sprite3D::initWithModel(const std::string& filePath)
@@ -63,7 +92,6 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_isObj = false;
 	_isC3b = false;
 
-#if defined(MGRRENDERER_USE_OPENGL)
 	const std::string& ext = filePath.substr(filePath.length() - 4, 4);
 	if (ext == ".obj")
 	{
@@ -91,6 +119,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_vertices = mesh.vertices;
 		_indices = mesh.indices;
 	}
+#if defined(MGRRENDERER_USE_OPENGL)
 	else if (ext == ".c3t" || ext == ".c3b")
 	{
 		_isC3b = true; // TODO:このフラグ分けは非常にださい
@@ -138,11 +167,127 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		delete materialDatas;
 	}
+#endif
 	else
 	{
 		Logger::logAssert(false, "対応してない拡張子%s", ext);
 	}
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	if (_isObj)
+	{
+		// 頂点バッファの定義
+		D3D11_BUFFER_DESC vertexBufferDesc;
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		vertexBufferDesc.ByteWidth = sizeof(Position3DNormalTextureCoordinates) * _vertices.size();
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vertexBufferDesc.CPUAccessFlags = 0;
+		vertexBufferDesc.MiscFlags = 0;
+		vertexBufferDesc.StructureByteStride = 0;
+
+		// 頂点バッファのサブリソースの定義
+		D3D11_SUBRESOURCE_DATA vertexBufferSubData;
+		vertexBufferSubData.pSysMem = &_vertices[0];
+		vertexBufferSubData.SysMemPitch = 0;
+		vertexBufferSubData.SysMemSlicePitch = 0;
+
+		// 頂点バッファのサブリソースの作成
+		ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
+		HRESULT result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &_vertexBuffer);
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+			return false;
+		}
+
+		// インデックスバッファの定義
+		D3D11_BUFFER_DESC indexBufferDesc;
+		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		indexBufferDesc.ByteWidth = sizeof(USHORT) * _indices.size();
+		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		indexBufferDesc.CPUAccessFlags = 0;
+		indexBufferDesc.MiscFlags = 0;
+		indexBufferDesc.StructureByteStride = 0;
+
+		// インデックスバッファのサブリソースの定義
+		D3D11_SUBRESOURCE_DATA indexBufferSubData;
+		indexBufferSubData.pSysMem = &_indices[0];
+		indexBufferSubData.SysMemPitch = 0;
+		indexBufferSubData.SysMemSlicePitch = 0;
+
+		// インデックスバッファのサブリソースの作成
+		result = direct3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferSubData, &_indexBuffer);
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+			return false;
+		}
+
+		bool depthEnable = true;
+		_d3dProgram.initWithShaderFile("Obj.hlsl", depthEnable);
+
+		// 入力レイアウトオブジェクトの作成
+		D3D11_INPUT_ELEMENT_DESC layout[] = {
+			{D3DProgram::SEMANTIC_POSITION.c_str(), 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+			//{D3DProgram::SEMANTIC_NORMAL.c_str(), 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, sizeof(Vec3), D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{D3DProgram::SEMANTIC_TEXTURE_COORDINATE.c_str(), 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(Vec3) * 2, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		};
+		result = direct3dDevice->CreateInputLayout(
+			layout,
+			_countof(layout), 
+			_d3dProgram.getVertexShaderBlob()->GetBufferPointer(),
+			_d3dProgram.getVertexShaderBlob()->GetBufferSize(),
+			&_inputLayout
+		);
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "CreateInputLayout failed. result=%d", result);
+			return false;
+		}
+
+		// 定数バッファの作成
+		D3D11_BUFFER_DESC constantBufferDesc;
+		constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		constantBufferDesc.MiscFlags = 0;
+		constantBufferDesc.StructureByteStride = 0;
+		constantBufferDesc.ByteWidth = sizeof(Mat4);
+
+		// Model行列用
+		result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[0]);
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+			return false;
+		}
+
+		// View行列用
+		result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[1]);
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+			return false;
+		}
+
+		// Projection行列用
+		result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[2]);
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+			return false;
+		}
+
+		constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
+		// 乗算色
+		result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[3]);
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+			return false;
+		}
+	}
+#elif defined(MGRRENDERER_USE_OPENGL)
 	if (_isObj)
 	{
 		_glProgram.initWithShaderString(
@@ -479,16 +624,22 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 void Sprite3D::setTexture(const std::string& filePath)
 {
-	// Textureをロードし、pngやjpegを生データにし、OpenGLにあげる仕組みを作らねば。。Spriteのソースを見直すときだ。
+	if (_texture != nullptr)
+	{
+		delete _texture;
+		_texture = nullptr;
+	}
+
 	Image image; // ImageはCPU側のメモリを使っているのでこのスコープで解放されてもよいものだからスタックに取る
 	image.initWithFilePath(filePath);
 
+	// TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	// TODO:実装
+	_texture = new D3DTexture(); 
 #elif defined(MGRRENDERER_USE_OPENGL)
-	_texture = new GLTexture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
-	static_cast<Texture*>(_texture)->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
+	_texture = new GLTexture();
 #endif
+	static_cast<Texture*>(_texture)->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
 }
 
 void Sprite3D::startAnimation(const std::string& animationName, bool loop /* = false*/)
@@ -732,7 +883,97 @@ void Sprite3D::renderWithShadowMap()
 	{
 		Node::renderWithShadowMap();
 
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+
+		// TODO:ここらへん共通化したいな。。
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+
+		// モデル行列のマップ
+		HRESULT result = direct3dContext->Map(
+			_constantBuffers[0],
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 modelMatrix = getModelMatrix();
+		modelMatrix.transpose();
+		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
+		direct3dContext->Unmap(_constantBuffers[0], 0);
+
+		// ビュー行列のマップ
+		result = direct3dContext->Map(
+			_constantBuffers[1],
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 viewMatrix = Director::getCamera().getViewMatrix();
+		viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
+		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
+		direct3dContext->Unmap(_constantBuffers[1], 0);
+
+		// プロジェクション行列のマップ
+		result = direct3dContext->Map(
+			_constantBuffers[2],
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 projectionMatrix = Director::getCamera().getProjectionMatrix();
+		projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
+		projectionMatrix.transpose();
+		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
+		direct3dContext->Unmap(_constantBuffers[2], 0);
+
+		// 乗算色のマップ
+		result = direct3dContext->Map(
+			_constantBuffers[3],
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Color4F multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 1));
+		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
+		direct3dContext->Unmap(_constantBuffers[3], 0);
+
+		UINT strides[1] = {sizeof(Position3DNormalTextureCoordinates)};
+		UINT offsets[1] = {0};
+		direct3dContext->IASetVertexBuffers(0, 1, &_vertexBuffer, strides, offsets);
+		direct3dContext->IASetIndexBuffer(_indexBuffer, DXGI_FORMAT_R16_UINT, 0);
+		direct3dContext->IASetInputLayout(_inputLayout);
+		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		direct3dContext->VSSetShader(_d3dProgram.getVertexShader(), nullptr, 0);
+		direct3dContext->VSSetConstantBuffers(0, 4, _constantBuffers);
+
+		direct3dContext->GSSetShader(_d3dProgram.getGeometryShader(), nullptr, 0);
+		direct3dContext->GSSetConstantBuffers(0, 4, _constantBuffers);
+
+		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
+
+		direct3dContext->PSSetShader(_d3dProgram.getPixelShader(), nullptr, 0);
+		direct3dContext->PSSetConstantBuffers(0, 4, _constantBuffers);
+		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:型変換がうまくいかないので一度変数に代入している
+		direct3dContext->PSSetShaderResources(0, 1, &resourceView);
+		ID3D11SamplerState* samplerState = _texture->getSamplerState();
+		direct3dContext->PSSetSamplers(0, 1, &samplerState); //TODO:型変換がうまくいかないので一度変数に代入している
+
+		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);
+
+		direct3dContext->OMSetDepthStencilState(_d3dProgram.getDepthStancilState(), 0);
+
+		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
+#elif defined(MGRRENDERER_USE_OPENGL)
 		glEnable(GL_DEPTH_TEST);
 
 		// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？

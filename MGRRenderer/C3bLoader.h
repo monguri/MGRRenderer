@@ -11,9 +11,16 @@ enum class AttributeLocation : int;
 
 namespace C3bLoader
 {
-#if defined(MGRRENDERER_USE_OPENGL)
 	struct MeshVertexAttribute
 	{
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		// attribute size
+		size_t size;
+		// semantic
+		std::string semantic;
+		//size in bytes
+		size_t attributeSizeBytes;
+#elif defined(MGRRENDERER_USE_OPENGL)
 		// attribute size
 		GLint size;
 		// ex. GL_FLOAT
@@ -22,8 +29,8 @@ namespace C3bLoader
 		AttributeLocation location;
 		//size in bytes
 		int attributeSizeBytes;
-	};
 #endif
+	};
 
 	struct MeshData
 	{
@@ -34,9 +41,7 @@ namespace C3bLoader
 		std::vector<std::string> subMeshIds;
 		//std::vector<AABB> subMeshAABB;
 		size_t numSubMesh;
-#if defined(MGRRENDERER_USE_OPENGL)
 		std::vector<MeshVertexAttribute> attributes;
-#endif
 		size_t numAttribute;
 	};
 

@@ -119,7 +119,6 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_vertices = mesh.vertices;
 		_indices = mesh.indices;
 	}
-#if defined(MGRRENDERER_USE_OPENGL)
 	else if (ext == ".c3t" || ext == ".c3b")
 	{
 		_isC3b = true; // TODO:このフラグ分けは非常にださい
@@ -157,7 +156,8 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		C3bLoader::MaterialData* materialData = materialDatas->materialDatas[0];
 		const C3bLoader::TextureData& texture = materialData->textures[0];
-		setTexture(texture.fileName);
+		//setTexture(texture.fileName);
+		setTexture("../Resources/boss.png");
 		_ambient = materialData->ambient;
 		_diffuse = materialData->diffuse;
 		_specular = materialData->specular;
@@ -167,13 +167,15 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		delete materialDatas;
 	}
-#endif
 	else
 	{
 		Logger::logAssert(false, "対応してない拡張子%s", ext);
 	}
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
+	HRESULT result = E_FAIL;
+
 	if (_isObj)
 	{
 		// 頂点バッファの定義
@@ -192,8 +194,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		vertexBufferSubData.SysMemSlicePitch = 0;
 
 		// 頂点バッファのサブリソースの作成
-		ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
-		HRESULT result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &_vertexBuffer);
+		result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &_vertexBuffer);
 		if (FAILED(result))
 		{
 			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -244,48 +245,125 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			Logger::logAssert(false, "CreateInputLayout failed. result=%d", result);
 			return false;
 		}
+	}
+	else if (_isC3b)
+	{
+		C3bLoader::MeshData* meshData = _meshDatas->meshDatas[0];
 
-		// 定数バッファの作成
-		D3D11_BUFFER_DESC constantBufferDesc;
-		constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		constantBufferDesc.MiscFlags = 0;
-		constantBufferDesc.StructureByteStride = 0;
-		constantBufferDesc.ByteWidth = sizeof(Mat4);
+		// 頂点バッファの定義
+		D3D11_BUFFER_DESC vertexBufferDesc;
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		vertexBufferDesc.ByteWidth = sizeof(float) * meshData->vertices.size();
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vertexBufferDesc.CPUAccessFlags = 0;
+		vertexBufferDesc.MiscFlags = 0;
+		vertexBufferDesc.StructureByteStride = 0;
 
-		// Model行列用
-		result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[0]);
+		// 頂点バッファのサブリソースの定義
+		D3D11_SUBRESOURCE_DATA vertexBufferSubData;
+		vertexBufferSubData.pSysMem = &meshData->vertices[0];
+		vertexBufferSubData.SysMemPitch = 0;
+		vertexBufferSubData.SysMemSlicePitch = 0;
+
+		// 頂点バッファのサブリソースの作成
+		result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &_vertexBuffer);
 		if (FAILED(result))
 		{
 			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 			return false;
 		}
 
-		// View行列用
-		result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[1]);
+		// インデックスバッファの定義
+		D3D11_BUFFER_DESC indexBufferDesc;
+		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		indexBufferDesc.ByteWidth = sizeof(USHORT) * _indices.size();
+		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		indexBufferDesc.CPUAccessFlags = 0;
+		indexBufferDesc.MiscFlags = 0;
+		indexBufferDesc.StructureByteStride = 0;
+
+		// インデックスバッファのサブリソースの定義
+		D3D11_SUBRESOURCE_DATA indexBufferSubData;
+		indexBufferSubData.pSysMem = &_indices[0];
+		indexBufferSubData.SysMemPitch = 0;
+		indexBufferSubData.SysMemSlicePitch = 0;
+
+		// インデックスバッファのサブリソースの作成
+		result = direct3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferSubData, &_indexBuffer);
 		if (FAILED(result))
 		{
 			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 			return false;
 		}
 
-		// Projection行列用
-		result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[2]);
-		if (FAILED(result))
+		bool depthEnable = true;
+		//_d3dProgram.initWithShaderFile("C3bC3t.hlsl", depthEnable);
+		_d3dProgram.initWithShaderFile("Obj.hlsl", depthEnable);
+
+		// 入力レイアウトオブジェクトの作成
+		std::vector<D3D11_INPUT_ELEMENT_DESC> layouts(meshData->numAttribute);
+		for (int i = 0, offset = 0; i < meshData->numAttribute; ++i)
 		{
-			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-			return false;
+			const C3bLoader::MeshVertexAttribute& attrib = meshData->attributes[i];
+			D3D11_INPUT_ELEMENT_DESC layout = {attrib.semantic.c_str(), 0, D3DProgram::getDxgiFormat(attrib.semantic), 0, offset, D3D11_INPUT_PER_VERTEX_DATA, 0};
+			layouts[i] = layout;
+			offset += attrib.attributeSizeBytes;
 		}
 
-		constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
-		// 乗算色
-		result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[3]);
+		result = direct3dDevice->CreateInputLayout(
+			&layouts[0],
+			layouts.size(), 
+			_d3dProgram.getVertexShaderBlob()->GetBufferPointer(),
+			_d3dProgram.getVertexShaderBlob()->GetBufferSize(),
+			&_inputLayout
+		);
 		if (FAILED(result))
 		{
-			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+			Logger::logAssert(false, "CreateInputLayout failed. result=%d", result);
 			return false;
 		}
+	}
+
+	// 定数バッファの作成
+	D3D11_BUFFER_DESC constantBufferDesc;
+	constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	constantBufferDesc.MiscFlags = 0;
+	constantBufferDesc.StructureByteStride = 0;
+	constantBufferDesc.ByteWidth = sizeof(Mat4);
+
+	// Model行列用
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[0]);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+
+	// View行列用
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[1]);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+
+	// Projection行列用
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[2]);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+
+	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
+	// 乗算色
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[3]);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
 	}
 #elif defined(MGRRENDERER_USE_OPENGL)
 	if (_isObj)
@@ -945,7 +1023,16 @@ void Sprite3D::renderWithShadowMap()
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
 		direct3dContext->Unmap(_constantBuffers[3], 0);
 
-		UINT strides[1] = {sizeof(Position3DNormalTextureCoordinates)};
+		UINT strides[1];
+		if (_isObj)
+		{
+			strides[0] = sizeof(Position3DNormalTextureCoordinates);
+		}
+		else if (_isC3b)
+		{
+			strides[0] = _perVertexByteSize;
+		}
+
 		UINT offsets[1] = {0};
 		direct3dContext->IASetVertexBuffers(0, 1, &_vertexBuffer, strides, offsets);
 		direct3dContext->IASetIndexBuffer(_indexBuffer, DXGI_FORMAT_R16_UINT, 0);

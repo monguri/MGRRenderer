@@ -36,6 +36,21 @@ bool D3DTexture::initWithImage(const Image& image, TextureUtility::PixelFormat f
 		return false;
 	}
 
+	//ID3D11Resource* texture = nullptr;
+	//HRESULT result = D3DX11CreateTextureFromFile(Director::getInstance()->getDirect3dDevice(), L"..\\Resources\\monguger.tga", nullptr, nullptr, &texture, nullptr);
+	//if (FAILED(result))
+	//{
+	//	Logger::logAssert(false, "D3DX11CreateTextureFromFile failed. result=%d", result);
+	//	return false;
+	//}
+
+	//D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
+	//resourceViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//resourceViewDesc.ViewDimension = D3D_SRV_DIMENSION_TEXTURE2D;
+	//resourceViewDesc.Texture2D.MostDetailedMip = 0;
+	//resourceViewDesc.Texture2D.MipLevels = -1;
+
+	//result = Director::getInstance()->getDirect3dDevice()->CreateShaderResourceView(texture, nullptr, &_resourceView);
 	HRESULT result = D3DX11CreateShaderResourceViewFromMemory(Director::getInstance()->getDirect3dDevice(), (LPCVOID)image.getData(), (SIZE_T)image.getDataLength(), nullptr, nullptr, &_resourceView, nullptr);
 	if (FAILED(result))
 	{

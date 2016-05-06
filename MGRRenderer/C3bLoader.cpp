@@ -2,9 +2,12 @@
 #include "FileUtility.h"
 #include "external/json/document.h"
 #include "BinaryReader.h"
+#if defined(MGRRENDERER_USE_DIRECT3D)
+#include "D3DProgram.h"
+#elif defined(MGRRENDERER_USE_OPENGL)
 #include "GLProgram.h"
+#endif
 
-#if defined(MGRRENDERER_USE_OPENGL)
 namespace mgrrenderer
 {
 
@@ -56,6 +59,52 @@ namespace C3bLoader
 		return false;
 	}
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	static std::string parseD3DProgramAttributeString(const std::string& str)
+	{
+		if (str == "VERTEX_ATTRIB_POSITION")
+		{
+			return D3DProgram::SEMANTIC_POSITION;
+		}
+		else if (str == "VERTEX_ATTRIB_COLOR")
+		{
+			return D3DProgram::SEMANTIC_COLOR;
+		}
+		else if (str == "VERTEX_ATTRIB_TEX_COORD")
+		{
+			return D3DProgram::SEMANTIC_TEXTURE_COORDINATE;
+		}
+		else if (str == "VERTEX_ATTRIB_TEX_COORD1")
+		{
+			return D3DProgram::SEMANTIC_TEXTURE_COORDINATE_1;
+		}
+		else if (str == "VERTEX_ATTRIB_TEX_COORD2")
+		{
+			return D3DProgram::SEMANTIC_TEXTURE_COORDINATE_2;
+		}
+		else if (str == "VERTEX_ATTRIB_TEX_COORD3")
+		{
+			return D3DProgram::SEMANTIC_TEXTURE_COORDINATE_3;
+		}
+		else if (str == "VERTEX_ATTRIB_NORMAL")
+		{
+			return D3DProgram::SEMANTIC_NORMAL;
+		}
+		else if (str == "VERTEX_ATTRIB_BLEND_WEIGHT")
+		{
+			return D3DProgram::SEMANTIC_BLEND_WEIGHT;
+		} 
+		else if (str == "VERTEX_ATTRIB_BLEND_INDEX")
+		{
+			return D3DProgram::SEMANTIC_BLEND_INDEX;
+		}
+		else
+		{
+			Logger::logAssert(false, "Wrong Attribute type.");
+			return "";
+		}
+	}
+#elif defined(MGRRENDERER_USE_OPENGL)
 	static GLenum parseGLTypeString(const std::string& str)
 	{
 		if (str == "GL_BYTE")
@@ -145,8 +194,9 @@ namespace C3bLoader
 			return AttributeLocation::NONE;
 		}
 	}
+#endif // MGRRENDERER_USE_OPENGL
 	
-	static TextureData::Usage parseGLTextureTypeString(const std::string& str)
+	static TextureData::Usage parseTextureTypeString(const std::string& str)
 	{
 		if (str == "AMBIENT")
 		{
@@ -217,8 +267,12 @@ namespace C3bLoader
 	
 			attrib.size = size;
 			attrib.attributeSizeBytes = sizeof(float) * size;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+			attrib.semantic = parseD3DProgramAttributeString(type);
+#elif defined(MGRRENDERER_USE_OPENGL)
 			attrib.type = parseGLTypeString(type);
 			attrib.location = parseGLProgramAttributeString(attribute);
+#endif
 			mesh->attributes[j] = attrib;
 		}
 			
@@ -302,27 +356,53 @@ namespace C3bLoader
 			MeshVertexAttribute attrib;
 			attrib.size = size;
 			attrib.attributeSizeBytes = size * sizeof(float);
+#if defined(MGRRENDERER_USE_OPENGL)
 			attrib.type = GL_FLOAT;
+#endif
 
 			switch (attribType)
 			{
 			case VertexAttribType::POSITION:
+#if defined(MGRRENDERER_USE_DIRECT3D)
+				attrib.semantic = D3DProgram::SEMANTIC_POSITION;
+#elif defined(MGRRENDERER_USE_OPENGL)
 				attrib.location = AttributeLocation::POSITION;
+#endif
 				break;
 			case VertexAttribType::COLOR:
+#if defined(MGRRENDERER_USE_DIRECT3D)
+				attrib.semantic = D3DProgram::SEMANTIC_COLOR;
+#elif defined(MGRRENDERER_USE_OPENGL)
 				attrib.location = AttributeLocation::COLOR;
+#endif
 				break;
 			case VertexAttribType::TEX_COORD:
+#if defined(MGRRENDERER_USE_DIRECT3D)
+				attrib.semantic = D3DProgram::SEMANTIC_TEXTURE_COORDINATE;
+#elif defined(MGRRENDERER_USE_OPENGL)
 				attrib.location = AttributeLocation::TEXTURE_COORDINATE;
+#endif
 				break;
 			case VertexAttribType::NORMAL:
+#if defined(MGRRENDERER_USE_DIRECT3D)
+				attrib.semantic = D3DProgram::SEMANTIC_NORMAL;
+#elif defined(MGRRENDERER_USE_OPENGL)
 				attrib.location = AttributeLocation::NORMAL;
+#endif
 				break;
 			case VertexAttribType::BLEND_WEIGHT:
+#if defined(MGRRENDERER_USE_DIRECT3D)
+				attrib.semantic = D3DProgram::SEMANTIC_BLEND_WEIGHT;
+#elif defined(MGRRENDERER_USE_OPENGL)
 				attrib.location = AttributeLocation::BLEND_WEIGHT;
+#endif
 				break;
 			case VertexAttribType::BLEND_INDEX:
+#if defined(MGRRENDERER_USE_DIRECT3D)
+				attrib.semantic = D3DProgram::SEMANTIC_BLEND_INDEX;
+#elif defined(MGRRENDERER_USE_OPENGL)
 				attrib.location = AttributeLocation::BLEND_INDEX;
+#endif
 				break;
 			default:
 				Logger::logAssert(false, "想定していないアトリビュート変数タイプ");
@@ -405,8 +485,12 @@ namespace C3bLoader
 
 				attrib.size = size;
 				attrib.attributeSizeBytes = sizeof(float) * size;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+				attrib.semantic = parseD3DProgramAttributeString(attribute);
+#elif defined(MGRRENDERER_USE_OPENGL)
 				attrib.type = parseGLTypeString(type);
 				attrib.location = parseGLProgramAttributeString(attribute);
+#endif
 				mesh->attributes[j] = attrib;
 			}
 			
@@ -495,8 +579,12 @@ namespace C3bLoader
 				const std::string& attribStr = binary.readString();
 				mesh->attributes[i].size = size;
 				mesh->attributes[i].attributeSizeBytes = size * sizeof(float);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+				mesh->attributes[i].semantic = parseD3DProgramAttributeString(attribStr);
+#elif defined(MGRRENDERER_USE_OPENGL)
 				mesh->attributes[i].type = parseGLTypeString(type);
 				mesh->attributes[i].location = parseGLProgramAttributeString(attribStr);
+#endif
 			}
 
 			// 
@@ -597,9 +685,11 @@ namespace C3bLoader
 				const rapidjson::Value& textureVal = texturesVal[j];
 				const std::string& fileName = textureVal["filename"].GetString();
 				texture.fileName = fileName.empty() ? "" : dirPath + fileName;
-				texture.type = parseGLTextureTypeString(textureVal["type"].GetString());
+				texture.type = parseTextureTypeString(textureVal["type"].GetString());
+#if defined(MGRRENDERER_USE_OPENGL)
 				texture.wrapS = parseGLTypeString(textureVal["wrapModeU"].GetString());
 				texture.wrapT = parseGLTypeString(textureVal["wrapModeV"].GetString());
+#endif
 				material->textures.push_back(texture);
 			}
 			
@@ -707,9 +797,11 @@ namespace C3bLoader
 				float uv[4];
 				binary.read(&uv, 4, 4);
 
-				texture.type = parseGLTextureTypeString(binary.readString());
+				texture.type = parseTextureTypeString(binary.readString());
+#if defined(MGRRENDERER_USE_OPENGL)
 				texture.wrapS = parseGLTypeString(binary.readString());
 				texture.wrapT = parseGLTypeString(binary.readString());
+#endif
 				material->textures.push_back(texture);
 			}
 
@@ -1981,4 +2073,3 @@ namespace C3bLoader
 } // namespace C3bLoader
 
 } // namespace mgrrenderer
-#endif

@@ -489,7 +489,6 @@ void initialize()
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 	sprite3DObjNode->setTexture("../Resources/boss.png");
 
-#if defined(MGRRENDERER_USE_OPENGL)
 	Sprite3D* sprite3DC3tNode = new Sprite3D();
 	isSucceeded = sprite3DC3tNode->initWithModel("../Resources/orc.c3b");
 	sprite3DC3tNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)); // カメラのデフォルトの視点位置に置いた
@@ -497,7 +496,6 @@ void initialize()
 	sprite3DC3tNode->setScale(10.0f);
 	sprite3DC3tNode->startAnimation("Take 001", true);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
-#endif
 
 	Particle3D::Parameter parameter;
 	parameter.loopFlag = true;
@@ -550,9 +548,7 @@ void initialize()
 	scene->pushNode(plane3DNode2);
 	scene->pushNode(plane3DNode3);
 	scene->pushNode(sprite3DObjNode);
-#if defined(MGRRENDERER_USE_OPENGL)
 	scene->pushNode(sprite3DC3tNode);
-#endif
 	scene->pushNode(particle3DNode);
 	scene->pushNode(pointNode);
 	scene->pushNode(lineNode);

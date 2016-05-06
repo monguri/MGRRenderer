@@ -34,6 +34,7 @@ public:
 	ID3D11BlendState* getBlendState() const { return _blendState; }
 	ID3D11RasterizerState* getRasterizeState() const { return _rasterizeState; }
 	ID3D11DepthStencilState* getDepthStancilState() const { return _depthStencilState; }
+	static DXGI_FORMAT getDxgiFormat(const std::string& semantic);
 
 private:
 	ID3D11VertexShader* _vertexShader;

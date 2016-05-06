@@ -240,6 +240,50 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 	}
 }
 
+DXGI_FORMAT D3DProgram::getDxgiFormat(const std::string& semantic)
+{
+	if (semantic == SEMANTIC_POSITION)
+	{
+		return DXGI_FORMAT_R32G32B32_FLOAT;
+	}
+	else if (semantic == SEMANTIC_COLOR)
+	{
+		return DXGI_FORMAT_R32G32B32A32_FLOAT;
+	}
+	else if (semantic == SEMANTIC_TEXTURE_COORDINATE)
+	{
+		return DXGI_FORMAT_R32G32_FLOAT;
+	}
+	else if (semantic == SEMANTIC_TEXTURE_COORDINATE_1)
+	{
+		return DXGI_FORMAT_R32G32_FLOAT;
+	}
+	else if (semantic == SEMANTIC_TEXTURE_COORDINATE_2)
+	{
+		return DXGI_FORMAT_R32G32_FLOAT;
+	}
+	else if (semantic == SEMANTIC_TEXTURE_COORDINATE_3)
+	{
+		return DXGI_FORMAT_R32G32_FLOAT;
+	}
+	else if (semantic == SEMANTIC_NORMAL)
+	{
+		return DXGI_FORMAT_R32G32B32_FLOAT;
+	}
+	else if (semantic == SEMANTIC_BLEND_WEIGHT)
+	{
+		return DXGI_FORMAT_R32G32B32A32_FLOAT;
+	}
+	else if (semantic == SEMANTIC_BLEND_INDEX)
+	{
+		return DXGI_FORMAT_R32G32B32A32_FLOAT;
+	}
+	else
+	{
+		Logger::logAssert(false, "非対応のセマンティック=%s", semantic.c_str());
+		return DXGI_FORMAT_UNKNOWN;
+	}
+}
 } // namespace mgrrenderer
 
 #endif

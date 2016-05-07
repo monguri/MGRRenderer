@@ -18,6 +18,13 @@ cbuffer MultiplyColor : register(b3)
 	float4 _multiplyColor;
 };
 
+static const int SKINNING_JOINT_COUNT = 60;
+
+cbuffer MatrixPallete : register(b4)
+{
+	matrix _matrixPalette[SKINNING_JOINT_COUNT];
+};
+
 Texture2D _texture2d;
 SamplerState _samplerState : register(s0);
 
@@ -41,15 +48,41 @@ struct PS_INPUT
 	float2 texCoord : TEX_COORD;
 };
 
+float4 getAnimatedPosition(float4 blendWeight, float4 blendIndex, float4 position)
+{
+	// x, y, z, wはブレンドウェイトとブレンドインデックスのインデックス0,1,2,3の意味で使っている
+	matrix skinMatrix = _matrixPalette[int(blendIndex.x)] * blendWeight.x;
+
+	if (blendWeight.y > 0.0)
+	{
+		skinMatrix += _matrixPalette[int(blendIndex.y)] * blendWeight.y;
+
+		if (blendWeight.z > 0.0)
+		{
+			skinMatrix += _matrixPalette[int(blendIndex.z)] * blendWeight.z;
+
+			if (blendWeight.w > 0.0)
+			{
+				skinMatrix += _matrixPalette[int(blendIndex.w)] * blendWeight.w;
+			}
+		}
+	}
+
+	float4 skinnedPosition = mul(position, skinMatrix);
+	skinnedPosition.w = 1.0;
+	return skinnedPosition;
+}
+
 GS_INPUT VS(VS_INPUT input)
 {
 	GS_INPUT output;
 
 	float4 position = float4(input.position, 1.0);
-	output.position = mul(position, _model);
-	output.position = mul(output.position, _view);
+	position = getAnimatedPosition(input.blendWeight, input.blendIndex, position);
+	position = mul(position, _model);
+	output.position = mul(position, _view);
 
-	output.texCoord = 1.0 - input.texCoord; // objの事情によるもの
+	output.texCoord = 1.0 - input.texCoord; // c3b/c3tの事情によるもの
 	return output;
 }
 

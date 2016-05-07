@@ -78,6 +78,7 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 	FileUtility::convertWCHARFilePath(path, wPath, FileUtility::MAX_PATH_LENGTH);
 
 	// 頂点シェーダのコードをコンパイル
+	ID3DBlob* errMsg = nullptr;
 	HRESULT result = D3DX11CompileFromFile(
 		wPath,
 		nullptr,
@@ -88,12 +89,12 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 		0,
 		nullptr,
 		&_vertexShaderBlob,
-		nullptr,
+		&errMsg,
 		nullptr
 	);
 	if (FAILED(result))
 	{
-		Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d", result);
+		Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d. error message=%s", result, errMsg->GetBufferPointer());
 		return;
 	}
 
@@ -123,12 +124,12 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 		0,
 		nullptr,
 		&blobGS,
-		nullptr,
+		&errMsg,
 		nullptr
 	);
 	if (FAILED(result))
 	{
-		Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d", result);
+		Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d. error message=%s", result, errMsg->GetBufferPointer());
 		return;
 	}
 
@@ -159,12 +160,12 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 		0,
 		nullptr,
 		&blobPS,
-		nullptr,
+		&errMsg,
 		nullptr
 	);
 	if (FAILED(result))
 	{
-		Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d", result);
+		Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d. error message=%s", result, errMsg->GetBufferPointer());
 		return;
 	}
 

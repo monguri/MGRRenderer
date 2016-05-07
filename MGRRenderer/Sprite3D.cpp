@@ -297,8 +297,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		}
 
 		bool depthEnable = true;
-		//_d3dProgram.initWithShaderFile("C3bC3t.hlsl", depthEnable);
-		_d3dProgram.initWithShaderFile("Obj.hlsl", depthEnable);
+		_d3dProgram.initWithShaderFile("C3bC3t.hlsl", depthEnable);
 
 		// 入力レイアウトオブジェクトの作成
 		std::vector<D3D11_INPUT_ELEMENT_DESC> layouts(meshData->numAttribute);
@@ -364,6 +363,18 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
+	}
+
+	if (_isC3b)
+	{
+		// スキニングのマトリックスパレット
+		constantBufferDesc.ByteWidth = sizeof(Mat4) * _nodeDatas->nodes[0]->modelNodeDatas[0]->bones.size();
+		result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[4]);
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+			return false;
+		}
 	}
 #elif defined(MGRRENDERER_USE_OPENGL)
 	if (_isObj)
@@ -835,6 +846,9 @@ void Sprite3D::update(float dt)
 		const Mat4& invBindPose = _nodeDatas->nodes[0]->modelNodeDatas[0]->invBindPose[i];//TODO: nodes下に要素は一個、parts下にも一個だけであることを前提にしている
 
 		Mat4 matrix = transform * invBindPose;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		matrix.transpose();
+#endif
 		_matrixPalette.push_back(matrix);
 	}
 }
@@ -1023,6 +1037,21 @@ void Sprite3D::renderWithShadowMap()
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
 		direct3dContext->Unmap(_constantBuffers[3], 0);
 
+		if (_isC3b)
+		{
+			// プロジェクション行列のマップ
+			result = direct3dContext->Map(
+				_constantBuffers[4],
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&mappedResource
+			);
+			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+			CopyMemory(mappedResource.pData, &_matrixPalette[0], sizeof(Mat4) * _matrixPalette.size());
+			direct3dContext->Unmap(_constantBuffers[4], 0);
+		}
+
 		UINT strides[1];
 		if (_isObj)
 		{
@@ -1040,15 +1069,15 @@ void Sprite3D::renderWithShadowMap()
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		direct3dContext->VSSetShader(_d3dProgram.getVertexShader(), nullptr, 0);
-		direct3dContext->VSSetConstantBuffers(0, 4, _constantBuffers);
+		direct3dContext->VSSetConstantBuffers(0, 5, _constantBuffers);
 
 		direct3dContext->GSSetShader(_d3dProgram.getGeometryShader(), nullptr, 0);
-		direct3dContext->GSSetConstantBuffers(0, 4, _constantBuffers);
+		direct3dContext->GSSetConstantBuffers(0, 5, _constantBuffers);
 
 		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
 
 		direct3dContext->PSSetShader(_d3dProgram.getPixelShader(), nullptr, 0);
-		direct3dContext->PSSetConstantBuffers(0, 4, _constantBuffers);
+		direct3dContext->PSSetConstantBuffers(0, 5, _constantBuffers);
 		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:型変換がうまくいかないので一度変数に代入している
 		direct3dContext->PSSetShaderResources(0, 1, &resourceView);
 		ID3D11SamplerState* samplerState = _texture->getSamplerState();

@@ -9,34 +9,34 @@
 namespace mgrrenderer
 {
 
-// TODO:ここに置くのがあまりいいとは思わないがとりあえず
-extern const std::string UNIFORM_NAME_MULTIPLE_COLOR;
-extern const std::string UNIFORM_NAME_TEXTURE_SAMPLER;
-extern const std::string UNIFORM_NAME_MODEL_MATRIX;
-extern const std::string UNIFORM_NAME_VIEW_MATRIX;
-extern const std::string UNIFORM_NAME_NORMAL_MATRIX;
-extern const std::string UNIFORM_NAME_PROJECTION_MATRIX;
-
-enum class AttributeLocation : int
-{
-	NONE = -1,
-
-	POSITION,
-	COLOR,
-	TEXTURE_COORDINATE,
-	TEXTURE_COORDINATE_1,
-	TEXTURE_COORDINATE_2,
-	TEXTURE_COORDINATE_3,
-	NORMAL,
-	BLEND_WEIGHT,
-	BLEND_INDEX,
-
-	NUM_ATTRIBUTE_IDS,
-};
-
 class GLProgram final
 {
 public:
+	// TODO:ここに置くのがあまりいいとは思わないがとりあえず
+	static const std::string GLProgram::UNIFORM_NAME_MULTIPLE_COLOR;
+	static const std::string GLProgram::UNIFORM_NAME_TEXTURE_SAMPLER;
+	static const std::string GLProgram::UNIFORM_NAME_MODEL_MATRIX;
+	static const std::string GLProgram::UNIFORM_NAME_VIEW_MATRIX;
+	static const std::string GLProgram::UNIFORM_NAME_NORMAL_MATRIX;
+	static const std::string GLProgram::UNIFORM_NAME_PROJECTION_MATRIX;
+
+	enum class AttributeLocation : int
+	{
+		NONE = -1,
+
+		POSITION,
+		COLOR,
+		TEXTURE_COORDINATE,
+		TEXTURE_COORDINATE_1,
+		TEXTURE_COORDINATE_2,
+		TEXTURE_COORDINATE_3,
+		NORMAL,
+		BLEND_WEIGHT,
+		BLEND_INDEX,
+
+		NUM_ATTRIBUTE_IDS,
+	};
+
 	GLProgram();
 	~GLProgram();
 	void initWithShaderString(const GLchar* vertexShaderStr, const GLchar* fragmentShaderStr);

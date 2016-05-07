@@ -4,8 +4,6 @@
 #include "BinaryReader.h"
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include "D3DProgram.h"
-#elif defined(MGRRENDERER_USE_OPENGL)
-#include "GLProgram.h"
 #endif
 
 namespace mgrrenderer
@@ -150,48 +148,48 @@ namespace C3bLoader
 		}
 	}
 
-	static AttributeLocation parseGLProgramAttributeString(const std::string& str)
+	static GLProgram::AttributeLocation parseGLProgramAttributeString(const std::string& str)
 	{
 		if (str == "VERTEX_ATTRIB_POSITION")
 		{
-			return AttributeLocation::POSITION;
+			return GLProgram::AttributeLocation::POSITION;
 		}
 		else if (str == "VERTEX_ATTRIB_COLOR")
 		{
-			return AttributeLocation::COLOR;
+			return GLProgram::AttributeLocation::COLOR;
 		}
 		else if (str == "VERTEX_ATTRIB_TEX_COORD")
 		{
-			return AttributeLocation::TEXTURE_COORDINATE;
+			return GLProgram::AttributeLocation::TEXTURE_COORDINATE;
 		}
 		else if (str == "VERTEX_ATTRIB_TEX_COORD1")
 		{
-			return AttributeLocation::TEXTURE_COORDINATE_1;
+			return GLProgram::AttributeLocation::TEXTURE_COORDINATE_1;
 		}
 		else if (str == "VERTEX_ATTRIB_TEX_COORD2")
 		{
-			return AttributeLocation::TEXTURE_COORDINATE_2;
+			return GLProgram::AttributeLocation::TEXTURE_COORDINATE_2;
 		}
 		else if (str == "VERTEX_ATTRIB_TEX_COORD3")
 		{
-			return AttributeLocation::TEXTURE_COORDINATE_3;
+			return GLProgram::AttributeLocation::TEXTURE_COORDINATE_3;
 		}
 		else if (str == "VERTEX_ATTRIB_NORMAL")
 		{
-			return AttributeLocation::NORMAL;
+			return GLProgram::AttributeLocation::NORMAL;
 		}
 		else if (str == "VERTEX_ATTRIB_BLEND_WEIGHT")
 		{
-			return AttributeLocation::BLEND_WEIGHT;
+			return GLProgram::AttributeLocation::BLEND_WEIGHT;
 		} 
 		else if (str == "VERTEX_ATTRIB_BLEND_INDEX")
 		{
-			return AttributeLocation::BLEND_INDEX;
+			return GLProgram::AttributeLocation::BLEND_INDEX;
 		}
 		else
 		{
 			Logger::logAssert(false, "Wrong Attribute type.");
-			return AttributeLocation::NONE;
+			return GLProgram::AttributeLocation::NONE;
 		}
 	}
 #endif // MGRRENDERER_USE_OPENGL
@@ -366,42 +364,42 @@ namespace C3bLoader
 #if defined(MGRRENDERER_USE_DIRECT3D)
 				attrib.semantic = D3DProgram::SEMANTIC_POSITION;
 #elif defined(MGRRENDERER_USE_OPENGL)
-				attrib.location = AttributeLocation::POSITION;
+				attrib.location = GLProgram::AttributeLocation::POSITION;
 #endif
 				break;
 			case VertexAttribType::COLOR:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 				attrib.semantic = D3DProgram::SEMANTIC_COLOR;
 #elif defined(MGRRENDERER_USE_OPENGL)
-				attrib.location = AttributeLocation::COLOR;
+				attrib.location = GLProgram::AttributeLocation::COLOR;
 #endif
 				break;
 			case VertexAttribType::TEX_COORD:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 				attrib.semantic = D3DProgram::SEMANTIC_TEXTURE_COORDINATE;
 #elif defined(MGRRENDERER_USE_OPENGL)
-				attrib.location = AttributeLocation::TEXTURE_COORDINATE;
+				attrib.location = GLProgram::AttributeLocation::TEXTURE_COORDINATE;
 #endif
 				break;
 			case VertexAttribType::NORMAL:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 				attrib.semantic = D3DProgram::SEMANTIC_NORMAL;
 #elif defined(MGRRENDERER_USE_OPENGL)
-				attrib.location = AttributeLocation::NORMAL;
+				attrib.location = GLProgram::AttributeLocation::NORMAL;
 #endif
 				break;
 			case VertexAttribType::BLEND_WEIGHT:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 				attrib.semantic = D3DProgram::SEMANTIC_BLEND_WEIGHT;
 #elif defined(MGRRENDERER_USE_OPENGL)
-				attrib.location = AttributeLocation::BLEND_WEIGHT;
+				attrib.location = GLProgram::AttributeLocation::BLEND_WEIGHT;
 #endif
 				break;
 			case VertexAttribType::BLEND_INDEX:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 				attrib.semantic = D3DProgram::SEMANTIC_BLEND_INDEX;
 #elif defined(MGRRENDERER_USE_OPENGL)
-				attrib.location = AttributeLocation::BLEND_INDEX;
+				attrib.location = GLProgram::AttributeLocation::BLEND_INDEX;
 #endif
 				break;
 			default:

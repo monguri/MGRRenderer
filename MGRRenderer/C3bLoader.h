@@ -3,11 +3,12 @@
 #include <vector>
 #include <map>
 #include "BasicDataTypes.h"
+#if defined(MGRRENDERER_USE_OPENGL)
+#include "GLProgram.h"
+#endif
 
 namespace mgrrenderer
 {
-
-enum class AttributeLocation : int;
 
 namespace C3bLoader
 {
@@ -26,7 +27,7 @@ namespace C3bLoader
 		// ex. GL_FLOAT
 		GLenum type;
 		//VERTEX_ATTRIB_POSITION,VERTEX_ATTRIB_COLOR,VERTEX_ATTRIB_TEX_COORD,VERTEX_ATTRIB_NORMAL, VERTEX_ATTRIB_BLEND_WEIGHT, VERTEX_ATTRIB_BLEND_INDEX, GLProgram for detail
-		AttributeLocation location;
+		GLProgram::AttributeLocation location;
 		//size in bytes
 		int attributeSizeBytes;
 #endif

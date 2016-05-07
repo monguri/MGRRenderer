@@ -44,8 +44,8 @@ GS_INPUT VS(VS_INPUT input)
 	GS_INPUT output;
 
 	float4 position = float4(input.position, 1.0);
-	output.position = mul(position, _model);
-	output.position = mul(output.position, _view);
+	position = mul(position, _model);
+	output.position = mul(position, _view);
 
 	output.texCoord = 1.0 - input.texCoord; // objÇÃéñèÓÇ…ÇÊÇÈÇ‡ÇÃ
 	return output;

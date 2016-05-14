@@ -24,12 +24,37 @@ _geometryShader(nullptr),
 _pixelShader(nullptr),
 _blendState(nullptr),
 _rasterizeState(nullptr),
-_depthStencilState(nullptr)
+_depthStencilState(nullptr),
+_vertexBuffer(nullptr),
+_indexBuffer(nullptr),
+_inputLayout(nullptr)
 {
 }
 
 D3DProgram::~D3DProgram()
 {
+	for (ID3D11Buffer* constantBuffer : _constantBuffers)
+	{
+		constantBuffer->Release();
+	}
+
+	if (_inputLayout != nullptr)
+	{
+		_inputLayout->Release();
+		_inputLayout = nullptr;
+	}
+
+	if (_indexBuffer != nullptr)
+	{
+		_indexBuffer->Release();
+		_indexBuffer = nullptr;
+	}
+
+	if (_vertexBuffer != nullptr)
+	{
+		_vertexBuffer->Release();
+		_vertexBuffer = nullptr;
+	}
 	if (_depthStencilState != nullptr)
 	{
 		_depthStencilState->Release();

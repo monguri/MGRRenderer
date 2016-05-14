@@ -36,10 +36,6 @@ private:
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	D3DProgram _d3dProgram;
-	ID3D11Buffer* _vertexBuffer;
-	ID3D11Buffer* _indexBuffer;
-	ID3D11InputLayout* _inputLayout;
-	ID3D11Buffer* _constantBuffers[5];
 	D3DTexture* _texture;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;

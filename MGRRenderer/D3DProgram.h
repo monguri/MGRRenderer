@@ -3,6 +3,7 @@
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include <string>
+#include <vector>
 #include <d3d11.h>
 
 namespace mgrrenderer
@@ -34,6 +35,14 @@ public:
 	ID3D11BlendState* getBlendState() const { return _blendState; }
 	ID3D11RasterizerState* getRasterizeState() const { return _rasterizeState; }
 	ID3D11DepthStencilState* getDepthStancilState() const { return _depthStencilState; }
+	ID3D11Buffer* getVertexBuffer() const { return _vertexBuffer; }
+	void setVertexBuffer(ID3D11Buffer* vertexBuffer) { _vertexBuffer = vertexBuffer; }
+	ID3D11Buffer* getIndexBuffer() const { return _indexBuffer; }
+	void setIndexBuffer(ID3D11Buffer* indexBuffer) { _indexBuffer = indexBuffer; }
+	ID3D11InputLayout* getInputLayout() const { return _inputLayout; }
+	void setInputLayout(ID3D11InputLayout* inputLayout) { _inputLayout = inputLayout; }
+	const std::vector<ID3D11Buffer*>& getConstantBuffers() const { return _constantBuffers; }
+	void addConstantBuffer(ID3D11Buffer* constantBuffer) { _constantBuffers.push_back(constantBuffer); }
 	static DXGI_FORMAT getDxgiFormat(const std::string& semantic);
 
 private:
@@ -45,6 +54,10 @@ private:
 	ID3D11BlendState* _blendState;
 	ID3D11RasterizerState* _rasterizeState;
 	ID3D11DepthStencilState* _depthStencilState;
+	ID3D11Buffer* _vertexBuffer;
+	ID3D11Buffer* _indexBuffer;
+	ID3D11InputLayout* _inputLayout;
+	std::vector<ID3D11Buffer*> _constantBuffers;
 };
 
 } // namespace mgrrenderer

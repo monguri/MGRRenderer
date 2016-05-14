@@ -14,41 +14,13 @@ namespace mgrrenderer
 {
 
 Sprite2D::Sprite2D() :
-#if defined(MGRRENDERER_USE_DIRECT3D)
-_vertexBuffer(nullptr),
-_indexBuffer(nullptr),
-_inputLayout(nullptr),
-#endif
 _texture(nullptr)
 {
 }
 
 Sprite2D::~Sprite2D()
 {
-#if defined(MGRRENDERER_USE_DIRECT3D)
-	for (ID3D11Buffer* constantBuffer : _constantBuffers)
-	{
-		constantBuffer->Release();
-	}
-
-	if (_inputLayout != nullptr)
-	{
-		_inputLayout->Release();
-		_inputLayout = nullptr;
-	}
-
-	if (_indexBuffer != nullptr)
-	{
-		_indexBuffer->Release();
-		_indexBuffer = nullptr;
-	}
-
-	if (_vertexBuffer != nullptr)
-	{
-		_vertexBuffer->Release();
-		_vertexBuffer = nullptr;
-	}
-#elif defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_OPENGL)
 	glBindTexture(GL_TEXTURE_2D, 0);
 #endif
 
@@ -104,12 +76,14 @@ bool Sprite2D::init(const std::string& filePath)
 
 	// 頂点バッファのサブリソースの作成
 	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
-	HRESULT result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &_vertexBuffer);
+	ID3D11Buffer* vertexBuffer = nullptr;
+	HRESULT result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &vertexBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
+	_d3dProgram.setVertexBuffer(vertexBuffer);
 
 	// インデックスバッファ用の配列の用意。素直に昇順に番号付けする
 	std::vector<unsigned int> indexArray;
@@ -135,12 +109,14 @@ bool Sprite2D::init(const std::string& filePath)
 	indexBufferSubData.SysMemSlicePitch = 0;
 
 	// インデックスバッファのサブリソースの作成
-	result = direct3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferSubData, &_indexBuffer);
+	ID3D11Buffer* indexBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferSubData, &indexBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
+	_d3dProgram.setIndexBuffer(indexBuffer);
 
 	bool depthEnable = false;
 	_d3dProgram.initWithShaderFile("PositionTextureMultiplyColor.hlsl", depthEnable);
@@ -150,18 +126,20 @@ bool Sprite2D::init(const std::string& filePath)
 		{D3DProgram::SEMANTIC_POSITION.c_str(), 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{D3DProgram::SEMANTIC_TEXTURE_COORDINATE.c_str(), 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(Vec2), D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
+	ID3D11InputLayout* inputLayout = nullptr;
 	result = direct3dDevice->CreateInputLayout(
 		layout,
 		_countof(layout), 
 		_d3dProgram.getVertexShaderBlob()->GetBufferPointer(),
 		_d3dProgram.getVertexShaderBlob()->GetBufferSize(),
-		&_inputLayout
+		&inputLayout
 	);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateInputLayout failed. result=%d", result);
 		return false;
 	}
+	_d3dProgram.setInputLayout(inputLayout);
 
 	// 定数バッファの作成
 	D3D11_BUFFER_DESC constantBufferDesc;
@@ -173,37 +151,45 @@ bool Sprite2D::init(const std::string& filePath)
 	constantBufferDesc.ByteWidth = sizeof(Mat4);
 
 	// Model行列用
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[0]);
+	ID3D11Buffer* constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
 
 	// View行列用
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[1]);
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
 
 	// Projection行列用
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[2]);
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
 
 	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
 	// 乗算色
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &_constantBuffers[3]);
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR);
 #endif
@@ -247,7 +233,7 @@ void Sprite2D::renderWithShadowMap()
 
 		// モデル行列のマップ
 		HRESULT result = direct3dContext->Map(
-			_constantBuffers[0],
+			_d3dProgram.getConstantBuffers()[0],
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -257,11 +243,11 @@ void Sprite2D::renderWithShadowMap()
 		Mat4 modelMatrix = getModelMatrix();
 		modelMatrix.transpose();
 		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
-		direct3dContext->Unmap(_constantBuffers[0], 0);
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[0], 0);
 
 		// ビュー行列のマップ
 		result = direct3dContext->Map(
-			_constantBuffers[1],
+			_d3dProgram.getConstantBuffers()[1],
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -271,11 +257,11 @@ void Sprite2D::renderWithShadowMap()
 		Mat4 viewMatrix = Director::getCameraFor2D().getViewMatrix();
 		viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
 		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
-		direct3dContext->Unmap(_constantBuffers[1], 0);
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[1], 0);
 
 		// プロジェクション行列のマップ
 		result = direct3dContext->Map(
-			_constantBuffers[2],
+			_d3dProgram.getConstantBuffers()[2],
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -286,11 +272,11 @@ void Sprite2D::renderWithShadowMap()
 		projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 		projectionMatrix.transpose();
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
-		direct3dContext->Unmap(_constantBuffers[2], 0);
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[2], 0);
 
 		// 乗算色のマップ
 		result = direct3dContext->Map(
-			_constantBuffers[3],
+			_d3dProgram.getConstantBuffers()[3],
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -299,25 +285,26 @@ void Sprite2D::renderWithShadowMap()
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 		Color4F multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 1));
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
-		direct3dContext->Unmap(_constantBuffers[3], 0);
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[3], 0);
 
 		UINT strides[1] = {sizeof(_quadrangle.topLeft)};
 		UINT offsets[1] = {0};
-		direct3dContext->IASetVertexBuffers(0, 1, &_vertexBuffer, strides, offsets);
-		direct3dContext->IASetIndexBuffer(_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		direct3dContext->IASetInputLayout(_inputLayout);
+		ID3D11Buffer* vertexBuffer = _d3dProgram.getVertexBuffer();
+		direct3dContext->IASetVertexBuffers(0, 1, &vertexBuffer, strides, offsets);
+		direct3dContext->IASetIndexBuffer(_d3dProgram.getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetInputLayout(_d3dProgram.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 		direct3dContext->VSSetShader(_d3dProgram.getVertexShader(), nullptr, 0);
-		direct3dContext->VSSetConstantBuffers(0, 4, _constantBuffers);
+		direct3dContext->VSSetConstantBuffers(0, 4, &_d3dProgram.getConstantBuffers()[0]);
 
 		direct3dContext->GSSetShader(_d3dProgram.getGeometryShader(), nullptr, 0);
-		direct3dContext->GSSetConstantBuffers(0, 4, _constantBuffers);
+		direct3dContext->GSSetConstantBuffers(0, 4, &_d3dProgram.getConstantBuffers()[0]);
 
 		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
 
 		direct3dContext->PSSetShader(_d3dProgram.getPixelShader(), nullptr, 0);
-		direct3dContext->PSSetConstantBuffers(0, 4, _constantBuffers);
+		direct3dContext->PSSetConstantBuffers(0, 4, &_d3dProgram.getConstantBuffers()[0]);
 		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:型変換がうまくいかないので一度変数に代入している
 		direct3dContext->PSSetShaderResources(0, 1, &resourceView);
 		ID3D11SamplerState* samplerState = _texture->getSamplerState();

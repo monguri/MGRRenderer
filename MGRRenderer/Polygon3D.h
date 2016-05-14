@@ -16,19 +16,11 @@ class Polygon3D
 	: public Node
 {
 public:
-#if defined(MGRRENDERER_USE_DIRECT3D)
-	Polygon3D();
-	~Polygon3D();
-#endif
 	bool initWithVertexArray(const std::vector<Vec3>& vertexArray);
 
 private:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	D3DProgram _d3dProgram;
-	ID3D11Buffer* _vertexBuffer;
-	ID3D11Buffer* _indexBuffer;
-	ID3D11InputLayout* _inputLayout;
-	ID3D11Buffer* _constantBuffers[4];
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
 	GLProgram _glProgramForShadowMap;

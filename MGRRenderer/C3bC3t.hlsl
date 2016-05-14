@@ -82,7 +82,7 @@ GS_INPUT VS(VS_INPUT input)
 	position = mul(position, _model);
 	output.position = mul(position, _view);
 
-	output.texCoord = 1.0 - input.texCoord; // c3b/c3tÇÃéñèÓÇ…ÇÊÇÈÇ‡ÇÃ
+	output.texCoord = input.texCoord;
 	return output;
 }
 

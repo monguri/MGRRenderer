@@ -27,7 +27,8 @@ _height(0),
 #if defined(MGRRENDERER_USE_OPENGL)
 _pixelFormat(TextureUtility::PixelFormat::NONE),
 #endif
-_hasPremultipliedAlpha(true)
+_hasPremultipliedAlpha(true),
+_fileFormat(FileFormat::UNKNOWN)
 {
 }
 
@@ -65,15 +66,16 @@ bool Image::initWithImageData(const unsigned char* data, ssize_t dataLen)
 	memcpy(_data, data, dataLen);
 	_dataLen = dataLen;
 
-	Format format = detectFormat(data, dataLen);
+	_fileFormat = detectFileFormat(data, dataLen);
 	bool isSucceeded = false;
-	switch (format)
+	switch (_fileFormat)
 	{
-	case Format::PNG:
+	case FileFormat::PNG:
 		isSucceeded = initWithPngData(data, dataLen);
 		break;
 	default:
 		// フォーマットのわからないものはtgaとして読んでみる。tgaはファイル内にtga形式であることを示すものが必ずしもあるわけでない
+		_fileFormat = FileFormat::TGA;
 		isSucceeded = initWithTgaData(data, dataLen);
 		//TODO: _fileDataのヘッダとフッタを除いた部分を_rawDataにコピーする形式なのでヘッダとフッタは解放しないと
 		if (!isSucceeded)
@@ -86,14 +88,14 @@ bool Image::initWithImageData(const unsigned char* data, ssize_t dataLen)
 	return isSucceeded;
 }
 
-Image::Format Image::detectFormat(const unsigned char * data, ssize_t dataLen)
+Image::FileFormat Image::detectFileFormat(const unsigned char * data, ssize_t dataLen)
 {
 	if (isPng(data, dataLen))
 	{
-		return Image::Format::PNG;
+		return Image::FileFormat::PNG;
 	}
 	
-	return Image::Format::UNKNOWN;
+	return Image::FileFormat::UNKNOWN;
 }
 
 bool Image::isPng(const unsigned char * data, ssize_t dataLen)

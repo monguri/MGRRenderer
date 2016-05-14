@@ -3,7 +3,7 @@
 #include "Scene.h"
 #include "Renderer.h"
 #if defined(MGRRENDERER_USE_DIRECT3D)
-#include <d3dx11.h>
+#include <d3d11.h>
 #endif
 
 namespace mgrrenderer

@@ -2,8 +2,8 @@
 #include "Config.h"
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-#include <d3dx11.h>
 #include <string>
+#include <d3d11.h>
 
 namespace mgrrenderer
 {

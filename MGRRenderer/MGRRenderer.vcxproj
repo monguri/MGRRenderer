@@ -107,6 +107,7 @@
     <ProjectGuid>{6BC7B3AF-198E-4A27-9950-D1C347DF439B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MGRRenderer</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -154,25 +155,25 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\directxtex\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(DXSDK_DIR)Lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\directxtex\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(DXSDK_DIR)Lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -187,7 +188,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32.lib;libpng-2015.lib;libzlib.lib;glfw3-2015.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;libpng-2015.lib;libzlib.lib;glfw3-2015.lib;opengl32.lib;DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\MGRRenderer\external\gles\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -223,7 +224,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glew32.lib;libpng-2015.lib;libzlib.lib;glfw3-2015.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;libpng-2015.lib;libzlib.lib;glfw3-2015.lib;opengl32.lib;DirectXTex.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\MGRRenderer\external\gles\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

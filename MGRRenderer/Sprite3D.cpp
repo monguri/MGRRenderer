@@ -156,8 +156,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		C3bLoader::MaterialData* materialData = materialDatas->materialDatas[0];
 		const C3bLoader::TextureData& texture = materialData->textures[0];
-		//setTexture(texture.fileName);
-		setTexture("../Resources/boss.png");
+		setTexture(texture.fileName);
 		_ambient = materialData->ambient;
 		_diffuse = materialData->diffuse;
 		_specular = materialData->specular;

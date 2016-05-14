@@ -14,7 +14,7 @@ enum class PixelFormat;
 class Image final
 {
 public:
-	enum class Format : int
+	enum class FileFormat : int
 	{
 		UNKNOWN = -1,
 		PNG,
@@ -35,6 +35,7 @@ public:
 	int getHeight() const { return _height; }
 	bool getHasPremultipliedAlpha() const { return _hasPremultipliedAlpha; }
 	TextureUtility::PixelFormat getPixelFormat() const { return _pixelFormat; }
+	FileFormat getFileFormat() const { return _fileFormat; }
 
 private:
 	static const ssize_t PNG_SIGNATURE_SIZE = 8;
@@ -47,8 +48,9 @@ private:
 	int _height;
 	TextureUtility::PixelFormat _pixelFormat;
 	bool _hasPremultipliedAlpha;
+	FileFormat _fileFormat;
 
-	Format detectFormat(const unsigned char * data, ssize_t dataLen);
+	FileFormat detectFileFormat(const unsigned char * data, ssize_t dataLen);
 	bool isPng(const unsigned char * data, ssize_t dataLen);
 	bool initWithPngData(const unsigned char * data, ssize_t dataLen);
 	bool initWithTgaData(const unsigned char * data, ssize_t dataLen);

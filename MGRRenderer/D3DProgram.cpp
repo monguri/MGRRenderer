@@ -3,6 +3,7 @@
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include "FileUtility.h"
 #include "Director.h"
+#include <d3dcompiler.h>
 
 namespace mgrrenderer
 {
@@ -79,7 +80,7 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 
 	// 頂点シェーダのコードをコンパイル
 	ID3DBlob* errMsg = nullptr;
-	HRESULT result = D3DX11CompileFromFile(
+	HRESULT result = D3DCompileFromFile(
 		wPath,
 		nullptr,
 		nullptr,
@@ -87,10 +88,8 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 		"vs_4_0",
 		D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
 		0,
-		nullptr,
 		&_vertexShaderBlob,
-		&errMsg,
-		nullptr
+		&errMsg
 	);
 	if (FAILED(result))
 	{
@@ -114,7 +113,7 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 
 	// ジオメトリシェーダのコンパイル
 	ID3DBlob* blobGS = nullptr;
-	result = D3DX11CompileFromFile(
+	result = D3DCompileFromFile(
 		wPath,
 		nullptr,
 		nullptr,
@@ -122,10 +121,8 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 		"gs_4_0",
 		D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
 		0,
-		nullptr,
 		&blobGS,
-		&errMsg,
-		nullptr
+		&errMsg
 	);
 	if (FAILED(result))
 	{
@@ -150,7 +147,7 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 
 	// ピクセルシェーダのコンパイル
 	ID3DBlob* blobPS = nullptr;
-	result = D3DX11CompileFromFile(
+	result = D3DCompileFromFile(
 		wPath,
 		nullptr,
 		nullptr,
@@ -158,10 +155,8 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 		"ps_4_0",
 		D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
 		0,
-		nullptr,
 		&blobPS,
-		&errMsg,
-		nullptr
+		&errMsg
 	);
 	if (FAILED(result))
 	{

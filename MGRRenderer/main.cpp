@@ -3,11 +3,8 @@
 #include "MGRRenderer.h"
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-#include <d3dx11.h>
-#include <dxerr.h>
 #pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "d3dx11d.lib") // デバッグ版を使う
-#pragma comment(lib, "dxerr.lib")
+#pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "dxgi.lib")
 #elif defined(MGRRENDERER_USE_OPENGL)
 #include <gles/include/glew.h>

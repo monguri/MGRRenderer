@@ -104,7 +104,7 @@ bool Sprite2D::init(const std::string& filePath)
 
 	// インデックスバッファのサブリソースの定義
 	D3D11_SUBRESOURCE_DATA indexBufferSubData;
-	indexBufferSubData.pSysMem = &indexArray[0];
+	indexBufferSubData.pSysMem = indexArray.data();
 	indexBufferSubData.SysMemPitch = 0;
 	indexBufferSubData.SysMemSlicePitch = 0;
 
@@ -296,15 +296,15 @@ void Sprite2D::renderWithShadowMap()
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 		direct3dContext->VSSetShader(_d3dProgram.getVertexShader(), nullptr, 0);
-		direct3dContext->VSSetConstantBuffers(0, 4, &_d3dProgram.getConstantBuffers()[0]);
+		direct3dContext->VSSetConstantBuffers(0, 4, _d3dProgram.getConstantBuffers().data());
 
 		direct3dContext->GSSetShader(_d3dProgram.getGeometryShader(), nullptr, 0);
-		direct3dContext->GSSetConstantBuffers(0, 4, &_d3dProgram.getConstantBuffers()[0]);
+		direct3dContext->GSSetConstantBuffers(0, 4, _d3dProgram.getConstantBuffers().data());
 
 		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
 
 		direct3dContext->PSSetShader(_d3dProgram.getPixelShader(), nullptr, 0);
-		direct3dContext->PSSetConstantBuffers(0, 4, &_d3dProgram.getConstantBuffers()[0]);
+		direct3dContext->PSSetConstantBuffers(0, 4, _d3dProgram.getConstantBuffers().data());
 		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:型変換がうまくいかないので一度変数に代入している
 		direct3dContext->PSSetShaderResources(0, 1, &resourceView);
 		ID3D11SamplerState* samplerState = _texture->getSamplerState();

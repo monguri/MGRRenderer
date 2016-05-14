@@ -49,7 +49,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 
 	// 頂点バッファのサブリソースの定義
 	D3D11_SUBRESOURCE_DATA vertexBufferSubData;
-	vertexBufferSubData.pSysMem = &_vertexArray[0];
+	vertexBufferSubData.pSysMem = _vertexArray.data();
 	vertexBufferSubData.SysMemPitch = 0;
 	vertexBufferSubData.SysMemSlicePitch = 0;
 
@@ -83,7 +83,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 
 	// インデックスバッファのサブリソースの定義
 	D3D11_SUBRESOURCE_DATA indexBufferSubData;
-	indexBufferSubData.pSysMem = &indexArray[0];
+	indexBufferSubData.pSysMem = indexArray.data();
 	indexBufferSubData.SysMemPitch = 0;
 	indexBufferSubData.SysMemSlicePitch = 0;
 
@@ -339,9 +339,9 @@ void Polygon3D::renderShadowMap()
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::NORMAL);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, sizeof(_vertexArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_vertexArray[0]);
+		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, sizeof(_vertexArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)_vertexArray.data());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, sizeof(_normalArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_normalArray[0]);
+		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, sizeof(_normalArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)_normalArray.data());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)_vertexArray.size());
@@ -426,15 +426,15 @@ void Polygon3D::renderWithShadowMap()
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		direct3dContext->VSSetShader(_d3dProgram.getVertexShader(), nullptr, 0);
-		direct3dContext->VSSetConstantBuffers(0, 4, &_d3dProgram.getConstantBuffers()[0]);
+		direct3dContext->VSSetConstantBuffers(0, 4, _d3dProgram.getConstantBuffers().data());
 
 		direct3dContext->GSSetShader(_d3dProgram.getGeometryShader(), nullptr, 0);
-		direct3dContext->GSSetConstantBuffers(0, 4, &_d3dProgram.getConstantBuffers()[0]);
+		direct3dContext->GSSetConstantBuffers(0, 4, _d3dProgram.getConstantBuffers().data());
 
 		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
 
 		direct3dContext->PSSetShader(_d3dProgram.getPixelShader(), nullptr, 0);
-		direct3dContext->PSSetConstantBuffers(0, 4, &_d3dProgram.getConstantBuffers()[0]);
+		direct3dContext->PSSetConstantBuffers(0, 4, _d3dProgram.getConstantBuffers().data());
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);
@@ -565,9 +565,9 @@ void Polygon3D::renderWithShadowMap()
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::NORMAL);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, sizeof(_vertexArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_vertexArray[0]);
+		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, sizeof(_vertexArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)_vertexArray.data());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, sizeof(_normalArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)&_normalArray[0]);
+		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, sizeof(_normalArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)_normalArray.data());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)_vertexArray.size());

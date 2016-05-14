@@ -421,7 +421,7 @@ namespace C3bLoader
 		}
 
 		mesh->vertices.resize(mesh->vertexSizeInFloat);
-		readCount = binary.read(&mesh->vertices[0], 4, mesh->vertexSizeInFloat);
+		readCount = binary.read(mesh->vertices.data(), 4, mesh->vertexSizeInFloat);
 		if (readCount != mesh->vertexSizeInFloat)
 		{
 			delete mesh;
@@ -444,7 +444,7 @@ namespace C3bLoader
 
 			std::vector<unsigned short> indices;
 			indices.resize(indexCount);
-			readCount = binary.read(&indices[0], 2, indexCount);
+			readCount = binary.read(indices.data(), 2, indexCount);
 			if (readCount != indexCount)
 			{
 				delete mesh;
@@ -597,7 +597,7 @@ namespace C3bLoader
 			}
 
 			mesh->vertices.resize(mesh->vertexSizeInFloat);
-			readCount = binary.read(&mesh->vertices[0], 4, mesh->vertexSizeInFloat);
+			readCount = binary.read(mesh->vertices.data(), 4, mesh->vertexSizeInFloat);
 			if (readCount != mesh->vertexSizeInFloat)
 			{
 				delete mesh;
@@ -633,7 +633,7 @@ namespace C3bLoader
 
 				std::vector<unsigned short> indices;
 				indices.resize(indexCount);
-				readCount = binary.read(&indices[0], 2, indexCount);
+				readCount = binary.read(indices.data(), 2, indexCount);
 				if (readCount != indexCount)
 				{
 					delete mesh;

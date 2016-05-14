@@ -160,7 +160,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		// 頂点バッファのサブリソースの定義
 		D3D11_SUBRESOURCE_DATA vertexBufferSubData;
-		vertexBufferSubData.pSysMem = &_vertices[0];
+		vertexBufferSubData.pSysMem = _vertices.data();
 		vertexBufferSubData.SysMemPitch = 0;
 		vertexBufferSubData.SysMemSlicePitch = 0;
 
@@ -185,7 +185,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		// インデックスバッファのサブリソースの定義
 		D3D11_SUBRESOURCE_DATA indexBufferSubData;
-		indexBufferSubData.pSysMem = &_indices[0];
+		indexBufferSubData.pSysMem = _indices.data();
 		indexBufferSubData.SysMemPitch = 0;
 		indexBufferSubData.SysMemSlicePitch = 0;
 
@@ -263,7 +263,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		// インデックスバッファのサブリソースの定義
 		D3D11_SUBRESOURCE_DATA indexBufferSubData;
-		indexBufferSubData.pSysMem = &_indices[0];
+		indexBufferSubData.pSysMem = _indices.data();
 		indexBufferSubData.SysMemPitch = 0;
 		indexBufferSubData.SysMemSlicePitch = 0;
 
@@ -954,7 +954,7 @@ void Sprite3D::renderShadowMap()
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		}
 
-		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
+		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, _indices.data());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 #endif
 	});
@@ -1041,7 +1041,7 @@ void Sprite3D::renderWithShadowMap()
 				&mappedResource
 			);
 			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-			CopyMemory(mappedResource.pData, &_matrixPalette[0], sizeof(Mat4) * _matrixPalette.size());
+			CopyMemory(mappedResource.pData, _matrixPalette.data(), sizeof(Mat4) * _matrixPalette.size());
 			direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[4], 0);
 		}
 
@@ -1064,15 +1064,15 @@ void Sprite3D::renderWithShadowMap()
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		direct3dContext->VSSetShader(_d3dProgram.getVertexShader(), nullptr, 0);
-		direct3dContext->VSSetConstantBuffers(0, numConstantBuffer, &_d3dProgram.getConstantBuffers()[0]);
+		direct3dContext->VSSetConstantBuffers(0, numConstantBuffer, _d3dProgram.getConstantBuffers().data());
 
 		direct3dContext->GSSetShader(_d3dProgram.getGeometryShader(), nullptr, 0);
-		direct3dContext->GSSetConstantBuffers(0, numConstantBuffer, &_d3dProgram.getConstantBuffers()[0]);
+		direct3dContext->GSSetConstantBuffers(0, numConstantBuffer, _d3dProgram.getConstantBuffers().data());
 
 		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
 
 		direct3dContext->PSSetShader(_d3dProgram.getPixelShader(), nullptr, 0);
-		direct3dContext->PSSetConstantBuffers(0, numConstantBuffer, &_d3dProgram.getConstantBuffers()[0]);
+		direct3dContext->PSSetConstantBuffers(0, numConstantBuffer, _d3dProgram.getConstantBuffers().data());
 		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:型変換がうまくいかないので一度変数に代入している
 		direct3dContext->PSSetShaderResources(0, 1, &resourceView);
 		ID3D11SamplerState* samplerState = _texture->getSamplerState();
@@ -1241,7 +1241,7 @@ void Sprite3D::renderWithShadowMap()
 		// スキニングのマトリックスパレットの設定
 		if (_isC3b) {
 			Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
-			glUniformMatrix4fv(_glProgram.getUniformLocation("u_matrixPalette"), _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
+			glUniformMatrix4fv(_glProgram.getUniformLocation("u_matrixPalette"), _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette.data()));
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		}
 
@@ -1272,7 +1272,7 @@ void Sprite3D::renderWithShadowMap()
 		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, &_indices[0]);
+		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, _indices.data());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		glBindTexture(GL_TEXTURE_2D, 0);
 #endif

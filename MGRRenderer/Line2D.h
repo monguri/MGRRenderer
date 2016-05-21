@@ -1,9 +1,13 @@
 #pragma once
 #include "Node.h"
 #include "BasicDataTypes.h"
-#include "GLProgram.h"
 #include "CustomRenderCommand.h"
 #include <vector>
+#if defined(MGRRENDERER_USE_DIRECT3D)
+#include "D3DProgram.h"
+#elif defined(MGRRENDERER_USE_OPENGL)
+#include "GLProgram.h"
+#endif
 
 namespace mgrrenderer
 {
@@ -15,7 +19,9 @@ public:
 	bool initWithVertexArray(const std::vector<Vec2>& vertexArray);
 
 private:
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	D3DProgram _d3dProgram;
+#elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
 #endif
 	CustomRenderCommand _renderCommand;

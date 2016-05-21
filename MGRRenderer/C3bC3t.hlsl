@@ -18,11 +18,11 @@ cbuffer MultiplyColor : register(b3)
 	float4 _multiplyColor;
 };
 
-static const int SKINNING_JOINT_COUNT = 60;
+static const int MAX_SKINNING_JOINT = 60; // CPU側のソースと最大値定数を一致させること
 
 cbuffer MatrixPallete : register(b4)
 {
-	matrix _matrixPalette[SKINNING_JOINT_COUNT];
+	matrix _matrixPalette[MAX_SKINNING_JOINT];
 };
 
 Texture2D _texture2d;

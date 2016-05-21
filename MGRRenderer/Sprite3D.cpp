@@ -359,7 +359,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	if (_isC3b)
 	{
 		// スキニングのマトリックスパレット
-		constantBufferDesc.ByteWidth = sizeof(Mat4) * _nodeDatas->nodes[0]->modelNodeDatas[0]->bones.size();
+		constantBufferDesc.ByteWidth = sizeof(Mat4) * MAX_SKINNING_JOINT;
 		ID3D11Buffer* constantBuffer = nullptr;
 		result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 		if (FAILED(result))
@@ -480,7 +480,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"attribute vec4 a_blendWeight;"
 			"attribute vec4 a_blendIndex;"
 			""
-			"const int SKINNING_JOINT_COUNT = 60;" // TODO:なぜ60個までなのか？
+			"const int MAX_SKINNING_JOINT = 60;" // TODO:なぜ60個までなのか？
 			""
 			"uniform mat4 u_modelMatrix;"
 			"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
@@ -492,7 +492,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"uniform vec3 u_pointLightPosition;"
 			"uniform vec3 u_spotLightPosition;"
 			"uniform vec3 u_cameraPosition;"
-			"uniform mat4 u_matrixPalette[SKINNING_JOINT_COUNT];"
+			"uniform mat4 u_matrixPalette[MAX_SKINNING_JOINT];"
 			""
 			"varying vec4 v_lightPosition;"
 			"varying vec4 v_normal;"
@@ -654,12 +654,12 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"attribute vec4 a_blendWeight;"
 			"attribute vec4 a_blendIndex;"
 			""
-			"const int SKINNING_JOINT_COUNT = 60;" // TODO:なぜ60個までなのか？
+			"const int MAX_SKINNING_JOINT = 60;" // TODO:なぜ60個までなのか？
 			""
 			"uniform mat4 u_modelMatrix;"
 			"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
 			"uniform mat4 u_lightProjectionMatrix;"
-			"uniform mat4 u_matrixPalette[SKINNING_JOINT_COUNT];"
+			"uniform mat4 u_matrixPalette[MAX_SKINNING_JOINT];"
 			""
 			"varying vec2 v_texCoord;"
 			""
@@ -1026,7 +1026,7 @@ void Sprite3D::renderWithShadowMap()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Color4F multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 1));
+		const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[3], 0);
 

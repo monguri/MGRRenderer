@@ -283,7 +283,7 @@ void Sprite2D::renderWithShadowMap()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Color4F multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 1));
+		const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[3], 0);
 

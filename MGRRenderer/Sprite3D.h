@@ -30,6 +30,9 @@ public:
 	void stopAnimation();
 
 private:
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	static const int MAX_SKINNING_JOINT = 60; // シェーダと最大値定数を一致させること
+#endif
 	// TODO:とりあえずフラグで動作を切り替えている
 	bool _isObj;
 	bool _isC3b;

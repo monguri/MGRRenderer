@@ -211,6 +211,28 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// ポイントライトカラー
+	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// ポイントライト位置＆レンジ
+	constantBufferDesc.ByteWidth = sizeof(Vec4);
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	// TODO:objのシェーダとほぼ同じ。共通化したい。
 	_glProgram.initWithShaderString(
@@ -519,6 +541,36 @@ void Polygon3D::renderWithShadowMap()
 				Vec4 directionVec4 = Vec4(direction.x, direction.y, direction.z, 0.0f);
 				CopyMemory(mappedResource.pData, &directionVec4, sizeof(directionVec4));
 				direct3dContext->Unmap(constantBuffers[6], 0);
+			}
+				break;
+			case LightType::POINT: {
+				// ポイントライトカラーのマップ
+				result = direct3dContext->Map(
+					constantBuffers[7],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				const Color4F& lightColor4F = Color4F(Color4B(lightColor.r * intensity, lightColor.g * intensity, lightColor.b * intensity, 255));
+				CopyMemory(mappedResource.pData, &lightColor4F, sizeof(lightColor4F));
+				direct3dContext->Unmap(constantBuffers[7], 0);
+
+				// ポイントライトの位置＆レンジのマップ
+				result = direct3dContext->Map(
+					constantBuffers[8],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				PointLight* pointLight = static_cast<PointLight*>(light);
+				const Vec3& position = light->getPosition();
+				const Vec4& positionAndRange = Vec4(position.x, position.y, position.z, 1.0f / pointLight->getRange());
+				CopyMemory(mappedResource.pData, &positionAndRange, sizeof(positionAndRange));
+				direct3dContext->Unmap(constantBuffers[8], 0);
 			}
 				break;
 			}

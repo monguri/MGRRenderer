@@ -33,6 +33,17 @@ cbuffer DirectionalLightDirection : register(b6)
 	float4 _directionalLightDirection;
 };
 
+cbuffer PointLightColor : register(b7)
+{
+	float4 _pointLightColor;
+};
+
+cbuffer PointLightPositionAndRange : register(b8)
+{
+	float3 _pointLightPosition;
+	float _pointLightRangeInverse;
+};
+
 struct VS_INPUT
 {
 	float3 position : POSITION;
@@ -43,12 +54,14 @@ struct GS_INPUT
 {
 	float4 position : SV_POSITION;
 	float3 normal : NORMAL;
+	float3 pointLightDirection : DIRECTION;
 };
 
 struct PS_INPUT
 {
 	float4 position : SV_POSITION;
 	float3 normal : NORMAL;
+	float3 pointLightDirection : DIRECTION;
 };
 
 GS_INPUT VS(VS_INPUT input)
@@ -56,9 +69,10 @@ GS_INPUT VS(VS_INPUT input)
 	GS_INPUT output;
 
 	float4 position = float4(input.position, 1.0);
-	position = mul(position, _model);
-	output.position = mul(position, _view);
+	float4 worldPosition = mul(position, _model);
+	output.position = mul(worldPosition, _view);
 	output.normal = input.normal;
+	output.pointLightDirection = _pointLightPosition - worldPosition.xyz;
 	return output;
 }
 
@@ -71,6 +85,7 @@ void GS(triangle GS_INPUT input[3], inout TriangleStream<PS_INPUT> triangleStrea
 	{
 		output.position = mul(input[i].position, _projection);
 		output.normal = input[i].normal;
+		output.pointLightDirection = input[i].pointLightDirection;
 		triangleStream.Append(output);
 	}
 
@@ -87,6 +102,12 @@ float3 computeLightedColor(float3 normalVector, float3 lightDirection, float3 li
 float4 PS(PS_INPUT input) : SV_TARGET
 {
 	float3 normal = normalize(input.normal); // データ形式の時点でnormalizeされてない法線がある模様
+
 	float3 diffuseSpecularLightColor = computeLightedColor(normal, -_directionalLightDirection.xyz, _directionalLightColor.rgb, 1.0);
+
+	float3 dir = input.pointLightDirection * _pointLightRangeInverse;
+	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
+	diffuseSpecularLightColor += computeLightedColor(normal, normalize(input.pointLightDirection), _pointLightColor, attenuation);
+
 	return _multiplyColor * float4(diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
 }

@@ -45,6 +45,9 @@ public:
 	void addConstantBuffer(ID3D11Buffer* constantBuffer) { _constantBuffers.push_back(constantBuffer); }
 	static DXGI_FORMAT getDxgiFormat(const std::string& semantic);
 
+	void setShadersToDirect3DContext(ID3D11DeviceContext* context);
+	void setConstantBuffersToDirect3DContext(ID3D11DeviceContext* context);
+
 private:
 	ID3D11VertexShader* _vertexShader;
 	//TODO:入力レイアウトはまだこの中に隠ぺいしてないので、これを外からアクセスさせる必要がある

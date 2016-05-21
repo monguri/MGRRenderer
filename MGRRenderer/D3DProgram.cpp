@@ -305,6 +305,21 @@ DXGI_FORMAT D3DProgram::getDxgiFormat(const std::string& semantic)
 		return DXGI_FORMAT_UNKNOWN;
 	}
 }
+
+void D3DProgram::setShadersToDirect3DContext(ID3D11DeviceContext* context)
+{
+	context->VSSetShader(_vertexShader, nullptr, 0);
+	context->GSSetShader(_geometryShader, nullptr, 0);
+	context->PSSetShader(_pixelShader, nullptr, 0);
+}
+
+void D3DProgram::setConstantBuffersToDirect3DContext(ID3D11DeviceContext* context)
+{
+	size_t constantBufferSize = _constantBuffers.size();
+	context->VSSetConstantBuffers(0, constantBufferSize, _constantBuffers.data());
+	context->GSSetConstantBuffers(0, constantBufferSize, _constantBuffers.data());
+	context->PSSetConstantBuffers(0, constantBufferSize, _constantBuffers.data());
+}
 } // namespace mgrrenderer
 
 #endif

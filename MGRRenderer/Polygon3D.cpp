@@ -368,12 +368,13 @@ void Polygon3D::renderWithShadowMap()
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		const std::vector<ID3D11Buffer*>& constantBuffers = _d3dProgram.getConstantBuffers();
 
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 		// モデル行列のマップ
 		HRESULT result = direct3dContext->Map(
-			_d3dProgram.getConstantBuffers()[0],
+			constantBuffers[0],
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -383,11 +384,11 @@ void Polygon3D::renderWithShadowMap()
 		Mat4 modelMatrix = getModelMatrix();
 		modelMatrix.transpose();
 		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
-		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[0], 0);
+		direct3dContext->Unmap(constantBuffers[0], 0);
 
 		// ビュー行列のマップ
 		result = direct3dContext->Map(
-			_d3dProgram.getConstantBuffers()[1],
+			constantBuffers[1],
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -397,11 +398,11 @@ void Polygon3D::renderWithShadowMap()
 		Mat4 viewMatrix = Director::getCamera().getViewMatrix();
 		viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
 		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
-		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[1], 0);
+		direct3dContext->Unmap(constantBuffers[1], 0);
 
 		// プロジェクション行列のマップ
 		result = direct3dContext->Map(
-			_d3dProgram.getConstantBuffers()[2],
+			constantBuffers[2],
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -412,11 +413,11 @@ void Polygon3D::renderWithShadowMap()
 		projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 		projectionMatrix.transpose();
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
-		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[2], 0);
+		direct3dContext->Unmap(constantBuffers[2], 0);
 
 		// 乗算色のマップ
 		result = direct3dContext->Map(
-			_d3dProgram.getConstantBuffers()[3],
+			constantBuffers[3],
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -425,7 +426,7 @@ void Polygon3D::renderWithShadowMap()
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 		const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
-		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[3], 0);
+		direct3dContext->Unmap(constantBuffers[3], 0);
 
 		// ライトの設定
 		// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
@@ -439,7 +440,7 @@ void Polygon3D::renderWithShadowMap()
 			case LightType::AMBIENT:
 				// アンビエントライトカラーのマップ
 				result = direct3dContext->Map(
-					_d3dProgram.getConstantBuffers()[4],
+					constantBuffers[4],
 					0,
 					D3D11_MAP_WRITE_DISCARD,
 					0,
@@ -449,7 +450,7 @@ void Polygon3D::renderWithShadowMap()
 				const Color4F& lightColor4F = Color4F(Color4B(lightColor.r * intensity, lightColor.g * intensity, lightColor.b * intensity, 255));
 				//Color4F lightColor4F = Color4F(Color4B(lightColor.r, lightColor.g, lightColor.b, 255));
 				CopyMemory(mappedResource.pData, &lightColor4F, sizeof(lightColor4F));
-				direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[4], 0);
+				direct3dContext->Unmap(constantBuffers[4], 0);
 				break;
 			}
 		}
@@ -462,16 +463,10 @@ void Polygon3D::renderWithShadowMap()
 		direct3dContext->IASetInputLayout(_d3dProgram.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		direct3dContext->VSSetShader(_d3dProgram.getVertexShader(), nullptr, 0);
-		direct3dContext->VSSetConstantBuffers(0, 5, _d3dProgram.getConstantBuffers().data());
-
-		direct3dContext->GSSetShader(_d3dProgram.getGeometryShader(), nullptr, 0);
-		direct3dContext->GSSetConstantBuffers(0, 5, _d3dProgram.getConstantBuffers().data());
+		_d3dProgram.setShadersToDirect3DContext(direct3dContext);
+		_d3dProgram.setConstantBuffersToDirect3DContext(direct3dContext);
 
 		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
-
-		direct3dContext->PSSetShader(_d3dProgram.getPixelShader(), nullptr, 0);
-		direct3dContext->PSSetConstantBuffers(0, 5, _d3dProgram.getConstantBuffers().data());
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);

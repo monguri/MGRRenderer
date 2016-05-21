@@ -25,7 +25,6 @@ _pixelShader(nullptr),
 _blendState(nullptr),
 _rasterizeState(nullptr),
 _depthStencilState(nullptr),
-_vertexBuffer(nullptr),
 _indexBuffer(nullptr),
 _inputLayout(nullptr)
 {
@@ -50,11 +49,11 @@ D3DProgram::~D3DProgram()
 		_indexBuffer = nullptr;
 	}
 
-	if (_vertexBuffer != nullptr)
+	for (ID3D11Buffer* vertexBuffer : _vertexBuffers)
 	{
-		_vertexBuffer->Release();
-		_vertexBuffer = nullptr;
+		vertexBuffer->Release();
 	}
+
 	if (_depthStencilState != nullptr)
 	{
 		_depthStencilState->Release();

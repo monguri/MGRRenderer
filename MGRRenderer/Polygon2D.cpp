@@ -41,7 +41,7 @@ bool Polygon2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.setVertexBuffer(vertexBuffer);
+	_d3dProgram.addVertexBuffer(vertexBuffer);
 
 	// インデックスバッファ用の配列の用意。素直に昇順に番号付けする
 	std::vector<unsigned int> indexArray;
@@ -220,8 +220,7 @@ void Polygon2D::renderWithShadowMap()
 
 		UINT strides[1] = {sizeof(Vec2)};
 		UINT offsets[1] = {0};
-		ID3D11Buffer* vertexBuffer = _d3dProgram.getVertexBuffer();
-		direct3dContext->IASetVertexBuffers(0, 1, &vertexBuffer, strides, offsets);
+		direct3dContext->IASetVertexBuffers(0, _d3dProgram.getVertexBuffers().size(), _d3dProgram.getVertexBuffers().data(), strides, offsets);
 		direct3dContext->IASetIndexBuffer(_d3dProgram.getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgram.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

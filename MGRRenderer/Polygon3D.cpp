@@ -62,7 +62,18 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.setVertexBuffer(vertexBuffer);
+	_d3dProgram.addVertexBuffer(vertexBuffer);
+
+	// ノーマルバッファのサブリソースの作成
+	vertexBufferSubData.pSysMem = _normalArray.data();
+
+	result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &vertexBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addVertexBuffer(vertexBuffer);
 
 	// インデックスバッファ用の配列の用意。素直に昇順に番号付けする
 	std::vector<unsigned int> indexArray;
@@ -98,10 +109,13 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	_d3dProgram.setIndexBuffer(indexBuffer);
 
 	bool depthEnable = true;
-	_d3dProgram.initWithShaderFile("PositionMultiplyColor.hlsl", depthEnable);
+	_d3dProgram.initWithShaderFile("Polygon3D.hlsl", depthEnable);
 
 	// 入力レイアウトオブジェクトの作成
-	D3D11_INPUT_ELEMENT_DESC layout[] = { {D3DProgram::SEMANTIC_POSITION.c_str(), 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0} };
+	D3D11_INPUT_ELEMENT_DESC layout[] = {
+		{D3DProgram::SEMANTIC_POSITION.c_str(), 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{D3DProgram::SEMANTIC_NORMAL.c_str(), 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	};
 	ID3D11InputLayout* inputLayout = nullptr;
 	result = direct3dDevice->CreateInputLayout(
 		layout,
@@ -156,8 +170,8 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.addConstantBuffer(constantBuffer);
 
-	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
 	// 乗算色
+	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
 	constantBuffer = nullptr;
 	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
@@ -168,6 +182,27 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	_d3dProgram.addConstantBuffer(constantBuffer);
 
 	// アンビエントライトカラー
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// ディレクショナルトライトカラー
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// ディレクショナルトライト方向
+	constantBufferDesc.ByteWidth = sizeof(Vec4); // Vec3にすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
 	constantBuffer = nullptr;
 	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
@@ -438,6 +473,7 @@ void Polygon3D::renderWithShadowMap()
 			switch (light->getLightType())
 			{
 			case LightType::AMBIENT:
+			{
 				// アンビエントライトカラーのマップ
 				result = direct3dContext->Map(
 					constantBuffers[4],
@@ -451,14 +487,46 @@ void Polygon3D::renderWithShadowMap()
 				//Color4F lightColor4F = Color4F(Color4B(lightColor.r, lightColor.g, lightColor.b, 255));
 				CopyMemory(mappedResource.pData, &lightColor4F, sizeof(lightColor4F));
 				direct3dContext->Unmap(constantBuffers[4], 0);
+			}
+				break;
+			case LightType::DIRECTION:
+			{
+				// ディレクショナルライトカラーのマップ
+				result = direct3dContext->Map(
+					constantBuffers[5],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				const Color4F& lightColor4F = Color4F(Color4B(lightColor.r * intensity, lightColor.g * intensity, lightColor.b * intensity, 255));
+				CopyMemory(mappedResource.pData, &lightColor4F, sizeof(lightColor4F));
+				direct3dContext->Unmap(constantBuffers[5], 0);
+
+				// ディレクショナルライト方向のマップ
+				result = direct3dContext->Map(
+					constantBuffers[6],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
+				Vec3 direction = dirLight->getDirection();
+				direction.normalize();
+				Vec4 directionVec4 = Vec4(direction.x, direction.y, direction.z, 0.0f);
+				CopyMemory(mappedResource.pData, &directionVec4, sizeof(directionVec4));
+				direct3dContext->Unmap(constantBuffers[6], 0);
+			}
 				break;
 			}
 		}
 
-		UINT strides[1] = {sizeof(Vec3)};
-		UINT offsets[1] = {0};
-		ID3D11Buffer* vertexBuffer = _d3dProgram.getVertexBuffer();
-		direct3dContext->IASetVertexBuffers(0, 1, &vertexBuffer, strides, offsets);
+		UINT strides[2] = {sizeof(Vec3), sizeof(Vec3)};
+		UINT offsets[2] = {0, 0};
+		direct3dContext->IASetVertexBuffers(0, _d3dProgram.getVertexBuffers().size(), _d3dProgram.getVertexBuffers().data(), strides, offsets);
 		direct3dContext->IASetIndexBuffer(_d3dProgram.getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgram.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

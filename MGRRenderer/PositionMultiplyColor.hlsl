@@ -18,11 +18,6 @@ cbuffer MultiplyColor : register(b3)
 	float4 _multiplyColor;
 };
 
-cbuffer AmbientLightColor : register(b4)
-{
-	float4 _ambientLightColor;
-};
-
 struct VS_INPUT
 {
 	float3 position : POSITION;
@@ -64,5 +59,5 @@ void GS(triangle GS_INPUT input[3], inout TriangleStream<PS_INPUT> triangleStrea
 
 float4 PS(PS_INPUT input) : SV_TARGET
 {
-	return _multiplyColor * _ambientLightColor ;
+	return _multiplyColor;
 }

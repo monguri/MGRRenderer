@@ -513,12 +513,10 @@ void initialize()
 	defaultLight->setIntensity(0.3f);
 	defaultLight->setColor(Color3B::WHITE);
 
-#if defined(MGRRENDERER_USE_OPENGL)
 	DirectionalLight* directionalLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
 	directionalLight->setIntensity(0.7f);
 	directionalLight->prepareShadowMap(sprite3DC3tNode->getPosition(), WINDOW_HEIGHT / 1.1566f, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addLight(directionalLight);
-#endif
 
 	// TODO:シャドウマップをスプライトで描画したかったが機能してない
 #if defined(MGRRENDERER_USE_OPENGL)

@@ -2,7 +2,6 @@
 #include "Sprite2D.h"
 #include "CustomRenderCommand.h"
 
-#if defined(MGRRENDERER_USE_OPENGL)
 namespace mgrrenderer
 {
 
@@ -29,10 +28,8 @@ public:
 private:
 	Mode _mode;
 	CustomRenderCommand _renderShadowMapCommand;
-	CustomRenderCommand _renderCommand;
 
 	void calculateBillboardTransform();
 };
 
 } // namespace mgrrenderer
-#endif

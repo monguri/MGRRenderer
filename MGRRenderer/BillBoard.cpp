@@ -1,12 +1,13 @@
 #include "BillBoard.h"
 #include "Director.h"
 #include "GLProgram.h"
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+#include "D3DTexture.h"
+#elif defined(MGRRENDERER_USE_OPENGL)
 #include "GLTexture.h"
 #endif
 
 
-#if defined(MGRRENDERER_USE_OPENGL)
 namespace mgrrenderer
 {
 
@@ -23,6 +24,7 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 
 void BillBoard::renderShadowMap()
 {
+	// 現状、事前にSprite2Dとは異なるモデル行列をセットするのに使っているだけ
 	_renderShadowMapCommand.init([=]
 	{
 		setModelMatrix(Mat4::createTransform(getPosition(), getRotation(), getScale()));
@@ -89,7 +91,98 @@ void BillBoard::renderWithShadowMap()
 {
 	_renderCommand.init([=]
 	{
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+
+		// TODO:ここらへん共通化したいな。。
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+
+		// モデル行列のマップ
+		HRESULT result = direct3dContext->Map(
+			_d3dProgram.getConstantBuffers()[0],
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 modelMatrix = getModelMatrix();
+		modelMatrix.transpose();
+		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[0], 0);
+
+		// ビュー行列のマップ
+		result = direct3dContext->Map(
+			_d3dProgram.getConstantBuffers()[1],
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 viewMatrix = Director::getCamera().getViewMatrix();
+		viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
+		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[1], 0);
+
+		// プロジェクション行列のマップ
+		result = direct3dContext->Map(
+			_d3dProgram.getConstantBuffers()[2],
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 projectionMatrix = Director::getCamera().getProjectionMatrix();
+		projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
+		projectionMatrix.transpose();
+		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[2], 0);
+
+		// 乗算色のマップ
+		result = direct3dContext->Map(
+			_d3dProgram.getConstantBuffers()[3],
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Color4F multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 1));
+		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[3], 0);
+
+		UINT strides[1] = {sizeof(_quadrangle.topLeft)};
+		UINT offsets[1] = {0};
+		ID3D11Buffer* vertexBuffer = _d3dProgram.getVertexBuffer();
+		direct3dContext->IASetVertexBuffers(0, 1, &vertexBuffer, strides, offsets);
+		direct3dContext->IASetIndexBuffer(_d3dProgram.getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetInputLayout(_d3dProgram.getInputLayout());
+		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+		direct3dContext->VSSetShader(_d3dProgram.getVertexShader(), nullptr, 0);
+		direct3dContext->VSSetConstantBuffers(0, 4, _d3dProgram.getConstantBuffers().data());
+
+		direct3dContext->GSSetShader(_d3dProgram.getGeometryShader(), nullptr, 0);
+		direct3dContext->GSSetConstantBuffers(0, 4, _d3dProgram.getConstantBuffers().data());
+
+		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
+
+		direct3dContext->PSSetShader(_d3dProgram.getPixelShader(), nullptr, 0);
+		direct3dContext->PSSetConstantBuffers(0, 4, _d3dProgram.getConstantBuffers().data());
+		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:型変換がうまくいかないので一度変数に代入している
+		direct3dContext->PSSetShaderResources(0, 1, &resourceView);
+		ID3D11SamplerState* samplerState = _texture->getSamplerState();
+		direct3dContext->PSSetSamplers(0, 1, &samplerState); //TODO:型変換がうまくいかないので一度変数に代入している
+
+		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);
+
+		direct3dContext->OMSetDepthStencilState(_d3dProgram.getDepthStancilState(), 0);
+
+		direct3dContext->DrawIndexed(4, 0, 0);
+#elif defined(MGRRENDERER_USE_OPENGL)
 		glEnable(GL_DEPTH_TEST);
 		
 		// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
@@ -122,4 +215,3 @@ void BillBoard::renderWithShadowMap()
 }
 
 } // namespace mgrrenderer
-#endif

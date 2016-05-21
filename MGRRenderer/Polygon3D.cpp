@@ -166,6 +166,16 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// アンビエントライトカラー
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	// TODO:objのシェーダとほぼ同じ。共通化したい。
 	_glProgram.initWithShaderString(
@@ -413,9 +423,36 @@ void Polygon3D::renderWithShadowMap()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Color4F multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 1));
+		const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[3], 0);
+
+		// ライトの設定
+		// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
+		for (Light* light : Director::getLight())
+		{
+			const Color3B& lightColor = light->getColor();
+			float intensity = light->getIntensity();
+
+			switch (light->getLightType())
+			{
+			case LightType::AMBIENT:
+				// アンビエントライトカラーのマップ
+				result = direct3dContext->Map(
+					_d3dProgram.getConstantBuffers()[4],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				const Color4F& lightColor4F = Color4F(Color4B(lightColor.r * intensity, lightColor.g * intensity, lightColor.b * intensity, 255));
+				//Color4F lightColor4F = Color4F(Color4B(lightColor.r, lightColor.g, lightColor.b, 255));
+				CopyMemory(mappedResource.pData, &lightColor4F, sizeof(lightColor4F));
+				direct3dContext->Unmap(_d3dProgram.getConstantBuffers()[4], 0);
+				break;
+			}
+		}
 
 		UINT strides[1] = {sizeof(Vec3)};
 		UINT offsets[1] = {0};
@@ -426,15 +463,15 @@ void Polygon3D::renderWithShadowMap()
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		direct3dContext->VSSetShader(_d3dProgram.getVertexShader(), nullptr, 0);
-		direct3dContext->VSSetConstantBuffers(0, 4, _d3dProgram.getConstantBuffers().data());
+		direct3dContext->VSSetConstantBuffers(0, 5, _d3dProgram.getConstantBuffers().data());
 
 		direct3dContext->GSSetShader(_d3dProgram.getGeometryShader(), nullptr, 0);
-		direct3dContext->GSSetConstantBuffers(0, 4, _d3dProgram.getConstantBuffers().data());
+		direct3dContext->GSSetConstantBuffers(0, 5, _d3dProgram.getConstantBuffers().data());
 
 		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
 
 		direct3dContext->PSSetShader(_d3dProgram.getPixelShader(), nullptr, 0);
-		direct3dContext->PSSetConstantBuffers(0, 4, _d3dProgram.getConstantBuffers().data());
+		direct3dContext->PSSetConstantBuffers(0, 5, _d3dProgram.getConstantBuffers().data());
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);

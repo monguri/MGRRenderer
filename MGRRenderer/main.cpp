@@ -526,14 +526,13 @@ void initialize()
 	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 #endif
 
+	//PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);
+	//pointLight->setIntensity(0.7f);
+	//scene->addLight(pointLight);
 
-	PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);
-	pointLight->setIntensity(0.7f);
-	scene->addLight(pointLight);
-
-	//SpotLight* spotLight = new (std::nothrow) SpotLight(Vec3(1000, 1000, 1000), Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE, 10000, 0.0, 0.5);
-	//spotLight->setIntensity(0.7f);
-	//scene->addLight(spotLight);
+	SpotLight* spotLight = new (std::nothrow) SpotLight(Vec3(1000, 1000, 1000), Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE, 10000, 0.0, 0.5);
+	spotLight->setIntensity(0.7f);
+	scene->addLight(spotLight);
 
 	scene->pushNode(point3DNode);
 	scene->pushNode(line3DNode);

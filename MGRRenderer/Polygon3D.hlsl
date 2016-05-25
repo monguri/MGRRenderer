@@ -38,10 +38,28 @@ cbuffer PointLightColor : register(b7)
 	float4 _pointLightColor;
 };
 
-cbuffer PointLightPositionAndRange : register(b8)
+cbuffer PointLightPositionAndRangeInverse : register(b8)
 {
 	float3 _pointLightPosition;
 	float _pointLightRangeInverse;
+};
+
+cbuffer SpotLightPositionAndRangeInverse : register(b9)
+{
+	float3 _spotLightPosition;
+	float _spotLightRangeInverse;
+};
+
+cbuffer SpotLightColorAndInnerAngleCos : register(b10)
+{
+	float3 _spotLightColor;
+	float _spotLightInnerAngleCos;
+};
+
+cbuffer SpotLightDirectionAndOuterAngleCos : register(b11)
+{
+	float3 _spotLightDirection;
+	float _spotLightOuterAngleCos;
 };
 
 struct VS_INPUT
@@ -54,14 +72,16 @@ struct GS_INPUT
 {
 	float4 position : SV_POSITION;
 	float3 normal : NORMAL;
-	float3 pointLightDirection : DIRECTION;
+	float3 vertexToPointLightDirection : POINT_LIGHT_DIRECTION;
+	float3 vertexToSpotLightDirection : SPOT_LIGHT_DIRECTION;
 };
 
 struct PS_INPUT
 {
 	float4 position : SV_POSITION;
 	float3 normal : NORMAL;
-	float3 pointLightDirection : DIRECTION;
+	float3 vertexToPointLightDirection : POINT_LIGHT_DIRECTION;
+	float3 vertexToSpotLightDirection : SPOT_LIGHT_DIRECTION;
 };
 
 GS_INPUT VS(VS_INPUT input)
@@ -72,7 +92,8 @@ GS_INPUT VS(VS_INPUT input)
 	float4 worldPosition = mul(position, _model);
 	output.position = mul(worldPosition, _view);
 	output.normal = input.normal;
-	output.pointLightDirection = _pointLightPosition - worldPosition.xyz;
+	output.vertexToPointLightDirection = _pointLightPosition - worldPosition.xyz;
+	output.vertexToSpotLightDirection = _spotLightPosition - worldPosition.xyz;
 	return output;
 }
 
@@ -85,7 +106,8 @@ void GS(triangle GS_INPUT input[3], inout TriangleStream<PS_INPUT> triangleStrea
 	{
 		output.position = mul(input[i].position, _projection);
 		output.normal = input[i].normal;
-		output.pointLightDirection = input[i].pointLightDirection;
+		output.vertexToPointLightDirection = input[i].vertexToPointLightDirection;
+		output.vertexToSpotLightDirection = input[i].vertexToSpotLightDirection;
 		triangleStream.Append(output);
 	}
 
@@ -105,9 +127,17 @@ float4 PS(PS_INPUT input) : SV_TARGET
 
 	float3 diffuseSpecularLightColor = computeLightedColor(normal, -_directionalLightDirection.xyz, _directionalLightColor.rgb, 1.0);
 
-	float3 dir = input.pointLightDirection * _pointLightRangeInverse;
+	float3 dir = input.vertexToPointLightDirection * _pointLightRangeInverse;
 	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
-	diffuseSpecularLightColor += computeLightedColor(normal, normalize(input.pointLightDirection), _pointLightColor, attenuation);
+	diffuseSpecularLightColor += computeLightedColor(normal, normalize(input.vertexToPointLightDirection), _pointLightColor.rgb, attenuation);
+
+	dir = input.vertexToSpotLightDirection * _spotLightRangeInverse;
+	attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
+	float3 vertexToSpotLightDirection = normalize(input.vertexToSpotLightDirection);
+	float spotLightCurrentAngleCos = dot(_spotLightDirection, -vertexToSpotLightDirection);
+	attenuation *= smoothstep(_spotLightOuterAngleCos, _spotLightInnerAngleCos, spotLightCurrentAngleCos);
+	attenuation = clamp(attenuation, 0.0, 1.0);
+	diffuseSpecularLightColor += computeLightedColor(normal, vertexToSpotLightDirection, _spotLightColor, attenuation);
 
 	return _multiplyColor * float4(diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
 }

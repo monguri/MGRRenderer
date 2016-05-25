@@ -223,7 +223,40 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.addConstantBuffer(constantBuffer);
 
-	// ポイントライト位置＆レンジ
+	// ポイントライト位置＆レンジの逆数
+	constantBufferDesc.ByteWidth = sizeof(Vec4);
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// スポットライト位置＆レンジの逆数
+	constantBufferDesc.ByteWidth = sizeof(Vec4);
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// スポットライトカラー＆内角のcos
+	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// スポットライト方向＆外角のcos
 	constantBufferDesc.ByteWidth = sizeof(Vec4);
 	constantBuffer = nullptr;
 	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
@@ -573,6 +606,51 @@ void Polygon3D::renderWithShadowMap()
 				direct3dContext->Unmap(constantBuffers[8], 0);
 			}
 				break;
+			case LightType::SPOT: {
+				// スポットライトの位置＆レンジの逆数のマップ
+				result = direct3dContext->Map(
+					constantBuffers[9],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				SpotLight* spotLight = static_cast<SpotLight*>(light);
+				const Vec3& position = light->getPosition();
+				const Vec4& positionAndRange = Vec4(position.x, position.y, position.z, 1.0f / spotLight->getRange());
+				CopyMemory(mappedResource.pData, &positionAndRange, sizeof(positionAndRange));
+				direct3dContext->Unmap(constantBuffers[9], 0);
+
+				// スポットライトカラー＆内角のcosのマップ
+				result = direct3dContext->Map(
+					constantBuffers[10],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				const Color4F& lightColorAndInnerAngleCos = Color4F(lightColor.r * intensity, lightColor.g * intensity, lightColor.b * intensity, spotLight->getInnerAngleCos());
+				CopyMemory(mappedResource.pData, &lightColorAndInnerAngleCos, sizeof(lightColorAndInnerAngleCos));
+				direct3dContext->Unmap(constantBuffers[10], 0);
+
+				// スポットライト方向＆外角のcosのマップ
+				result = direct3dContext->Map(
+					constantBuffers[11],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				Vec3 direction = spotLight->getDirection();
+				direction.normalize();
+				const Vec4& directionAndOuterAngleCos = Vec4(direction.x, direction.y, direction.z, spotLight->getOuterAngleCos());
+				CopyMemory(mappedResource.pData, &directionAndOuterAngleCos, sizeof(directionAndOuterAngleCos));
+				direct3dContext->Unmap(constantBuffers[11], 0);
+			}
+				break;
 			}
 		}
 
@@ -704,6 +782,7 @@ void Polygon3D::renderWithShadowMap()
 				glUniform1f(_glProgram.getUniformLocation("u_spotLightOuterAngleCos"), spotLight->getOuterAngleCos());
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 			}
+				break;
 			default:
 				break;
 			}

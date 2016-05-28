@@ -205,7 +205,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		// 入力レイアウトオブジェクトの作成
 		D3D11_INPUT_ELEMENT_DESC layout[] = {
 			{D3DProgram::SEMANTIC_POSITION.c_str(), 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-			//{D3DProgram::SEMANTIC_NORMAL.c_str(), 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, sizeof(Vec3), D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{D3DProgram::SEMANTIC_NORMAL.c_str(), 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, sizeof(Vec3), D3D11_INPUT_PER_VERTEX_DATA, 0},
 			{D3DProgram::SEMANTIC_TEXTURE_COORDINATE.c_str(), 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(Vec3) * 2, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		};
 		ID3D11InputLayout* inputLayout = nullptr;
@@ -347,6 +347,92 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
 	// 乗算色
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// アンビエントライトカラー
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// ディレクショナルトライトカラー
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// ディレクショナルトライト方向
+	constantBufferDesc.ByteWidth = sizeof(Vec4); // Vec3にすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// ポイントライトカラー
+	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// ポイントライト位置＆レンジの逆数
+	constantBufferDesc.ByteWidth = sizeof(Vec4);
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// スポットライト位置＆レンジの逆数
+	constantBufferDesc.ByteWidth = sizeof(Vec4);
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// スポットライトカラー＆内角のcos
+	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(constantBuffer);
+
+	// スポットライト方向＆外角のcos
+	constantBufferDesc.ByteWidth = sizeof(Vec4);
 	constantBuffer = nullptr;
 	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
@@ -1031,11 +1117,147 @@ void Sprite3D::renderWithShadowMap()
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
 		direct3dContext->Unmap(constantBuffers[3], 0);
 
+		// ライトの設定
+		// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
+		for (Light* light : Director::getLight())
+		{
+			const Color3B& lightColor = light->getColor();
+			float intensity = light->getIntensity();
+
+			switch (light->getLightType())
+			{
+			case LightType::AMBIENT:
+			{
+				// アンビエントライトカラーのマップ
+				result = direct3dContext->Map(
+					constantBuffers[4],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				const Color4F& lightColor4F = Color4F(Color4B(lightColor.r * intensity, lightColor.g * intensity, lightColor.b * intensity, 255));
+				//Color4F lightColor4F = Color4F(Color4B(lightColor.r, lightColor.g, lightColor.b, 255));
+				CopyMemory(mappedResource.pData, &lightColor4F, sizeof(lightColor4F));
+				direct3dContext->Unmap(constantBuffers[4], 0);
+			}
+				break;
+			case LightType::DIRECTION:
+			{
+				// ディレクショナルライトカラーのマップ
+				result = direct3dContext->Map(
+					constantBuffers[5],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				const Color4F& lightColor4F = Color4F(Color4B(lightColor.r * intensity, lightColor.g * intensity, lightColor.b * intensity, 255));
+				CopyMemory(mappedResource.pData, &lightColor4F, sizeof(lightColor4F));
+				direct3dContext->Unmap(constantBuffers[5], 0);
+
+				// ディレクショナルライト方向のマップ
+				result = direct3dContext->Map(
+					constantBuffers[6],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
+				Vec3 direction = dirLight->getDirection();
+				direction.normalize();
+				Vec4 directionVec4 = Vec4(direction.x, direction.y, direction.z, 0.0f);
+				CopyMemory(mappedResource.pData, &directionVec4, sizeof(directionVec4));
+				direct3dContext->Unmap(constantBuffers[6], 0);
+			}
+				break;
+			case LightType::POINT: {
+				// ポイントライトカラーのマップ
+				result = direct3dContext->Map(
+					constantBuffers[7],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				const Color4F& lightColor4F = Color4F(Color4B(lightColor.r * intensity, lightColor.g * intensity, lightColor.b * intensity, 255));
+				CopyMemory(mappedResource.pData, &lightColor4F, sizeof(lightColor4F));
+				direct3dContext->Unmap(constantBuffers[7], 0);
+
+				// ポイントライトの位置＆レンジのマップ
+				result = direct3dContext->Map(
+					constantBuffers[8],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				PointLight* pointLight = static_cast<PointLight*>(light);
+				const Vec3& position = light->getPosition();
+				const Vec4& positionAndRange = Vec4(position.x, position.y, position.z, 1.0f / pointLight->getRange());
+				CopyMemory(mappedResource.pData, &positionAndRange, sizeof(positionAndRange));
+				direct3dContext->Unmap(constantBuffers[8], 0);
+			}
+				break;
+			case LightType::SPOT: {
+				// スポットライトの位置＆レンジの逆数のマップ
+				result = direct3dContext->Map(
+					constantBuffers[9],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				SpotLight* spotLight = static_cast<SpotLight*>(light);
+				const Vec3& position = light->getPosition();
+				const Vec4& positionAndRange = Vec4(position.x, position.y, position.z, 1.0f / spotLight->getRange());
+				CopyMemory(mappedResource.pData, &positionAndRange, sizeof(positionAndRange));
+				direct3dContext->Unmap(constantBuffers[9], 0);
+
+				// スポットライトカラー＆内角のcosのマップ
+				result = direct3dContext->Map(
+					constantBuffers[10],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				const Color4F& lightColorAndInnerAngleCos = Color4F(lightColor.r * intensity / 255.0f, lightColor.g * intensity / 255.0f, lightColor.b * intensity / 255.0f, spotLight->getInnerAngleCos());
+				CopyMemory(mappedResource.pData, &lightColorAndInnerAngleCos, sizeof(lightColorAndInnerAngleCos));
+				direct3dContext->Unmap(constantBuffers[10], 0);
+
+				// スポットライト方向＆外角のcosのマップ
+				result = direct3dContext->Map(
+					constantBuffers[11],
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				Vec3 direction = spotLight->getDirection();
+				direction.normalize();
+				const Vec4& directionAndOuterAngleCos = Vec4(direction.x, direction.y, direction.z, spotLight->getOuterAngleCos());
+				CopyMemory(mappedResource.pData, &directionAndOuterAngleCos, sizeof(directionAndOuterAngleCos));
+				direct3dContext->Unmap(constantBuffers[11], 0);
+			}
+				break;
+			}
+		}
+
 		if (_isC3b)
 		{
 			// ジョイントマトリックスパレットのマップ
 			result = direct3dContext->Map(
-				constantBuffers[4],
+				constantBuffers[12],
 				0,
 				D3D11_MAP_WRITE_DISCARD,
 				0,
@@ -1043,7 +1265,7 @@ void Sprite3D::renderWithShadowMap()
 			);
 			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 			CopyMemory(mappedResource.pData, _matrixPalette.data(), sizeof(Mat4) * _matrixPalette.size());
-			direct3dContext->Unmap(constantBuffers[4], 0);
+			direct3dContext->Unmap(constantBuffers[12], 0);
 		}
 
 		UINT strides[1];
@@ -1056,7 +1278,6 @@ void Sprite3D::renderWithShadowMap()
 			strides[0] = _perVertexByteSize;
 		}
 
-		int numConstantBuffer = _isC3b ? 5 : 4;
 		UINT offsets[1] = {0};
 		direct3dContext->IASetVertexBuffers(0, _d3dProgram.getVertexBuffers().size(), _d3dProgram.getVertexBuffers().data(), strides, offsets);
 		direct3dContext->IASetIndexBuffer(_d3dProgram.getIndexBuffer(), DXGI_FORMAT_R16_UINT, 0);

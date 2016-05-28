@@ -631,7 +631,7 @@ void Polygon3D::renderWithShadowMap()
 					&mappedResource
 				);
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				const Color4F& lightColorAndInnerAngleCos = Color4F(lightColor.r * intensity, lightColor.g * intensity, lightColor.b * intensity, spotLight->getInnerAngleCos());
+				const Color4F& lightColorAndInnerAngleCos = Color4F(lightColor.r * intensity / 255.0f, lightColor.g * intensity / 255.0f, lightColor.b * intensity / 255.0f, spotLight->getInnerAngleCos());
 				CopyMemory(mappedResource.pData, &lightColorAndInnerAngleCos, sizeof(lightColorAndInnerAngleCos));
 				direct3dContext->Unmap(constantBuffers[10], 0);
 

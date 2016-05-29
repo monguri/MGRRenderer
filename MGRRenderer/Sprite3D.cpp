@@ -1063,7 +1063,7 @@ void Sprite3D::renderWithShadowMap()
 
 		// モデル行列のマップ
 		HRESULT result = direct3dContext->Map(
-			constantBuffers[0],
+			constantBuffers[(int)ConstantBufferIndex::MODEL_MATRIX],
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -1073,11 +1073,11 @@ void Sprite3D::renderWithShadowMap()
 		Mat4 modelMatrix = getModelMatrix();
 		modelMatrix.transpose();
 		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
-		direct3dContext->Unmap(constantBuffers[0], 0);
+		direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::MODEL_MATRIX], 0);
 
 		// ビュー行列のマップ
 		result = direct3dContext->Map(
-			constantBuffers[1],
+			constantBuffers[(int)ConstantBufferIndex::VIEW_MATRIX],
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -1087,11 +1087,11 @@ void Sprite3D::renderWithShadowMap()
 		Mat4 viewMatrix = Director::getCamera().getViewMatrix();
 		viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
 		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
-		direct3dContext->Unmap(constantBuffers[1], 0);
+		direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::VIEW_MATRIX], 0);
 
 		// プロジェクション行列のマップ
 		result = direct3dContext->Map(
-			constantBuffers[2],
+			constantBuffers[(int)ConstantBufferIndex::PROJECTION_MATRIX],
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -1102,11 +1102,11 @@ void Sprite3D::renderWithShadowMap()
 		projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 		projectionMatrix.transpose();
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
-		direct3dContext->Unmap(constantBuffers[2], 0);
+		direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::PROJECTION_MATRIX], 0);
 
 		// 乗算色のマップ
 		result = direct3dContext->Map(
-			constantBuffers[3],
+			constantBuffers[(int)ConstantBufferIndex::MULTIPLY_COLOR],
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -1115,7 +1115,7 @@ void Sprite3D::renderWithShadowMap()
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 		const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
-		direct3dContext->Unmap(constantBuffers[3], 0);
+		direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::MULTIPLY_COLOR], 0);
 
 		// ライトの設定
 		// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
@@ -1130,7 +1130,7 @@ void Sprite3D::renderWithShadowMap()
 			{
 				// アンビエントライトカラーのマップ
 				result = direct3dContext->Map(
-					constantBuffers[4],
+					constantBuffers[(int)ConstantBufferIndex::AMBIENT_LIGHT_COLOR],
 					0,
 					D3D11_MAP_WRITE_DISCARD,
 					0,
@@ -1140,14 +1140,14 @@ void Sprite3D::renderWithShadowMap()
 				const Color4F& lightColor4F = Color4F(Color4B(lightColor.r * intensity, lightColor.g * intensity, lightColor.b * intensity, 255));
 				//Color4F lightColor4F = Color4F(Color4B(lightColor.r, lightColor.g, lightColor.b, 255));
 				CopyMemory(mappedResource.pData, &lightColor4F, sizeof(lightColor4F));
-				direct3dContext->Unmap(constantBuffers[4], 0);
+				direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::AMBIENT_LIGHT_COLOR], 0);
 			}
 				break;
 			case LightType::DIRECTION:
 			{
 				// ディレクショナルライトカラーのマップ
 				result = direct3dContext->Map(
-					constantBuffers[5],
+					constantBuffers[(int)ConstantBufferIndex::DIRECTIONAL_LIGHT_COLOR],
 					0,
 					D3D11_MAP_WRITE_DISCARD,
 					0,
@@ -1156,11 +1156,11 @@ void Sprite3D::renderWithShadowMap()
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 				const Color4F& lightColor4F = Color4F(Color4B(lightColor.r * intensity, lightColor.g * intensity, lightColor.b * intensity, 255));
 				CopyMemory(mappedResource.pData, &lightColor4F, sizeof(lightColor4F));
-				direct3dContext->Unmap(constantBuffers[5], 0);
+				direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::DIRECTIONAL_LIGHT_COLOR], 0);
 
 				// ディレクショナルライト方向のマップ
 				result = direct3dContext->Map(
-					constantBuffers[6],
+					constantBuffers[(int)ConstantBufferIndex::DIRECTIONAL_LIGHT_DIRECTION],
 					0,
 					D3D11_MAP_WRITE_DISCARD,
 					0,
@@ -1172,13 +1172,13 @@ void Sprite3D::renderWithShadowMap()
 				direction.normalize();
 				Vec4 directionVec4 = Vec4(direction.x, direction.y, direction.z, 0.0f);
 				CopyMemory(mappedResource.pData, &directionVec4, sizeof(directionVec4));
-				direct3dContext->Unmap(constantBuffers[6], 0);
+				direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::DIRECTIONAL_LIGHT_DIRECTION], 0);
 			}
 				break;
 			case LightType::POINT: {
 				// ポイントライトカラーのマップ
 				result = direct3dContext->Map(
-					constantBuffers[7],
+					constantBuffers[(int)ConstantBufferIndex::POINT_LIGHT_COLOR],
 					0,
 					D3D11_MAP_WRITE_DISCARD,
 					0,
@@ -1187,11 +1187,11 @@ void Sprite3D::renderWithShadowMap()
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 				const Color4F& lightColor4F = Color4F(Color4B(lightColor.r * intensity, lightColor.g * intensity, lightColor.b * intensity, 255));
 				CopyMemory(mappedResource.pData, &lightColor4F, sizeof(lightColor4F));
-				direct3dContext->Unmap(constantBuffers[7], 0);
+				direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::POINT_LIGHT_COLOR], 0);
 
 				// ポイントライトの位置＆レンジのマップ
 				result = direct3dContext->Map(
-					constantBuffers[8],
+					constantBuffers[(int)ConstantBufferIndex::POINT_LIGHT_POSITION_AND_RANGE_INVERSE],
 					0,
 					D3D11_MAP_WRITE_DISCARD,
 					0,
@@ -1202,13 +1202,13 @@ void Sprite3D::renderWithShadowMap()
 				const Vec3& position = light->getPosition();
 				const Vec4& positionAndRange = Vec4(position.x, position.y, position.z, 1.0f / pointLight->getRange());
 				CopyMemory(mappedResource.pData, &positionAndRange, sizeof(positionAndRange));
-				direct3dContext->Unmap(constantBuffers[8], 0);
+				direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::POINT_LIGHT_POSITION_AND_RANGE_INVERSE], 0);
 			}
 				break;
 			case LightType::SPOT: {
 				// スポットライトの位置＆レンジの逆数のマップ
 				result = direct3dContext->Map(
-					constantBuffers[9],
+					constantBuffers[(int)ConstantBufferIndex::SPOT_LIGHT_POSITION_AND_RANGE_INVERSE],
 					0,
 					D3D11_MAP_WRITE_DISCARD,
 					0,
@@ -1219,11 +1219,11 @@ void Sprite3D::renderWithShadowMap()
 				const Vec3& position = light->getPosition();
 				const Vec4& positionAndRange = Vec4(position.x, position.y, position.z, 1.0f / spotLight->getRange());
 				CopyMemory(mappedResource.pData, &positionAndRange, sizeof(positionAndRange));
-				direct3dContext->Unmap(constantBuffers[9], 0);
+				direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::SPOT_LIGHT_POSITION_AND_RANGE_INVERSE], 0);
 
 				// スポットライトカラー＆内角のcosのマップ
 				result = direct3dContext->Map(
-					constantBuffers[10],
+					constantBuffers[(int)ConstantBufferIndex::SPOT_LIGHT_COLOR_AND_INNER_ANGLE_COS],
 					0,
 					D3D11_MAP_WRITE_DISCARD,
 					0,
@@ -1232,11 +1232,11 @@ void Sprite3D::renderWithShadowMap()
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 				const Color4F& lightColorAndInnerAngleCos = Color4F(lightColor.r * intensity / 255.0f, lightColor.g * intensity / 255.0f, lightColor.b * intensity / 255.0f, spotLight->getInnerAngleCos());
 				CopyMemory(mappedResource.pData, &lightColorAndInnerAngleCos, sizeof(lightColorAndInnerAngleCos));
-				direct3dContext->Unmap(constantBuffers[10], 0);
+				direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::SPOT_LIGHT_COLOR_AND_INNER_ANGLE_COS], 0);
 
 				// スポットライト方向＆外角のcosのマップ
 				result = direct3dContext->Map(
-					constantBuffers[11],
+					constantBuffers[(int)ConstantBufferIndex::SPOT_LIGHT_DIRECTION_AND_OUTER_ANGLE_COS],
 					0,
 					D3D11_MAP_WRITE_DISCARD,
 					0,
@@ -1247,7 +1247,7 @@ void Sprite3D::renderWithShadowMap()
 				direction.normalize();
 				const Vec4& directionAndOuterAngleCos = Vec4(direction.x, direction.y, direction.z, spotLight->getOuterAngleCos());
 				CopyMemory(mappedResource.pData, &directionAndOuterAngleCos, sizeof(directionAndOuterAngleCos));
-				direct3dContext->Unmap(constantBuffers[11], 0);
+				direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::SPOT_LIGHT_DIRECTION_AND_OUTER_ANGLE_COS], 0);
 			}
 				break;
 			}
@@ -1257,7 +1257,7 @@ void Sprite3D::renderWithShadowMap()
 		{
 			// ジョイントマトリックスパレットのマップ
 			result = direct3dContext->Map(
-				constantBuffers[12],
+				constantBuffers[(int)ConstantBufferIndex::JOINT_MATRIX_PALLETE],
 				0,
 				D3D11_MAP_WRITE_DISCARD,
 				0,
@@ -1265,7 +1265,7 @@ void Sprite3D::renderWithShadowMap()
 			);
 			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 			CopyMemory(mappedResource.pData, _matrixPalette.data(), sizeof(Mat4) * _matrixPalette.size());
-			direct3dContext->Unmap(constantBuffers[12], 0);
+			direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::JOINT_MATRIX_PALLETE], 0);
 		}
 
 		UINT strides[1];

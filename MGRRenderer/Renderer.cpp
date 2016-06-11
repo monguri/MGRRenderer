@@ -34,6 +34,7 @@ void Renderer::initView(const Size& windowSize)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// OpenGL側でやるビューポート変換のためのパラメータを渡す
 	glViewport(0, 0, windowSize.width, windowSize.height);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファ
 #endif
 }
 

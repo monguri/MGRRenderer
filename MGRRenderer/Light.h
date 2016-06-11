@@ -3,6 +3,9 @@
 #include "BasicDataTypes.h"
 #include "GroupBeginRenderCommand.h"
 #include "GroupEndRenderCommand.h"
+#if defined(MGRRENDERER_USE_DIRECT3D)
+#include <d3d11.h>
+#endif
 
 namespace mgrrenderer
 {
@@ -59,7 +62,12 @@ public:
 	{
 		Mat4 viewMatrix;
 		Mat4 projectionMatrix;
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		ID3D11Texture2D* depthTexture;
+		ID3D11DepthStencilView* depthTextureDepthStencilView;
+		ID3D11ShaderResourceView* depthTextureShaderResourceView;
+		ID3D11SamplerState* depthTextureSamplerState;
+#elif defined(MGRRENDERER_USE_OPENGL)
 		GLuint frameBufferId;
 		GLuint textureId;
 #endif
@@ -70,6 +78,7 @@ public:
 	};
 
 	DirectionalLight(const Vec3& direction, const Color3B& color);
+	~DirectionalLight();
 
 	LightType getLightType() const override { return LightType::DIRECTION; };
 	const Vec3& getDirection() const { return _direction; }

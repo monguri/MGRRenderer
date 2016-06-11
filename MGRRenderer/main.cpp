@@ -519,12 +519,14 @@ void initialize()
 	scene->addLight(directionalLight);
 
 	// TODO:シャドウマップをスプライトで描画したかったが機能してない
-#if defined(MGRRENDERER_USE_OPENGL)
 	Sprite2D* depthTextureSprite = new Sprite2D();
 	const Size& contentSize = Director::getInstance()->getWindowSize() / 4.0f;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().depthTextureShaderResourceView, directionalLight->getShadowMapData().depthTextureSamplerState, contentSize);
+#elif defined(MGRRENDERER_USE_OPENGL)
 	depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().textureId, contentSize, TextureUtility::PixelFormat::RGBA8888); // pixelformatは適当
-	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 #endif
+	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 
 	//PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);
 	//pointLight->setIntensity(0.7f);
@@ -547,9 +549,7 @@ void initialize()
 	scene->pushNode(lineNode);
 	scene->pushNode(polygonNode);
 	scene->pushNode(spriteNode);
-#if defined(MGRRENDERER_USE_OPENGL)
 	scene->pushNode(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない
-#endif
 
 	Director::getInstance()->setScene(*scene);
 }

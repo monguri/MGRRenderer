@@ -109,6 +109,26 @@ bool D3DTexture::initWithImage(const Image& image, TextureUtility::PixelFormat f
 	return true;
 }
 
+bool D3DTexture::initWithTexture(ID3D11ShaderResourceView* shaderResourceView, ID3D11SamplerState* samplerState)
+{
+	_resourceView = shaderResourceView;
+	_samplerState = samplerState;
+
+	// コンテンツサイズ取得
+	ID3D11Resource* resource = nullptr;
+	_resourceView->GetResource(&resource);
+
+	D3D11_RESOURCE_DIMENSION type;
+	resource->GetType(&type);
+	Logger::logAssert(type == D3D11_RESOURCE_DIMENSION_TEXTURE2D, "テクスチャリソースがD3D11_RESOURCE_DIMENSION_TEXTURE2D型でない。type=%d", type);
+
+	D3D11_TEXTURE2D_DESC texDesc;
+	static_cast<ID3D11Texture2D*>(resource)->GetDesc(&texDesc);
+	_contentSize = Size(texDesc.Width, texDesc.Height);
+
+	return true;
+}
+
 } // namespace mgrrenderer
 
 #endif

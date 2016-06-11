@@ -72,7 +72,7 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 	_d3dProgram.setIndexBuffer(indexBuffer);
 
 	bool depthEnable = false;
-	_d3dProgram.initWithShaderFile("Point.hlsl", depthEnable);
+	_d3dProgram.initWithShaderFile("Point.hlsl", depthEnable, "VS", "GS", "PS");
 
 	// 入力レイアウトオブジェクトの作成
 	D3D11_INPUT_ELEMENT_DESC layout[] = { {D3DProgram::SEMANTIC_POSITION.c_str(), 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0} };

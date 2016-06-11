@@ -76,22 +76,23 @@ void Scene::update(float dt)
 		}
 	}
 
-	// 最終的な描画
+	_clearCommand.init([=]
+	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	// TODO:これ、毎フレームやる必要あるのか？
-	float clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+		// TODO:これ、毎フレームやる必要あるのか？
+		float clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 
-	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
-	direct3dContext->ClearRenderTargetView(Director::getInstance()->getDirect3dRenderTarget(), clearColor);
-	direct3dContext->ClearDepthStencilView(Director::getInstance()->getDirect3dDepthStencil(), D3D11_CLEAR_DEPTH, 1.0f, 0.0f);
-	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
-	ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
-	direct3dContext->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencil());
+		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		direct3dContext->ClearRenderTargetView(Director::getInstance()->getDirect3dRenderTarget(), clearColor);
+		direct3dContext->ClearDepthStencilView(Director::getInstance()->getDirect3dDepthStencil(), D3D11_CLEAR_DEPTH, 1.0f, 0.0f);
 
 #elif defined(MGRRENDERER_USE_OPENGL)
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
+	});
+	Director::getRenderer().addCommand(&_clearCommand);
 
+	// 最終的な描画
 	_camera.renderWithShadowMap();
 
 	for (Node* child : _children)

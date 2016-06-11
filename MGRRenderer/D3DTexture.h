@@ -14,6 +14,7 @@ public:
 	D3DTexture();
 	~D3DTexture();
 	bool initWithImage(const Image& image, TextureUtility::PixelFormat format) override;
+	bool initWithTexture(ID3D11ShaderResourceView* shaderResourceView, ID3D11SamplerState* samplerState);
 	ID3D11ShaderResourceView* getShaderResourceView() const { return _resourceView; }
 	ID3D11SamplerState* getSamplerState() const { return _samplerState; }
 

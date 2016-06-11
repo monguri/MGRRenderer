@@ -84,123 +84,134 @@ D3DProgram::~D3DProgram()
 		_geometryShader = nullptr;
 	}
 
-	if (_vertexShaderBlob != nullptr)
-	{
-		_vertexShaderBlob->Release();
-		_vertexShaderBlob = nullptr;
-	}
-
 	if (_vertexShader != nullptr)
 	{
 		_vertexShader->Release();
 		_vertexShader = nullptr;
 	}
+
+	if (_vertexShaderBlob != nullptr)
+	{
+		_vertexShaderBlob->Release();
+		_vertexShaderBlob = nullptr;
+	}
 }
 
-void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnable)
+void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnable, const std::string& vertexShaderFunctionName, const std::string& geometryShaderFunctionName, const std::string& pixelShaderFunctionName)
 {
 	WCHAR wPath[FileUtility::MAX_PATH_LENGTH] = { 0 };
 	FileUtility::convertWCHARFilePath(path, wPath, FileUtility::MAX_PATH_LENGTH);
 
-	// 頂点シェーダのコードをコンパイル
 	ID3DBlob* errMsg = nullptr;
-	HRESULT result = D3DCompileFromFile(
-		wPath,
-		nullptr,
-		nullptr,
-		"VS",
-		"vs_4_0",
-		D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
-		0,
-		&_vertexShaderBlob,
-		&errMsg
-	);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d. error message=%s", result, errMsg->GetBufferPointer());
-		return;
-	}
-
-	// 頂点シェーダの作成
+	HRESULT result = E_FAIL;
 	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice(); // TODO:ここでDirector依存性が生まれるの嫌だなー
-	result = direct3dDevice->CreateVertexShader(
-		_vertexShaderBlob->GetBufferPointer(),
-		_vertexShaderBlob->GetBufferSize(),
-		nullptr,
-		&_vertexShader
-	);
-	if (FAILED(result))
+
+	if (!vertexShaderFunctionName.empty())
 	{
-		Logger::logAssert(false, "CreateVertexShader failed. result=%d", result);
-		return;
+		// 頂点シェーダのコードをコンパイル
+		result = D3DCompileFromFile(
+			wPath,
+			nullptr,
+			nullptr,
+			vertexShaderFunctionName.c_str(),
+			"vs_4_0",
+			D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
+			0,
+			&_vertexShaderBlob,
+			&errMsg
+		);
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d. error message=%s", result, errMsg->GetBufferPointer());
+			return;
+		}
+
+		// 頂点シェーダの作成
+		result = direct3dDevice->CreateVertexShader(
+			_vertexShaderBlob->GetBufferPointer(),
+			_vertexShaderBlob->GetBufferSize(),
+			nullptr,
+			&_vertexShader
+		);
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "CreateVertexShader failed. result=%d", result);
+			return;
+		}
 	}
 
 	// ジオメトリシェーダのコンパイル
-	ID3DBlob* blobGS = nullptr;
-	result = D3DCompileFromFile(
-		wPath,
-		nullptr,
-		nullptr,
-		"GS",
-		"gs_4_0",
-		D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
-		0,
-		&blobGS,
-		&errMsg
-	);
-	if (FAILED(result))
+	if (!geometryShaderFunctionName.empty())
 	{
-		Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d. error message=%s", result, errMsg->GetBufferPointer());
-		return;
-	}
+		ID3DBlob* blobGS = nullptr;
+		result = D3DCompileFromFile(
+			wPath,
+			nullptr,
+			nullptr,
+			geometryShaderFunctionName.c_str(),
+			"gs_4_0",
+			D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
+			0,
+			&blobGS,
+			&errMsg
+		);
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d. error message=%s", result, errMsg->GetBufferPointer());
+			return;
+		}
 
-	// ジオメトリシェーダの作成
-	result = direct3dDevice->CreateGeometryShader(
-		blobGS->GetBufferPointer(),
-		blobGS->GetBufferSize(),
-		nullptr,
-		&_geometryShader
-	);
-	blobGS->Release();
-	blobGS = nullptr;
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateVertexShader failed. result=%d", result);
-		return;
+		// ジオメトリシェーダの作成
+		result = direct3dDevice->CreateGeometryShader(
+			blobGS->GetBufferPointer(),
+			blobGS->GetBufferSize(),
+			nullptr,
+			&_geometryShader
+		);
+		blobGS->Release();
+		blobGS = nullptr;
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "CreateVertexShader failed. result=%d", result);
+			return;
+		}
 	}
 
 	// ピクセルシェーダのコンパイル
-	ID3DBlob* blobPS = nullptr;
-	result = D3DCompileFromFile(
-		wPath,
-		nullptr,
-		nullptr,
-		"PS",
-		"ps_4_0",
-		D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
-		0,
-		&blobPS,
-		&errMsg
-	);
-	if (FAILED(result))
+	if (!pixelShaderFunctionName.empty())
 	{
-		Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d. error message=%s", result, errMsg->GetBufferPointer());
-		return;
-	}
+		ID3DBlob* blobPS = nullptr;
+		result = D3DCompileFromFile(
+			wPath,
+			nullptr,
+			nullptr,
+			pixelShaderFunctionName.c_str(),
+			"ps_4_0",
+			D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
+			0,
+			&blobPS,
+			&errMsg
+		);
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "D3DX11CompileFromFile failed. result=%d. error message=%s", result, errMsg->GetBufferPointer());
+			return;
+		}
 
-	// ピクセルシェーダの作成
-	result = direct3dDevice->CreatePixelShader(
-		blobPS->GetBufferPointer(),
-		blobPS->GetBufferSize(),
-		nullptr,
-		&_pixelShader
-	);
-	blobPS->Release();
-	blobPS = nullptr;
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreatePixelShader failed. result=%d", result);
-		return;
+		// ピクセルシェーダの作成
+		result = direct3dDevice->CreatePixelShader(
+			blobPS->GetBufferPointer(),
+			blobPS->GetBufferSize(),
+			nullptr,
+			&_pixelShader
+		);
+		blobPS->Release();
+		blobPS = nullptr;
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "CreatePixelShader failed. result=%d", result);
+			return;
+		}
 	}
 
 	// ブレンドステートオブジェクトの作成

@@ -200,7 +200,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_d3dProgram.setIndexBuffer(indexBuffer);
 
 		bool depthEnable = true;
-		_d3dProgram.initWithShaderFile("Obj.hlsl", depthEnable);
+		_d3dProgram.initWithShaderFile("Obj.hlsl", depthEnable, "VS", "GS", "PS");
 
 		// 入力レイアウトオブジェクトの作成
 		D3D11_INPUT_ELEMENT_DESC layout[] = {
@@ -278,7 +278,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_d3dProgram.setIndexBuffer(indexBuffer);
 
 		bool depthEnable = true;
-		_d3dProgram.initWithShaderFile("C3bC3t.hlsl", depthEnable);
+		_d3dProgram.initWithShaderFile("C3bC3t.hlsl", depthEnable, "VS", "GS", "PS");
 
 		// 入力レイアウトオブジェクトの作成
 		std::vector<D3D11_INPUT_ELEMENT_DESC> layouts(meshData->numAttribute);

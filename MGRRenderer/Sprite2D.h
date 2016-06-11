@@ -30,9 +30,10 @@ public:
 	Sprite2D();
 	virtual ~Sprite2D();
 	bool init(const std::string& filePath);
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	bool initWithTexture(ID3D11ShaderResourceView* shaderResourceView, ID3D11SamplerState* samplerState, const Size& contentSize);
+#elif defined(MGRRENDERER_USE_OPENGL)
 	bool initWithTexture(GLuint textureId, const Size& contentSize, TextureUtility::PixelFormat format);
-	const GLTexture* getTexture() const { return _texture; }
 #endif
 
 protected:

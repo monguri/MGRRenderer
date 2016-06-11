@@ -23,44 +23,57 @@ cbuffer AmbientLightColor : register(b4)
 	float4 _ambientLightColor;
 };
 
-cbuffer DirectionalLightColor : register(b5)
+cbuffer DirectionalLightViewMatrix : register(b5)
+{
+	float4 _lightView;
+};
+
+cbuffer DirectionalLightProjectionMatrix : register(b6)
+{
+	float4 _lightProjection;
+};
+
+cbuffer DirectionalLightColor : register(b7)
 {
 	float4 _directionalLightColor;
 };
 
-cbuffer DirectionalLightDirection : register(b6)
+cbuffer DirectionalLightDirection : register(b8)
 {
 	float4 _directionalLightDirection;
 };
 
-cbuffer PointLightColor : register(b7)
+cbuffer PointLightColor : register(b9)
 {
 	float4 _pointLightColor;
 };
 
-cbuffer PointLightPositionAndRangeInverse : register(b8)
+cbuffer PointLightPositionAndRangeInverse : register(b10)
 {
 	float3 _pointLightPosition;
 	float _pointLightRangeInverse;
 };
 
-cbuffer SpotLightPositionAndRangeInverse : register(b9)
+cbuffer SpotLightPositionAndRangeInverse : register(b11)
 {
 	float3 _spotLightPosition;
 	float _spotLightRangeInverse;
 };
 
-cbuffer SpotLightColorAndInnerAngleCos : register(b10)
+cbuffer SpotLightColorAndInnerAngleCos : register(b12)
 {
 	float3 _spotLightColor;
 	float _spotLightInnerAngleCos;
 };
 
-cbuffer SpotLightDirectionAndOuterAngleCos : register(b11)
+cbuffer SpotLightDirectionAndOuterAngleCos : register(b13)
 {
 	float3 _spotLightDirection;
 	float _spotLightOuterAngleCos;
 };
+
+Texture2D _shadowMapTex : register(t0);
+SamplerState _shadowMapSampler : register(s0);
 
 struct VS_INPUT
 {
@@ -71,17 +84,29 @@ struct VS_INPUT
 struct GS_INPUT
 {
 	float4 position : SV_POSITION;
+	float4 lightPosition : POSITION;
 	float3 normal : NORMAL;
 	float3 vertexToPointLightDirection : POINT_LIGHT_DIRECTION;
 	float3 vertexToSpotLightDirection : SPOT_LIGHT_DIRECTION;
 };
 
+struct GS_SM_INPUT
+{
+	float4 lightPosition : SV_POSITION;
+};
+
 struct PS_INPUT
 {
 	float4 position : SV_POSITION;
+	float4 lightPosition : POSITION;
 	float3 normal : NORMAL;
 	float3 vertexToPointLightDirection : POINT_LIGHT_DIRECTION;
 	float3 vertexToSpotLightDirection : SPOT_LIGHT_DIRECTION;
+};
+
+struct PS_SM_INPUT
+{
+	float4 lightPosition : SV_POSITION;
 };
 
 GS_INPUT VS(VS_INPUT input)
@@ -91,9 +116,20 @@ GS_INPUT VS(VS_INPUT input)
 	float4 position = float4(input.position, 1.0);
 	float4 worldPosition = mul(position, _model);
 	output.position = mul(worldPosition, _view);
+	output.lightPosition = mul(worldPosition, _lightView);
 	output.normal = input.normal;
 	output.vertexToPointLightDirection = _pointLightPosition - worldPosition.xyz;
 	output.vertexToSpotLightDirection = _spotLightPosition - worldPosition.xyz;
+	return output;
+}
+
+GS_SM_INPUT VS_SM(VS_INPUT input)
+{
+	GS_SM_INPUT output;
+
+	float4 position = float4(input.position, 1.0);
+	position = mul(position, _model);
+	output.lightPosition = mul(position, _lightView);
 	return output;
 }
 
@@ -105,9 +141,24 @@ void GS(triangle GS_INPUT input[3], inout TriangleStream<PS_INPUT> triangleStrea
 	for (int i = 0; i < 3; ++i)
 	{
 		output.position = mul(input[i].position, _projection);
+		output.lightPosition = mul(input[i].lightPosition, _lightProjection);
 		output.normal = input[i].normal;
 		output.vertexToPointLightDirection = input[i].vertexToPointLightDirection;
 		output.vertexToSpotLightDirection = input[i].vertexToSpotLightDirection;
+		triangleStream.Append(output);
+	}
+
+	triangleStream.RestartStrip();
+}
+
+[maxvertexcount(3)]
+void GS_SM(triangle GS_SM_INPUT input[3], inout TriangleStream<PS_SM_INPUT> triangleStream)
+{
+	PS_SM_INPUT output;
+
+	for (int i = 0; i < 3; ++i)
+	{
+		output.lightPosition = mul(input[i].lightPosition, _lightProjection);
 		triangleStream.Append(output);
 	}
 
@@ -139,5 +190,14 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	attenuation = clamp(attenuation, 0.0, 1.0);
 	diffuseSpecularLightColor += computeLightedColor(normal, vertexToSpotLightDirection, _spotLightColor, attenuation);
 
-	return _multiplyColor * float4(diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
+	float depth = _shadowMapTex.Sample(_shadowMapSampler, input.lightPosition.xy);
+	float outShadowFlag = input.lightPosition.z < depth ? 1.0 : 0.0;
+	return _multiplyColor * float4(outShadowFlag * diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
+}
+
+float4 PS_SM(PS_SM_INPUT input) : SV_TARGET
+{
+	// 深度をグレースケールで表現する
+	float z = input.lightPosition.z;
+	return float4(z, z, z, 1.0);
 }

@@ -13,5 +13,5 @@
 //
 //	#if !defined(MGRRENDERER_USE_DIRECT3D)
 //	#undef MGRRENDERER_USE_DIRECT3D
-//	#endif // !defined(MGRRENDERER_USE_DIRECT3D) 
+//	#endif // !defined(MGRRENDERER_USE_DIRECT3D)
 //#endif // !defined(MGRRENDERER_USE_OPENGL)

@@ -27,7 +27,8 @@ public:
 	~D3DProgram();
 
 	//void initWithShaderString(const std::string& shaderStr, bool depthTestEnable); // STRINGFYで文字列扱いしちゃうとGPUデバッグできなくなるのでシェーダはファイルで扱う
-	void initWithShaderFile(const std::string& path, bool depthTestEnable);
+	// シェーダ関数名を空文字列にした場合はそのシェーダはなしで扱う。setShadersToDirect3DContextではSetShaderにはnullptrをセットする
+	void initWithShaderFile(const std::string& path, bool depthTestEnable, const std::string& vertexShaderFunctionName, const std::string& geometryShaderFunctionName, const std::string& pixelShaderFunctionName);
 	ID3D11VertexShader* getVertexShader() const { return _vertexShader; }
 	ID3DBlob* getVertexShaderBlob() const { return _vertexShaderBlob; };
 	ID3D11GeometryShader* getGeometryShader() const { return _geometryShader; }

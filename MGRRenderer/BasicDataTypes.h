@@ -204,6 +204,7 @@ struct Vec4
 
 	Vec4() : x(0), y(0), z(0), w(0) {}
 	Vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+	Vec4(const Vec3& vec3) : x(vec3.x), y(vec3.y), z(vec3.z), w(1.0f) {}
 
 	const Vec4 operator+(const Vec4& v) const { return Vec4(x + v.x, y + v.y, z + v.z, w + v.w); }
 	const Vec4 operator-(const Vec4& v) const { return Vec4(x - v.x, y - v.y, z - v.z, w - v.w); }
@@ -215,6 +216,26 @@ struct Vec4
 	Vec4& operator/=(float a) { Logger::logAssert(a != 0.0, "0で除算している。"); x /= a; y /= a; z /= a; w /= a; return *this; }
 	bool operator==(const Vec4& v) const { return (x == v.x && y == v.y && z == v.z && w == v.w); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Vec4& v) const { return (x != v.x || y != v.y || z != v.z || w != v.w);}
+	void normalize() {
+		float n = x * x + y * y + z * z + w * w;
+		if (n == 1.0f)
+		{
+			return;
+		}
+
+		n = sqrt(n);
+		if (n < FLOAT_TOLERANCE)
+		{
+			Logger::logAssert(n > FLOAT_TOLERANCE, "0に近い値で除算している。");
+			return;
+		}
+
+		n = 1.0f / n;
+		x *= n;
+		y *= n;
+		z *= n;
+		w *= n;
+	}
 };
 
 struct Color4B
@@ -252,6 +273,10 @@ struct Color4F
 	}
 
 	Color4F(float r, float g, float b, float a) : color(r, g, b, a)
+	{
+	}
+
+	Color4F(const Color3B& color3B) : color(color3B.r / 255.0f, color3B.g / 255.0f, color3B.b / 255.0f, 1.0f)
 	{
 	}
 };

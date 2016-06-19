@@ -204,6 +204,15 @@ bool Sprite2D::initWithTexture(ID3D11ShaderResourceView* shaderResourceView, ID3
 	_texture = new D3DTexture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
 	_texture->initWithTexture(shaderResourceView, samplerState);
 
+	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
+	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
+	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
+	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 1.0f);
+	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
+	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 0.0f);
+	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
+	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 0.0f);
+
 	// 頂点バッファの定義
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -336,14 +345,6 @@ bool Sprite2D::initWithTexture(ID3D11ShaderResourceView* shaderResourceView, ID3
 	}
 
 	_d3dProgram.addConstantBuffer(constantBuffer);
-	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
-	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
-	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
-	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 1.0f);
-	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
-	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 0.0f);
-	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
-	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 0.0f);
 
 	return true;
 }

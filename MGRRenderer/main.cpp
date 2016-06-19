@@ -549,7 +549,7 @@ void initialize()
 	scene->pushNode(lineNode);
 	scene->pushNode(polygonNode);
 	scene->pushNode(spriteNode);
-	scene->pushNode(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない
+	//scene->pushNode(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない
 
 	Director::getInstance()->setScene(*scene);
 }

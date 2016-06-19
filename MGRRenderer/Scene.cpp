@@ -84,7 +84,7 @@ void Scene::update(float dt)
 
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 		direct3dContext->ClearRenderTargetView(Director::getInstance()->getDirect3dRenderTarget(), clearColor);
-		direct3dContext->ClearDepthStencilView(Director::getInstance()->getDirect3dDepthStencil(), D3D11_CLEAR_DEPTH, 1.0f, 0.0f);
+		direct3dContext->ClearDepthStencilView(Director::getInstance()->getDirect3dDepthStencil(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

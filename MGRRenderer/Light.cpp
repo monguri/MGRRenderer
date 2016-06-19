@@ -11,6 +11,9 @@ Light::Light() : _intensity(1.0f)
 AmbientLight::AmbientLight(const Color3B& color)
 {
 	setColor(color);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.color = Color4F(color);
+#endif
 }
 
 DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) : _direction(direction), _hasShadowMap(false)
@@ -21,6 +24,12 @@ DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) 
 	_shadowMapData.depthTextureDepthStencilView = nullptr;
 	_shadowMapData.depthTextureShaderResourceView = nullptr;
 	_shadowMapData.depthTextureSamplerState = nullptr;
+	
+	Vec4& directionVec4 = Vec4(direction);
+	directionVec4.normalize();
+	_constantBufferData.direction = directionVec4;
+	_constantBufferData.color = Color4F(color);
+
 #elif defined(MGRRENDERER_USE_OPENGL)
 	_shadowMapData.frameBufferId = 0;
 	_shadowMapData.textureId = 0;
@@ -199,6 +208,7 @@ void DirectionalLight::beginRenderShadowMap()
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 		direct3dContext->ClearState();
+		direct3dContext->ClearDepthStencilView(_shadowMapData.depthTextureDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 		D3D11_VIEWPORT viewport[1];
 		viewport[0].TopLeftX = 0.0f;
@@ -254,6 +264,12 @@ PointLight::PointLight(const Vec3& position, const Color3B& color, float range) 
 {
 	setPosition(position);
 	setColor(color);
+
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.color = Color4F(color);
+	_constantBufferData.position = position;
+	_constantBufferData.rangeInverse = 1.0f / range;
+#endif
 }
 
 SpotLight::SpotLight(const Vec3& position, const Vec3& direction, const Color3B& color, float range, float innerAngle, float outerAngle) :
@@ -264,6 +280,15 @@ _outerAngleCos(cosf(outerAngle))
 {
 	setPosition(position);
 	setColor(color);
+
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.position = position;
+	_constantBufferData.rangeInverse = 1.0f / range;
+	_constantBufferData.color = color;
+	_constantBufferData.innerAngleCos = cosf(innerAngle);
+	_constantBufferData.direction = direction;
+	_constantBufferData.outerAngleCos = cosf(outerAngle);
+#endif
 }
 
 } // namespace mgrrenderer

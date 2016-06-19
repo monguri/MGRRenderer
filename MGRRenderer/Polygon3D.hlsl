@@ -18,56 +18,45 @@ cbuffer MultiplyColor : register(b3)
 	float4 _multiplyColor;
 };
 
-cbuffer AmbientLightColor : register(b4)
+cbuffer AmbientLightParameter : register(b4)
 {
 	float4 _ambientLightColor;
 };
 
 cbuffer DirectionalLightViewMatrix : register(b5)
 {
-	float4 _lightView;
+	matrix _lightView;
 };
 
 cbuffer DirectionalLightProjectionMatrix : register(b6)
 {
-	float4 _lightProjection;
+	matrix _lightProjection;
 };
 
-cbuffer DirectionalLightColor : register(b7)
+cbuffer DirectionalLightDepthBiasMatrix : register(b7)
 {
+	matrix _lightDepthBias;
+};
+
+cbuffer DirectionalLightParameter : register(b8)
+{
+	float4 _directionalLightDirection;
 	float4 _directionalLightColor;
 };
 
-cbuffer DirectionalLightDirection : register(b8)
-{
-	float4 _directionalLightDirection;
-};
-
-cbuffer PointLightColor : register(b9)
+cbuffer PointLightParameter : register(b9)
 {
 	float4 _pointLightColor;
-};
-
-cbuffer PointLightPositionAndRangeInverse : register(b10)
-{
 	float3 _pointLightPosition;
 	float _pointLightRangeInverse;
 };
 
-cbuffer SpotLightPositionAndRangeInverse : register(b11)
+cbuffer SpotLightParameter : register(b10)
 {
 	float3 _spotLightPosition;
 	float _spotLightRangeInverse;
-};
-
-cbuffer SpotLightColorAndInnerAngleCos : register(b12)
-{
 	float3 _spotLightColor;
 	float _spotLightInnerAngleCos;
-};
-
-cbuffer SpotLightDirectionAndOuterAngleCos : register(b13)
-{
 	float3 _spotLightDirection;
 	float _spotLightOuterAngleCos;
 };
@@ -159,6 +148,8 @@ void GS_SM(triangle GS_SM_INPUT input[3], inout TriangleStream<PS_SM_INPUT> tria
 	for (int i = 0; i < 3; ++i)
 	{
 		output.lightPosition = mul(input[i].lightPosition, _lightProjection);
+		output.lightPosition.xyz /= output.lightPosition.w;
+		output.lightPosition = mul(output.lightPosition, _lightDepthBias);
 		triangleStream.Append(output);
 	}
 

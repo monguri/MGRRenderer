@@ -27,6 +27,9 @@ class Light :
 {
 public:
 	// 直接Lightのインスタンスを作ることはできない
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	virtual const void* getConstantBufferDataPointer() const = 0;
+#endif
 	virtual LightType getLightType() const = 0;
 	float getIntensity() const { return _intensity; }
 	void setIntensity(float intensity) { _intensity = intensity; }
@@ -45,13 +48,27 @@ class AmbientLight :
 	public Light
 {
 public:
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	struct ConstantBufferData
+	{
+		Color4F color;
+	};
+#endif
+
 	AmbientLight(const Color3B& color);
 
 	LightType getLightType() const override { return LightType::AMBIENT; };
-
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	const void* getConstantBufferDataPointer() const { return &_constantBufferData; }
+#endif
 	bool hasShadowMap() const override { return false; } // シャドウマップはアンビエントライトには使えない
 	void beginRenderShadowMap() override {};
 	void endRenderShadowMap() override {};
+
+private:
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	ConstantBufferData _constantBufferData;
+#endif
 };
 
 class DirectionalLight :
@@ -77,12 +94,23 @@ public:
 #endif
 	};
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	struct ConstantBufferData
+	{
+		Vec4 direction;
+		Color4F color;
+	};
+#endif
+
 	DirectionalLight(const Vec3& direction, const Color3B& color);
 	~DirectionalLight();
 
 	LightType getLightType() const override { return LightType::DIRECTION; };
 	const Vec3& getDirection() const { return _direction; }
 	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	const void* getConstantBufferDataPointer() const { return &_constantBufferData; }
+#endif
 	void prepareShadowMap(const Vec3& targetPosition, float cameraDistanceFromTarget, const Size& size);
 	bool hasShadowMap() const override { return _hasShadowMap; }
 	void beginRenderShadowMap() override;
@@ -91,6 +119,9 @@ public:
 private:
 	bool _hasShadowMap;
 	Vec3 _direction;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	ConstantBufferData _constantBufferData;
+#endif
 	ShadowMapData _shadowMapData;
 	GroupBeginRenderCommand _beginRenderCommand;
 	GroupEndRenderCommand _endRenderCommand;
@@ -100,10 +131,22 @@ class PointLight :
 	public Light
 {
 public:
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	struct ConstantBufferData
+	{
+		Color4F color;
+		Vec3 position;
+		float rangeInverse;
+	};
+#endif
+
 	PointLight(const Vec3& position, const Color3B& color, float range);
 
 	LightType getLightType() const override { return LightType::POINT; };
 	float getRange() const { return _range; }
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	const void* getConstantBufferDataPointer() const { return &_constantBufferData; }
+#endif
 	bool hasShadowMap() const override { return false; } // シャドウマップはポイントライトには使えない
 	void beginRenderShadowMap() override {};
 	void endRenderShadowMap() override {};
@@ -111,12 +154,27 @@ public:
 private:
 	// 減衰率計算に用いる、光の届く範囲　正しい物理計算だと無限遠まで届くが、そうでないモデルをcocosが使ってるのでそれを採用
 	float _range;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	ConstantBufferData _constantBufferData;
+#endif
 };
 
 class SpotLight :
 	public Light
 {
 public:
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	struct ConstantBufferData
+	{
+		Vec3 position;
+		float rangeInverse;
+		Color3F color;
+		float innerAngleCos;
+		Vec3 direction;
+		float outerAngleCos;
+	};
+#endif
+
 	SpotLight(const Vec3& position, const Vec3& direction, const Color3B& color, float range, float innerAngle, float outerAngle);
 
 	LightType getLightType() const override { return LightType::SPOT; };
@@ -124,6 +182,9 @@ public:
 	float getRange() const { return _range; }
 	float getInnerAngleCos() const { return _innerAngleCos; }
 	float getOuterAngleCos() const { return _outerAngleCos; }
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	const void* getConstantBufferDataPointer() const { return &_constantBufferData; }
+#endif
 	bool hasShadowMap() const override { return false; } // シャドウマップはスポットライトには使えない
 	void beginRenderShadowMap() override {};
 	void endRenderShadowMap() override {};
@@ -133,6 +194,9 @@ private:
 	float _range;
 	float _innerAngleCos;
 	float _outerAngleCos;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	ConstantBufferData _constantBufferData;
+#endif
 };
 
 } // namespace mgrrenderer

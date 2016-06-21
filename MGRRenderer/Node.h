@@ -24,7 +24,7 @@ public:
 	void setModelMatrix(const Mat4& mat) { _modelMatrix = mat; }
 	Mat4 getRotationMatrix() const;
 	const Color3B& getColor() const { return _color; }
-	void setColor(const Color3B& color) { _color = color; }
+	virtual void setColor(const Color3B& color) { _color = color; }
 
 protected:
 	Node();

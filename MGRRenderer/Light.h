@@ -32,7 +32,7 @@ public:
 #endif
 	virtual LightType getLightType() const = 0;
 	float getIntensity() const { return _intensity; }
-	void setIntensity(float intensity) { _intensity = intensity; }
+	virtual void setIntensity(float intensity) { _intensity = intensity; }
 	virtual bool hasShadowMap() const = 0;
 	virtual void beginRenderShadowMap() = 0;
 	virtual void endRenderShadowMap() = 0;
@@ -61,6 +61,8 @@ public:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	const void* getConstantBufferDataPointer() const { return &_constantBufferData; }
 #endif
+	void setColor(const Color3B& color) override;
+	void setIntensity(float intensity) override;
 	bool hasShadowMap() const override { return false; } // シャドウマップはアンビエントライトには使えない
 	void beginRenderShadowMap() override {};
 	void endRenderShadowMap() override {};
@@ -111,6 +113,8 @@ public:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	const void* getConstantBufferDataPointer() const { return &_constantBufferData; }
 #endif
+	void setColor(const Color3B& color) override;
+	void setIntensity(float intensity) override;
 	void prepareShadowMap(const Vec3& targetPosition, float cameraDistanceFromTarget, const Size& size);
 	bool hasShadowMap() const override { return _hasShadowMap; }
 	void beginRenderShadowMap() override;
@@ -147,6 +151,8 @@ public:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	const void* getConstantBufferDataPointer() const { return &_constantBufferData; }
 #endif
+	void setColor(const Color3B& color) override;
+	void setIntensity(float intensity) override;
 	bool hasShadowMap() const override { return false; } // シャドウマップはポイントライトには使えない
 	void beginRenderShadowMap() override {};
 	void endRenderShadowMap() override {};
@@ -185,6 +191,8 @@ public:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	const void* getConstantBufferDataPointer() const { return &_constantBufferData; }
 #endif
+	void setColor(const Color3B& color) override;
+	void setIntensity(float intensity) override;
 	bool hasShadowMap() const override { return false; } // シャドウマップはスポットライトには使えない
 	void beginRenderShadowMap() override {};
 	void endRenderShadowMap() override {};

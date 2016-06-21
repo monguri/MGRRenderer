@@ -131,6 +131,8 @@ void GS(triangle GS_INPUT input[3], inout TriangleStream<PS_INPUT> triangleStrea
 	{
 		output.position = mul(input[i].position, _projection);
 		output.lightPosition = mul(input[i].lightPosition, _lightProjection);
+		output.lightPosition = mul(output.lightPosition, _lightDepthBias);
+		output.lightPosition.xyz /= output.lightPosition.w;
 		output.normal = input[i].normal;
 		output.vertexToPointLightDirection = input[i].vertexToPointLightDirection;
 		output.vertexToSpotLightDirection = input[i].vertexToSpotLightDirection;
@@ -148,8 +150,6 @@ void GS_SM(triangle GS_SM_INPUT input[3], inout TriangleStream<PS_SM_INPUT> tria
 	for (int i = 0; i < 3; ++i)
 	{
 		output.lightPosition = mul(input[i].lightPosition, _lightProjection);
-		output.lightPosition.xyz /= output.lightPosition.w;
-		output.lightPosition = mul(output.lightPosition, _lightDepthBias);
 		triangleStream.Append(output);
 	}
 
@@ -182,7 +182,7 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	diffuseSpecularLightColor += computeLightedColor(normal, vertexToSpotLightDirection, _spotLightColor, attenuation);
 
 	float depth = _shadowMapTex.Sample(_shadowMapSampler, input.lightPosition.xy);
-	float outShadowFlag = input.lightPosition.z < depth ? 1.0 : 0.0;
+	float outShadowFlag = input.lightPosition.z < depth + 0.002 ? 1.0 : 0.0;
 	return _multiplyColor * float4(outShadowFlag * diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
 }
 

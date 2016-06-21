@@ -24,14 +24,23 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		// 0,1,2と左回りになっているのを前提とする
 		Vec3 normal0 = Vec3::cross(vertexArray[3 * i + 1] - vertexArray[3 * i], vertexArray[3 * i + 2] - vertexArray[3 * i]); // 左回りを前提とする
 		normal0.normalize();
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		normal0 = Mat4::CHIRARITY_CONVERTER * normal0;
+#endif
 		_normalArray.push_back(normal0);
 
 		Vec3 normal1 = Vec3::cross(vertexArray[3 * i + 2] - vertexArray[3 * i + 1], vertexArray[3 * i] - vertexArray[3 * i + 1]);
 		normal1.normalize();
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		normal1 = Mat4::CHIRARITY_CONVERTER * normal1;
+#endif
 		_normalArray.push_back(normal1);
 
 		Vec3 normal2 = Vec3::cross(vertexArray[3 * i] - vertexArray[3 * i + 2], vertexArray[3 * i + 1] - vertexArray[3 * i + 2]);
 		normal2.normalize();
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		normal2 = Mat4::CHIRARITY_CONVERTER * normal2;
+#endif
 		_normalArray.push_back(normal2);
 	}
 
@@ -641,6 +650,7 @@ void Polygon3D::renderWithShadowMap()
 					);
 					Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 					Mat4 lightProjectionMatrix = dirLight->getShadowMapData().projectionMatrix;
+					lightProjectionMatrix = Mat4::CHIRARITY_CONVERTER * lightProjectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 					lightProjectionMatrix.transpose();
 					CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
 					direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::DIRECTIONAL_LIGHT_PROJECTION_MATRIX], 0);
@@ -653,8 +663,7 @@ void Polygon3D::renderWithShadowMap()
 						&mappedResource
 					);
 					Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-					static Mat4 depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 0.0f));
-					depthBiasMatrix.transpose();
+					Mat4 depthBiasMatrix = (Mat4::TEXTURE_COORDINATE_CONVERTER * Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, -1.0f, 0.0f))).transpose(); //TODO: Mat4を参照型にすると値がおかしくなってしまう
 					CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
 					direct3dContext->Unmap(constantBuffers[(int)ConstantBufferIndex::DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX], 0);
 

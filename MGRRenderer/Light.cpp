@@ -12,7 +12,23 @@ AmbientLight::AmbientLight(const Color3B& color)
 {
 	setColor(color);
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	_constantBufferData.color = Color4F(color);
+	_constantBufferData.color = Color4F(color) * getIntensity();
+#endif
+}
+
+void AmbientLight::setColor(const Color3B& color)
+{
+	Light::setColor(color);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.color = Color4F(color) * getIntensity();
+#endif
+}
+
+void AmbientLight::setIntensity(float intensity)
+{
+	Light::setIntensity(intensity);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.color = Color4F(getColor()) * intensity;
 #endif
 }
 
@@ -27,8 +43,8 @@ DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) 
 	
 	Vec4& directionVec4 = Vec4(direction);
 	directionVec4.normalize();
-	_constantBufferData.direction = directionVec4;
-	_constantBufferData.color = Color4F(color);
+	_constantBufferData.direction = Mat4::CHIRARITY_CONVERTER * directionVec4;
+	_constantBufferData.color = Color4F(color) * getIntensity();
 
 #elif defined(MGRRENDERER_USE_OPENGL)
 	_shadowMapData.frameBufferId = 0;
@@ -77,6 +93,22 @@ DirectionalLight::~DirectionalLight()
 #endif
 }
 
+void DirectionalLight::setColor(const Color3B& color)
+{
+	Light::setColor(color);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.color = Color4F(color) * getIntensity();
+#endif
+}
+
+void DirectionalLight::setIntensity(float intensity)
+{
+	Light::setIntensity(intensity);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.color = Color4F(getColor()) * intensity;
+#endif
+}
+
 void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float cameraDistanceFromTaret, const Size& size)
 {
 	_hasShadowMap = true;
@@ -88,7 +120,7 @@ void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float camera
 	);
 
 	//_shadowMapData.projectionMatrix = Mat4::createPerspective(60.0, size.width / size.height, 10, cameraDistanceFromTaret + size.height / 2.0f);
-	_shadowMapData.projectionMatrix = Mat4::createPerspective(60.0, size.width / size.height, 10, 10000.0f);
+	_shadowMapData.projectionMatrix = Mat4::createPerspective(60.0, size.width / size.height, 10.0f, 10000.0f);
 
 	// デプステクスチャ作成
 #if defined(MGRRENDERER_USE_DIRECT3D)
@@ -266,9 +298,25 @@ PointLight::PointLight(const Vec3& position, const Color3B& color, float range) 
 	setColor(color);
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	_constantBufferData.color = Color4F(color);
+	_constantBufferData.color = Color4F(color) * getIntensity();
 	_constantBufferData.position = position;
 	_constantBufferData.rangeInverse = 1.0f / range;
+#endif
+}
+
+void PointLight::setColor(const Color3B& color)
+{
+	Light::setColor(color);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.color = Color4F(color) * getIntensity();
+#endif
+}
+
+void PointLight::setIntensity(float intensity)
+{
+	Light::setIntensity(intensity);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.color = Color4F(getColor()) * intensity;
 #endif
 }
 
@@ -284,10 +332,26 @@ _outerAngleCos(cosf(outerAngle))
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	_constantBufferData.position = position;
 	_constantBufferData.rangeInverse = 1.0f / range;
-	_constantBufferData.color = color;
+	_constantBufferData.color = Color3F(color) * getIntensity();
 	_constantBufferData.innerAngleCos = cosf(innerAngle);
-	_constantBufferData.direction = direction;
+	_constantBufferData.direction = Mat4::CHIRARITY_CONVERTER * direction;
 	_constantBufferData.outerAngleCos = cosf(outerAngle);
+#endif
+}
+
+void SpotLight::setColor(const Color3B& color)
+{
+	Light::setColor(color);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.color = Color3F(color) * getIntensity();
+#endif
+}
+
+void SpotLight::setIntensity(float intensity)
+{
+	Light::setIntensity(intensity);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.color = Color3F(getColor()) * intensity;
 #endif
 }
 

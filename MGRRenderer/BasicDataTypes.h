@@ -46,12 +46,12 @@ struct Vec2
 	Vec2() : x(0), y(0) {}
 	Vec2(float x, float y) : x(x), y(y) {}
 
-	const Vec2 operator+(const Vec2& v) const { return Vec2(x + v.x, y + v.y); }
-	const Vec2 operator-(const Vec2& v) const { return Vec2(x - v.x, y - v.y); }
+	Vec2 operator+(const Vec2& v) const { return Vec2(x + v.x, y + v.y); }
+	Vec2 operator-(const Vec2& v) const { return Vec2(x - v.x, y - v.y); }
 	Vec2& operator+=(const Vec2& v) { x += v.x; y += v.y; return *this; }
 	Vec2& operator-=(const Vec2& v) { x -= v.x; y -= v.y; return *this; }
-	const Vec2 operator*(float a) const { return Vec2(a * x, a * y); }
-	const Vec2 operator/(float a) const { Logger::logAssert(a != 0.0, "0で除算している。");  return Vec2(x / a, y / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
+	Vec2 operator*(float a) const { return Vec2(a * x, a * y); }
+	Vec2 operator/(float a) const { Logger::logAssert(a != 0.0, "0で除算している。");  return Vec2(x / a, y / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
 	Vec2& operator*=(float a) { x *= a; y *= a; return *this; }
 	Vec2& operator/=(float a) { Logger::logAssert(a != 0.0, "0で除算している。"); x /= a; y /= a; return *this; }
 	bool operator==(const Vec2& v) const { return (x == v.x && y == v.y); } //TODO:うーん。。。誤差考慮してない
@@ -100,12 +100,12 @@ struct Vec3
 	Vec3() : x(0), y(0), z(0) {}
 	Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
 
-	const Vec3 operator+(const Vec3& v) const { return Vec3(x + v.x, y + v.y, z + v.z); }
-	const Vec3 operator-(const Vec3& v) const { return Vec3(x - v.x, y - v.y, z - v.z); }
+	Vec3 operator+(const Vec3& v) const { return Vec3(x + v.x, y + v.y, z + v.z); }
+	Vec3 operator-(const Vec3& v) const { return Vec3(x - v.x, y - v.y, z - v.z); }
 	Vec3& operator+=(const Vec3& v) { x += v.x; y += v.y; z += v.z; return *this; }
 	Vec3& operator-=(const Vec3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
-	const Vec3 operator*(float a) const { return Vec3(a * x, a * y, a * z); }
-	const Vec3 operator/(float a) const { Logger::logAssert(a != 0.0, "0で除算している。");  return Vec3(x / a, y / a, z / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
+	Vec3 operator*(float a) const { return Vec3(a * x, a * y, a * z); }
+	Vec3 operator/(float a) const { Logger::logAssert(a != 0.0, "0で除算している。");  return Vec3(x / a, y / a, z / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
 	Vec3& operator*=(float a) { x *= a; y *= a; z *= a; return *this; }
 	Vec3& operator/=(float a) { Logger::logAssert(a != 0.0, "0で除算している。"); x /= a; y /= a; z /= a; return *this; }
 	bool operator==(const Vec3& v) const { return (x == v.x && y == v.y && z == v.z); } //TODO:うーん。。。誤差考慮してない
@@ -113,6 +113,7 @@ struct Vec3
 	float length() const {
 		return sqrt(x * x + y * y + z * z);
 	}
+
 	void normalize() {
 		float n = x * x + y * y + z * z;
 		if (n == 1.0f)
@@ -134,7 +135,7 @@ struct Vec3
 	}
 	float dot(const Vec3& v) const { return (x * v.x + y * v.y + z * v.z); }
 	static float dot(const Vec3& v1, const Vec3& v2) { return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z); }
-	const Vec3 cross(const Vec3& v) const { return Vec3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x); }
+	Vec3 cross(const Vec3& v) const { return Vec3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x); }
 	static Vec3 cross(const Vec3& v1, const Vec3& v2)
 	{
 		return Vec3(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
@@ -177,6 +178,12 @@ struct Color3F
 	Color3F(float r, float g, float b) : color(r, g, b)
 	{
 	}
+
+	Color3F operator*(float a)
+	{
+		color *= a;
+		return *this;
+	}
 };
 
 struct Vec4
@@ -206,28 +213,28 @@ struct Vec4
 	Vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 	Vec4(const Vec3& vec3) : x(vec3.x), y(vec3.y), z(vec3.z), w(1.0f) {}
 
-	const Vec4 operator+(const Vec4& v) const { return Vec4(x + v.x, y + v.y, z + v.z, w + v.w); }
-	const Vec4 operator-(const Vec4& v) const { return Vec4(x - v.x, y - v.y, z - v.z, w - v.w); }
+	Vec4 operator+(const Vec4& v) const { return Vec4(x + v.x, y + v.y, z + v.z, w + v.w); }
+	Vec4 operator-(const Vec4& v) const { return Vec4(x - v.x, y - v.y, z - v.z, w - v.w); }
 	Vec4& operator+=(const Vec4& v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
 	Vec4& operator-=(const Vec4& v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
-	const Vec4 operator*(float a) const { return Vec4(a * x, a * y, a * z, a * w); }
-	const Vec4 operator/(float a) const { Logger::logAssert(a != 0.0, "0で除算している。");  return Vec4(x / a, y / a, z / a, w / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
+	Vec4 operator*(float a) const { return Vec4(a * x, a * y, a * z, a * w); }
+	Vec4 operator/(float a) const { Logger::logAssert(a != 0.0, "0で除算している。");  return Vec4(x / a, y / a, z / a, w / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
 	Vec4& operator*=(float a) { x *= a; y *= a; z *= a; w *= a; return *this; }
 	Vec4& operator/=(float a) { Logger::logAssert(a != 0.0, "0で除算している。"); x /= a; y /= a; z /= a; w /= a; return *this; }
 	bool operator==(const Vec4& v) const { return (x == v.x && y == v.y && z == v.z && w == v.w); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Vec4& v) const { return (x != v.x || y != v.y || z != v.z || w != v.w);}
-	void normalize() {
+	Vec4& normalize() {
 		float n = x * x + y * y + z * z + w * w;
 		if (n == 1.0f)
 		{
-			return;
+			return *this;
 		}
 
 		n = sqrt(n);
 		if (n < FLOAT_TOLERANCE)
 		{
 			Logger::logAssert(n > FLOAT_TOLERANCE, "0に近い値で除算している。");
-			return;
+			return Vec4();
 		}
 
 		n = 1.0f / n;
@@ -235,6 +242,7 @@ struct Vec4
 		y *= n;
 		z *= n;
 		w *= n;
+		return *this;
 	}
 };
 
@@ -278,6 +286,12 @@ struct Color4F
 
 	Color4F(const Color3B& color3B) : color(color3B.r / 255.0f, color3B.g / 255.0f, color3B.b / 255.0f, 1.0f)
 	{
+	}
+
+	Color4F operator*(float a)
+	{
+		color *= a;
+		return *this;
 	}
 };
 
@@ -369,6 +383,9 @@ struct Mat4
 	static const Mat4 IDENTITY;
 	static const Mat4 ZERO;
 	static const Mat4 CHIRARITY_CONVERTER; // 左手系と右手系を切り替えるための行列
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	static const Mat4 TEXTURE_COORDINATE_CONVERTER; // 通常のy-upの座標系とテクスチャ座標系のy-downを切り替えるための行列
+#endif
 
 	Mat4() {
 		setZero();
@@ -423,7 +440,7 @@ struct Mat4
 		return *this;
 	} //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
 
-	const Mat4 operator*(float a) const
+	Mat4 operator*(float a) const
 	{
 		Mat4 ret;
 		for (int i = 0; i < 4; ++i)
@@ -435,7 +452,8 @@ struct Mat4
 		}
 		return ret;
 	}
-	const Mat4 operator/(float a) const
+
+	Mat4 operator/(float a) const
 	{
 		Logger::logAssert(a != 0.0, "0で除算している。");
 		Mat4 ret;
@@ -449,7 +467,7 @@ struct Mat4
 		return ret;
 	} //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
 
-	const Vec4 operator*(const Vec4& v) const
+	Vec4 operator*(const Vec4& v) const
 	{
 		Vec4 ret;
 		// あれ？これ、GPUでやられる計算方法と逆じゃない？普通の乗算だ。cocosはこうなってたぞ。
@@ -460,7 +478,7 @@ struct Mat4
 		return ret;
 	}
 
-	const Vec3 operator*(const Vec3& v) const
+	Vec3 operator*(const Vec3& v) const
 	{
 		// Vec4のoperator*を利用する
 		Vec4 vec4(v.x, v.y, v.z, 1.0f);
@@ -468,7 +486,7 @@ struct Mat4
 		return Vec3(vec4.x, vec4.y, vec4.z);
 	}
 
-	const Mat4 operator*(const Mat4& mat) const
+	Mat4 operator*(const Mat4& mat) const
 	{
 		Mat4 ret;
 
@@ -531,14 +549,16 @@ struct Mat4
 		return false;
 	} //TODO:うーん。。。誤差考慮してない
 
-	void setZero()
+	Mat4& setZero()
 	{
 		memset(m, 0, sizeof(Mat4));
+		return *this;
 	}
 
-	void setIdentity()
+	Mat4& setIdentity()
 	{
 		memcpy(&m, &IDENTITY, sizeof(Mat4));
+		return *this;
 	}
 
 	static Mat4 createLookAt(const Vec3& eyePosition, const Vec3& targetPosition, const Vec3& up)
@@ -692,7 +712,7 @@ struct Mat4
 		return ret;
 	}
 
-	void transpose()
+	Mat4& transpose()
 	{
 		Mat4 mat(
 			m[0][0], m[0][1], m[0][2], m[0][3],
@@ -702,9 +722,10 @@ struct Mat4
 		);
 
 		memcpy(this, &mat, sizeof(Mat4));
+		return *this;
 	}
 
-	bool inverse()
+	Mat4& inverse()
 	{
 		float a0 = m[0][0] * m[1][1] - m[0][1] * m[1][0];
 		float a1 = m[0][0] * m[1][2] - m[0][2] * m[1][0];
@@ -725,7 +746,8 @@ struct Mat4
 		// Close to zero. cannot inverse.
 		if (fabs(det) <= FLOAT_TOLERANCE)
 		{
-			return false;
+			Logger::logAssert(false, "Mat4::inverse(), determinant is 0.");
+			return Mat4(); // ゼロ行列を返す
 		}
 
 		Mat4 inverse = Mat4(
@@ -738,7 +760,7 @@ struct Mat4
 		inverse /= det;
 		memcpy(this, &inverse, sizeof(Mat4));
 
-		return true;
+		return *this;
 	}
 
 	static Mat4 createNormalMatrix(const Mat4& modelMatrix)

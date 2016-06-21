@@ -63,4 +63,13 @@ const Mat4 Mat4::CHIRARITY_CONVERTER = Mat4(
 							0.0f, 0.0f, 0.0f, 1.0f
 							);
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
+const Mat4 Mat4::TEXTURE_COORDINATE_CONVERTER = Mat4(
+							1.0f, 0.0f, 0.0f, 0.0f,
+							0.0f, -1.0f, 0.0f, 0.0f,
+							0.0f, 0.0f, 1.0f, 0.0f,
+							0.0f, 0.0f, 0.0f, 1.0f
+							);
+#endif
+
 } // namespace mgrrenderer

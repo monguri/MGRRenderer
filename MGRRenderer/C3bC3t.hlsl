@@ -18,59 +18,61 @@ cbuffer MultiplyColor : register(b3)
 	float4 _multiplyColor;
 };
 
-cbuffer AmbientLightColor : register(b4)
+cbuffer AmbientLightParameter : register(b4)
 {
 	float4 _ambientLightColor;
 };
 
-cbuffer DirectionalLightColor : register(b5)
+cbuffer DirectionalLightViewMatrix : register(b5)
 {
+	matrix _lightView;
+};
+
+cbuffer DirectionalLightProjectionMatrix : register(b6)
+{
+	matrix _lightProjection;
+};
+
+cbuffer DirectionalLightDepthBiasMatrix : register(b7)
+{
+	matrix _lightDepthBias;
+};
+
+cbuffer DirectionalLightParameter : register(b8)
+{
+	float4 _directionalLightDirection;
 	float4 _directionalLightColor;
 };
 
-cbuffer DirectionalLightDirection : register(b6)
-{
-	float4 _directionalLightDirection;
-};
-
-cbuffer PointLightColor : register(b7)
+cbuffer PointLightParameter : register(b9)
 {
 	float4 _pointLightColor;
-};
-
-cbuffer PointLightPositionAndRangeInverse : register(b8)
-{
 	float3 _pointLightPosition;
 	float _pointLightRangeInverse;
 };
 
-cbuffer SpotLightPositionAndRangeInverse : register(b9)
+cbuffer SpotLightParameter : register(b10)
 {
 	float3 _spotLightPosition;
 	float _spotLightRangeInverse;
-};
-
-cbuffer SpotLightColorAndInnerAngleCos : register(b10)
-{
 	float3 _spotLightColor;
 	float _spotLightInnerAngleCos;
-};
-
-cbuffer SpotLightDirectionAndOuterAngleCos : register(b11)
-{
 	float3 _spotLightDirection;
 	float _spotLightOuterAngleCos;
 };
 
 static const int MAX_SKINNING_JOINT = 60; // CPU側のソースと最大値定数を一致させること
 
-cbuffer MatrixPallete : register(b12)
+cbuffer MatrixPallete : register(b11)
 {
 	matrix _matrixPalette[MAX_SKINNING_JOINT];
 };
 
-Texture2D _texture2d;
+Texture2D _texture2d : register(t0);
 SamplerState _samplerState : register(s0);
+
+Texture2D _shadowMapTex : register(t1);
+SamplerState _shadowMapSampler : register(s1);
 
 struct VS_INPUT
 {
@@ -84,19 +86,30 @@ struct VS_INPUT
 struct GS_INPUT
 {
 	float4 position : SV_POSITION;
+	float4 lightPosition : POSITION;
 	float3 normal : NORMAL;
 	float2 texCoord : TEX_COORD;
 	float3 vertexToPointLightDirection : POINT_LIGHT_DIRECTION;
 	float3 vertexToSpotLightDirection : SPOT_LIGHT_DIRECTION;
 };
 
+struct GS_SM_INPUT {
+	float4 lightPosition : SV_POSITION;
+};
+
 struct PS_INPUT
 {
 	float4 position : SV_POSITION;
+	float4 lightPosition : POSITION;
 	float3 normal : NORMAL;
 	float2 texCoord : TEX_COORD;
 	float3 vertexToPointLightDirection : POINT_LIGHT_DIRECTION;
 	float3 vertexToSpotLightDirection : SPOT_LIGHT_DIRECTION;
+};
+
+struct PS_SM_INPUT
+{
+	float4 lightPosition : SV_POSITION;
 };
 
 float4 getAnimatedPosition(float4 blendWeight, float4 blendIndex, float4 position)
@@ -133,11 +146,23 @@ GS_INPUT VS(VS_INPUT input)
 	position = getAnimatedPosition(input.blendWeight, input.blendIndex, position);
 	float4 worldPosition = mul(position, _model);
 	output.position = mul(worldPosition, _view);
+	output.lightPosition = mul(worldPosition, _lightView);
 	output.normal = input.normal;
 	output.vertexToPointLightDirection = _pointLightPosition - worldPosition.xyz;
 	output.vertexToSpotLightDirection = _spotLightPosition - worldPosition.xyz;
 
 	output.texCoord = input.texCoord;
+	return output;
+}
+
+GS_SM_INPUT VS_SM(VS_INPUT input)
+{
+	GS_SM_INPUT output;
+
+	float4 position = float4(input.position, 1.0);
+	position = getAnimatedPosition(input.blendWeight, input.blendIndex, position);
+	float4 worldPosition = mul(position, _model);
+	output.lightPosition = mul(worldPosition, _lightView);
 	return output;
 }
 
@@ -149,10 +174,27 @@ void GS(triangle GS_INPUT input[3], inout TriangleStream<PS_INPUT> triangleStrea
 	for (int i = 0; i < 3; ++i)
 	{
 		output.position = mul(input[i].position, _projection);
+		output.lightPosition = mul(input[i].lightPosition, _lightProjection);
+		output.lightPosition = mul(output.lightPosition, _lightDepthBias);
+		output.lightPosition.xyz /= output.lightPosition.w;
 		output.normal = input[i].normal;
 		output.texCoord = input[i].texCoord;
 		output.vertexToPointLightDirection = input[i].vertexToPointLightDirection;
 		output.vertexToSpotLightDirection = input[i].vertexToSpotLightDirection;
+		triangleStream.Append(output);
+	}
+
+	triangleStream.RestartStrip();
+}
+
+[maxvertexcount(3)]
+void GS_SM(triangle GS_SM_INPUT input[3], inout TriangleStream<PS_SM_INPUT> triangleStream)
+{
+	PS_SM_INPUT output;
+
+	for (int i = 0; i < 3; ++i)
+	{
+		output.lightPosition = mul(input[i].lightPosition, _lightProjection);
 		triangleStream.Append(output);
 	}
 
@@ -184,5 +226,14 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	attenuation = clamp(attenuation, 0.0, 1.0);
 	diffuseSpecularLightColor += computeLightedColor(normal, vertexToSpotLightDirection, _spotLightColor, attenuation);
 
-	return _texture2d.Sample(_samplerState, input.texCoord) * _multiplyColor * float4(diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
+	float depth = _shadowMapTex.Sample(_shadowMapSampler, input.lightPosition.xy);
+	float outShadowFlag = input.lightPosition.z < depth + 0.002 ? 1.0 : 0.0;
+	return _texture2d.Sample(_samplerState, input.texCoord) * _multiplyColor * float4(outShadowFlag * diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
+}
+
+float4 PS_SM(PS_SM_INPUT input) : SV_TARGET
+{
+	// 深度をグレースケールで表現する
+	float z = input.lightPosition.z;
+	return float4(z, z, z, 1.0);
 }

@@ -108,7 +108,7 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(constantBuffer);
+	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
 
 	// View行列用
 	constantBuffer = nullptr;
@@ -118,7 +118,7 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(constantBuffer);
+	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 
 	// Projection行列用
 	constantBuffer = nullptr;
@@ -128,7 +128,7 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(constantBuffer);
+	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 
 	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
 	// 乗算色
@@ -139,7 +139,7 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(constantBuffer);
+	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	_glProgram.initWithShaderString(
 		// vertex shader
@@ -170,13 +170,12 @@ void Point2D::renderWithShadowMap()
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
-		const std::vector<ID3D11Buffer*>& constantBuffers = _d3dProgram.getConstantBuffers();
 
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 		// モデル行列のマップ
 		HRESULT result = direct3dContext->Map(
-			constantBuffers[0],
+			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -186,11 +185,11 @@ void Point2D::renderWithShadowMap()
 		Mat4 modelMatrix = getModelMatrix();
 		modelMatrix.transpose();
 		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
-		direct3dContext->Unmap(constantBuffers[0], 0);
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
 
 		// ビュー行列のマップ
 		result = direct3dContext->Map(
-			constantBuffers[1],
+			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -200,11 +199,11 @@ void Point2D::renderWithShadowMap()
 		Mat4 viewMatrix = Director::getCameraFor2D().getViewMatrix();
 		viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
 		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
-		direct3dContext->Unmap(constantBuffers[1], 0);
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
 
 		// プロジェクション行列のマップ
 		result = direct3dContext->Map(
-			constantBuffers[2],
+			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -215,11 +214,11 @@ void Point2D::renderWithShadowMap()
 		projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 		projectionMatrix.transpose();
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
-		direct3dContext->Unmap(constantBuffers[2], 0);
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
 		// 乗算色のマップ
 		result = direct3dContext->Map(
-			constantBuffers[3],
+			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -228,7 +227,7 @@ void Point2D::renderWithShadowMap()
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 		const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
-		direct3dContext->Unmap(constantBuffers[3], 0);
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
 
 		UINT strides[1] = {sizeof(Point2DData)};
 		UINT offsets[1] = {0};

@@ -4,6 +4,7 @@
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include <string>
 #include <vector>
+#include <map>
 #include <d3d11.h>
 
 namespace mgrrenderer
@@ -22,6 +23,19 @@ public:
 	static const std::string SEMANTIC_NORMAL;
 	static const std::string SEMANTIC_BLEND_WEIGHT;
 	static const std::string SEMANTIC_BLEND_INDEX;
+
+	static const std::string CONSTANT_BUFFER_MODEL_MATRIX;
+	static const std::string CONSTANT_BUFFER_VIEW_MATRIX;
+	static const std::string CONSTANT_BUFFER_PROJECTION_MATRIX;
+	static const std::string CONSTANT_BUFFER_MULTIPLY_COLOR;
+	static const std::string CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER;
+	static const std::string CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX;
+	static const std::string CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX;
+	static const std::string CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX;
+	static const std::string CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER;
+	static const std::string CONSTANT_BUFFER_POINT_LIGHT_PARAMETER;
+	static const std::string CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER;
+	static const std::string CONSTANT_BUFFER_JOINT_MATRIX_PALLETE;
 
 	D3DProgram();
 	~D3DProgram();
@@ -42,8 +56,8 @@ public:
 	void setIndexBuffer(ID3D11Buffer* indexBuffer) { _indexBuffer = indexBuffer; }
 	ID3D11InputLayout* getInputLayout() const { return _inputLayout; }
 	void setInputLayout(ID3D11InputLayout* inputLayout) { _inputLayout = inputLayout; }
-	const std::vector<ID3D11Buffer*>& getConstantBuffers() const { return _constantBuffers; }
-	void addConstantBuffer(ID3D11Buffer* constantBuffer) { _constantBuffers.push_back(constantBuffer); }
+	ID3D11Buffer* getConstantBuffer(const std::string& keyStr) const { return _constantBuffers[_constantBufferIndices.at(keyStr)]; }
+	void addConstantBuffer(const std::string& keyStr, ID3D11Buffer* constantBuffer);
 	static DXGI_FORMAT getDxgiFormat(const std::string& semantic);
 
 	void setShadersToDirect3DContext(ID3D11DeviceContext* context);
@@ -61,6 +75,7 @@ private:
 	std::vector<ID3D11Buffer*> _vertexBuffers;
 	ID3D11Buffer* _indexBuffer;
 	ID3D11InputLayout* _inputLayout;
+	std::map<std::string, size_t> _constantBufferIndices;
 	std::vector<ID3D11Buffer*> _constantBuffers;
 };
 

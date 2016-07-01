@@ -93,14 +93,13 @@ void BillBoard::renderWithShadowMap()
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
-		const std::vector<ID3D11Buffer*>& constantBuffers = _d3dProgram.getConstantBuffers();
 
 		// TODO:ここらへん共通化したいな。。
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 		// モデル行列のマップ
 		HRESULT result = direct3dContext->Map(
-			constantBuffers[0],
+			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -110,11 +109,11 @@ void BillBoard::renderWithShadowMap()
 		Mat4 modelMatrix = getModelMatrix();
 		modelMatrix.transpose();
 		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
-		direct3dContext->Unmap(constantBuffers[0], 0);
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
 
 		// ビュー行列のマップ
 		result = direct3dContext->Map(
-			constantBuffers[1],
+			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -124,11 +123,11 @@ void BillBoard::renderWithShadowMap()
 		Mat4 viewMatrix = Director::getCamera().getViewMatrix();
 		viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
 		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
-		direct3dContext->Unmap(constantBuffers[1], 0);
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
 
 		// プロジェクション行列のマップ
 		result = direct3dContext->Map(
-			constantBuffers[2],
+			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -139,11 +138,11 @@ void BillBoard::renderWithShadowMap()
 		projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 		projectionMatrix.transpose();
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
-		direct3dContext->Unmap(constantBuffers[2], 0);
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
 		// 乗算色のマップ
 		result = direct3dContext->Map(
-			constantBuffers[3],
+			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -152,7 +151,7 @@ void BillBoard::renderWithShadowMap()
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 		const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
-		direct3dContext->Unmap(constantBuffers[3], 0);
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
 
 		UINT strides[1] = {sizeof(_quadrangle.topLeft)};
 		UINT offsets[1] = {0};

@@ -17,6 +17,19 @@ const std::string D3DProgram::SEMANTIC_NORMAL = "NORMAL";
 const std::string D3DProgram::SEMANTIC_BLEND_WEIGHT = "BLEND_WEIGHT";
 const std::string D3DProgram::SEMANTIC_BLEND_INDEX = "BLEND_INDEX";
 
+const std::string D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX ="CONSTANT_BUFFER_MODEL_MATRIX";
+const std::string D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX ="CONSTANT_BUFFER_VIEW_MATRIX";
+const std::string D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX ="CONSTANT_BUFFER_PROJECTION_MATRIX";
+const std::string D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR ="CONSTANT_BUFFER_MULTIPLY_COLOR";
+const std::string D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER ="CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER";
+const std::string D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX ="CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX";
+const std::string D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX ="CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX";
+const std::string D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX ="CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX";
+const std::string D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER ="CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER";
+const std::string D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER ="CONSTANT_BUFFER_POINT_LIGHT_PARAMETER";
+const std::string D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER ="CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER";
+const std::string D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE ="CONSTANT_BUFFER_JOINT_MATRIX_PALLETE";
+
 D3DProgram::D3DProgram() :
 _vertexShader(nullptr),
 _vertexShaderBlob(nullptr),
@@ -323,12 +336,19 @@ void D3DProgram::setShadersToDirect3DContext(ID3D11DeviceContext* context)
 	context->PSSetShader(_pixelShader, nullptr, 0);
 }
 
+void D3DProgram::addConstantBuffer(const std::string& keyStr, ID3D11Buffer* constantBuffer)
+{
+	_constantBufferIndices[keyStr] = _constantBuffers.size();
+	_constantBuffers.push_back(constantBuffer);
+}
+
 void D3DProgram::setConstantBuffersToDirect3DContext(ID3D11DeviceContext* context)
 {
-	size_t constantBufferSize = _constantBuffers.size();
-	context->VSSetConstantBuffers(0, constantBufferSize, _constantBuffers.data());
-	context->GSSetConstantBuffers(0, constantBufferSize, _constantBuffers.data());
-	context->PSSetConstantBuffers(0, constantBufferSize, _constantBuffers.data());
+	size_t numConstantBuffer = _constantBuffers.size();
+	ID3D11Buffer* const* constantBufferPointer = _constantBuffers.data();
+	context->VSSetConstantBuffers(0, numConstantBuffer, constantBufferPointer);
+	context->GSSetConstantBuffers(0, numConstantBuffer, constantBufferPointer);
+	context->PSSetConstantBuffers(0, numConstantBuffer, constantBufferPointer);
 }
 } // namespace mgrrenderer
 

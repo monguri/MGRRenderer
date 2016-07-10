@@ -36,7 +36,9 @@
     <ClInclude Include="GroupBeginRenderCommand.h" />
     <ClInclude Include="GroupEndRenderCommand.h" />
     <ClInclude Include="TextureUtility.h" />
-    <ClInclude Include="VertexShaderPositionTextureMultiplyColor.glsl" />
+    <None Include="VertexShaderPositionTextureMultiplyColor.glsl">
+      <FileType>Document</FileType>
+    </None>
     <ClInclude Include="Image.h" />
     <ClInclude Include="LabelAtlas.h" />
     <ClInclude Include="Light.h" />
@@ -54,7 +56,9 @@
     <ClInclude Include="RenderCommand.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
-    <ClInclude Include="VertexShaderPositionMultiplyColor.glsl" />
+    <None Include="VertexShaderPositionMultiplyColor.glsl">
+      <FileType>Document</FileType>
+    </None>
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="Sprite2D.h" />
     <ClInclude Include="Sprite3D.h" />
@@ -102,6 +106,31 @@
   <ItemGroup>
     <None Include="FragmentShaderPositionMultiplyColor.glsl" />
     <None Include="FragmentShaderPositionTextureMultiplyColor.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C3bC3t.hlsl">
+      <FileType>HLSL</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Line.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Obj.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Point.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Polygon3D.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="PositionMultiplyColor.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="PositionTextureMultiplyColor.hlsl">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6BC7B3AF-198E-4A27-9950-D1C347DF439B}</ProjectGuid>

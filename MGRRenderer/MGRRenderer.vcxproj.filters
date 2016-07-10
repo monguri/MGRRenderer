@@ -90,5 +90,12 @@
   <ItemGroup>
     <None Include="FragmentShaderPositionMultiplyColor.glsl" />
     <None Include="FragmentShaderPositionTextureMultiplyColor.glsl" />
+    <None Include="C3bC3t.hlsl" />
+    <None Include="Polygon3D.hlsl" />
+    <None Include="Obj.hlsl" />
+    <None Include="Line.hlsl" />
+    <None Include="Point.hlsl" />
+    <None Include="PositionMultiplyColor.hlsl" />
+    <None Include="PositionTextureMultiplyColor.hlsl" />
   </ItemGroup>
 </Project>

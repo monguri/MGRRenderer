@@ -1371,10 +1371,20 @@ void Sprite3D::renderWithShadowMap()
 
 		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
 
-		ID3D11ShaderResourceView* resourceViews[2] = {_texture->getShaderResourceView(), depthTextureResourceView};
-		direct3dContext->PSSetShaderResources(0, 2, resourceViews);
-		ID3D11SamplerState* samplerStates[2] = {_texture->getSamplerState(), depthTextureSamplerState};
-		direct3dContext->PSSetSamplers(0, 2, samplerStates);
+		if (depthTextureResourceView == nullptr) // シャドウマップを作ってないとき
+		{
+			ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:型変換がうまくいかないので一度変数に代入している
+			direct3dContext->PSSetShaderResources(0, 1, &resourceView);
+			ID3D11SamplerState* samplerState = _texture->getSamplerState(); //TODO:型変換がうまくいかないので一度変数に代入している
+			direct3dContext->PSSetSamplers(0, 1, &samplerState);
+		}
+		else // シャドウマップを作ったとき
+		{
+			ID3D11ShaderResourceView* resourceViews[2] = {_texture->getShaderResourceView(), depthTextureResourceView};
+			direct3dContext->PSSetShaderResources(0, 2, resourceViews);
+			ID3D11SamplerState* samplerStates[2] = {_texture->getSamplerState(), depthTextureSamplerState};
+			direct3dContext->PSSetSamplers(0, 2, samplerStates);
+		}
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);

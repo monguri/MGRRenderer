@@ -32,7 +32,7 @@ void AmbientLight::setIntensity(float intensity)
 #endif
 }
 
-DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) : _direction(direction), _hasShadowMap(false)
+DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) : _direction(direction)
 {
 	setColor(color);
 #if defined(MGRRENDERER_USE_DIRECT3D)
@@ -41,9 +41,10 @@ DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) 
 	_shadowMapData.depthTextureShaderResourceView = nullptr;
 	_shadowMapData.depthTextureSamplerState = nullptr;
 	
-	Vec4& directionVec4 = Vec4(direction);
-	directionVec4.normalize();
-	_constantBufferData.direction = Mat4::CHIRARITY_CONVERTER * directionVec4;
+	Vec3 directionVec = direction;
+	directionVec.normalize();
+	_constantBufferData.direction = Mat4::CHIRARITY_CONVERTER * directionVec;
+	_constantBufferData.hasShadowMap = 0.0f;
 	_constantBufferData.color = Color4F(color) * getIntensity();
 
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -111,7 +112,7 @@ void DirectionalLight::setIntensity(float intensity)
 
 void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float cameraDistanceFromTaret, const Size& size)
 {
-	_hasShadowMap = true;
+	_constantBufferData.hasShadowMap = 1.0f;
 
 	_shadowMapData.viewMatrix = Mat4::createLookAt(
 		getDirection() * (-1) * cameraDistanceFromTaret + targetPosition, // ãﬂÇ∑Ç¨ÇÈÇ∆ÉJÉÅÉâÇ…ì¸ÇÁÇ»Ç¢ÇÃÇ≈ìKìxÇ…ó£Ç∑

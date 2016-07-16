@@ -99,7 +99,8 @@ public:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	struct ConstantBufferData
 	{
-		Vec4 direction;
+		Vec3 direction;
+		float hasShadowMap; // ConstantBufferのパッキングのためにfloatにしているが、0.0fか1.0fを入れてboolの代わりに使う
 		Color4F color;
 	};
 #endif
@@ -116,12 +117,11 @@ public:
 	void setColor(const Color3B& color) override;
 	void setIntensity(float intensity) override;
 	void prepareShadowMap(const Vec3& targetPosition, float cameraDistanceFromTarget, const Size& size);
-	bool hasShadowMap() const override { return _hasShadowMap; }
+	bool hasShadowMap() const override { return _constantBufferData.hasShadowMap > 0.0f; }
 	void beginRenderShadowMap() override;
 	void endRenderShadowMap() override;
 
 private:
-	bool _hasShadowMap;
 	Vec3 _direction;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	ConstantBufferData _constantBufferData;

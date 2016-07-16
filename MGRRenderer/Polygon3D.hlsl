@@ -40,7 +40,8 @@ cbuffer DirectionalLightDepthBiasMatrix : register(b7)
 
 cbuffer DirectionalLightParameter : register(b8)
 {
-	float4 _directionalLightDirection;
+	float3 _directionalLightDirection;
+	float _directionalLightHasShadowMap;
 	float4 _directionalLightColor;
 };
 
@@ -181,8 +182,16 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	attenuation = clamp(attenuation, 0.0, 1.0);
 	diffuseSpecularLightColor += computeLightedColor(normal, vertexToSpotLightDirection, _spotLightColor, attenuation);
 
-	float depth = _shadowMapTex.Sample(_shadowMapSampler, input.lightPosition.xy);
-	float outShadowFlag = input.lightPosition.z < depth + 0.002 ? 1.0 : 0.0;
+	float outShadowFlag = 1.0;
+	if (_directionalLightHasShadowMap > 0.0)
+	{
+		float depth = _shadowMapTex.Sample(_shadowMapSampler, input.lightPosition.xy);
+		if (input.lightPosition.z > depth + 0.002)
+		{
+			outShadowFlag = 0.0;
+		}
+	}
+
 	return _multiplyColor * float4(outShadowFlag * diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
 }
 

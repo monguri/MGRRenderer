@@ -99,6 +99,15 @@ void Scene::update(float dt)
 	});
 	Director::getRenderer().addCommand(&_clearCommand);
 
+	_changeRenderTargetCommand.init([=]
+	{
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
+		Director::getInstance()->getDirect3dContext()->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencil());
+#endif
+	});
+	Director::getRenderer().addCommand(&_changeRenderTargetCommand);
+
 	// 最終的な描画
 	_camera.renderWithShadowMap();
 

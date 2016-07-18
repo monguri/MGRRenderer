@@ -80,9 +80,6 @@ void Renderer::initView(const Size& windowSize)
 	_gBufferSpecularPower = new D3DTexture();
 	_gBufferSpecularPower->initRenderTexture(size, DXGI_FORMAT_R8G8B8A8_UNORM);
 
-	// デフォルトのレンダーターゲットセット
-	ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
-	direct3dContext->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencil());
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glEnable(GL_DEPTH_TEST);

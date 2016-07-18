@@ -35,6 +35,7 @@ private:
 
 	std::vector<Point2DData> _pointArray;
 
+	void renderGBuffer() override;
 	void renderWithShadowMap() override;
 };
 

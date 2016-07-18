@@ -855,6 +855,11 @@ C3bLoader::NodeData* Sprite3D::findJointByName(const std::string& jointName, con
 	return nullptr;
 }
 
+void Sprite3D::renderGBuffer()
+{
+	Node::renderGBuffer();
+}
+
 void Sprite3D::update(float dt)
 {
 	Node::update(dt);

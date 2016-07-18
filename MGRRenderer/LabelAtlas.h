@@ -17,6 +17,7 @@ public:
 	bool init(const std::string& string, const GLTexture* texture, int itemWidth, int itemHeight, char mapStartChararcter);
 	void setString(const std::string& string);
 #endif
+	void renderGBuffer() override;
 	void renderWithShadowMap() override;
 
 private:

@@ -372,6 +372,11 @@ bool Sprite2D::initWithTexture(GLuint textureId, const Size& contentSize, Textur
 }
 #endif
 
+void Sprite2D::renderGBuffer()
+{
+	Node::renderGBuffer();
+}
+
 void Sprite2D::renderWithShadowMap()
 {
 	_renderCommand.init([=]

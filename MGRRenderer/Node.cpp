@@ -12,10 +12,15 @@ void Node::update(float dt)
 {
 }
 
-void Node::renderShadowMap()
+void Node::renderGBuffer()
 {
 	// updateの次に呼ばれる前提でモデル行列計算する
 	_modelMatrix = Mat4::createTransform(_position, _rotation, _scale);
+}
+
+void Node::renderShadowMap()
+{
+	// 何もしない
 }
 
 void Node::renderWithShadowMap()

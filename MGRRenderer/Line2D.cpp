@@ -153,6 +153,11 @@ bool Line2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
 	return true;
 }
 
+void Line2D::renderGBuffer()
+{
+	Node::renderGBuffer();
+}
+
 void Line2D::renderWithShadowMap()
 {
 	_renderCommand.init([=]

@@ -164,6 +164,11 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 #endif
 }
 
+void Point2D::renderGBuffer()
+{
+	Node::renderGBuffer();
+}
+
 void Point2D::renderWithShadowMap()
 {
 	_renderCommand.init([=]

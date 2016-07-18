@@ -36,6 +36,7 @@ private:
 
 	std::vector<Point3DData> _pointArray;
 
+	void renderGBuffer() override;
 	void renderWithShadowMap() override;
 };
 

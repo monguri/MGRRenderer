@@ -175,6 +175,11 @@ void Particle3D::update(float dt)
 	}
 }
 
+void Particle3D::renderGBuffer()
+{
+	Node::renderGBuffer();
+}
+
 void Particle3D::renderWithShadowMap()
 {
 	_renderCommand.init([=]

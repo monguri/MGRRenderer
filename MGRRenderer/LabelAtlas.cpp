@@ -89,6 +89,11 @@ void LabelAtlas::setString(const std::string& string)
 }
 #endif
 
+void LabelAtlas::renderGBuffer()
+{
+	Node::renderGBuffer();
+}
+
 void LabelAtlas::renderWithShadowMap()
 {
 	_renderCommand.init([=]

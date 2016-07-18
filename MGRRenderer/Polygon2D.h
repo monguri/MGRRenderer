@@ -28,6 +28,7 @@ private:
 	CustomRenderCommand _renderCommand;
 	std::vector<Vec2> _vertexArray;
 
+	void renderGBuffer() override;
 	void renderWithShadowMap() override;
 };
 

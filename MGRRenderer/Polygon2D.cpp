@@ -152,6 +152,11 @@ bool Polygon2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
 	return true;
 }
 
+void Polygon2D::renderGBuffer()
+{
+	Node::renderGBuffer();
+}
+
 void Polygon2D::renderWithShadowMap()
 {
 	_renderCommand.init([=]

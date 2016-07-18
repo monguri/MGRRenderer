@@ -46,6 +46,7 @@ protected:
 #endif
 	CustomRenderCommand _renderCommand;
 	Quadrangle2D _quadrangle;
+	void renderGBuffer() override;
 	void renderWithShadowMap() override;
 };
 

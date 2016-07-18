@@ -377,6 +377,11 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	return true;
 }
 
+void Polygon3D::renderGBuffer()
+{
+	Node::renderGBuffer();
+}
+
 void Polygon3D::renderShadowMap()
 {
 	_renderShadowMapCommand.init([=]

@@ -164,6 +164,11 @@ void Point3D::initWithPointArray(const std::vector<Point3DData>& pointArray)
 #endif
 }
 
+void Point3D::renderGBuffer()
+{
+	Node::renderGBuffer();
+}
+
 void Point3D::renderWithShadowMap()
 {
 	_renderCommand.init([=]

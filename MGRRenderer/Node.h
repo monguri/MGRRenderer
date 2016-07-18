@@ -10,6 +10,7 @@ class Node
 public:
 	// TODO:本来はdtはスケジューラに渡せばいいのだが、今は各ノードでupdateメソッドでアニメーションをやってるのでdtをvisitとupdateに渡している
 	virtual void update(float dt);
+	virtual void renderGBuffer();
 	virtual void renderShadowMap();
 	virtual void renderWithShadowMap();
 	const Vec3& getPosition() const { return _position; }

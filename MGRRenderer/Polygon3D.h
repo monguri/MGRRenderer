@@ -33,6 +33,7 @@ private:
 	CustomRenderCommand _renderShadowMapCommand;
 	CustomRenderCommand _renderCommand;
 
+	void renderGBuffer() override;
 	void renderShadowMap() override;
 	void renderWithShadowMap() override;
 };

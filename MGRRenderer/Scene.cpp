@@ -50,6 +50,14 @@ void Scene::update(float dt)
 		child->update(dt);
 	}
 
+	_camera.renderGBuffer();
+
+	// 不透過モデルはディファードレンダリング
+	for (Node* child : _children)
+	{
+		child->renderGBuffer();
+	}
+
 	//
 	// シャドウマップの描画
 	//
@@ -61,8 +69,7 @@ void Scene::update(float dt)
 		}
 	}
 
-	_camera.renderShadowMap();
-
+	// 透過モデルはフォワードレンダリング
 	for (Node* child : _children)
 	{
 		child->renderShadowMap();

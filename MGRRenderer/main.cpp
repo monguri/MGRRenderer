@@ -556,7 +556,7 @@ void initialize()
 	scene->pushNode(spriteNode);
 	if (directionalLight->hasShadowMap())
 	{
-		scene->pushNode(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない
+		//scene->pushNode(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない
 	}
 
 	Director::getInstance()->setScene(*scene);

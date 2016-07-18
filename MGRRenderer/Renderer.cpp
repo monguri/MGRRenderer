@@ -3,6 +3,9 @@
 #include "RenderCommand.h"
 #include "GroupBeginRenderCommand.h"
 #include "Logger.h"
+#if defined(MGRRENDERER_USE_DIRECT3D)
+#include "D3DTexture.h"
+#endif
 
 namespace mgrrenderer
 {
@@ -10,6 +13,13 @@ namespace mgrrenderer
 static const size_t DEFAULT_RENDER_QUEUE_GROUP_INDEX = 0;
 
 Renderer::Renderer()
+#if defined(MGRRENDERER_USE_DIRECT3D)
+: _gBufferDepthStencil(nullptr),
+_gBufferDepthStencilReadOnly(nullptr),
+_gBufferColorSpecularIntensity(nullptr),
+_gBufferNormal(nullptr),
+_gBufferSpecularPower(nullptr)
+#endif
 {
 	_groupIndexStack.push(DEFAULT_RENDER_QUEUE_GROUP_INDEX);
 
@@ -17,11 +27,58 @@ Renderer::Renderer()
 	_queueGroup.push_back(defaultRenderQueue);
 }
 
+Renderer::~Renderer()
+{
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	if (_gBufferSpecularPower != nullptr)
+	{
+		_gBufferSpecularPower = nullptr;
+	}
+
+	if (_gBufferNormal != nullptr)
+	{
+		_gBufferNormal = nullptr;
+	}
+
+	if (_gBufferColorSpecularIntensity != nullptr)
+	{
+		_gBufferColorSpecularIntensity = nullptr;
+	}
+
+	if (_gBufferDepthStencilReadOnly != nullptr)
+	{
+		_gBufferDepthStencilReadOnly = nullptr;
+	}
+
+	if (_gBufferDepthStencil != nullptr)
+	{
+		_gBufferDepthStencil = nullptr;
+	}
+#endif
+}
+
 void Renderer::initView(const Size& windowSize)
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
+
+	const Size& size = Director::getInstance()->getWindowSize();
+
+	_gBufferDepthStencil = new D3DTexture();
+	_gBufferDepthStencil->initDepthStencilTexture(size, 0);
+
+	_gBufferDepthStencilReadOnly = new D3DTexture();
+	_gBufferDepthStencilReadOnly->initDepthStencilTexture(size, D3D11_DSV_READ_ONLY_DEPTH);
+
+	_gBufferColorSpecularIntensity = new D3DTexture();
+	_gBufferColorSpecularIntensity->initRenderTexture(size, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+	_gBufferNormal = new D3DTexture();
+	_gBufferNormal->initRenderTexture(size, DXGI_FORMAT_R11G11B10_FLOAT);
+
+	_gBufferSpecularPower = new D3DTexture();
+	_gBufferSpecularPower->initRenderTexture(size, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 	// デフォルトのレンダーターゲットセット
 	ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった

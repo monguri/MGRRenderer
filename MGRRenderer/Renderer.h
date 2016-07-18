@@ -7,11 +7,13 @@ namespace mgrrenderer
 {
 
 class RenderCommand;
+class D3DTexture;
 
 class Renderer final
 {
 public:
 	Renderer();
+	~Renderer();
 	void initView(const Size& windowSize);
 	// TODO:moveコンストラクタ使う？
 	void addCommand(RenderCommand* command);
@@ -23,6 +25,13 @@ private:
 	std::stack<size_t> _groupIndexStack;
 	// TODO:moveコンストラクタ使う？
 	std::vector<std::vector<RenderCommand*>> _queueGroup;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	D3DTexture* _gBufferDepthStencil;
+	D3DTexture* _gBufferDepthStencilReadOnly;
+	D3DTexture* _gBufferColorSpecularIntensity;
+	D3DTexture* _gBufferNormal;
+	D3DTexture* _gBufferSpecularPower;
+#endif
 
 	void visitRenderQueue(const std::vector<RenderCommand*> queue);
 	void executeRenderCommand(RenderCommand* command);

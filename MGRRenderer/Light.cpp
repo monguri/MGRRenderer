@@ -143,7 +143,7 @@ void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float camera
 	HRESULT result = device->CreateTexture2D(&depthTextureDesc, nullptr, &_shadowMapData.depthTexture);
 	if (FAILED(result))
 	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		Logger::logAssert(false, "CreateTexture2D failed. result=%d", result);
 		return;
 	}
 
@@ -166,7 +166,12 @@ void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float camera
 	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 	shaderResourceViewDesc.Texture2D.MipLevels = -1;
 
-	device->CreateShaderResourceView(_shadowMapData.depthTexture, &shaderResourceViewDesc, &_shadowMapData.depthTextureShaderResourceView);
+	result = device->CreateShaderResourceView(_shadowMapData.depthTexture, &shaderResourceViewDesc, &_shadowMapData.depthTextureShaderResourceView);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateShaderResourceView failed. result=%d", result);
+		return;
+	}
 
 	D3D11_SAMPLER_DESC desc;
 	desc.Filter = D3D11_FILTER_ANISOTROPIC;

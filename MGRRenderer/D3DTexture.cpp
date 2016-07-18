@@ -143,7 +143,7 @@ bool D3DTexture::initWithTexture(ID3D11ShaderResourceView* shaderResourceView, I
 	return true;
 }
 
-bool D3DTexture::initDepthStencilTexture(const Size & size, UINT depthStencilViewDescFlags)
+bool D3DTexture::initDepthStencilTexture(const Size & size)
 {
 	ID3D11Device* device = Director::getInstance()->getDirect3dDevice();
 
@@ -173,7 +173,7 @@ bool D3DTexture::initDepthStencilTexture(const Size & size, UINT depthStencilVie
 	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
 	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	dsvDesc.Flags = depthStencilViewDescFlags;
+	dsvDesc.Flags = 0;
 	dsvDesc.Texture2D.MipSlice = 0;
 
 	result = device->CreateDepthStencilView(texture, &dsvDesc, &_depthStencilView);

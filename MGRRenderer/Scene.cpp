@@ -53,6 +53,12 @@ void Scene::update(float dt)
 	_camera.renderGBuffer();
 
 	// 不透過モデルはディファードレンダリング
+	_prepareDifferedRenderingCommand.init([=]
+	{
+		Director::getRenderer().prepareDifferedRendering();
+	});
+	Director::getRenderer().addCommand(&_prepareDifferedRenderingCommand);
+
 	for (Node* child : _children)
 	{
 		child->renderGBuffer();
@@ -65,50 +71,22 @@ void Scene::update(float dt)
 	{
 		if (light->hasShadowMap())
 		{
-			light->beginRenderShadowMap();
+			light->prepareShadowMapRendering();
 		}
 	}
 
-	// 透過モデルはフォワードレンダリング
 	for (Node* child : _children)
 	{
 		child->renderShadowMap();
 	}
 
-	for (Light* light : Director::getLight())
+	// 透過モデルはフォワードレンダリング
+	_prepareFowardRenderingCommand.init([=]
 	{
-		if (light->hasShadowMap())
-		{
-			light->endRenderShadowMap();
-		}
-	}
-
-	_clearCommand.init([=]
-	{
-#if defined(MGRRENDERER_USE_DIRECT3D)
-		// TODO:これ、毎フレームやる必要あるのか？
-		float clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
-		direct3dContext->ClearRenderTargetView(Director::getInstance()->getDirect3dRenderTarget(), clearColor);
-		direct3dContext->ClearDepthStencilView(Director::getInstance()->getDirect3dDepthStencil(), D3D11_CLEAR_DEPTH, 1.0f, 0);
-
-#elif defined(MGRRENDERER_USE_OPENGL)
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#endif
+		Renderer::prepareFowardRendering();
 	});
-	Director::getRenderer().addCommand(&_clearCommand);
+	Director::getRenderer().addCommand(&_prepareFowardRenderingCommand);
 
-	_changeRenderTargetCommand.init([=]
-	{
-#if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
-		Director::getInstance()->getDirect3dContext()->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencil());
-#endif
-	});
-	Director::getRenderer().addCommand(&_changeRenderTargetCommand);
-
-	// 最終的な描画
 	_camera.renderWithShadowMap();
 
 	for (Node* child : _children)

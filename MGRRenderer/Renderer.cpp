@@ -15,7 +15,6 @@ static const size_t DEFAULT_RENDER_QUEUE_GROUP_INDEX = 0;
 Renderer::Renderer()
 #if defined(MGRRENDERER_USE_DIRECT3D)
 : _gBufferDepthStencil(nullptr),
-_gBufferDepthStencilReadOnly(nullptr),
 _gBufferColorSpecularIntensity(nullptr),
 _gBufferNormal(nullptr),
 _gBufferSpecularPower(nullptr)
@@ -45,11 +44,6 @@ Renderer::~Renderer()
 		_gBufferColorSpecularIntensity = nullptr;
 	}
 
-	if (_gBufferDepthStencilReadOnly != nullptr)
-	{
-		_gBufferDepthStencilReadOnly = nullptr;
-	}
-
 	if (_gBufferDepthStencil != nullptr)
 	{
 		_gBufferDepthStencil = nullptr;
@@ -66,10 +60,7 @@ void Renderer::initView(const Size& windowSize)
 	const Size& size = Director::getInstance()->getWindowSize();
 
 	_gBufferDepthStencil = new D3DTexture();
-	_gBufferDepthStencil->initDepthStencilTexture(size, 0);
-
-	_gBufferDepthStencilReadOnly = new D3DTexture();
-	_gBufferDepthStencilReadOnly->initDepthStencilTexture(size, D3D11_DSV_READ_ONLY_DEPTH);
+	_gBufferDepthStencil->initDepthStencilTexture(size);
 
 	_gBufferColorSpecularIntensity = new D3DTexture();
 	_gBufferColorSpecularIntensity->initRenderTexture(size, DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -139,6 +130,46 @@ void Renderer::render()
 	}
 
 	_queueGroup[DEFAULT_RENDER_QUEUE_GROUP_INDEX].clear();
+}
+
+void Renderer::prepareDifferedRendering()
+{
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+	direct3dContext->ClearState();
+
+	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
+
+	ID3D11RenderTargetView* gBuffers[3] = {_gBufferColorSpecularIntensity->getRenderTargetView(), _gBufferNormal->getRenderTargetView(), _gBufferSpecularPower->getRenderTargetView()};
+	direct3dContext->OMSetRenderTargets(3, gBuffers, _gBufferDepthStencil->getDepthStencilView());
+
+	float clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+	direct3dContext->ClearRenderTargetView(_gBufferColorSpecularIntensity->getRenderTargetView(), clearColor);
+	direct3dContext->ClearRenderTargetView(_gBufferNormal->getRenderTargetView(), clearColor);
+	direct3dContext->ClearRenderTargetView(_gBufferSpecularPower->getRenderTargetView(), clearColor);
+	direct3dContext->ClearDepthStencilView(Director::getInstance()->getDirect3dDepthStencil(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+#endif
+}
+
+void Renderer::prepareFowardRendering()
+{
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+	direct3dContext->ClearState();
+
+	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
+	ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
+	direct3dContext->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencil());
+
+	float clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+	direct3dContext->ClearRenderTargetView(Director::getInstance()->getDirect3dRenderTarget(), clearColor);
+	direct3dContext->ClearDepthStencilView(Director::getInstance()->getDirect3dDepthStencil(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+#elif defined(MGRRENDERER_USE_OPENGL)
+	glDisable(GL_CULL_FACE);
+	glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
 }
 
 void Renderer::visitRenderQueue(const std::vector<RenderCommand*> queue)

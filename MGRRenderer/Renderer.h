@@ -15,9 +15,12 @@ public:
 	Renderer();
 	~Renderer();
 	void initView(const Size& windowSize);
+
 	// TODO:moveコンストラクタ使う？
 	void addCommand(RenderCommand* command);
 	void render();
+	void prepareDifferedRendering();
+	static void prepareFowardRendering();
 
 private:
 	// stdにはtreeがないのでtreeのようなトラバース方法をstackとvectorで実現している
@@ -27,7 +30,6 @@ private:
 	std::vector<std::vector<RenderCommand*>> _queueGroup;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	D3DTexture* _gBufferDepthStencil;
-	D3DTexture* _gBufferDepthStencilReadOnly;
 	D3DTexture* _gBufferColorSpecularIntensity;
 	D3DTexture* _gBufferNormal;
 	D3DTexture* _gBufferSpecularPower;

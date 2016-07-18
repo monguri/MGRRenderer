@@ -32,7 +32,11 @@ void AmbientLight::setIntensity(float intensity)
 #endif
 }
 
-DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) : _direction(direction)
+DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) :
+#if defined(MGRRENDERER_USE_OPENGL)
+	_hasShadowMap(false),
+#endif
+	_direction(direction)
 {
 	setColor(color);
 #if defined(MGRRENDERER_USE_DIRECT3D)
@@ -112,8 +116,6 @@ void DirectionalLight::setIntensity(float intensity)
 
 void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float cameraDistanceFromTaret, const Size& size)
 {
-	_constantBufferData.hasShadowMap = 1.0f;
-
 	_shadowMapData.viewMatrix = Mat4::createLookAt(
 		getDirection() * (-1) * cameraDistanceFromTaret + targetPosition, // 近すぎるとカメラに入らないので適度に離す
 		targetPosition,
@@ -125,6 +127,8 @@ void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float camera
 
 	// デプステクスチャ作成
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.hasShadowMap = 1.0f;
+
 	ID3D11Device* device = Director::getInstance()->getDirect3dDevice();
 
 	D3D11_TEXTURE2D_DESC depthTextureDesc;
@@ -194,6 +198,8 @@ void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float camera
 		return;
 	}
 #elif defined(MGRRENDERER_USE_OPENGL)
+	_hasShadowMap = true;
+
 	glGenTextures(1, &_shadowMapData.textureId);
 	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 	Logger::logAssert(_shadowMapData.textureId != 0, "デプステクスチャ生成失敗");
@@ -237,11 +243,20 @@ void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float camera
 #endif
 }
 
-void DirectionalLight::beginRenderShadowMap()
+bool DirectionalLight::hasShadowMap() const
+{
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	return _constantBufferData.hasShadowMap > 0.0f;
+#elif defined(MGRRENDERER_USE_OPENGL)
+	return _hasShadowMap;
+#endif
+}
+
+void DirectionalLight::prepareShadowMapRendering()
 {
 	Logger::logAssert(hasShadowMap(), "beginRenderShadowMap呼び出しはシャドウマップを使う前提");
 
-	_beginRenderCommand.init([=]
+	_prepareShadowMapRenderingCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
@@ -272,30 +287,7 @@ void DirectionalLight::beginRenderShadowMap()
 #endif
 	});
 
-	Director::getRenderer().addCommand(&_beginRenderCommand);
-}
-
-void DirectionalLight::endRenderShadowMap()
-{
-	Logger::logAssert(hasShadowMap(), "endRenderShadowMap呼び出しはシャドウマップを使う前提");
-
-	_endRenderCommand.init([=]
-	{
-#if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
-		direct3dContext->ClearState();
-
-		direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
-		ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
-		direct3dContext->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencil());
-#elif defined(MGRRENDERER_USE_OPENGL)
-		glDisable(GL_CULL_FACE);
-		glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
-#endif
-	});
-
-	Director::getRenderer().addCommand(&_endRenderCommand);
+	Director::getRenderer().addCommand(&_prepareShadowMapRenderingCommand);
 }
 
 PointLight::PointLight(const Vec3& position, const Color3B& color, float range) : _range(range)

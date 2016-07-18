@@ -1,8 +1,7 @@
 #pragma once
 #include "Node.h"
 #include "BasicDataTypes.h"
-#include "GroupBeginRenderCommand.h"
-#include "GroupEndRenderCommand.h"
+#include "CustomRenderCommand.h"
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include <d3d11.h>
 #endif
@@ -34,8 +33,7 @@ public:
 	float getIntensity() const { return _intensity; }
 	virtual void setIntensity(float intensity) { _intensity = intensity; }
 	virtual bool hasShadowMap() const = 0;
-	virtual void beginRenderShadowMap() = 0;
-	virtual void endRenderShadowMap() = 0;
+	virtual void prepareShadowMapRendering() = 0;
 
 protected:
 	Light();
@@ -64,8 +62,7 @@ public:
 	void setColor(const Color3B& color) override;
 	void setIntensity(float intensity) override;
 	bool hasShadowMap() const override { return false; } // シャドウマップはアンビエントライトには使えない
-	void beginRenderShadowMap() override {};
-	void endRenderShadowMap() override {};
+	void prepareShadowMapRendering() override {};
 
 private:
 #if defined(MGRRENDERER_USE_DIRECT3D)
@@ -117,18 +114,18 @@ public:
 	void setColor(const Color3B& color) override;
 	void setIntensity(float intensity) override;
 	void prepareShadowMap(const Vec3& targetPosition, float cameraDistanceFromTarget, const Size& size);
-	bool hasShadowMap() const override { return _constantBufferData.hasShadowMap > 0.0f; }
-	void beginRenderShadowMap() override;
-	void endRenderShadowMap() override;
+	bool hasShadowMap() const override;
+	void prepareShadowMapRendering() override;
 
 private:
 	Vec3 _direction;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	ConstantBufferData _constantBufferData;
+#elif defined(MGRRENDERER_USE_OPENGL)
+	bool _hasShadowMap;
 #endif
 	ShadowMapData _shadowMapData;
-	GroupBeginRenderCommand _beginRenderCommand;
-	GroupEndRenderCommand _endRenderCommand;
+	CustomRenderCommand _prepareShadowMapRenderingCommand;
 };
 
 class PointLight :
@@ -154,8 +151,7 @@ public:
 	void setColor(const Color3B& color) override;
 	void setIntensity(float intensity) override;
 	bool hasShadowMap() const override { return false; } // シャドウマップはポイントライトには使えない
-	void beginRenderShadowMap() override {};
-	void endRenderShadowMap() override {};
+	void prepareShadowMapRendering() override {};
 
 private:
 	// 減衰率計算に用いる、光の届く範囲　正しい物理計算だと無限遠まで届くが、そうでないモデルをcocosが使ってるのでそれを採用
@@ -194,8 +190,7 @@ public:
 	void setColor(const Color3B& color) override;
 	void setIntensity(float intensity) override;
 	bool hasShadowMap() const override { return false; } // シャドウマップはスポットライトには使えない
-	void beginRenderShadowMap() override {};
-	void endRenderShadowMap() override {};
+	void prepareShadowMapRendering() override {};
 
 private:
 	Vec3 _direction;

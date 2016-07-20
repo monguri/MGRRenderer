@@ -119,7 +119,7 @@ bool Sprite2D::init(const std::string& filePath)
 	_d3dProgram.setIndexBuffer(indexBuffer);
 
 	bool depthEnable = false;
-	_d3dProgram.initWithShaderFile("PositionTextureMultiplyColor.hlsl", depthEnable, "VS", "GS", "PS");
+	_d3dProgram.initWithShaderFile("PositionTextureMultiplyColor.hlsl", depthEnable, "VS", "", "PS");
 
 	// 入力レイアウトオブジェクトの作成
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
@@ -273,7 +273,7 @@ bool Sprite2D::initWithTexture(ID3D11ShaderResourceView* shaderResourceView, ID3
 	_d3dProgram.setIndexBuffer(indexBuffer);
 
 	bool depthEnable = false;
-	_d3dProgram.initWithShaderFile("PositionTextureMultiplyColor.hlsl", depthEnable, "VS", "GS", "PS");
+	_d3dProgram.initWithShaderFile("PositionTextureMultiplyColor.hlsl", depthEnable, "VS", "", "PS");
 
 	// 入力レイアウトオブジェクトの作成
 	D3D11_INPUT_ELEMENT_DESC layout[] = {

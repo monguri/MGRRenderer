@@ -74,21 +74,6 @@ struct VS_INPUT
 	float2 texCoord : TEX_COORD;
 };
 
-struct GS_INPUT
-{
-	float4 position : SV_POSITION;
-	float4 lightPosition : POSITION;
-	float3 normal : NORMAL;
-	float2 texCoord : TEX_COORD;
-	float3 vertexToPointLightDirection : POINT_LIGHT_DIRECTION;
-	float3 vertexToSpotLightDirection : SPOT_LIGHT_DIRECTION;
-};
-
-struct GS_SM_INPUT
-{
-	float4 lightPosition : SV_POSITION;
-};
-
 struct PS_INPUT
 {
 	float4 position : SV_POSITION;
@@ -104,14 +89,21 @@ struct PS_SM_INPUT
 	float4 lightPosition : SV_POSITION;
 };
 
-GS_INPUT VS(VS_INPUT input)
+PS_INPUT VS(VS_INPUT input)
 {
-	GS_INPUT output;
+	PS_INPUT output;
 
 	float4 position = float4(input.position, 1.0);
 	float4 worldPosition = mul(position, _model);
-	output.position = mul(worldPosition, _view);
-	output.lightPosition = mul(worldPosition, _lightView);
+
+	position = mul(worldPosition, _view);
+	output.position = mul(position, _projection);
+
+	float4 lightPosition = mul(worldPosition, _lightView);
+	lightPosition = mul(lightPosition, _lightProjection);
+	output.lightPosition = mul(lightPosition, _lightDepthBias);
+	output.lightPosition.xyz /= output.lightPosition.w;
+
 	output.normal = input.normal;
 	output.vertexToPointLightDirection = _pointLightPosition - worldPosition.xyz;
 	output.vertexToSpotLightDirection = _spotLightPosition - worldPosition.xyz;
@@ -121,49 +113,15 @@ GS_INPUT VS(VS_INPUT input)
 	return output;
 }
 
-GS_SM_INPUT VS_SM(VS_INPUT input)
-{
-	GS_SM_INPUT output;
-
-	float4 position = float4(input.position, 1.0);
-	position = mul(position, _model);
-	output.lightPosition = mul(position, _lightView);
-	return output;
-}
-
-[maxvertexcount(3)]
-void GS(triangle GS_INPUT input[3], inout TriangleStream<PS_INPUT> triangleStream)
-{
-	PS_INPUT output;
-
-	for (int i = 0; i < 3; ++i)
-	{
-		output.position = mul(input[i].position, _projection);
-		output.lightPosition = mul(input[i].lightPosition, _lightProjection);
-		output.lightPosition = mul(output.lightPosition, _lightDepthBias);
-		output.lightPosition.xyz /= output.lightPosition.w;
-		output.normal = input[i].normal;
-		output.texCoord = input[i].texCoord;
-		output.vertexToPointLightDirection = input[i].vertexToPointLightDirection;
-		output.vertexToSpotLightDirection = input[i].vertexToSpotLightDirection;
-		triangleStream.Append(output);
-	}
-
-	triangleStream.RestartStrip();
-}
-
-[maxvertexcount(3)]
-void GS_SM(triangle GS_SM_INPUT input[3], inout TriangleStream<PS_SM_INPUT> triangleStream)
+PS_SM_INPUT VS_SM(VS_INPUT input)
 {
 	PS_SM_INPUT output;
 
-	for (int i = 0; i < 3; ++i)
-	{
-		output.lightPosition = mul(input[i].lightPosition, _lightProjection);
-		triangleStream.Append(output);
-	}
-
-	triangleStream.RestartStrip();
+	float4 position = float4(input.position, 1.0);
+	position = mul(position, _model);
+	position = mul(position, _lightView);
+	output.lightPosition = mul(position, _lightProjection);
+	return output;
 }
 
 float3 computeLightedColor(float3 normalVector, float3 lightDirection, float3 lightColor, float attenuation)

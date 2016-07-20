@@ -121,8 +121,8 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	_d3dProgramForShadowMap.setIndexBuffer(indexBuffer);
 
 	bool depthEnable = true;
-	_d3dProgram.initWithShaderFile("Polygon3D.hlsl", depthEnable, "VS", "GS", "PS");
-	_d3dProgramForShadowMap.initWithShaderFile("Polygon3D.hlsl", depthEnable, "VS_SM", "GS_SM", "");
+	_d3dProgram.initWithShaderFile("Polygon3D.hlsl", depthEnable, "VS", "", "PS");
+	_d3dProgramForShadowMap.initWithShaderFile("Polygon3D.hlsl", depthEnable, "VS_SM", "", "");
 
 	// 入力レイアウトオブジェクトの作成
 	D3D11_INPUT_ELEMENT_DESC layout[] = {

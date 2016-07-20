@@ -27,43 +27,23 @@ struct VS_INPUT
 	float2 texCoord : TEX_COORD;
 };
 
-struct GS_INPUT
-{
-	float4 position : SV_POSITION;
-	float2 texCoord : TEX_COORD;
-};
-
 struct PS_INPUT
 {
 	float4 position : SV_POSITION;
 	float2 texCoord : TEX_COORD;
 };
 
-GS_INPUT VS(VS_INPUT input)
-{
-	GS_INPUT output;
-
-	float4 position = float4(input.position, 1.0);
-	position = mul(position, _model);
-	output.position = mul(position, _view);
-
-	output.texCoord = input.texCoord;
-	return output;
-}
-
-[maxvertexcount(3)]
-void GS(triangle GS_INPUT input[3], inout TriangleStream<PS_INPUT> triangleStream)
+PS_INPUT VS(VS_INPUT input)
 {
 	PS_INPUT output;
 
-	for (int i = 0; i < 3; ++i)
-	{
-		output.position = mul(input[i].position, _projection);
-		output.texCoord = input[i].texCoord;
-		triangleStream.Append(output);
-	}
+	float4 position = float4(input.position, 1.0);
+	position = mul(position, _model);
+	position = mul(position, _view);
+	output.position = mul(position, _projection);
 
-	triangleStream.RestartStrip();
+	output.texCoord = input.texCoord;
+	return output;
 }
 
 float4 PS(PS_INPUT input) : SV_TARGET

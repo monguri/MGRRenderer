@@ -14,7 +14,6 @@ public:
 	GLTexture();
 	~GLTexture();
 	bool initWithImage(const Image& image, TextureUtility::PixelFormat format) override;
-	//bool initWithTexture(GLuint textureId, const Size& contentSize, TextureUtility::PixelFormat format);
 	bool initDepthTexture(const Size& contentSize);
 
 	GLuint getTextureId() const { return _textureId; }

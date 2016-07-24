@@ -5,6 +5,7 @@
 #include "Logger.h"
 #include "Director.h"
 #include "Scene.h"
+#include "Renderer.h"
 #include "Node.h"
 #include "Point2D.h"
 #include "Line2D.h"

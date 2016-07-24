@@ -16,6 +16,13 @@ public:
 	~Renderer();
 	void initView(const Size& windowSize);
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	D3DTexture* getGBufferDepthStencil() const { return _gBufferDepthStencil; }
+	D3DTexture* getGBufferColorSpecularIntensity() const { return _gBufferColorSpecularIntensity; }
+	D3DTexture* getGBufferNormal() const { return _gBufferNormal; }
+	D3DTexture* getGBufferSpecularPower() const { return _gBufferSpecularPower; }
+#endif
+
 	// TODO:moveコンストラクタ使う？
 	void addCommand(RenderCommand* command);
 	void render();

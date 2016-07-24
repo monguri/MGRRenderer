@@ -507,6 +507,29 @@ void initialize()
 	particle3DNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 200.0f, WINDOW_HEIGHT / 2.0f - 300.0f, 0));
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
+	// Gバッファのスプライト表示
+	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
+
+	Sprite2D* gBufferDepthStencil = new Sprite2D();
+	gBufferDepthStencil->initWithTexture(Director::getInstance()->getRenderer().getGBufferDepthStencil());
+	gBufferDepthStencil->setScale(1 / 5.0f);
+	gBufferDepthStencil->setPosition(Vec3(0.0f, 0.0f, 0.0f));
+
+	Sprite2D* gBufferColorSpecularIntensitySprite = new Sprite2D();
+	gBufferColorSpecularIntensitySprite->initWithTexture(Director::getInstance()->getRenderer().getGBufferColorSpecularIntensity());
+	gBufferColorSpecularIntensitySprite->setScale(1 / 5.0f);
+	gBufferColorSpecularIntensitySprite->setPosition(Vec3(contentSize.width, 0.0f, 0.0f));
+
+	Sprite2D* gBufferNormal = new Sprite2D();
+	gBufferNormal->initWithTexture(Director::getInstance()->getRenderer().getGBufferNormal());
+	gBufferNormal->setScale(1 / 5.0f);
+	gBufferNormal->setPosition(Vec3(contentSize.width * 2, 0.0f, 0.0f));
+
+	Sprite2D* gBufferSpecularPower = new Sprite2D();
+	gBufferSpecularPower->initWithTexture(Director::getInstance()->getRenderer().getGBufferSpecularPower());
+	gBufferSpecularPower->setScale(1 / 5.0f);
+	gBufferSpecularPower->setPosition(Vec3(contentSize.width * 3, 0.0f, 0.0f));
+
 	Scene* scene = new Scene();
 	scene->init();
 	Light* defaultLight = scene->getDefaultLight();
@@ -524,18 +547,15 @@ void initialize()
 	if (directionalLight->hasShadowMap())
 	{
 		depthTextureSprite = new Sprite2D();
-		const Size& contentSize = Director::getInstance()->getWindowSize() / 4.0f;
+		const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().depthTexture);
-		depthTextureSprite->setScale(1 / 4.0f);
+		depthTextureSprite->setScale(1 / 5.0f);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().textureId, contentSize, TextureUtility::PixelFormat::RGBA8888); // pixelformatは適当
 #endif
 		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	}
-
-	Sprite2D* gBufferColorSpecularIntensitySprite = new Sprite2D();
-	const Size& contentSize = Director::getInstance()->getWindowSize() / 4.0f;
 	//PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);
 	//pointLight->setIntensity(0.7f);
 	//scene->addLight(pointLight);
@@ -557,6 +577,10 @@ void initialize()
 	scene->pushNode(lineNode);
 	scene->pushNode(polygonNode);
 	scene->pushNode(spriteNode);
+	scene->pushNode(gBufferDepthStencil);
+	scene->pushNode(gBufferColorSpecularIntensitySprite);
+	scene->pushNode(gBufferNormal);
+	scene->pushNode(gBufferSpecularPower);
 	if (directionalLight->hasShadowMap())
 	{
 		scene->pushNode(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない

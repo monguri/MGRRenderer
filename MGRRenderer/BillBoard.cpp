@@ -22,16 +22,16 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 	return successed;
 }
 
-void BillBoard::renderShadowMap()
+void BillBoard::renderGBuffer()
 {
 	// 現状、事前にSprite2Dとは異なるモデル行列をセットするのに使っているだけ
-	_renderShadowMapCommand.init([=]
+	_renderGBufferCommand.init([=]
 	{
 		setModelMatrix(Mat4::createTransform(getPosition(), getRotation(), getScale()));
 		calculateBillboardTransform();
 	});
 
-	Director::getRenderer().addCommand(&_renderShadowMapCommand);
+	Director::getRenderer().addCommand(&_renderGBufferCommand);
 }
 
 void BillBoard::calculateBillboardTransform()

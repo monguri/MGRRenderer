@@ -22,12 +22,12 @@ public:
 	BillBoard();
 	bool init(const std::string& filePath, Mode mode);
 	// よそですでに作成済みのテクスチャのtextureIdを使う場合
-	void renderShadowMap() override;
+	void renderGBuffer() override;
 	void renderWithShadowMap() override;
 
 private:
 	Mode _mode;
-	CustomRenderCommand _renderShadowMapCommand;
+	CustomRenderCommand _renderGBufferCommand;
 
 	void calculateBillboardTransform();
 };

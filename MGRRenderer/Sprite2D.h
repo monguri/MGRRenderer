@@ -33,7 +33,7 @@ public:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	bool initWithTexture(D3DTexture* texture);
 #elif defined(MGRRENDERER_USE_OPENGL)
-	bool initWithTexture(GLuint textureId, const Size& contentSize, TextureUtility::PixelFormat format);
+	bool initWithTexture(GLTexture* texture);
 #endif
 
 protected:
@@ -49,6 +49,9 @@ protected:
 	bool initCommon(const Size& contentSize);
 	void renderGBuffer() override;
 	void renderWithShadowMap() override;
+
+private:
+	bool _isOwnTexture; // 自前で生成したテクスチャであればこのクラス内で解放する
 };
 
 } // namespace mgrrenderer

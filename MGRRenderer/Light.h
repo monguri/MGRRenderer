@@ -11,6 +11,8 @@ namespace mgrrenderer
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
 class D3DTexture;
+#elif defined(MGRRENDERER_USE_OPENGL)
+class GLTexture;
 #endif
 
 enum class LightType : int
@@ -83,15 +85,12 @@ public:
 		Mat4 viewMatrix;
 		Mat4 projectionMatrix;
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		D3DTexture *depthTexture;
+		D3DTexture* depthTexture;
 #elif defined(MGRRENDERER_USE_OPENGL)
-		GLuint frameBufferId;
-		GLuint textureId;
+		GLTexture* depthTexture;
 #endif
 
-#if defined(MGRRENDERER_USE_OPENGL)
-		ShadowMapData() : frameBufferId(0), textureId(0) {};
-#endif
+		ShadowMapData() : depthTexture(nullptr) {};
 	};
 
 #if defined(MGRRENDERER_USE_DIRECT3D)

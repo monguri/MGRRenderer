@@ -2,6 +2,8 @@
 #include "Director.h"
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include "D3DTexture.h"
+#elif defined(MGRRENDERER_USE_OPENGL)
+#include "GLTexture.h"
 #endif
 
 namespace mgrrenderer
@@ -43,41 +45,21 @@ DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) 
 {
 	setColor(color);
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	_shadowMapData.depthTexture = nullptr;
-	
 	Vec3 directionVec = direction;
 	directionVec.normalize();
 	_constantBufferData.direction = Mat4::CHIRARITY_CONVERTER * directionVec;
 	_constantBufferData.hasShadowMap = 0.0f;
 	_constantBufferData.color = Color4F(color) * getIntensity();
-
-#elif defined(MGRRENDERER_USE_OPENGL)
-	_shadowMapData.frameBufferId = 0;
-	_shadowMapData.textureId = 0;
 #endif
 }
 
 DirectionalLight::~DirectionalLight()
 {
-#if defined(MGRRENDERER_USE_DIRECT3D)
 	if (_shadowMapData.depthTexture != nullptr)
 	{
 		delete _shadowMapData.depthTexture;
 		_shadowMapData.depthTexture = nullptr;
 	}
-#elif defined(MGRRENDERER_USE_OPENGL)
-	if (_shadowMapData.frameBufferId != 0)
-	{
-		glDeleteFramebuffers(1, &_shadowMapData.frameBufferId);
-		_shadowMapData.frameBufferId = 0;
-	}
-
-	if (_shadowMapData.textureId != 0)
-	{
-		glDeleteTextures(1, &_shadowMapData.textureId);
-		_shadowMapData.textureId = 0;
-	}
-#endif
 }
 
 void DirectionalLight::setColor(const Color3B& color)
@@ -118,47 +100,10 @@ void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float camera
 #elif defined(MGRRENDERER_USE_OPENGL)
 	_hasShadowMap = true;
 
-	glGenTextures(1, &_shadowMapData.textureId);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	Logger::logAssert(_shadowMapData.textureId != 0, "デプステクスチャ生成失敗");
-
-	glBindTexture(GL_TEXTURE_2D, _shadowMapData.textureId);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	GLfloat boarderColor[] = {1.0f, 0.0f, 0.0f, 0.0f};
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, boarderColor);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
-
-	//TODO: 適当にデプステクスチャ解像度はウインドウサイズと同じにしておく
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, size.width, size.height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// デプステクスチャに描画するためのフレームバッファ作成
-	glGenFramebuffers(1, &_shadowMapData.frameBufferId);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-	Logger::logAssert(_shadowMapData.frameBufferId != 0, "フレームバッファ生成失敗");
-
-	glBindFramebuffer(GL_FRAMEBUFFER, _shadowMapData.frameBufferId);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _shadowMapData.textureId, 0);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
-	GLenum drawBuffers[] = {GL_NONE};
-	glDrawBuffers(1, drawBuffers);
-
-	Logger::logAssert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "デプスシャドウ用のフレームバッファが完成してない");
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファに戻す
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	_shadowMapData.depthTexture = new GLTexture();
+	_shadowMapData.depthTexture->initDepthTexture(size);
 #endif
+
 }
 
 bool DirectionalLight::hasShadowMap() const
@@ -193,7 +138,7 @@ void DirectionalLight::prepareShadowMapRendering()
 		ID3D11RenderTargetView* renderTarget[1] = {nullptr}; // シャドウマップ描画はDepthStencilViewはあるがRenderTargetはないのでnullでいい
 		direct3dContext->OMSetRenderTargets(1, renderTarget, _shadowMapData.depthTexture->getDepthStencilView());
 #elif defined(MGRRENDERER_USE_OPENGL)
-		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().frameBufferId);
+		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().depthTexture->getFrameBufferId());
 
 		glClear(GL_DEPTH_BUFFER_BIT);
 

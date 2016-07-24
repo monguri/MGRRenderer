@@ -541,7 +541,7 @@ void initialize()
 	DirectionalLight* directionalLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
 	directionalLight->setIntensity(0.7f);
 	//TODO:ディファードレンダリング開発のため、一時的にシャドウマップ機能はOFFに
-	directionalLight->prepareShadowMap(sprite3DC3tNode->getPosition(), WINDOW_HEIGHT / 1.1566f, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+	//directionalLight->prepareShadowMap(sprite3DC3tNode->getPosition(), WINDOW_HEIGHT / 1.1566f, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addLight(directionalLight);
 
 	// TODO:シャドウマップをスプライトで描画したかったが機能してない
@@ -552,10 +552,10 @@ void initialize()
 		const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().depthTexture);
-		depthTextureSprite->setScale(1 / 5.0f);
 #elif defined(MGRRENDERER_USE_OPENGL)
-		depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().textureId, contentSize, TextureUtility::PixelFormat::RGBA8888); // pixelformatは適当
+		depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().depthTexture);
 #endif
+		depthTextureSprite->setScale(1 / 5.0f);
 		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	}
 	//PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);

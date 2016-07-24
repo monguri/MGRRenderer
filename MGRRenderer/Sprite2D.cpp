@@ -14,17 +14,14 @@ namespace mgrrenderer
 {
 
 Sprite2D::Sprite2D() :
-_texture(nullptr)
+_texture(nullptr),
+_isOwnTexture(false)
 {
 }
 
 Sprite2D::~Sprite2D()
 {
-#if defined(MGRRENDERER_USE_OPENGL)
-	glBindTexture(GL_TEXTURE_2D, 0);
-#endif
-
-	if (_texture)
+	if (_isOwnTexture && _texture != nullptr)
 	{
 		delete _texture;
 		_texture = nullptr;
@@ -194,6 +191,8 @@ bool Sprite2D::init(const std::string& filePath)
 	_texture = new GLTexture();
 #endif
 
+	_isOwnTexture = true;
+
 	Texture* texture = _texture;
 	texture->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
 
@@ -207,13 +206,10 @@ bool Sprite2D::initWithTexture(D3DTexture* texture)
 	return initCommon(texture->getContentSize());
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
-bool Sprite2D::initWithTexture(GLuint textureId, const Size& contentSize, TextureUtility::PixelFormat format)
+bool Sprite2D::initWithTexture(GLTexture* texture)
 {
-	// TODO:改めてnewする必要あるか？
-	_texture = new GLTexture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
-	_texture->initWithTexture(textureId, contentSize, format);
-
-	return initCommon(contentSize);
+	_texture = texture;
+	return initCommon(texture->getContentSize());
 }
 #endif
 

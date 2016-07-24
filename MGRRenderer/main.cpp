@@ -508,6 +508,7 @@ void initialize()
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 	// Gバッファのスプライト表示
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
 
 	Sprite2D* gBufferDepthStencil = new Sprite2D();
@@ -529,6 +530,7 @@ void initialize()
 	gBufferSpecularPower->initWithTexture(Director::getInstance()->getRenderer().getGBufferSpecularPower());
 	gBufferSpecularPower->setScale(1 / 5.0f);
 	gBufferSpecularPower->setPosition(Vec3(contentSize.width * 3, 0.0f, 0.0f));
+#endif
 
 	Scene* scene = new Scene();
 	scene->init();
@@ -577,10 +579,12 @@ void initialize()
 	scene->pushNode(lineNode);
 	scene->pushNode(polygonNode);
 	scene->pushNode(spriteNode);
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	scene->pushNode(gBufferDepthStencil);
 	scene->pushNode(gBufferColorSpecularIntensitySprite);
 	scene->pushNode(gBufferNormal);
 	scene->pushNode(gBufferSpecularPower);
+#endif
 	if (directionalLight->hasShadowMap())
 	{
 		scene->pushNode(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない

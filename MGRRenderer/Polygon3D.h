@@ -20,8 +20,9 @@ public:
 
 private:
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	D3DProgram _d3dProgram;
+	D3DProgram _d3dProgramForGBuffer;
 	D3DProgram _d3dProgramForShadowMap;
+	D3DProgram _d3dProgram;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
 	GLProgram _glProgramForShadowMap;
@@ -30,6 +31,7 @@ private:
 	std::vector<Vec3> _vertexArray;
 	std::vector<Vec3> _normalArray;
 
+	CustomRenderCommand _renderGBufferCommand;
 	CustomRenderCommand _renderShadowMapCommand;
 	CustomRenderCommand _renderCommand;
 

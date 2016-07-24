@@ -73,6 +73,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.addVertexBuffer(vertexBuffer);
 	_d3dProgramForShadowMap.addVertexBuffer(vertexBuffer);
+	_d3dProgramForGBuffer.addVertexBuffer(vertexBuffer);
 
 	// ノーマルバッファのサブリソースの作成
 	vertexBufferSubData.pSysMem = _normalArray.data();
@@ -85,6 +86,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.addVertexBuffer(vertexBuffer);
 	_d3dProgramForShadowMap.addVertexBuffer(vertexBuffer);
+	_d3dProgramForGBuffer.addVertexBuffer(vertexBuffer);
 
 	// インデックスバッファ用の配列の用意。素直に昇順に番号付けする
 	std::vector<unsigned int> indexArray;
@@ -119,10 +121,12 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.setIndexBuffer(indexBuffer);
 	_d3dProgramForShadowMap.setIndexBuffer(indexBuffer);
+	_d3dProgramForGBuffer.setIndexBuffer(indexBuffer);
 
 	bool depthEnable = true;
 	_d3dProgram.initWithShaderFile("Polygon3D.hlsl", depthEnable, "VS", "", "PS");
 	_d3dProgramForShadowMap.initWithShaderFile("Polygon3D.hlsl", depthEnable, "VS_SM", "", "");
+	_d3dProgramForGBuffer.initWithShaderFile("Polygon3D.hlsl", depthEnable, "VS_GBUFFER", "", "PS_GBUFFER");
 
 	// 入力レイアウトオブジェクトの作成
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
@@ -144,6 +148,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.setInputLayout(inputLayout);
 	_d3dProgramForShadowMap.setInputLayout(inputLayout);
+	_d3dProgramForGBuffer.setInputLayout(inputLayout);
 
 	// 定数バッファの作成
 	D3D11_BUFFER_DESC constantBufferDesc;
@@ -164,6 +169,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
 
 	// View行列用
 	constantBuffer = nullptr;
@@ -175,6 +181,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 
 	// Projection行列用
 	constantBuffer = nullptr;
@@ -186,6 +193,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 
 	// 乗算色
 	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
@@ -198,6 +206,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 
 	// アンビエントライトカラー
 	constantBufferDesc.ByteWidth = sizeof(AmbientLight::ConstantBufferData);
@@ -379,7 +388,93 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 
 void Polygon3D::renderGBuffer()
 {
-	Node::renderGBuffer();
+	_renderGBufferCommand.init([=]
+	{
+		Node::renderGBuffer();
+
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+
+		// モデル行列のマップ
+		HRESULT result = direct3dContext->Map(
+			_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 modelMatrix = getModelMatrix();
+		modelMatrix.transpose();
+		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
+		direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
+
+		// ビュー行列のマップ
+		result = direct3dContext->Map(
+			_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 viewMatrix = Director::getCamera().getViewMatrix();
+		viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
+		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
+		direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
+
+		// プロジェクション行列のマップ
+		result = direct3dContext->Map(
+			_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 projectionMatrix = Director::getCamera().getProjectionMatrix();
+		projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
+		projectionMatrix.transpose();
+		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
+		direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
+
+		// 乗算色のマップ
+		result = direct3dContext->Map(
+			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
+		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
+		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
+
+		UINT strides[2] = {sizeof(Vec3), sizeof(Vec3)};
+		UINT offsets[2] = {0, 0};
+		direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers().size(), _d3dProgramForGBuffer.getVertexBuffers().data(), strides, offsets);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForGBuffer.getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetInputLayout(_d3dProgramForGBuffer.getInputLayout());
+		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		_d3dProgramForGBuffer.setShadersToDirect3DContext(direct3dContext);
+		_d3dProgramForGBuffer.setConstantBuffersToDirect3DContext(direct3dContext);
+
+		direct3dContext->RSSetState(_d3dProgramForGBuffer.getRasterizeState());
+
+		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+		direct3dContext->OMSetBlendState(_d3dProgramForGBuffer.getBlendState(), blendFactor, 0xffffffff);
+
+		direct3dContext->OMSetDepthStencilState(_d3dProgramForGBuffer.getDepthStancilState(), 0);
+
+		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
+#endif
+	});
+
+	Director::getRenderer().addCommand(&_renderGBufferCommand);
 }
 
 void Polygon3D::renderShadowMap()

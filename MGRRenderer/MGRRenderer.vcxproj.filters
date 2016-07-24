@@ -39,14 +39,13 @@
     <ClInclude Include="GroupBeginRenderCommand.h" />
     <ClInclude Include="GroupEndRenderCommand.h" />
     <ClInclude Include="Shaders.h" />
-    <ClInclude Include="VertexShaderPositionMultiplyColor.glsl" />
-    <ClInclude Include="VertexShaderPositionTextureMultiplyColor.glsl" />
     <ClInclude Include="GLProgram.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="D3DProgram.h" />
     <ClInclude Include="GLTexture.h" />
     <ClInclude Include="TextureUtility.h" />
     <ClInclude Include="D3DTexture.h" />
+    <ClInclude Include="GBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Director.cpp" />
@@ -86,6 +85,7 @@
     <ClCompile Include="GLTexture.cpp" />
     <ClCompile Include="TextureUtility.cpp" />
     <ClCompile Include="D3DTexture.cpp" />
+    <ClCompile Include="GBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderPositionMultiplyColor.glsl" />
@@ -97,5 +97,8 @@
     <None Include="Point.hlsl" />
     <None Include="PositionMultiplyColor.hlsl" />
     <None Include="PositionTextureMultiplyColor.hlsl" />
+    <None Include="VertexShaderPositionTextureMultiplyColor.glsl" />
+    <None Include="VertexShaderPositionMultiplyColor.glsl" />
+    <None Include="GBuffer.hlsl" />
   </ItemGroup>
 </Project>

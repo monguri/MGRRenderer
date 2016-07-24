@@ -125,7 +125,7 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 		result = D3DCompileFromFile(
 			wPath,
 			nullptr,
-			nullptr,
+			D3D_COMPILE_STANDARD_FILE_INCLUDE,
 			vertexShaderFunctionName.c_str(),
 			"vs_4_0",
 			D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
@@ -160,7 +160,7 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 		result = D3DCompileFromFile(
 			wPath,
 			nullptr,
-			nullptr,
+			D3D_COMPILE_STANDARD_FILE_INCLUDE,
 			geometryShaderFunctionName.c_str(),
 			"gs_4_0",
 			D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
@@ -197,7 +197,7 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 		result = D3DCompileFromFile(
 			wPath,
 			nullptr,
-			nullptr,
+			D3D_COMPILE_STANDARD_FILE_INCLUDE,
 			pixelShaderFunctionName.c_str(),
 			"ps_4_0",
 			D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,

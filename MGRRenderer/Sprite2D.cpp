@@ -31,6 +31,156 @@ Sprite2D::~Sprite2D()
 	}
 }
 
+bool Sprite2D::initCommon(const Size& contentSize)
+{
+	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
+	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
+	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
+	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 1.0f);
+	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
+	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 0.0f);
+	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
+	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 0.0f);
+
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	// 頂点バッファの定義
+	D3D11_BUFFER_DESC vertexBufferDesc;
+	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBufferDesc.ByteWidth = sizeof(_quadrangle);
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+	vertexBufferDesc.MiscFlags = 0;
+	vertexBufferDesc.StructureByteStride = 0;
+
+	// 頂点バッファのサブリソースの定義
+	D3D11_SUBRESOURCE_DATA vertexBufferSubData;
+	vertexBufferSubData.pSysMem = &_quadrangle;
+	vertexBufferSubData.SysMemPitch = 0;
+	vertexBufferSubData.SysMemSlicePitch = 0;
+
+	// 頂点バッファのサブリソースの作成
+	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
+	ID3D11Buffer* vertexBuffer = nullptr;
+	HRESULT result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &vertexBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addVertexBuffer(vertexBuffer);
+
+	// インデックスバッファ用の配列の用意。素直に昇順に番号付けする
+	std::vector<unsigned int> indexArray;
+	indexArray.resize(4);
+	for (unsigned int i = 0; i < 4; i++)
+	{
+		indexArray[i] = i;
+	}
+
+	// インデックスバッファの定義
+	D3D11_BUFFER_DESC indexBufferDesc;
+	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBufferDesc.ByteWidth = sizeof(UINT) * 4;
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+	indexBufferDesc.MiscFlags = 0;
+	indexBufferDesc.StructureByteStride = 0;
+
+	// インデックスバッファのサブリソースの定義
+	D3D11_SUBRESOURCE_DATA indexBufferSubData;
+	indexBufferSubData.pSysMem = indexArray.data();
+	indexBufferSubData.SysMemPitch = 0;
+	indexBufferSubData.SysMemSlicePitch = 0;
+
+	// インデックスバッファのサブリソースの作成
+	ID3D11Buffer* indexBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferSubData, &indexBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.setIndexBuffer(indexBuffer);
+
+	bool depthEnable = false;
+	_d3dProgram.initWithShaderFile("PositionTextureMultiplyColor.hlsl", depthEnable, "VS", "", "PS");
+
+	// 入力レイアウトオブジェクトの作成
+	D3D11_INPUT_ELEMENT_DESC layout[] = {
+		{D3DProgram::SEMANTIC_POSITION.c_str(), 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{D3DProgram::SEMANTIC_TEXTURE_COORDINATE.c_str(), 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(Vec2), D3D11_INPUT_PER_VERTEX_DATA, 0},
+	};
+	ID3D11InputLayout* inputLayout = nullptr;
+	result = direct3dDevice->CreateInputLayout(
+		layout,
+		_countof(layout), 
+		_d3dProgram.getVertexShaderBlob()->GetBufferPointer(),
+		_d3dProgram.getVertexShaderBlob()->GetBufferSize(),
+		&inputLayout
+	);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateInputLayout failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.setInputLayout(inputLayout);
+
+	// 定数バッファの作成
+	D3D11_BUFFER_DESC constantBufferDesc;
+	constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	constantBufferDesc.MiscFlags = 0;
+	constantBufferDesc.StructureByteStride = 0;
+	constantBufferDesc.ByteWidth = sizeof(Mat4);
+
+	// Model行列用
+	ID3D11Buffer* constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
+
+	// View行列用
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
+
+	// Projection行列用
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
+
+	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
+	// 乗算色
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
+#elif defined(MGRRENDERER_USE_OPENGL)
+	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR);
+#endif
+
+	return true;
+}
+
 bool Sprite2D::init(const std::string& filePath)
 {
 	// Textureをロードし、pngやjpegを生データにし、OpenGLにあげる仕組みを作らねば。。Spriteのソースを見直すときだ。
@@ -46,307 +196,15 @@ bool Sprite2D::init(const std::string& filePath)
 
 	Texture* texture = _texture;
 	texture->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
-	const Size& contentSize = texture->getContentSize();
 
-	// TODO:initWithTextureと共通化すべき
-	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
-	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
-	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
-	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 1.0f);
-	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
-	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 0.0f);
-	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
-	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 0.0f);
-
-#if defined(MGRRENDERER_USE_DIRECT3D)
-	// 頂点バッファの定義
-	D3D11_BUFFER_DESC vertexBufferDesc;
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(_quadrangle);
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = 0;
-	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.StructureByteStride = 0;
-
-	// 頂点バッファのサブリソースの定義
-	D3D11_SUBRESOURCE_DATA vertexBufferSubData;
-	vertexBufferSubData.pSysMem = &_quadrangle;
-	vertexBufferSubData.SysMemPitch = 0;
-	vertexBufferSubData.SysMemSlicePitch = 0;
-
-	// 頂点バッファのサブリソースの作成
-	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
-	ID3D11Buffer* vertexBuffer = nullptr;
-	HRESULT result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &vertexBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.addVertexBuffer(vertexBuffer);
-
-	// インデックスバッファ用の配列の用意。素直に昇順に番号付けする
-	std::vector<unsigned int> indexArray;
-	indexArray.resize(4);
-	for (unsigned int i = 0; i < 4; i++)
-	{
-		indexArray[i] = i;
-	}
-
-	// インデックスバッファの定義
-	D3D11_BUFFER_DESC indexBufferDesc;
-	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(UINT) * 4;
-	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBufferDesc.CPUAccessFlags = 0;
-	indexBufferDesc.MiscFlags = 0;
-	indexBufferDesc.StructureByteStride = 0;
-
-	// インデックスバッファのサブリソースの定義
-	D3D11_SUBRESOURCE_DATA indexBufferSubData;
-	indexBufferSubData.pSysMem = indexArray.data();
-	indexBufferSubData.SysMemPitch = 0;
-	indexBufferSubData.SysMemSlicePitch = 0;
-
-	// インデックスバッファのサブリソースの作成
-	ID3D11Buffer* indexBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferSubData, &indexBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.setIndexBuffer(indexBuffer);
-
-	bool depthEnable = false;
-	_d3dProgram.initWithShaderFile("PositionTextureMultiplyColor.hlsl", depthEnable, "VS", "", "PS");
-
-	// 入力レイアウトオブジェクトの作成
-	D3D11_INPUT_ELEMENT_DESC layout[] = {
-		{D3DProgram::SEMANTIC_POSITION.c_str(), 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{D3DProgram::SEMANTIC_TEXTURE_COORDINATE.c_str(), 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(Vec2), D3D11_INPUT_PER_VERTEX_DATA, 0},
-	};
-	ID3D11InputLayout* inputLayout = nullptr;
-	result = direct3dDevice->CreateInputLayout(
-		layout,
-		_countof(layout), 
-		_d3dProgram.getVertexShaderBlob()->GetBufferPointer(),
-		_d3dProgram.getVertexShaderBlob()->GetBufferSize(),
-		&inputLayout
-	);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateInputLayout failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.setInputLayout(inputLayout);
-
-	// 定数バッファの作成
-	D3D11_BUFFER_DESC constantBufferDesc;
-	constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	constantBufferDesc.MiscFlags = 0;
-	constantBufferDesc.StructureByteStride = 0;
-	constantBufferDesc.ByteWidth = sizeof(Mat4);
-
-	// Model行列用
-	ID3D11Buffer* constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
-
-	// View行列用
-	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
-
-	// Projection行列用
-	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
-
-	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
-	// 乗算色
-	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
-#elif defined(MGRRENDERER_USE_OPENGL)
-	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR);
-#endif
-
-	return true;
+	return initCommon(texture->getContentSize());
 }
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-bool Sprite2D::initWithTexture(ID3D11ShaderResourceView* shaderResourceView, ID3D11SamplerState* samplerState, const Size& contentSize)
+bool Sprite2D::initWithTexture(D3DTexture* texture)
 {
-	// TODO:改めてnewする必要あるか？
-	_texture = new D3DTexture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
-	_texture->initWithTexture(shaderResourceView, samplerState);
-
-	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
-	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
-	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
-	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 1.0f);
-	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
-	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 0.0f);
-	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
-	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 0.0f);
-
-	// 頂点バッファの定義
-	D3D11_BUFFER_DESC vertexBufferDesc;
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(_quadrangle);
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = 0;
-	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.StructureByteStride = 0;
-
-	// 頂点バッファのサブリソースの定義
-	D3D11_SUBRESOURCE_DATA vertexBufferSubData;
-	vertexBufferSubData.pSysMem = &_quadrangle;
-	vertexBufferSubData.SysMemPitch = 0;
-	vertexBufferSubData.SysMemSlicePitch = 0;
-
-	// 頂点バッファのサブリソースの作成
-	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
-	ID3D11Buffer* vertexBuffer = nullptr;
-	HRESULT result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &vertexBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.addVertexBuffer(vertexBuffer);
-
-	// インデックスバッファ用の配列の用意。素直に昇順に番号付けする
-	std::vector<unsigned int> indexArray;
-	indexArray.resize(4);
-	for (unsigned int i = 0; i < 4; i++)
-	{
-		indexArray[i] = i;
-	}
-
-	// インデックスバッファの定義
-	D3D11_BUFFER_DESC indexBufferDesc;
-	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(UINT) * 4;
-	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBufferDesc.CPUAccessFlags = 0;
-	indexBufferDesc.MiscFlags = 0;
-	indexBufferDesc.StructureByteStride = 0;
-
-	// インデックスバッファのサブリソースの定義
-	D3D11_SUBRESOURCE_DATA indexBufferSubData;
-	indexBufferSubData.pSysMem = indexArray.data();
-	indexBufferSubData.SysMemPitch = 0;
-	indexBufferSubData.SysMemSlicePitch = 0;
-
-	// インデックスバッファのサブリソースの作成
-	ID3D11Buffer* indexBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferSubData, &indexBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.setIndexBuffer(indexBuffer);
-
-	bool depthEnable = false;
-	_d3dProgram.initWithShaderFile("PositionTextureMultiplyColor.hlsl", depthEnable, "VS", "", "PS");
-
-	// 入力レイアウトオブジェクトの作成
-	D3D11_INPUT_ELEMENT_DESC layout[] = {
-		{D3DProgram::SEMANTIC_POSITION.c_str(), 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{D3DProgram::SEMANTIC_TEXTURE_COORDINATE.c_str(), 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(Vec2), D3D11_INPUT_PER_VERTEX_DATA, 0},
-	};
-	ID3D11InputLayout* inputLayout = nullptr;
-	result = direct3dDevice->CreateInputLayout(
-		layout,
-		_countof(layout), 
-		_d3dProgram.getVertexShaderBlob()->GetBufferPointer(),
-		_d3dProgram.getVertexShaderBlob()->GetBufferSize(),
-		&inputLayout
-	);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateInputLayout failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.setInputLayout(inputLayout);
-
-	// 定数バッファの作成
-	D3D11_BUFFER_DESC constantBufferDesc;
-	constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	constantBufferDesc.MiscFlags = 0;
-	constantBufferDesc.StructureByteStride = 0;
-	constantBufferDesc.ByteWidth = sizeof(Mat4);
-
-	// Model行列用
-	ID3D11Buffer* constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
-
-	// View行列用
-	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
-
-	// Projection行列用
-	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
-
-	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
-	// 乗算色
-	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
-
-	return true;
+	_texture = texture;
+	return initCommon(texture->getContentSize());
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
 bool Sprite2D::initWithTexture(GLuint textureId, const Size& contentSize, TextureUtility::PixelFormat format)
@@ -355,20 +213,7 @@ bool Sprite2D::initWithTexture(GLuint textureId, const Size& contentSize, Textur
 	_texture = new GLTexture(); // TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
 	_texture->initWithTexture(textureId, contentSize, format);
 
-	//TODO: 乗算する頂点カラーには対応しない
-
-	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR);
-
-	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
-	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
-	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
-	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 1.0f);
-	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
-	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 0.0f);
-	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
-	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 0.0f);
-
-	return true;
+	return initCommon(contentSize);
 }
 #endif
 

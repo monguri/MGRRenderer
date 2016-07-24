@@ -9,6 +9,10 @@
 namespace mgrrenderer
 {
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
+class D3DTexture;
+#endif
+
 enum class LightType : int
 {
 	NONE = -1,
@@ -79,10 +83,7 @@ public:
 		Mat4 viewMatrix;
 		Mat4 projectionMatrix;
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11Texture2D* depthTexture;
-		ID3D11DepthStencilView* depthTextureDepthStencilView;
-		ID3D11ShaderResourceView* depthTextureShaderResourceView;
-		ID3D11SamplerState* depthTextureSamplerState;
+		D3DTexture *depthTexture;
 #elif defined(MGRRENDERER_USE_OPENGL)
 		GLuint frameBufferId;
 		GLuint textureId;

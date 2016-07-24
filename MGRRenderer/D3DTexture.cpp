@@ -145,6 +145,8 @@ bool D3DTexture::initWithTexture(ID3D11ShaderResourceView* shaderResourceView, I
 
 bool D3DTexture::initDepthStencilTexture(const Size & size)
 {
+	_contentSize = size;
+
 	ID3D11Device* device = Director::getInstance()->getDirect3dDevice();
 
 	// テクスチャ生成
@@ -225,6 +227,8 @@ bool D3DTexture::initDepthStencilTexture(const Size & size)
 
 bool D3DTexture::initRenderTexture(const Size & size, DXGI_FORMAT textureFormat)
 {
+	_contentSize = size;
+
 	ID3D11Device* device = Director::getInstance()->getDirect3dDevice();
 
 	// テクスチャ生成

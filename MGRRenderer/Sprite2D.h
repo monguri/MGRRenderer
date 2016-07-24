@@ -31,7 +31,7 @@ public:
 	virtual ~Sprite2D();
 	bool init(const std::string& filePath);
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	bool initWithTexture(ID3D11ShaderResourceView* shaderResourceView, ID3D11SamplerState* samplerState, const Size& contentSize);
+	bool initWithTexture(D3DTexture* texture);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	bool initWithTexture(GLuint textureId, const Size& contentSize, TextureUtility::PixelFormat format);
 #endif
@@ -46,6 +46,7 @@ protected:
 #endif
 	CustomRenderCommand _renderCommand;
 	Quadrangle2D _quadrangle;
+	bool initCommon(const Size& contentSize);
 	void renderGBuffer() override;
 	void renderWithShadowMap() override;
 };

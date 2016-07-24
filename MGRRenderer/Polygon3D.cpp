@@ -2,6 +2,9 @@
 #include "Director.h"
 #include "Camera.h"
 #include "Light.h"
+#if defined(MGRRENDERER_USE_DIRECT3D)
+#include "D3DTexture.h"
+#endif
 
 namespace mgrrenderer
 {
@@ -765,8 +768,10 @@ void Polygon3D::renderWithShadowMap()
 					CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
 					direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX), 0);
 
-					direct3dContext->PSSetSamplers(0, 1, &dirLight->getShadowMapData().depthTextureSamplerState);
-					direct3dContext->PSSetShaderResources(0, 1, &dirLight->getShadowMapData().depthTextureShaderResourceView);
+					ID3D11SamplerState* samplerState = dirLight->getShadowMapData().depthTexture->getSamplerState();
+					direct3dContext->PSSetSamplers(0, 1, &samplerState);
+					ID3D11ShaderResourceView* shaderResouceView = dirLight->getShadowMapData().depthTexture->getShaderResourceView();
+					direct3dContext->PSSetShaderResources(0, 1, &shaderResouceView);
 				}
 
 				result = direct3dContext->Map(

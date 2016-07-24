@@ -1294,8 +1294,8 @@ void Sprite3D::renderWithShadowMap()
 					CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
 					direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX), 0);
 
-					depthTextureResourceView = dirLight->getShadowMapData().depthTextureShaderResourceView;
-					depthTextureSamplerState = dirLight->getShadowMapData().depthTextureSamplerState;
+					depthTextureResourceView = dirLight->getShadowMapData().depthTexture->getShaderResourceView();
+					depthTextureSamplerState = dirLight->getShadowMapData().depthTexture->getSamplerState();
 				}
 
 				result = direct3dContext->Map(

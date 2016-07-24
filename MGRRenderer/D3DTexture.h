@@ -14,7 +14,6 @@ public:
 	D3DTexture();
 	~D3DTexture();
 	bool initWithImage(const Image& image, TextureUtility::PixelFormat format) override;
-	bool initWithTexture(ID3D11ShaderResourceView* shaderResourceView, ID3D11SamplerState* samplerState);
 	bool initDepthStencilTexture(const Size& size);
 	bool initRenderTexture(const Size& size, DXGI_FORMAT textureFormat);
 

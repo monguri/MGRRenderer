@@ -3,6 +3,7 @@
 #include "TextureUtility.h"
 #include "FPSFontImage.h"
 #include "LabelAtlas.h"
+#include "Sprite2D.h"
 #if defined(MGRRENDERER_USE_OPENGL)
 #include "GLTexture.h"
 #endif
@@ -18,6 +19,11 @@ _direct3dDevice(nullptr),
 _direct3dContext(nullptr),
 _direct3dRenderTarget(nullptr),
 _direct3dDepthStencil(nullptr),
+_displayGBuffer(false),
+_gBufferDepthStencil(nullptr),
+_gBufferColorSpecularIntensitySprite(nullptr),
+_gBufferNormal(nullptr),
+_gBufferSpecularPower(nullptr),
 #endif
 _displayStats(false),
 _accumulatedDeltaTime(0.0f),
@@ -27,6 +33,30 @@ _FPSLabel(nullptr)
 
 Director::~Director()
 {
+	if (_gBufferSpecularPower != nullptr)
+	{
+		delete _gBufferSpecularPower;
+		_gBufferSpecularPower = nullptr;
+	}
+
+	if (_gBufferNormal != nullptr)
+	{
+		delete _gBufferNormal;
+		_gBufferNormal = nullptr;
+	}
+
+	if (_gBufferColorSpecularIntensitySprite != nullptr)
+	{
+		delete _gBufferColorSpecularIntensitySprite;
+		_gBufferColorSpecularIntensitySprite = nullptr;
+	}
+
+	if (_gBufferDepthStencil != nullptr)
+	{
+		delete _gBufferDepthStencil;
+		_gBufferDepthStencil = nullptr;
+	}
+
 	if (_FPSLabel != nullptr)
 	{
 		delete _FPSLabel;
@@ -68,6 +98,7 @@ void Director::init(const Size& windowSize)
 #endif
 
 	createStatsLabel();
+	createGBufferSprite();
 }
 
 void Director::setScene(const Scene& scene)
@@ -85,6 +116,11 @@ void Director::update()
 	if (_displayStats)
 	{
 		updateStats(dt);
+	}
+
+	if (_displayGBuffer)
+	{
+		renderGBufferSprite();
 	}
 
 	_renderer.render();
@@ -153,6 +189,45 @@ void Director::createStatsLabel()
 #endif
 }
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
+void Director::createGBufferSprite()
+{
+	_gBufferDepthStencil = new Sprite2D();
+	_gBufferDepthStencil->initWithDepthTexture(_renderer.getGBufferDepthStencil());
+	_gBufferDepthStencil->setScale(1 / 5.0f);
+	_gBufferDepthStencil->setPosition(Vec3(0.0f, 0.0f, 0.0f));
+
+	_gBufferColorSpecularIntensitySprite = new Sprite2D();
+	_gBufferColorSpecularIntensitySprite->initWithTexture(_renderer.getGBufferColorSpecularIntensity());
+	_gBufferColorSpecularIntensitySprite->setScale(1 / 5.0f);
+	_gBufferColorSpecularIntensitySprite->setPosition(Vec3(_windowSize.width, 0.0f, 0.0f));
+
+	_gBufferNormal = new Sprite2D();
+	_gBufferNormal->initWithTexture(_renderer.getGBufferNormal());
+	_gBufferNormal->setScale(1 / 5.0f);
+	_gBufferNormal->setPosition(Vec3(_windowSize.width * 2, 0.0f, 0.0f));
+
+	_gBufferSpecularPower = new Sprite2D();
+	_gBufferSpecularPower->initWithTexture(_renderer.getGBufferSpecularPower());
+	_gBufferSpecularPower->setScale(1 / 5.0f);
+	_gBufferSpecularPower->setPosition(Vec3(_windowSize.width * 3, 0.0f, 0.0f));
+}
+
+void Director::renderGBufferSprite()
+{
+	// addChild‚µ‚Ä‚È‚¢‚Ì‚Å’¼Ú•`‰æ‚·‚é
+	_gBufferDepthStencil->prepareRendering();
+	_gBufferColorSpecularIntensitySprite->prepareRendering();
+	_gBufferNormal->prepareRendering();
+	_gBufferSpecularPower->prepareRendering();
+
+	_gBufferDepthStencil->renderWithShadowMap();
+	_gBufferColorSpecularIntensitySprite->renderWithShadowMap();
+	_gBufferNormal->renderWithShadowMap();
+	_gBufferSpecularPower->renderWithShadowMap();
+}
+#endif
+
 void Director::updateStats(float dt)
 {
 	static float prevDeltaTime = 0.016f; // ‰Šú’l‚Í60FPS
@@ -190,6 +265,7 @@ void Director::updateStats(float dt)
 		glDisable(GL_DEPTH_TEST);
 #endif
 		_FPSLabel->update(dt);
+		_FPSLabel->prepareRendering();
 		_FPSLabel->renderShadowMap();
 		_FPSLabel->renderWithShadowMap();
 #if defined(MGRRENDERER_USE_OPENGL)

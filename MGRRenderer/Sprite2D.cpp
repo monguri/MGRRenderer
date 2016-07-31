@@ -13,9 +13,12 @@
 namespace mgrrenderer
 {
 
+const std::string Sprite2D::CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX = "CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX";
+
 Sprite2D::Sprite2D() :
 _texture(nullptr),
-_isOwnTexture(false)
+_isOwnTexture(false),
+_isDepthTexture(false)
 {
 }
 
@@ -28,7 +31,8 @@ Sprite2D::~Sprite2D()
 	}
 }
 
-bool Sprite2D::initCommon(const Size& contentSize)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShaderFunctionName, const std::string& geometryShaderFunctionName, const std::string& pixelShaderFunctionName, const Size& contentSize)
 {
 	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
 	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
@@ -39,7 +43,6 @@ bool Sprite2D::initCommon(const Size& contentSize)
 	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
 	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 0.0f);
 
-#if defined(MGRRENDERER_USE_DIRECT3D)
 	// 頂点バッファの定義
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -100,7 +103,7 @@ bool Sprite2D::initCommon(const Size& contentSize)
 	_d3dProgram.setIndexBuffer(indexBuffer);
 
 	bool depthEnable = false;
-	_d3dProgram.initWithShaderFile("PositionTextureMultiplyColor.hlsl", depthEnable, "VS", "", "PS");
+	_d3dProgram.initWithShaderFile(path, depthEnable, vertexShaderFunctionName, geometryShaderFunctionName, pixelShaderFunctionName);
 
 	// 入力レイアウトオブジェクトの作成
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
@@ -171,12 +174,25 @@ bool Sprite2D::initCommon(const Size& contentSize)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
+	return true;
+}
 #elif defined(MGRRENDERER_USE_OPENGL)
+bool Sprite2D::initCommon(const std::string& path, const Size& contentSize)
+{
+	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
+	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
+	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
+	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 1.0f);
+	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
+	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 0.0f);
+	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
+	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 0.0f);
+
 	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR);
-#endif
 
 	return true;
 }
+#endif
 
 bool Sprite2D::init(const std::string& filePath)
 {
@@ -196,14 +212,48 @@ bool Sprite2D::init(const std::string& filePath)
 	Texture* texture = _texture;
 	texture->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
 
-	return initCommon(texture->getContentSize());
+	return initCommon("PositionTextureMultiplyColor.hlsl", "VS", "", "PS", texture->getContentSize());
 }
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
 bool Sprite2D::initWithTexture(D3DTexture* texture)
 {
 	_texture = texture;
-	return initCommon(texture->getContentSize());
+	return initCommon("PositionTextureMultiplyColor.hlsl", "VS", "", "PS", texture->getContentSize());
+}
+
+bool Sprite2D::initWithDepthTexture(D3DTexture* texture)
+{
+	_texture = texture;
+
+	bool success = initCommon("PositionDepthTextureMultiplyColor.hlsl", "VS", "", "PS", texture->getContentSize());
+	if (!success)
+	{
+		return false;
+	}
+
+	_isDepthTexture = true;
+
+	// デプステクスチャ描画時のProjection行列用
+	ID3D11Buffer* constantBuffer = nullptr;
+
+	D3D11_BUFFER_DESC constantBufferDesc;
+	constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	constantBufferDesc.MiscFlags = 0;
+	constantBufferDesc.StructureByteStride = 0;
+	constantBufferDesc.ByteWidth = sizeof(Mat4);
+	HRESULT result = Director::getInstance()->getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+
+	_d3dProgram.addConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX, constantBuffer);
+
+	return true;
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
 bool Sprite2D::initWithTexture(GLTexture* texture)
@@ -283,6 +333,24 @@ void Sprite2D::renderWithShadowMap()
 		const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
+
+		// デプステクスチャ描画時のプロジェクション行列のマップ
+		if (_isDepthTexture)
+		{
+			result = direct3dContext->Map(
+				_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX),
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&mappedResource
+			);
+			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+			Mat4 projectionMatrix = Director::getCamera().getProjectionMatrix();
+			projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
+			projectionMatrix.transpose();
+			CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
+			direct3dContext->Unmap(_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX), 0);
+		}
 
 		UINT strides[1] = {sizeof(_quadrangle.topLeft)};
 		UINT offsets[1] = {0};

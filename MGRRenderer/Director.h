@@ -11,6 +11,7 @@ namespace mgrrenderer
 	
 class Camera;
 class LabelAtlas;
+class Sprite2D;
 class Light;
 
 class Director
@@ -41,6 +42,7 @@ public:
 	static const std::vector<Light*>& getLight();
 
 	void setDisplayStats(bool displayStats) { _displayStats = displayStats; }
+	void setDisplayGBuffer(bool displayGBuffer) { _displayGBuffer = displayGBuffer; }
 
 private:
 	static Director* _instance;
@@ -58,6 +60,14 @@ private:
 	bool _displayStats;
 	float _accumulatedDeltaTime;
 	LabelAtlas* _FPSLabel;
+	// Gバッファのデバッグ描画
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	bool _displayGBuffer;
+	Sprite2D* _gBufferDepthStencil;
+	Sprite2D* _gBufferColorSpecularIntensitySprite;
+	Sprite2D* _gBufferNormal;
+	Sprite2D* _gBufferSpecularPower;
+#endif
 
 	Director();
 	~Director();
@@ -65,6 +75,10 @@ private:
 	float calculateDeltaTime();
 	void updateStats(float dt);
 	void createStatsLabel();
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	void createGBufferSprite();
+	void renderGBufferSprite();
+#endif
 };
 
 } // namespace mgrrenderer

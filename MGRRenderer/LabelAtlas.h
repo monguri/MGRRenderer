@@ -2,6 +2,7 @@
 #include "Node.h"
 #include "GLProgram.h"
 #include "CustomRenderCommand.h"
+#include "Director.h"
 
 namespace mgrrenderer
 {
@@ -11,14 +12,14 @@ class GLTexture;
 class LabelAtlas : public Node
 {
 public:
+	friend Director; // Gバッファのデバッグ描画のためDirectorには公開している
+
 	LabelAtlas();
 	~LabelAtlas();
 #if defined(MGRRENDERER_USE_OPENGL)
 	bool init(const std::string& string, const GLTexture* texture, int itemWidth, int itemHeight, char mapStartChararcter);
 	void setString(const std::string& string);
 #endif
-	void renderGBuffer() override;
-	void renderWithShadowMap() override;
 
 private:
 #if defined(MGRRENDERER_USE_OPENGL)
@@ -32,6 +33,9 @@ private:
 	std::vector<unsigned short> _indices;
 	int _itemWidth;
 	int _itemHeight;
+
+	void renderGBuffer() override;
+	void renderWithShadowMap() override;
 };
 
 } // namespace mgrrenderer

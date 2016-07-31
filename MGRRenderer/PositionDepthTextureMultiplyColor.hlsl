@@ -18,8 +18,8 @@ cbuffer MultiplyColor : register(b3)
 	float4 _multiplyColor;
 };
 
-Texture2D<float4> _texture2d : register(t0);
-SamplerState _samplerState : register(s0);
+// GBuffer.hlslに必要な定数バッファを追加するためにここでインクルードする
+#include "GBuffer.hlsl"
 
 struct VS_INPUT
 {
@@ -48,5 +48,11 @@ PS_INPUT VS(VS_INPUT input)
 
 float4 PS(PS_INPUT input) : SV_TARGET
 {
-	return _texture2d.Sample(_samplerState, input.texCoord) * _multiplyColor;
+	float linearDepth = unpackDepthGBuffer(input.texCoord);
+	return float4(
+		1.0 - saturate(linearDepth / 75.0),
+		1.0 - saturate(linearDepth / 125.0),
+		1.0 - saturate(linearDepth / 175.0),
+		1.0 - saturate(linearDepth / 200.0)
+	);
 }

@@ -389,6 +389,7 @@ void initialize()
 
 	Director::getInstance()->init(Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	Director::getInstance()->setDisplayStats(true);
+	Director::getInstance()->setDisplayGBuffer(true);
 
 	// 各ノードの作成はDirector::initの後に呼ぶ。Director::initのもっているウィンドウサイズを使用する場合があるので。
 
@@ -507,31 +508,6 @@ void initialize()
 	particle3DNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 200.0f, WINDOW_HEIGHT / 2.0f - 300.0f, 0));
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
-	// Gバッファのスプライト表示
-#if defined(MGRRENDERER_USE_DIRECT3D)
-	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
-
-	Sprite2D* gBufferDepthStencil = new Sprite2D();
-	gBufferDepthStencil->initWithTexture(Director::getInstance()->getRenderer().getGBufferDepthStencil());
-	gBufferDepthStencil->setScale(1 / 5.0f);
-	gBufferDepthStencil->setPosition(Vec3(0.0f, 0.0f, 0.0f));
-
-	Sprite2D* gBufferColorSpecularIntensitySprite = new Sprite2D();
-	gBufferColorSpecularIntensitySprite->initWithTexture(Director::getInstance()->getRenderer().getGBufferColorSpecularIntensity());
-	gBufferColorSpecularIntensitySprite->setScale(1 / 5.0f);
-	gBufferColorSpecularIntensitySprite->setPosition(Vec3(contentSize.width, 0.0f, 0.0f));
-
-	Sprite2D* gBufferNormal = new Sprite2D();
-	gBufferNormal->initWithTexture(Director::getInstance()->getRenderer().getGBufferNormal());
-	gBufferNormal->setScale(1 / 5.0f);
-	gBufferNormal->setPosition(Vec3(contentSize.width * 2, 0.0f, 0.0f));
-
-	Sprite2D* gBufferSpecularPower = new Sprite2D();
-	gBufferSpecularPower->initWithTexture(Director::getInstance()->getRenderer().getGBufferSpecularPower());
-	gBufferSpecularPower->setScale(1 / 5.0f);
-	gBufferSpecularPower->setPosition(Vec3(contentSize.width * 3, 0.0f, 0.0f));
-#endif
-
 	Scene* scene = new Scene();
 	scene->init();
 	Light* defaultLight = scene->getDefaultLight();
@@ -579,12 +555,6 @@ void initialize()
 	scene->pushNode(lineNode);
 	scene->pushNode(polygonNode);
 	scene->pushNode(spriteNode);
-#if defined(MGRRENDERER_USE_DIRECT3D)
-	scene->pushNode(gBufferDepthStencil);
-	scene->pushNode(gBufferColorSpecularIntensitySprite);
-	scene->pushNode(gBufferNormal);
-	scene->pushNode(gBufferSpecularPower);
-#endif
 	if (directionalLight->hasShadowMap())
 	{
 		scene->pushNode(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない

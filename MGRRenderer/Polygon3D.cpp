@@ -473,8 +473,6 @@ void Polygon3D::renderGBuffer()
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgramForGBuffer.getBlendState(), blendFactor, 0xffffffff);
 
-		direct3dContext->OMSetDepthStencilState(_d3dProgramForGBuffer.getDepthStancilState(), 0);
-
 		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
 #endif
 	});

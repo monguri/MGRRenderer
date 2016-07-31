@@ -138,16 +138,17 @@ void Renderer::prepareDifferedRendering()
 	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 	direct3dContext->ClearState();
 
-	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
-
-	ID3D11RenderTargetView* gBuffers[3] = {_gBufferColorSpecularIntensity->getRenderTargetView(), _gBufferNormal->getRenderTargetView(), _gBufferSpecularPower->getRenderTargetView()};
-	direct3dContext->OMSetRenderTargets(3, gBuffers, _gBufferDepthStencil->getDepthStencilView());
-
 	float clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	direct3dContext->ClearRenderTargetView(_gBufferColorSpecularIntensity->getRenderTargetView(), clearColor);
 	direct3dContext->ClearRenderTargetView(_gBufferNormal->getRenderTargetView(), clearColor);
 	direct3dContext->ClearRenderTargetView(_gBufferSpecularPower->getRenderTargetView(), clearColor);
-	direct3dContext->ClearDepthStencilView(Director::getInstance()->getDirect3dDepthStencil(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	direct3dContext->ClearDepthStencilView(_gBufferDepthStencil->getDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
+
+	ID3D11RenderTargetView* gBuffers[3] = {_gBufferColorSpecularIntensity->getRenderTargetView(), _gBufferNormal->getRenderTargetView(), _gBufferSpecularPower->getRenderTargetView()};
+	direct3dContext->OMSetRenderTargets(3, gBuffers, _gBufferDepthStencil->getDepthStencilView());
+	direct3dContext->OMSetDepthStencilState(_gBufferDepthStencil->getDepthStencilState(), 1);
 #endif
 }
 
@@ -157,13 +158,13 @@ void Renderer::prepareFowardRendering()
 	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 	direct3dContext->ClearState();
 
-	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
-	ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
-	direct3dContext->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencil());
-
 	float clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	direct3dContext->ClearRenderTargetView(Director::getInstance()->getDirect3dRenderTarget(), clearColor);
-	direct3dContext->ClearDepthStencilView(Director::getInstance()->getDirect3dDepthStencil(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	direct3dContext->ClearDepthStencilView(Director::getInstance()->getDirect3dDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
+	ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
+	direct3dContext->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencilView());
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glDisable(GL_CULL_FACE);
 	glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);

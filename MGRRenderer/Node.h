@@ -10,6 +10,7 @@ class Node
 public:
 	// TODO:本来はdtはスケジューラに渡せばいいのだが、今は各ノードでupdateメソッドでアニメーションをやってるのでdtをvisitとupdateに渡している
 	virtual void update(float dt);
+	virtual void prepareRendering();
 	virtual void renderGBuffer();
 	virtual void renderShadowMap();
 	virtual void renderWithShadowMap();

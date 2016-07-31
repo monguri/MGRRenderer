@@ -50,6 +50,13 @@ void Scene::update(float dt)
 		child->update(dt);
 	}
 
+	_camera.prepareRendering();
+
+	for (Node* child : _children)
+	{
+		child->prepareRendering();
+	}
+
 	_camera.renderGBuffer();
 
 	// 不透過モデルはディファードレンダリング

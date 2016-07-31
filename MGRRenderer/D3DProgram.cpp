@@ -128,7 +128,7 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 			D3D_COMPILE_STANDARD_FILE_INCLUDE,
 			vertexShaderFunctionName.c_str(),
 			"vs_4_0",
-			D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION | D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_PACK_MATRIX_COLUMN_MAJOR,
+			D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR,
 			0,
 			&_vertexShaderBlob,
 			&errMsg
@@ -266,8 +266,8 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
 	depthStencilDesc.StencilEnable = FALSE;
-	depthStencilDesc.StencilReadMask = 0;
-	depthStencilDesc.StencilWriteMask = 0;
+	depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+	depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
 	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
 	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
 	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;

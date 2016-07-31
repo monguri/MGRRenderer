@@ -137,6 +137,7 @@ void DirectionalLight::prepareShadowMapRendering()
 		
 		ID3D11RenderTargetView* renderTarget[1] = {nullptr}; // シャドウマップ描画はDepthStencilViewはあるがRenderTargetはないのでnullでいい
 		direct3dContext->OMSetRenderTargets(1, renderTarget, _shadowMapData.depthTexture->getDepthStencilView());
+		direct3dContext->OMSetDepthStencilState(_shadowMapData.depthTexture->getDepthStencilState(), 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().depthTexture->getFrameBufferId());
 

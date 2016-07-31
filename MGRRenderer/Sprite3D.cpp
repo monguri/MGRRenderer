@@ -1080,8 +1080,6 @@ void Sprite3D::renderShadowMap()
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgramForShadowMap.getBlendState(), blendFactor, 0xffffffff);
 
-		direct3dContext->OMSetDepthStencilState(_d3dProgramForShadowMap.getDepthStancilState(), 0);
-
 		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForShadowMap.getShaderProgram());

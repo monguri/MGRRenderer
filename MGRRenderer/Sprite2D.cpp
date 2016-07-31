@@ -177,7 +177,7 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 	return true;
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
-bool Sprite2D::initCommon(const std::string& path, const Size& contentSize)
+bool Sprite2D::initCommon(const Size& contentSize)
 {
 	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
 	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
@@ -212,7 +212,11 @@ bool Sprite2D::init(const std::string& filePath)
 	Texture* texture = _texture;
 	texture->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	return initCommon("PositionTextureMultiplyColor.hlsl", "VS", "", "PS", texture->getContentSize());
+#elif defined(MGRRENDERER_USE_OPENGL)
+	return initCommon(texture->getContentSize());
+#endif
 }
 
 #if defined(MGRRENDERER_USE_DIRECT3D)

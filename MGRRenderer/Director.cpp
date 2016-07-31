@@ -35,6 +35,7 @@ _FPSLabel(nullptr)
 
 Director::~Director()
 {
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	if (_gBufferSpecularPower != nullptr)
 	{
 		delete _gBufferSpecularPower;
@@ -58,6 +59,7 @@ Director::~Director()
 		delete _gBufferDepthStencil;
 		_gBufferDepthStencil = nullptr;
 	}
+#endif
 
 	if (_FPSLabel != nullptr)
 	{
@@ -100,7 +102,9 @@ void Director::init(const Size& windowSize)
 #endif
 
 	createStatsLabel();
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	createGBufferSprite();
+#endif
 }
 
 void Director::setScene(const Scene& scene)
@@ -121,10 +125,12 @@ void Director::update()
 		updateStats(dt);
 	}
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	if (_displayGBuffer)
 	{
 		renderGBufferSprite();
 	}
+#endif
 
 	_renderer.render();
 }

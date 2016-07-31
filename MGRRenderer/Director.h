@@ -46,7 +46,9 @@ public:
 	static const std::vector<Light*>& getLight();
 
 	void setDisplayStats(bool displayStats) { _displayStats = displayStats; }
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	void setDisplayGBuffer(bool displayGBuffer) { _displayGBuffer = displayGBuffer; }
+#endif
 
 private:
 	static Director* _instance;

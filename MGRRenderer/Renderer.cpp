@@ -73,7 +73,6 @@ void Renderer::initView(const Size& windowSize)
 
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glEnable(GL_DEPTH_TEST);
 	// TODO:ブレンドが必要ない時もブレンドをONにしている
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -149,6 +148,8 @@ void Renderer::prepareDifferedRendering()
 	ID3D11RenderTargetView* gBuffers[3] = {_gBufferColorSpecularIntensity->getRenderTargetView(), _gBufferNormal->getRenderTargetView(), _gBufferSpecularPower->getRenderTargetView()};
 	direct3dContext->OMSetRenderTargets(3, gBuffers, _gBufferDepthStencil->getDepthStencilView());
 	direct3dContext->OMSetDepthStencilState(_gBufferDepthStencil->getDepthStencilState(), 1);
+#elif defined(MGRRENDERER_USE_OPENGL)
+	glEnable(GL_DEPTH_TEST);
 #endif
 }
 
@@ -168,6 +169,7 @@ void Renderer::prepareFowardRendering()
 	direct3dContext->OMSetDepthStencilState(Director::getInstance()->getDirect3dDepthStencilState(), 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glDisable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
 	glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -179,6 +181,7 @@ void Renderer::prepareFowardRendering2D()
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	Director::getInstance()->getDirect3dContext()->OMSetDepthStencilState(Director::getInstance()->getDirect3dDepthStencilState2D(), 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
+	glDisable(GL_DEPTH_TEST);
 #endif
 }
 

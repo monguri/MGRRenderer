@@ -241,8 +241,6 @@ void Line3D::renderWithShadowMap()
 
 		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
-		glEnable(GL_DEPTH_TEST);
-
 		glUseProgram(_glProgram.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGLˆ—‚ÅƒGƒ‰[”­¶ glGetError()=%d", glGetError());
 

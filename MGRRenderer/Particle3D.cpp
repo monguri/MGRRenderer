@@ -185,8 +185,6 @@ void Particle3D::renderWithShadowMap()
 	_renderCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_OPENGL)
-		glEnable(GL_DEPTH_TEST);
-
 		glUseProgram(_glProgram.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGLèàóùÇ≈ÉGÉâÅ[î≠ê∂ glGetError()=%d", glGetError());
 

@@ -251,8 +251,6 @@ void Point3D::renderWithShadowMap()
 
 		direct3dContext->DrawIndexed(_pointArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
-		glEnable(GL_DEPTH_TEST);
-
 		glUseProgram(_glProgram.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGLèàóùÇ≈ÉGÉâÅ[î≠ê∂ glGetError()=%d", glGetError());
 

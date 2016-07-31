@@ -952,10 +952,6 @@ void Sprite3D::renderShadowMap()
 	{
 		Node::renderShadowMap();
 
-#if defined(MGRRENDERER_USE_OPENGL)
-		glEnable(GL_DEPTH_TEST);
-#endif
-
 		bool makeShadowMap = false;
 		DirectionalLight::ShadowMapData shadowMapData;
 
@@ -1394,8 +1390,6 @@ void Sprite3D::renderWithShadowMap()
 
 		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
-		glEnable(GL_DEPTH_TEST);
-
 		// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
 		glUseProgram(_glProgram.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());

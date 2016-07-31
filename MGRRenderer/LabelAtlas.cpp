@@ -105,8 +105,6 @@ void LabelAtlas::renderWithShadowMap()
 			return;
 		}
 
-		glDisable(GL_DEPTH_TEST);
-
 		glUseProgram(_glProgram.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGLˆ—‚ÅƒGƒ‰[”­¶ glGetError()=%d", glGetError());
 

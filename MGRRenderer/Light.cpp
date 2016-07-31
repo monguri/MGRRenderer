@@ -78,7 +78,7 @@ void DirectionalLight::setIntensity(float intensity)
 #endif
 }
 
-void DirectionalLight::prepareShadowMap(const Vec3& targetPosition, float cameraDistanceFromTaret, const Size& size)
+void DirectionalLight::initShadowMap(const Vec3& targetPosition, float cameraDistanceFromTaret, const Size& size)
 {
 	_shadowMapData.viewMatrix = Mat4::createLookAt(
 		getDirection() * (-1) * cameraDistanceFromTaret + targetPosition, // ‹ß‚·‚¬‚é‚ÆƒJƒƒ‰‚É“ü‚ç‚È‚¢‚Ì‚Å“K“x‚É—£‚·

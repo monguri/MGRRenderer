@@ -69,10 +69,10 @@ cbuffer MatrixPallete : register(b11)
 	matrix _matrixPalette[MAX_SKINNING_JOINT];
 };
 
-Texture2D _texture2d : register(t0);
+Texture2D<float4> _texture2d : register(t0);
 SamplerState _samplerState : register(s0);
 
-Texture2D _shadowMapTex : register(t1);
+Texture2D<float> _shadowMapTex : register(t1);
 SamplerState _shadowMapSampler : register(s1);
 
 struct VS_INPUT

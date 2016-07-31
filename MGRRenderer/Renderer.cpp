@@ -165,11 +165,20 @@ void Renderer::prepareFowardRendering()
 	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
 	ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
 	direct3dContext->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencilView());
+	direct3dContext->OMSetDepthStencilState(Director::getInstance()->getDirect3dDepthStencilState(), 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glDisable(GL_CULL_FACE);
 	glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
+}
+
+void Renderer::prepareFowardRendering2D()
+{
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	Director::getInstance()->getDirect3dContext()->OMSetDepthStencilState(Director::getInstance()->getDirect3dDepthStencilState2D(), 1);
+#elif defined(MGRRENDERER_USE_OPENGL)
 #endif
 }
 

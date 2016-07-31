@@ -18,7 +18,9 @@ Director::Director() :
 _direct3dDevice(nullptr),
 _direct3dContext(nullptr),
 _direct3dRenderTarget(nullptr),
-_direct3dDepthStencil(nullptr),
+_direct3dDepthStencilView(nullptr),
+_direct3dDepthStencilState(nullptr),
+_direct3dDepthStencilState2D(nullptr),
 _displayGBuffer(false),
 _gBufferDepthStencil(nullptr),
 _gBufferColorSpecularIntensitySprite(nullptr),
@@ -113,6 +115,7 @@ void Director::update()
 
 	_scene.update(dt);
 
+	// 現状、デバッグ表示は2Dノードなので、Scene:updateの最後に必要な設定は済んでいる
 	if (_displayStats)
 	{
 		updateStats(dt);

@@ -214,7 +214,41 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		std::cerr << "Error:" << GetLastError() << " CreateDepthStencilView failed." << std::endl;
 		PostQuitMessage(EXIT_FAILURE);
 	}
-	Director::getInstance()->setDirect3dDepthStencil(depthStencilView);
+	Director::getInstance()->setDirect3dDepthStencilView(depthStencilView);
+
+	// 深度、ステンシルステートオブジェクトの作成
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+	depthStencilDesc.DepthEnable = TRUE;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthStencilDesc.StencilEnable = FALSE;
+	depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+	depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_NEVER;
+	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_NEVER;
+	ID3D11DepthStencilState* depthStencilState = nullptr;
+	result = device->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
+	if (FAILED(result))
+	{
+		std::cerr << "Error:" << GetLastError() << " CreateDepthStencilState failed." << std::endl;
+		PostQuitMessage(EXIT_FAILURE);
+	}
+	Director::getInstance()->setDirect3dDepthStencilState(depthStencilState);
+
+	depthStencilDesc.DepthEnable = FALSE;
+	result = device->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
+	if (FAILED(result))
+	{
+		std::cerr << "Error:" << GetLastError() << " CreateDepthStencilState failed." << std::endl;
+		PostQuitMessage(EXIT_FAILURE);
+	}
+	Director::getInstance()->setDirect3dDepthStencilState2D(depthStencilState);
 
 	// ビューポートの設定
 	D3D11_VIEWPORT viewport[1];
@@ -517,7 +551,7 @@ void initialize()
 	DirectionalLight* directionalLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
 	directionalLight->setIntensity(0.7f);
 	//TODO:ディファードレンダリング開発のため、一時的にシャドウマップ機能はOFFに
-	//directionalLight->prepareShadowMap(sprite3DC3tNode->getPosition(), WINDOW_HEIGHT / 1.1566f, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+	directionalLight->prepareShadowMap(sprite3DC3tNode->getPosition(), WINDOW_HEIGHT / 1.1566f, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addLight(directionalLight);
 
 	// TODO:シャドウマップをスプライトで描画したかったが機能してない
@@ -551,13 +585,13 @@ void initialize()
 	scene->pushNode(sprite3DObjNode);
 	scene->pushNode(sprite3DC3tNode);
 	scene->pushNode(particle3DNode);
-	scene->pushNode(pointNode);
-	scene->pushNode(lineNode);
-	scene->pushNode(polygonNode);
-	scene->pushNode(spriteNode);
+	scene->pushNode2D(pointNode);
+	scene->pushNode2D(lineNode);
+	scene->pushNode2D(polygonNode);
+	scene->pushNode2D(spriteNode);
 	if (directionalLight->hasShadowMap())
 	{
-		scene->pushNode(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない
+		scene->pushNode2D(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない
 	}
 
 	Director::getInstance()->setScene(*scene);

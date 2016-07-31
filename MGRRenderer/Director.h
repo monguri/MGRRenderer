@@ -25,8 +25,12 @@ public:
 	void setDirect3dContext(ID3D11DeviceContext* context) { _direct3dContext = context; }
 	ID3D11RenderTargetView* getDirect3dRenderTarget() const { return _direct3dRenderTarget; }
 	void setDirect3dRenderTarget(ID3D11RenderTargetView* target) { _direct3dRenderTarget = target; }
-	ID3D11DepthStencilView* getDirect3dDepthStencil() const { return _direct3dDepthStencil; }
-	void setDirect3dDepthStencil(ID3D11DepthStencilView* view) { _direct3dDepthStencil = view; }
+	ID3D11DepthStencilView* getDirect3dDepthStencilView() const { return _direct3dDepthStencilView; }
+	void setDirect3dDepthStencilView(ID3D11DepthStencilView* view) { _direct3dDepthStencilView = view; }
+	ID3D11DepthStencilState* getDirect3dDepthStencilState() const { return _direct3dDepthStencilState; }
+	void setDirect3dDepthStencilState(ID3D11DepthStencilState* state) { _direct3dDepthStencilState = state; }
+	ID3D11DepthStencilState* getDirect3dDepthStencilState2D() const { return _direct3dDepthStencilState2D; }
+	void setDirect3dDepthStencilState2D(ID3D11DepthStencilState* state) { _direct3dDepthStencilState2D = state; }
 	D3D11_VIEWPORT* getDirect3dViewport() const { return _direct3dViewport; }
 	void setDirect3dViewport(D3D11_VIEWPORT* viewport) { _direct3dViewport = viewport; }
 #endif
@@ -50,7 +54,9 @@ private:
 	ID3D11Device* _direct3dDevice;
 	ID3D11DeviceContext* _direct3dContext;
 	ID3D11RenderTargetView* _direct3dRenderTarget;
-	ID3D11DepthStencilView* _direct3dDepthStencil;
+	ID3D11DepthStencilView* _direct3dDepthStencilView;
+	ID3D11DepthStencilState* _direct3dDepthStencilState;
+	ID3D11DepthStencilState* _direct3dDepthStencilState2D;
 	D3D11_VIEWPORT* _direct3dViewport;
 #endif
 	Scene _scene;

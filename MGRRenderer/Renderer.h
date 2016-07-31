@@ -28,6 +28,7 @@ public:
 	void render();
 	void prepareDifferedRendering();
 	static void prepareFowardRendering();
+	static void prepareFowardRendering2D();
 
 private:
 	// stdにはtreeがないのでtreeのようなトラバース方法をstackとvectorで実現している

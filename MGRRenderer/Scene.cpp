@@ -12,6 +12,11 @@ Scene::~Scene()
 		delete light;
 	}
 
+	for (Node* child : _children2D)
+	{
+		delete child;
+	}
+
 	for (Node* child : _children)
 	{
 		delete child;
@@ -41,6 +46,11 @@ void Scene::pushNode(Node* node)
 	_children.push_back(node);
 }
 
+void Scene::pushNode2D(Node* node)
+{
+	_children2D.push_back(node);
+}
+
 void Scene::update(float dt)
 {
 	_camera.update(dt);
@@ -50,9 +60,19 @@ void Scene::update(float dt)
 		child->update(dt);
 	}
 
+	for (Node* child : _children2D)
+	{
+		child->update(dt);
+	}
+
 	_camera.prepareRendering();
 
 	for (Node* child : _children)
+	{
+		child->prepareRendering();
+	}
+
+	for (Node* child : _children2D)
 	{
 		child->prepareRendering();
 	}
@@ -67,6 +87,11 @@ void Scene::update(float dt)
 	Director::getRenderer().addCommand(&_prepareDifferedRenderingCommand);
 
 	for (Node* child : _children)
+	{
+		child->renderGBuffer();
+	}
+
+	for (Node* child : _children2D)
 	{
 		child->renderGBuffer();
 	}
@@ -87,6 +112,11 @@ void Scene::update(float dt)
 		child->renderShadowMap();
 	}
 
+	for (Node* child : _children2D)
+	{
+		child->renderShadowMap();
+	}
+
 	// 透過モデルはフォワードレンダリング
 	_prepareFowardRenderingCommand.init([=]
 	{
@@ -97,6 +127,18 @@ void Scene::update(float dt)
 	_camera.renderWithShadowMap();
 
 	for (Node* child : _children)
+	{
+		child->renderWithShadowMap();
+	}
+
+	// 2Dノードは深度の扱いが違うので一つ準備処理をはさむ
+	_prepareFowardRendering2DCommand.init([=]
+	{
+		Renderer::prepareFowardRendering2D();
+	});
+	Director::getRenderer().addCommand(&_prepareFowardRendering2DCommand);
+
+	for (Node* child : _children2D)
 	{
 		child->renderWithShadowMap();
 	}

@@ -238,8 +238,6 @@ void Line2D::renderWithShadowMap()
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);
 
-		direct3dContext->OMSetDepthStencilState(_d3dProgram.getDepthStancilState(), 0);
-
 		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glDisable(GL_DEPTH_TEST);

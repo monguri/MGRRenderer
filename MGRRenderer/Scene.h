@@ -16,6 +16,7 @@ public:
 	~Scene();
 	void init();
 	void pushNode(Node* node);
+	void pushNode2D(Node* node);
 	// TODO:本来はdtはスケジューラに渡せばいいのだが、今は各ノードでupdateメソッドでアニメーションをやってるのでdtをvisitとupdateに渡している
 	void update(float dt);
 	Camera& getCamera() { return _camera; }
@@ -28,11 +29,13 @@ public:
 
 private:
 	std::vector<Node*> _children;
+	std::vector<Node*> _children2D;
 	Camera _camera;
 	Camera _cameraFor2D; // 2DようにSize(0,0,WINDOW_WIDTH,WINDOW_HEIGHT)が画面に入るように固定したカメラ
 	std::vector<Light*> _light;
 	CustomRenderCommand _prepareDifferedRenderingCommand;
 	CustomRenderCommand _prepareFowardRenderingCommand;
+	CustomRenderCommand _prepareFowardRendering2DCommand;
 };
 
 } // namespace mgrrenderer

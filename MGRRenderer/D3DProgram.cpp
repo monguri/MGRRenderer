@@ -37,7 +37,6 @@ _geometryShader(nullptr),
 _pixelShader(nullptr),
 _blendState(nullptr),
 _rasterizeState(nullptr),
-_depthStencilState(nullptr),
 _indexBuffer(nullptr),
 _inputLayout(nullptr)
 {
@@ -65,12 +64,6 @@ D3DProgram::~D3DProgram()
 	for (ID3D11Buffer* vertexBuffer : _vertexBuffers)
 	{
 		vertexBuffer->Release();
-	}
-
-	if (_depthStencilState != nullptr)
-	{
-		_depthStencilState->Release();
-		_depthStencilState = nullptr;
 	}
 
 	if (_rasterizeState != nullptr)
@@ -257,29 +250,6 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
-		return;
-	}
-
-	// 深度、ステンシルステートオブジェクトの作成
-	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-	depthStencilDesc.DepthEnable = (depthTestEnable ? TRUE : FALSE);
-	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-	depthStencilDesc.StencilEnable = FALSE;
-	depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-	depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_NEVER;
-	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_NEVER;
-	result = direct3dDevice->CreateDepthStencilState(&depthStencilDesc, &_depthStencilState);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateDepthStencilState failed. result=%d", result);
 		return;
 	}
 }

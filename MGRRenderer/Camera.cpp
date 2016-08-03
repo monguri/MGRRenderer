@@ -14,16 +14,16 @@ Camera::~Camera()
 
 void Camera::initAsDefault()
 {
-	Size size = Director::getInstance()->getWindowSize();
+	const Size& size = Director::getInstance()->getWindowSize();
 
 	// cocos2d-xのデフォルトDirector::Projection::_3Dを想定
 	float defaultEyeZ = size.height / 1.1566f; // TODO:謎の数値。2 / sqrt(3)は1.1547
 	initAsPerspective(Vec3(size.width / 2.0f, size.height / 2.0f, defaultEyeZ),
 					60.0f, // field of view
 					size.width / size.height, // aspectratio
-					10.0f, // znearplane
+					Director::getInstance()->getNearClip(),
 					//defaultEyeZ + size.height / 2.0f); // zfarplane TODO:cocosのファープレイン。非常に近い。
-					10000.0f); // TODO:cocosのファープレインが非常に近いので、大きくした。
+					Director::getInstance()->getFarClip());
 
 	// _projectionMatrixと_viewMatrixの計算だけに特化し、Nodeに対してsetRotationとかsetPositionとかはしない
 }
@@ -33,7 +33,7 @@ void Camera::initAsPerspective(const Vec3& position, float fieldOfView, float as
 	setPosition(position);
 
 	//TODO:ここにtargetPositionとupの引数も必要
-	Size size = Director::getInstance()->getWindowSize();
+	const Size& size = Director::getInstance()->getWindowSize();
 
 	_projectionMatrix = Mat4::createPerspective(fieldOfView, aspectRatio, zNearPlane, zFarPlane);
 
@@ -49,7 +49,7 @@ void Camera::initAsOrthographic(const Vec3& position, float width, float height,
 	setPosition(position);
 
 	//TODO:ここにtargetPositionとupの引数も必要
-	Size size = Director::getInstance()->getWindowSize();
+	const Size& size = Director::getInstance()->getWindowSize();
 
 	_projectionMatrix = Mat4::createOrthographic(0, width, 0, height, zNearPlane, zFarPlane);
 
@@ -64,7 +64,7 @@ void Camera::setPosition(const Vec3& position)
 {
 	Node::setPosition(position);
 
-	Size size = Director::getInstance()->getWindowSize();
+	const Size& size = Director::getInstance()->getWindowSize();
 
 	_targetPosition = Vec3(size.width / 2.0f, size.height / 2.0f, 0.0f);
 

@@ -29,7 +29,9 @@ _gBufferSpecularPower(nullptr),
 #endif
 _displayStats(false),
 _accumulatedDeltaTime(0.0f),
-_FPSLabel(nullptr)
+_FPSLabel(nullptr),
+_nearClip(0.0f),
+_farClip(0.0f)
 {
 }
 
@@ -85,11 +87,13 @@ void Director::destroy()
 	delete _instance;
 }
 
-void Director::init(const Size& windowSize)
+void Director::init(const Size& windowSize, float nearClip, float farClip)
 {
 	calculateDeltaTime();
 
 	_windowSize = windowSize;
+	_nearClip = nearClip;
+	_farClip = farClip;
 
 	// TODO:Œã‚Å•`‰æŠÖŒW‚Ì‰Šú‰»ˆ—‚Í‚±‚Ì’†‚É‚Ü‚Æ‚ß‚é
 	_renderer.initView(windowSize);

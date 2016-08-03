@@ -421,7 +421,9 @@ void initialize()
 	//
 	bool isSucceeded = false;
 
-	Director::getInstance()->init(Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+	Director::getInstance()->init(Size(WINDOW_WIDTH, WINDOW_HEIGHT),
+									10.0f, // near clip
+									1000.0f); // far clip
 	Director::getInstance()->setDisplayStats(true);
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	Director::getInstance()->setDisplayGBuffer(true);

@@ -35,8 +35,10 @@ public:
 	void setDirect3dViewport(D3D11_VIEWPORT* viewport) { _direct3dViewport = viewport; }
 #endif
 	void destroy();
-	void init(const Size& windowSize);
+	void init(const Size& windowSize, float nearClip, float farClip);
 	const Size& getWindowSize() const { return _windowSize; }
+	const float getNearClip() const { return _nearClip; }
+	const float getFarClip() const { return _farClip; }
 	Scene& getScene() { return _scene; }
 	void setScene(const Scene& scene);
 	void update();
@@ -64,6 +66,8 @@ private:
 	Scene _scene;
 	Renderer _renderer;
 	Size _windowSize;
+	float _nearClip;
+	float _farClip;
 	struct timeval _lastUpdateTime;
 	bool _displayStats;
 	float _accumulatedDeltaTime;

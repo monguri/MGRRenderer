@@ -565,7 +565,7 @@ void initialize()
 		depthTextureSprite = new Sprite2D();
 		const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().depthTexture);
+		depthTextureSprite->initWithDepthTexture(directionalLight->getShadowMapData().depthTexture);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().depthTexture);
 #endif

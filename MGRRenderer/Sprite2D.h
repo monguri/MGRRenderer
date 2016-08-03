@@ -59,6 +59,7 @@ protected:
 
 private:
 	static const std::string CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX;
+	static const std::string CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE;
 	bool _isOwnTexture; // 自前で生成したテクスチャであればこのクラス内で解放する
 	bool _isDepthTexture; // デプステクスチャを扱う場合
 

@@ -14,6 +14,7 @@ namespace mgrrenderer
 {
 
 const std::string Sprite2D::CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX = "CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX";
+const std::string Sprite2D::CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE = "CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE";
 
 Sprite2D::Sprite2D() :
 _texture(nullptr),
@@ -247,14 +248,22 @@ bool Sprite2D::initWithDepthTexture(D3DTexture* texture)
 	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	constantBufferDesc.MiscFlags = 0;
 	constantBufferDesc.StructureByteStride = 0;
-	constantBufferDesc.ByteWidth = sizeof(Mat4);
+	constantBufferDesc.ByteWidth = sizeof(Vec4); // float一個しか必要ないが、16バイトアラインメントなので
 	HRESULT result = Director::getInstance()->getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
+	_d3dProgram.addConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE, constantBuffer);
 
+	constantBufferDesc.ByteWidth = sizeof(Mat4);
+	result = Director::getInstance()->getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
 	_d3dProgram.addConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX, constantBuffer);
 
 	return true;
@@ -341,6 +350,18 @@ void Sprite2D::renderWithShadowMap()
 		// デプステクスチャ描画時のプロジェクション行列のマップ
 		if (_isDepthTexture)
 		{
+			result = direct3dContext->Map(
+				_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE),
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&mappedResource
+			);
+			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+			const Vec4& vec = Vec4(Director::getInstance()->getFarClip() - Director::getInstance()->getNearClip(), 0.0f, 0.0f, 0.0f);
+			CopyMemory(mappedResource.pData, &vec, sizeof(vec));
+			direct3dContext->Unmap(_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE), 0);
+
 			result = direct3dContext->Map(
 				_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX),
 				0,

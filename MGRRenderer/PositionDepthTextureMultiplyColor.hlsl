@@ -18,6 +18,12 @@ cbuffer MultiplyColor : register(b3)
 	float4 _multiplyColor;
 };
 
+cbuffer DepthTextureNearFarClipDistance : register(b4)
+{
+	float _nearFarClipDistance;
+	float3 _padding; // 16バイトアラインメントのためのパディング
+};
+
 // GBuffer.hlslに必要な定数バッファを追加するためにここでインクルードする
 #include "GBuffer.hlsl"
 
@@ -50,9 +56,9 @@ float4 PS(PS_INPUT input) : SV_TARGET
 {
 	float linearDepth = unpackDepthGBuffer(input.texCoord);
 	return float4(
-		1.0 - saturate(linearDepth / 75.0),
-		1.0 - saturate(linearDepth / 125.0),
-		1.0 - saturate(linearDepth / 175.0),
-		1.0 - saturate(linearDepth / 200.0)
+		1.0 - saturate(linearDepth / _nearFarClipDistance),
+		1.0 - saturate(linearDepth / _nearFarClipDistance),
+		1.0 - saturate(linearDepth / _nearFarClipDistance),
+		1.0
 	);
 }

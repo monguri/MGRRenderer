@@ -41,7 +41,7 @@ float unpackDepthGBuffer(float2 uv)
 	UnpackGBufferData output;
 
 	float depth = _depthTexture.Sample(_samplerState, uv).x;
-	return _depthTextureProjection._m32 / (depth - _depthTextureProjection._m22);
+	return _depthTextureProjection._m32 / (depth + _depthTextureProjection._m22);
 }
 
 //UnpackGBufferData unpackGBuffer(float3 baseColor, float3 normal, float specularIntensity, float specularPower)

@@ -142,7 +142,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="PositionDepthTextureMultiplyColor.hlsl">
+    <None Include="PositionRenderBufferMultiplyColor.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

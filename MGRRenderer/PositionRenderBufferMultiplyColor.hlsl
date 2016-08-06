@@ -13,12 +13,7 @@ cbuffer ProjectionMatrix : register(b2)
 	matrix _projection;
 };
 
-cbuffer MultiplyColor : register(b3)
-{
-	float4 _multiplyColor;
-};
-
-cbuffer DepthTextureNearFarClipDistance : register(b4)
+cbuffer DepthTextureNearFarClipDistance : register(b3)
 {
 	float _nearFarClipDistance;
 	float3 _padding; // 16バイトアラインメントのためのパディング
@@ -52,7 +47,7 @@ PS_INPUT VS(VS_INPUT input)
 	return output;
 }
 
-float4 PS(PS_INPUT input) : SV_TARGET
+float4 PS_DEPTH_TEXTURE(PS_INPUT input) : SV_TARGET
 {
 	float linearDepth = unpackDepthGBuffer(input.texCoord);
 	return float4(
@@ -61,4 +56,23 @@ float4 PS(PS_INPUT input) : SV_TARGET
 		1.0 - saturate(linearDepth / _nearFarClipDistance),
 		1.0
 	);
+}
+
+float4 PS_GBUFFER_COLOR_SPECULAR_INTENSITY(PS_INPUT input) : SV_TARGET
+{
+	// とりあえずcolorだけ表示する。
+	float4 colorSpecularInt = unpackGBuffer(input.texCoord);
+	return float4(colorSpecularInt.rgb, 1.0);
+}
+
+float4 PS_GBUFFER_NORMAL(PS_INPUT input) : SV_TARGET
+{
+	float4 normal = unpackGBuffer(input.texCoord);
+	return float4(normal.xyz, 1.0);
+}
+
+float4 PS_GBUFFER_SPECULAR_POWER(PS_INPUT input) : SV_TARGET
+{
+	float specPower = unpackGBuffer(input.texCoord).x;
+	return float4(specPower, specPower, specPower, 1.0);
 }

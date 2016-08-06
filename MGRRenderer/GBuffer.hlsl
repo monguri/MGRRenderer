@@ -5,7 +5,7 @@ cbuffer DepthTextureProjectionMatrix
 	matrix _depthTextureProjection;
 };
 
-Texture2D<float> _depthTexture : register(t0);
+Texture2D<float4> _gBuffer : register(t0); // デプステクスチャはTexture2D<float>で十分だが、Texture2D<float4>でも読み込める
 SamplerState _samplerState : register(s0);
 
 struct PS_GBUFFER_OUT
@@ -32,16 +32,19 @@ PS_GBUFFER_OUT packGBuffer(float3 baseColor, float3 normal, float specularIntens
 
 	output.colorSpecularIntensity = float4(baseColor.rgb, specularIntensity);
 	output.normal = float4(normal * 0.5 + 0.5, 0.0);
-	output.specularPower = specularPower;
+	output.specularPower = float4(specularPowerNorm, 0.0, 0.0, 0.0);
 	return output;
 }
 
 float unpackDepthGBuffer(float2 uv)
 {
-	UnpackGBufferData output;
-
-	float depth = _depthTexture.Sample(_samplerState, uv).x;
+	float depth = _gBuffer.Sample(_samplerState, uv).x;
 	return _depthTextureProjection._m32 / (depth + _depthTextureProjection._m22);
+}
+
+float4 unpackGBuffer(float2 uv)
+{
+	return _gBuffer.Sample(_samplerState, uv);
 }
 
 //UnpackGBufferData unpackGBuffer(float3 baseColor, float3 normal, float specularIntensity, float specularPower)

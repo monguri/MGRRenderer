@@ -19,7 +19,7 @@ const std::string Sprite2D::CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE
 Sprite2D::Sprite2D() :
 _texture(nullptr),
 _isOwnTexture(false),
-_isDepthTexture(false)
+_renderBufferType(RenderBufferType::NONE)
 {
 }
 
@@ -164,17 +164,6 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
-
-	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
-	// 乗算色
-	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 	return true;
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -214,7 +203,29 @@ bool Sprite2D::init(const std::string& filePath)
 	texture->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	return initCommon("PositionTextureMultiplyColor.hlsl", "VS", "", "PS", texture->getContentSize());
+	bool success = initCommon("PositionTextureMultiplyColor.hlsl", "VS", "", "PS", texture->getContentSize());
+	if (!success)
+	{
+		return false;
+	}
+
+	// 乗算色
+	D3D11_BUFFER_DESC constantBufferDesc;
+	constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	constantBufferDesc.MiscFlags = 0;
+	constantBufferDesc.StructureByteStride = 0;
+	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
+	ID3D11Buffer* constantBuffer = nullptr;
+	HRESULT result = Director::getInstance()->getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
+	return true;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	return initCommon(texture->getContentSize());
 #endif
@@ -224,20 +235,57 @@ bool Sprite2D::init(const std::string& filePath)
 bool Sprite2D::initWithTexture(D3DTexture* texture)
 {
 	_texture = texture;
-	return initCommon("PositionTextureMultiplyColor.hlsl", "VS", "", "PS", texture->getContentSize());
-}
-
-bool Sprite2D::initWithDepthTexture(D3DTexture* texture)
-{
-	_texture = texture;
-
-	bool success = initCommon("PositionDepthTextureMultiplyColor.hlsl", "VS", "", "PS", texture->getContentSize());
+	bool success = initCommon("PositionTextureMultiplyColor.hlsl", "VS", "", "PS", texture->getContentSize());
 	if (!success)
 	{
 		return false;
 	}
 
-	_isDepthTexture = true;
+	// 乗算色
+	D3D11_BUFFER_DESC constantBufferDesc;
+	constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	constantBufferDesc.MiscFlags = 0;
+	constantBufferDesc.StructureByteStride = 0;
+	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
+	ID3D11Buffer* constantBuffer = nullptr;
+	HRESULT result = Director::getInstance()->getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
+
+	return true;
+}
+
+bool Sprite2D::initWithRenderBuffer(D3DTexture* texture, RenderBufferType renderBufferType)
+{
+	_texture = texture;
+	_renderBufferType = renderBufferType;
+
+	// TODO:本当はこういうのでなくマテリアルをノードから切り離してマテリアルを引数で与えるようにしたい
+	struct RenderBufferMaterial {
+		std::string hlslFileName;
+		std::string pixelShaderFunctionName;
+	};
+
+	static std::vector<RenderBufferMaterial> RenderBufferMaterialList = {
+		{"PositionRenderBufferMultiplyColor.hlsl", "PS_DEPTH_TEXTURE"},
+		{"PositionRenderBufferMultiplyColor.hlsl", "PS_GBUFFER_COLOR_SPECULAR_INTENSITY"},
+		{"PositionRenderBufferMultiplyColor.hlsl", "PS_GBUFFER_NORMAL"},
+		{"PositionRenderBufferMultiplyColor.hlsl", "PS_GBUFFER_SPECULAR_POWER"},
+	};
+
+	const RenderBufferMaterial& material = RenderBufferMaterialList[static_cast<int>(renderBufferType)];
+
+	bool success = initCommon(material.hlslFileName, "VS", "", material.pixelShaderFunctionName, texture->getContentSize());
+	if (!success)
+	{
+		return false;
+	}
 
 	// デプステクスチャ描画時のProjection行列用
 	ID3D11Buffer* constantBuffer = nullptr;
@@ -334,49 +382,59 @@ void Sprite2D::renderWithShadowMap()
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
-		// 乗算色のマップ
-		result = direct3dContext->Map(
-			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR),
-			0,
-			D3D11_MAP_WRITE_DISCARD,
-			0,
-			&mappedResource
-		);
-		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
-		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
-		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
-
 		// デプステクスチャ描画時のプロジェクション行列のマップ
-		if (_isDepthTexture)
-		{
-			result = direct3dContext->Map(
-				_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE),
-				0,
-				D3D11_MAP_WRITE_DISCARD,
-				0,
-				&mappedResource
-			);
-			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-			const Vec4& vec = Vec4(Director::getInstance()->getFarClip() - Director::getInstance()->getNearClip(), 0.0f, 0.0f, 0.0f);
-			CopyMemory(mappedResource.pData, &vec, sizeof(vec));
-			direct3dContext->Unmap(_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE), 0);
+		switch (_renderBufferType) {
+			case RenderBufferType::DEPTH_TEXTURE:
+			{
+				result = direct3dContext->Map(
+					_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE),
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				const Vec4& vec = Vec4(Director::getInstance()->getFarClip() - Director::getInstance()->getNearClip(), 0.0f, 0.0f, 0.0f);
+				CopyMemory(mappedResource.pData, &vec, sizeof(vec));
+				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE), 0);
 
-			result = direct3dContext->Map(
-				_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX),
-				0,
-				D3D11_MAP_WRITE_DISCARD,
-				0,
-				&mappedResource
-			);
-			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-			Mat4 projectionMatrix = Director::getCamera().getProjectionMatrix();
-			projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
-			projectionMatrix.transpose();
-			CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
-			direct3dContext->Unmap(_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX), 0);
+				result = direct3dContext->Map(
+					_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX),
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				Mat4 projectionMatrix = Director::getCamera().getProjectionMatrix();
+				projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
+				projectionMatrix.transpose();
+				CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
+				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX), 0);
+				break;
+			}
+			case RenderBufferType::GBUFFER_COLOR_SPECULAR_INTENSITY:
+			case RenderBufferType::GBUFFER_NORMAL:
+			case RenderBufferType::GBUFFER_SPECULAR_POWER:
+				break;
+			default:
+			{
+				// 乗算色のマップ
+				result = direct3dContext->Map(
+					_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR),
+					0,
+					D3D11_MAP_WRITE_DISCARD,
+					0,
+					&mappedResource
+				);
+				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+				const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
+				CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
+				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
+				break;
+			}
 		}
-
+		
 		UINT strides[1] = {sizeof(_quadrangle.topLeft)};
 		UINT offsets[1] = {0};
 		direct3dContext->IASetVertexBuffers(0, _d3dProgram.getVertexBuffers().size(), _d3dProgram.getVertexBuffers().data(), strides, offsets);

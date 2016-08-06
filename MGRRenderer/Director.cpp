@@ -206,24 +206,24 @@ void Director::createStatsLabel()
 void Director::createGBufferSprite()
 {
 	_gBufferDepthStencil = new Sprite2D();
-	_gBufferDepthStencil->initWithDepthTexture(_renderer.getGBufferDepthStencil());
+	_gBufferDepthStencil->initWithRenderBuffer(_renderer.getGBufferDepthStencil(), Sprite2D::RenderBufferType::DEPTH_TEXTURE);
 	_gBufferDepthStencil->setScale(1 / 5.0f);
 	_gBufferDepthStencil->setPosition(Vec3(0.0f, 0.0f, 0.0f));
 
 	_gBufferColorSpecularIntensitySprite = new Sprite2D();
-	_gBufferColorSpecularIntensitySprite->initWithTexture(_renderer.getGBufferColorSpecularIntensity());
+	_gBufferColorSpecularIntensitySprite->initWithRenderBuffer(_renderer.getGBufferColorSpecularIntensity(), Sprite2D::RenderBufferType::GBUFFER_COLOR_SPECULAR_INTENSITY);
 	_gBufferColorSpecularIntensitySprite->setScale(1 / 5.0f);
-	_gBufferColorSpecularIntensitySprite->setPosition(Vec3(_windowSize.width, 0.0f, 0.0f));
+	_gBufferColorSpecularIntensitySprite->setPosition(Vec3(_windowSize.width / 5.0f, 0.0f, 0.0f));
 
 	_gBufferNormal = new Sprite2D();
-	_gBufferNormal->initWithTexture(_renderer.getGBufferNormal());
+	_gBufferNormal->initWithRenderBuffer(_renderer.getGBufferNormal(), Sprite2D::RenderBufferType::GBUFFER_NORMAL);
 	_gBufferNormal->setScale(1 / 5.0f);
-	_gBufferNormal->setPosition(Vec3(_windowSize.width * 2, 0.0f, 0.0f));
+	_gBufferNormal->setPosition(Vec3(_windowSize.width / 5.0f * 2, 0.0f, 0.0f));
 
 	_gBufferSpecularPower = new Sprite2D();
-	_gBufferSpecularPower->initWithTexture(_renderer.getGBufferSpecularPower());
+	_gBufferSpecularPower->initWithRenderBuffer(_renderer.getGBufferSpecularPower(), Sprite2D::RenderBufferType::GBUFFER_SPECULAR_POWER);
 	_gBufferSpecularPower->setScale(1 / 5.0f);
-	_gBufferSpecularPower->setPosition(Vec3(_windowSize.width * 3, 0.0f, 0.0f));
+	_gBufferSpecularPower->setPosition(Vec3(_windowSize.width / 5.0f * 3, 0.0f, 0.0f));
 }
 
 void Director::renderGBufferSprite()

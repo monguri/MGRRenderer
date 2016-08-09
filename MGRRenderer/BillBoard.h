@@ -21,7 +21,7 @@ public:
 
 	BillBoard();
 	bool init(const std::string& filePath, Mode mode);
-	// よそですでに作成済みのテクスチャのtextureIdを使う場合
+	void prepareRendering() override;
 	void renderGBuffer() override;
 	void renderWithShadowMap() override;
 

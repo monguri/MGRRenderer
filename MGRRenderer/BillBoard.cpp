@@ -22,20 +22,10 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 	return successed;
 }
 
-void BillBoard::renderGBuffer()
+void BillBoard::prepareRendering()
 {
-	// 現状、事前にSprite2Dとは異なるモデル行列をセットするのに使っているだけ
-	_renderGBufferCommand.init([=]
-	{
-		setModelMatrix(Mat4::createTransform(getPosition(), getRotation(), getScale()));
-		calculateBillboardTransform();
-	});
+	Node::prepareRendering();
 
-	Director::getRenderer().addCommand(&_renderGBufferCommand);
-}
-
-void BillBoard::calculateBillboardTransform()
-{
 	// TODO:とりあえずDirectorの持つカメラにのみ対応
 	const Camera& camera = Director::getInstance()->getCamera();
 	// TODO:現状親子階層がないので、モデル変換がすなわちワールド座標変換。
@@ -84,6 +74,16 @@ void BillBoard::calculateBillboardTransform()
 		0.0f,		0.0f,		0.0f,					1.0f
 		);
 	setModelMatrix(billBoardTransform);
+}
+
+void BillBoard::renderGBuffer()
+{
+	// 現状、事前にSprite2Dとは異なるモデル行列をセットするのに使っているだけ
+	_renderGBufferCommand.init([=]
+	{
+	});
+
+	Director::getRenderer().addCommand(&_renderGBufferCommand);
 }
 
 // Sprite2Dとの違いは深度テストONにしてることだけ

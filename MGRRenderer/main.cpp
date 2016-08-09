@@ -457,14 +457,14 @@ void initialize()
 	isSucceeded = polygonNode->initWithVertexArray(polygonVertices);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
-	Sprite2D* spriteNode = new Sprite2D();
-	isSucceeded = spriteNode->init("../Resources/Hello.png");
-	spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
-	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
-	//BillBoard* spriteNode = new BillBoard();
-	//isSucceeded = spriteNode->init("../Resources/Hello.png", BillBoard::Mode::VIEW_PLANE_ORIENTED);
+	//Sprite2D* spriteNode = new Sprite2D();
+	//isSucceeded = spriteNode->init("../Resources/Hello.png");
 	//spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
 	//Logger::logAssert(isSucceeded, "ノードの初期化失敗");
+	BillBoard* spriteNode = new BillBoard();
+	isSucceeded = spriteNode->init("../Resources/Hello.png", BillBoard::Mode::VIEW_PLANE_ORIENTED);
+	spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
+	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 
 	std::vector<Point3DData> positionAndPointSize3D {
@@ -592,7 +592,8 @@ void initialize()
 	scene->pushNode2D(pointNode);
 	scene->pushNode2D(lineNode);
 	scene->pushNode2D(polygonNode);
-	scene->pushNode2D(spriteNode);
+	//scene->pushNode2D(spriteNode);
+	scene->pushNode(spriteNode);
 	if (directionalLight->hasShadowMap())
 	{
 		scene->pushNode2D(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない

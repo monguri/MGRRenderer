@@ -1,4 +1,4 @@
-#include "GBuffer.hlsl"
+#include "GBufferPack.hlsl"
 
 cbuffer ModelMatrix : register(b0)
 {

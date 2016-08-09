@@ -20,7 +20,7 @@ cbuffer DepthTextureNearFarClipDistance : register(b3)
 };
 
 // GBuffer.hlslに必要な定数バッファを追加するためにここでインクルードする
-#include "GBuffer.hlsl"
+#include "GBufferUnpack.hlsl"
 
 struct VS_INPUT
 {

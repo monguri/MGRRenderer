@@ -1,3 +1,5 @@
+#include "GBufferPack.hlsl"
+
 cbuffer ModelMatrix : register(b0)
 {
 	matrix _model;
@@ -99,6 +101,12 @@ struct PS_SM_INPUT
 	float4 lightPosition : SV_POSITION;
 };
 
+struct PS_GBUFFER_INPUT
+{
+	float4 position : SV_POSITION;
+	float3 normal : NORMAL;
+};
+
 float4 getAnimatedPosition(float4 blendWeight, float4 blendIndex, float4 position)
 {
 	// x, y, z, wはブレンドウェイトとブレンドインデックスのインデックス0,1,2,3の意味で使っている
@@ -159,6 +167,22 @@ PS_SM_INPUT VS_SM(VS_INPUT input)
 	return output;
 }
 
+PS_GBUFFER_INPUT VS_GBUFFER(VS_INPUT input)
+{
+	PS_GBUFFER_INPUT output;
+
+	float4 position = float4(input.position, 1.0);
+	position = getAnimatedPosition(input.blendWeight, input.blendIndex, position);
+	float4 worldPosition = mul(position, _model);
+	position = mul(worldPosition, _view);
+	output.position = mul(position, _projection);
+
+	output.normal = input.normal;
+
+	return output;
+}
+
+
 float3 computeLightedColor(float3 normalVector, float3 lightDirection, float3 lightColor, float attenuation)
 {
 	float diffuse = max(dot(normalVector, lightDirection), 0.0);
@@ -202,4 +226,9 @@ float4 PS_SM(PS_SM_INPUT input) : SV_TARGET
 	// 深度をグレースケールで表現する
 	float z = input.lightPosition.z;
 	return float4(z, z, z, 1.0);
+}
+
+PS_GBUFFER_OUT PS_GBUFFER(PS_GBUFFER_INPUT input)
+{
+	return packGBuffer(_multiplyColor.rgb, normalize(input.normal), 0.0, 0.0); //TODO: specularは今のところ対応してない
 }

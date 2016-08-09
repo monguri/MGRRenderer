@@ -97,7 +97,8 @@
     <None Include="PositionTextureMultiplyColor.hlsl" />
     <None Include="VertexShaderPositionTextureMultiplyColor.glsl" />
     <None Include="VertexShaderPositionMultiplyColor.glsl" />
-    <None Include="GBuffer.hlsl" />
     <None Include="PositionRenderBufferMultiplyColor.hlsl" />
+    <None Include="GBufferPack.hlsl" />
+    <None Include="GBufferUnpack.hlsl" />
   </ItemGroup>
 </Project>

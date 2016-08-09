@@ -1,3 +1,5 @@
+#include "GBufferPack.hlsl"
+
 cbuffer ModelMatrix : register(b0)
 {
 	matrix _model;
@@ -89,6 +91,12 @@ struct PS_SM_INPUT
 	float4 lightPosition : SV_POSITION;
 };
 
+struct PS_GBUFFER_INPUT
+{
+	float4 position : SV_POSITION;
+	float3 normal : NORMAL;
+};
+
 PS_INPUT VS(VS_INPUT input)
 {
 	PS_INPUT output;
@@ -121,6 +129,20 @@ PS_SM_INPUT VS_SM(VS_INPUT input)
 	position = mul(position, _model);
 	position = mul(position, _lightView);
 	output.lightPosition = mul(position, _lightProjection);
+	return output;
+}
+
+PS_GBUFFER_INPUT VS_GBUFFER(VS_INPUT input)
+{
+	PS_GBUFFER_INPUT output;
+
+	float4 position = float4(input.position, 1.0);
+	position = mul(position, _model);
+	position = mul(position, _view);
+	output.position = mul(position, _projection);
+
+	output.normal = input.normal;
+
 	return output;
 }
 
@@ -167,4 +189,9 @@ float4 PS_SM(PS_SM_INPUT input) : SV_TARGET
 	// 深度をグレースケールで表現する
 	float z = input.lightPosition.z;
 	return float4(z, z, z, 1.0);
+}
+
+PS_GBUFFER_OUT PS_GBUFFER(PS_GBUFFER_INPUT input)
+{
+	return packGBuffer(_multiplyColor.rgb, normalize(input.normal), 0.0, 0.0); //TODO: specularは今のところ対応してない
 }

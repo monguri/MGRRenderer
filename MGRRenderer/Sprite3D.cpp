@@ -174,6 +174,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		}
 		_d3dProgram.addVertexBuffer(vertexBuffer);
 		_d3dProgramForShadowMap.addVertexBuffer(vertexBuffer);
+		_d3dProgramForGBuffer.addVertexBuffer(vertexBuffer);
 
 		// インデックスバッファの定義
 		D3D11_BUFFER_DESC indexBufferDesc;
@@ -200,10 +201,12 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		}
 		_d3dProgram.setIndexBuffer(indexBuffer);
 		_d3dProgramForShadowMap.setIndexBuffer(indexBuffer);
+		_d3dProgramForGBuffer.setIndexBuffer(indexBuffer);
 
 		bool depthEnable = true;
 		_d3dProgram.initWithShaderFile("Obj.hlsl", depthEnable, "VS", "", "PS");
 		_d3dProgramForShadowMap.initWithShaderFile("Obj.hlsl", depthEnable, "VS_SM", "", "");
+		_d3dProgramForGBuffer.initWithShaderFile("Obj.hlsl", depthEnable, "VS_GBUFFER", "", "PS_GBUFFER");
 
 		// 入力レイアウトオブジェクトの作成
 		D3D11_INPUT_ELEMENT_DESC layout[] = {
@@ -226,6 +229,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		}
 		_d3dProgram.setInputLayout(inputLayout);
 		_d3dProgramForShadowMap.setInputLayout(inputLayout);
+		_d3dProgramForGBuffer.setInputLayout(inputLayout);
 	}
 	else if (_isC3b)
 	{
@@ -256,6 +260,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		}
 		_d3dProgram.addVertexBuffer(vertexBuffer);
 		_d3dProgramForShadowMap.addVertexBuffer(vertexBuffer);
+		_d3dProgramForGBuffer.addVertexBuffer(vertexBuffer);
 
 		// インデックスバッファの定義
 		D3D11_BUFFER_DESC indexBufferDesc;
@@ -282,10 +287,12 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		}
 		_d3dProgram.setIndexBuffer(indexBuffer);
 		_d3dProgramForShadowMap.setIndexBuffer(indexBuffer);
+		_d3dProgramForGBuffer.setIndexBuffer(indexBuffer);
 
 		bool depthEnable = true;
 		_d3dProgram.initWithShaderFile("C3bC3t.hlsl", depthEnable, "VS", "", "PS");
 		_d3dProgramForShadowMap.initWithShaderFile("C3bC3t.hlsl", depthEnable, "VS_SM", "", "");
+		_d3dProgramForGBuffer.initWithShaderFile("C3bC3t.hlsl", depthEnable, "VS_GBUFFER", "", "PS_GBUFFER");
 
 		// 入力レイアウトオブジェクトの作成
 		std::vector<D3D11_INPUT_ELEMENT_DESC> layouts(meshData->numAttribute);
@@ -312,6 +319,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		}
 		_d3dProgram.setInputLayout(inputLayout);
 		_d3dProgramForShadowMap.setInputLayout(inputLayout);
+		_d3dProgramForGBuffer.setInputLayout(inputLayout);
 	}
 
 	// 定数バッファの作成
@@ -333,6 +341,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
 
 	// View行列用
 	constantBuffer = nullptr;
@@ -344,6 +353,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 
 	// Projection行列用
 	constantBuffer = nullptr;
@@ -355,6 +365,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 
 	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
 	// 乗算色
@@ -367,6 +378,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 
 	// アンビエントライトカラー
 	constantBufferDesc.ByteWidth = sizeof(AmbientLight::ConstantBufferData);
@@ -379,6 +391,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 
 	// ディレクショナルトライトView行列用
 	constantBufferDesc.ByteWidth = sizeof(Mat4);
@@ -391,6 +404,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX, constantBuffer);
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX, constantBuffer);
 
 	// ディレクショナルトライトProjection行列用
 	constantBuffer = nullptr;
@@ -402,6 +416,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer);
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer);
 
 	// ディレクショナルトライトデプスバイアス行列用
 	constantBuffer = nullptr;
@@ -413,6 +428,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
 
 	// ディレクショナルトライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(DirectionalLight::ConstantBufferData);
@@ -425,6 +441,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 
 	// ポイントライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(PointLight::ConstantBufferData);
@@ -437,6 +454,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 
 	// スポットライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(SpotLight::ConstantBufferData);
@@ -449,6 +467,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 
 	if (_isC3b)
 	{
@@ -463,6 +482,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		}
 		_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer);
 		_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer);
+		_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer);
 	}
 #elif defined(MGRRENDERER_USE_OPENGL)
 	if (_isObj)
@@ -855,11 +875,6 @@ C3bLoader::NodeData* Sprite3D::findJointByName(const std::string& jointName, con
 	return nullptr;
 }
 
-void Sprite3D::renderGBuffer()
-{
-	Node::renderGBuffer();
-}
-
 void Sprite3D::update(float dt)
 {
 	Node::update(dt);
@@ -944,6 +959,126 @@ void Sprite3D::update(float dt)
 #endif
 		_matrixPalette.push_back(matrix);
 	}
+}
+
+void Sprite3D::renderGBuffer()
+{
+	_renderGBufferCommand.init([=]
+	{
+		Node::renderGBuffer();
+
+		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+
+		// TODO:ここらへん共通化したいな。。
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+
+		// モデル行列のマップ
+		HRESULT result = direct3dContext->Map(
+			_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 modelMatrix = getModelMatrix();
+		modelMatrix.transpose();
+		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
+		direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
+
+		// ビュー行列のマップ
+		result = direct3dContext->Map(
+			_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 viewMatrix = Director::getCamera().getViewMatrix();
+		viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
+		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
+		direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
+
+		// プロジェクション行列のマップ
+		result = direct3dContext->Map(
+			_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 projectionMatrix = Director::getCamera().getProjectionMatrix();
+		projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
+		projectionMatrix.transpose();
+		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
+		direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
+
+		// 乗算色のマップ
+		result = direct3dContext->Map(
+			_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
+		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
+		direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
+
+		if (_isC3b)
+		{
+			// ジョイントマトリックスパレットのマップ
+			result = direct3dContext->Map(
+				_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE),
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&mappedResource
+			);
+			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+			CopyMemory(mappedResource.pData, _matrixPalette.data(), sizeof(Mat4) * _matrixPalette.size());
+			direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE), 0);
+		}
+
+		UINT strides[1];
+		if (_isObj)
+		{
+			strides[0] = sizeof(Position3DNormalTextureCoordinates);
+		}
+		else if (_isC3b)
+		{
+			strides[0] = _perVertexByteSize;
+		}
+
+		UINT offsets[1] = {0};
+		direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers().size(), _d3dProgramForGBuffer.getVertexBuffers().data(), strides, offsets);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForGBuffer.getIndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
+		direct3dContext->IASetInputLayout(_d3dProgramForGBuffer.getInputLayout());
+		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		_d3dProgramForGBuffer.setShadersToDirect3DContext(direct3dContext);
+		_d3dProgramForGBuffer.setConstantBuffersToDirect3DContext(direct3dContext);
+
+		direct3dContext->RSSetState(_d3dProgramForGBuffer.getRasterizeState());
+
+		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:型変換がうまくいかないので一度変数に代入している
+		direct3dContext->PSSetShaderResources(0, 1, &resourceView);
+		ID3D11SamplerState* samplerState = _texture->getSamplerState(); //TODO:型変換がうまくいかないので一度変数に代入している
+		direct3dContext->PSSetSamplers(0, 1, &samplerState);
+
+		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+		direct3dContext->OMSetBlendState(_d3dProgramForGBuffer.getBlendState(), blendFactor, 0xffffffff);
+
+		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+
+#endif
+	});
+
+	Director::getRenderer().addCommand(&_renderGBufferCommand);
 }
 
 void Sprite3D::renderShadowMap()

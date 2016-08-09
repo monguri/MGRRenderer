@@ -133,16 +133,15 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="GBuffer.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    <None Include="PositionRenderBufferMultiplyColor.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="PositionRenderBufferMultiplyColor.hlsl">
+    <None Include="GBufferPack.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="GBufferUnpack.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

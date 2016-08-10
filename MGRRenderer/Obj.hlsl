@@ -95,6 +95,7 @@ struct PS_GBUFFER_INPUT
 {
 	float4 position : SV_POSITION;
 	float3 normal : NORMAL;
+	float2 texCoord : TEX_COORD;
 };
 
 PS_INPUT VS(VS_INPUT input)
@@ -142,6 +143,8 @@ PS_GBUFFER_INPUT VS_GBUFFER(VS_INPUT input)
 	output.position = mul(position, _projection);
 
 	output.normal = input.normal;
+	output.texCoord = input.texCoord;
+	output.texCoord.y = 1.0 - output.texCoord.y; // objÇÃéñèÓÇ…ÇÊÇÈÇ‡ÇÃ
 
 	return output;
 }
@@ -193,5 +196,6 @@ float4 PS_SM(PS_SM_INPUT input) : SV_TARGET
 
 PS_GBUFFER_OUT PS_GBUFFER(PS_GBUFFER_INPUT input)
 {
-	return packGBuffer(_multiplyColor.rgb, normalize(input.normal), 0.0, 0.0); //TODO: specularÇÕç°ÇÃÇ∆Ç±ÇÎëŒâûÇµÇƒÇ»Ç¢
+	float4 color = _texture2d.Sample(_samplerState, input.texCoord) * _multiplyColor;
+	return packGBuffer(color.rgb, normalize(input.normal), 0.0, 0.0); //TODO: specularÇÕç°ÇÃÇ∆Ç±ÇÎëŒâûÇµÇƒÇ»Ç¢
 }

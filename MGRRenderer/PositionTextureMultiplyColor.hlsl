@@ -1,3 +1,5 @@
+#include "GBufferPack.hlsl"
+
 cbuffer ModelMatrix : register(b0)
 {
 	matrix _model;
@@ -49,4 +51,12 @@ PS_INPUT VS(VS_INPUT input)
 float4 PS(PS_INPUT input) : SV_TARGET
 {
 	return _texture2d.Sample(_samplerState, input.texCoord) * _multiplyColor;
+}
+
+PS_GBUFFER_OUT PS_GBUFFER(PS_INPUT input)
+{
+	float4 color = _texture2d.Sample(_samplerState, input.texCoord) * _multiplyColor;
+	return packGBuffer(color.rgb,
+						float3(0.0, 0.0, 1.0), // normal‚Íg‚í‚È‚¢‚Ì‚Å“K“–
+						0.0, 0.0); //TODO: specular‚Í¡‚Ì‚Æ‚±‚ë‘Î‰‚µ‚Ä‚È‚¢
 }

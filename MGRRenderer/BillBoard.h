@@ -27,9 +27,10 @@ public:
 
 private:
 	Mode _mode;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	D3DProgram _d3dProgramForGBuffer;
+#endif
 	CustomRenderCommand _renderGBufferCommand;
-
-	void calculateBillboardTransform();
 };
 
 } // namespace mgrrenderer

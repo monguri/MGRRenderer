@@ -965,8 +965,6 @@ void Sprite3D::renderGBuffer()
 {
 	_renderGBufferCommand.init([=]
 	{
-		Node::renderGBuffer();
-
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 
@@ -1084,8 +1082,6 @@ void Sprite3D::renderShadowMap()
 {
 	_renderShadowMapCommand.init([=]
 	{
-		Node::renderShadowMap();
-
 		bool makeShadowMap = false;
 		DirectionalLight::ShadowMapData shadowMapData;
 
@@ -1285,8 +1281,6 @@ void Sprite3D::renderWithShadowMap()
 {
 	_renderCommand.init([=]
 	{
-		Node::renderWithShadowMap();
-
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 

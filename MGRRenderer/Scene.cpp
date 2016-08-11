@@ -80,11 +80,11 @@ void Scene::update(float dt)
 	_camera.renderGBuffer();
 
 	// 不透過モデルはディファードレンダリング
-	_prepareDifferedRenderingCommand.init([=]
+	_prepareGBufferRenderingCommand.init([=]
 	{
-		Director::getRenderer().prepareDifferedRendering();
+		Director::getRenderer().prepareGBufferRendering();
 	});
-	Director::getRenderer().addCommand(&_prepareDifferedRenderingCommand);
+	Director::getRenderer().addCommand(&_prepareGBufferRenderingCommand);
 
 	for (Node* child : _children)
 	{
@@ -117,6 +117,7 @@ void Scene::update(float dt)
 		child->renderShadowMap();
 	}
 
+	// 非透過モデルはディファードレンダリング
 	// 透過モデルはフォワードレンダリング
 	_prepareFowardRenderingCommand.init([=]
 	{

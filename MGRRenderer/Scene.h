@@ -33,7 +33,7 @@ private:
 	Camera _camera;
 	Camera _cameraFor2D; // 2D‚æ‚¤‚ÉSize(0,0,WINDOW_WIDTH,WINDOW_HEIGHT)‚ª‰æ–Ê‚É“ü‚é‚æ‚¤‚ÉŒÅ’è‚µ‚½ƒJƒƒ‰
 	std::vector<Light*> _light;
-	CustomRenderCommand _prepareDifferedRenderingCommand;
+	CustomRenderCommand _prepareGBufferRenderingCommand;
 	CustomRenderCommand _prepareFowardRenderingCommand;
 	CustomRenderCommand _prepareFowardRendering2DCommand;
 };

@@ -131,7 +131,7 @@ void Renderer::render()
 	_queueGroup[DEFAULT_RENDER_QUEUE_GROUP_INDEX].clear();
 }
 
-void Renderer::prepareDifferedRendering()
+void Renderer::prepareGBufferRendering()
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();

@@ -26,7 +26,8 @@ public:
 	// TODO:moveコンストラクタ使う？
 	void addCommand(RenderCommand* command);
 	void render();
-	void prepareDifferedRendering();
+	void prepareGBufferRendering();
+	static void renderDiffered();
 	static void prepareFowardRendering();
 	static void prepareFowardRendering2D();
 

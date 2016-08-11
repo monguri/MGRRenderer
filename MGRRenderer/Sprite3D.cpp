@@ -967,6 +967,7 @@ void Sprite3D::renderGBuffer()
 	{
 		Node::renderGBuffer();
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 
 		// TODO:‚±‚±‚ç‚Ö‚ñ‹¤’Ê‰»‚µ‚½‚¢‚ÈBB
@@ -1073,8 +1074,6 @@ void Sprite3D::renderGBuffer()
 		direct3dContext->OMSetBlendState(_d3dProgramForGBuffer.getBlendState(), blendFactor, 0xffffffff);
 
 		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
-#if defined(MGRRENDERER_USE_DIRECT3D)
-
 #endif
 	});
 

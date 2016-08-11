@@ -18,8 +18,10 @@ const std::string Sprite2D::CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE
 
 Sprite2D::Sprite2D() :
 _texture(nullptr),
-_isOwnTexture(false),
-_renderBufferType(RenderBufferType::NONE)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+_renderBufferType(RenderBufferType::NONE),
+#endif
+_isOwnTexture(false)
 {
 }
 

@@ -37,7 +37,7 @@ private:
 
 	void renderGBuffer() override;
 	void renderShadowMap() override;
-	void renderWithShadowMap() override;
+	void renderForward() override;
 };
 
 } // namespace mgrrenderer

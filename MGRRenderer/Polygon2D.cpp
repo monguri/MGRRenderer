@@ -157,7 +157,7 @@ void Polygon2D::renderGBuffer()
 	Node::renderGBuffer();
 }
 
-void Polygon2D::renderWithShadowMap()
+void Polygon2D::renderForward()
 {
 	_renderCommand.init([=]
 	{

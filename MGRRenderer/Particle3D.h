@@ -45,7 +45,7 @@ private:
 	// TODO:Ç∆ÇËÇ†Ç¶Ç∏Ç‹ÇæÇ±ÇÍÇÃâeê∂ê¨ÇÕÇµÇ»Ç¢
 	void update(float dt) override;
 	void renderGBuffer() override;
-	void renderWithShadowMap() override;
+	void renderForward() override;
 };
 
 } // namespace mgrrenderer

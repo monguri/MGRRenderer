@@ -339,7 +339,7 @@ void BillBoard::renderGBuffer()
 }
 
 // Sprite2Dとの違いは深度テストONにしてることだけ
-void BillBoard::renderWithShadowMap()
+void BillBoard::renderForward()
 {
 	_renderCommand.init([=]
 	{

@@ -234,10 +234,10 @@ void Director::renderGBufferSprite()
 	_gBufferNormal->prepareRendering();
 	_gBufferSpecularPower->prepareRendering();
 
-	_gBufferDepthStencil->renderWithShadowMap();
-	_gBufferColorSpecularIntensitySprite->renderWithShadowMap();
-	_gBufferNormal->renderWithShadowMap();
-	_gBufferSpecularPower->renderWithShadowMap();
+	_gBufferDepthStencil->renderForward();
+	_gBufferColorSpecularIntensitySprite->renderForward();
+	_gBufferNormal->renderForward();
+	_gBufferSpecularPower->renderForward();
 }
 #endif
 
@@ -277,7 +277,7 @@ void Director::updateStats(float dt)
 		_FPSLabel->update(dt);
 		_FPSLabel->prepareRendering();
 		_FPSLabel->renderShadowMap();
-		_FPSLabel->renderWithShadowMap();
+		_FPSLabel->renderForward();
 	}
 }
 

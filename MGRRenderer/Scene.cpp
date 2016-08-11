@@ -124,11 +124,11 @@ void Scene::update(float dt)
 	});
 	Director::getRenderer().addCommand(&_prepareFowardRenderingCommand);
 
-	_camera.renderWithShadowMap();
+	_camera.renderForward();
 
 	for (Node* child : _children)
 	{
-		child->renderWithShadowMap();
+		child->renderForward();
 	}
 
 	// 2Dƒm[ƒh‚Í[“x‚Ìˆµ‚¢‚ªˆá‚¤‚Ì‚Åˆê‚Â€”õˆ—‚ð‚Í‚³‚Þ
@@ -140,7 +140,7 @@ void Scene::update(float dt)
 
 	for (Node* child : _children2D)
 	{
-		child->renderWithShadowMap();
+		child->renderForward();
 	}
 }
 

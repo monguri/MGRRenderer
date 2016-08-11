@@ -13,7 +13,7 @@ public:
 	virtual void prepareRendering();
 	virtual void renderGBuffer();
 	virtual void renderShadowMap();
-	virtual void renderWithShadowMap();
+	virtual void renderForward();
 	const Vec3& getPosition() const { return _position; }
 	virtual void setPosition(const Vec3& position) { _position = position; };
 	const Quaternion& getRotation() const { return _rotation; }

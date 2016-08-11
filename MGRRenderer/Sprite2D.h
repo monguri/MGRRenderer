@@ -74,7 +74,7 @@ private:
 	bool _isDepthTexture; // デプステクスチャを扱う場合
 
 	void renderGBuffer() override;
-	void renderWithShadowMap() override;
+	void renderForward() override;
 };
 
 } // namespace mgrrenderer

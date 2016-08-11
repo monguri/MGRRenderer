@@ -23,7 +23,7 @@ public:
 	bool init(const std::string& filePath, Mode mode);
 	void prepareRendering() override;
 	void renderGBuffer() override;
-	void renderWithShadowMap() override;
+	void renderForward() override;
 
 private:
 	Mode _mode;

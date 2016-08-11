@@ -35,7 +35,7 @@ private:
 	int _itemHeight;
 
 	void renderGBuffer() override;
-	void renderWithShadowMap() override;
+	void renderForward() override;
 };
 
 } // namespace mgrrenderer

@@ -331,7 +331,7 @@ void Sprite2D::renderGBuffer()
 	Node::renderGBuffer();
 }
 
-void Sprite2D::renderWithShadowMap()
+void Sprite2D::renderForward()
 {
 	_renderCommand.init([=]
 	{

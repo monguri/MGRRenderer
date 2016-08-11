@@ -1277,7 +1277,7 @@ void Sprite3D::renderShadowMap()
 	Director::getRenderer().addCommand(&_renderShadowMapCommand);
 }
 
-void Sprite3D::renderWithShadowMap()
+void Sprite3D::renderForward()
 {
 	_renderCommand.init([=]
 	{

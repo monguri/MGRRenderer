@@ -158,7 +158,7 @@ void Line2D::renderGBuffer()
 	Node::renderGBuffer();
 }
 
-void Line2D::renderWithShadowMap()
+void Line2D::renderForward()
 {
 	_renderCommand.init([=]
 	{

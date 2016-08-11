@@ -180,7 +180,7 @@ void Particle3D::renderGBuffer()
 	Node::renderGBuffer();
 }
 
-void Particle3D::renderWithShadowMap()
+void Particle3D::renderForward()
 {
 	_renderCommand.init([=]
 	{

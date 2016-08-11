@@ -28,7 +28,7 @@ void Node::renderShadowMap()
 	// ‰½‚à‚µ‚È‚¢
 }
 
-void Node::renderWithShadowMap()
+void Node::renderForward()
 {
 	// ‰½‚à‚µ‚È‚¢
 }

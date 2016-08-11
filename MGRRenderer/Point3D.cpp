@@ -169,7 +169,7 @@ void Point3D::renderGBuffer()
 	Node::renderGBuffer();
 }
 
-void Point3D::renderWithShadowMap()
+void Point3D::renderForward()
 {
 	_renderCommand.init([=]
 	{

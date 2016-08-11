@@ -159,7 +159,7 @@ void Line3D::renderGBuffer()
 	Node::renderGBuffer();
 }
 
-void Line3D::renderWithShadowMap()
+void Line3D::renderForward()
 {
 	_renderCommand.init([=]
 	{

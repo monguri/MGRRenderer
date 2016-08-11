@@ -94,7 +94,7 @@ void LabelAtlas::renderGBuffer()
 	Node::renderGBuffer();
 }
 
-void LabelAtlas::renderWithShadowMap()
+void LabelAtlas::renderForward()
 {
 	_renderCommand.init([=]
 	{

@@ -622,7 +622,7 @@ void Polygon3D::renderShadowMap()
 	Director::getRenderer().addCommand(&_renderShadowMapCommand);
 }
 
-void Polygon3D::renderWithShadowMap()
+void Polygon3D::renderForward()
 {
 	_renderCommand.init([=]
 	{

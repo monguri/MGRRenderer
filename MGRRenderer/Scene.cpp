@@ -60,6 +60,8 @@ void Scene::update(float dt)
 		child->update(dt);
 	}
 
+	_cameraFor2D.update(dt);
+
 	for (Node* child : _children2D)
 	{
 		child->update(dt);
@@ -71,6 +73,8 @@ void Scene::update(float dt)
 	{
 		child->prepareRendering();
 	}
+
+	_cameraFor2D.prepareRendering();
 
 	for (Node* child : _children2D)
 	{
@@ -143,6 +147,8 @@ void Scene::update(float dt)
 		Renderer::prepareFowardRendering2D();
 	});
 	Director::getRenderer().addCommand(&_prepareFowardRendering2DCommand);
+
+	_cameraFor2D.renderForward();
 
 	for (Node* child : _children2D)
 	{

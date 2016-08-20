@@ -686,9 +686,6 @@ void Polygon3D::renderForward()
 		// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
 		for (Light* light : Director::getLight())
 		{
-			const Color3B& lightColor = light->getColor();
-			float intensity = light->getIntensity();
-
 			switch (light->getLightType())
 			{
 			case LightType::AMBIENT:
@@ -785,7 +782,6 @@ void Polygon3D::renderForward()
 			}
 				break;
 			case LightType::SPOT: {
-				SpotLight* spotLight = static_cast<SpotLight*>(light);
 				// スポットライトの位置＆レンジの逆数のマップ
 				result = direct3dContext->Map(
 					_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER),

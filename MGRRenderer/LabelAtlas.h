@@ -17,7 +17,7 @@ public:
 	LabelAtlas();
 	~LabelAtlas();
 #if defined(MGRRENDERER_USE_OPENGL)
-	bool init(const std::string& string, const GLTexture* texture, int itemWidth, int itemHeight, char mapStartChararcter);
+	bool init(const std::string& string, const GLTexture* texture, float itemWidth, float itemHeight, char mapStartChararcter);
 	void setString(const std::string& string);
 #endif
 
@@ -31,8 +31,8 @@ private:
 	std::string _string;
 	std::vector<Position2DTextureCoordinates> _vertices;
 	std::vector<unsigned short> _indices;
-	int _itemWidth;
-	int _itemHeight;
+	float _itemWidth;
+	float _itemHeight;
 
 	void renderGBuffer() override;
 	void renderForward() override;

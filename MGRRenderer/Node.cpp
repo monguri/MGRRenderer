@@ -10,6 +10,7 @@ Node::Node() : _scale(Vec3(1.0f, 1.0f, 1.0f)), _modelMatrix(Mat4::IDENTITY), _co
 
 void Node::update(float dt)
 {
+	(void)dt; //–¢g—p•Ï”Œx—}§
 }
 
 void Node::prepareRendering()

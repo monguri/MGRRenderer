@@ -234,13 +234,15 @@ void Renderer::initView(const Size& windowSize)
 		return;
 	}
 	_d3dProgram.setInputLayout(inputLayout);
+
+	(void)windowSize; // 未使用変数の警告抑制
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	// TODO:ブレンドが必要ない時もブレンドをONにしている
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// OpenGL側でやるビューポート変換のためのパラメータを渡す
-	glViewport(0, 0, windowSize.width, windowSize.height);
+	glViewport(0, 0, static_cast<GLsizei>(windowSize.width), static_cast<GLsizei>(windowSize.height));
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファ
 #endif
 }
@@ -333,7 +335,7 @@ void Renderer::prepareDifferedRendering()
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
-	glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
+	glViewport(0, 0, static_cast<GLsizei>(Director::getInstance()->getWindowSize().width), static_cast<GLsizei>(Director::getInstance()->getWindowSize().height));
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
@@ -383,9 +385,6 @@ void Renderer::renderDiffered()
 	// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
 	for (Light* light : Director::getLight())
 	{
-		const Color3B& lightColor = light->getColor();
-		float intensity = light->getIntensity();
-
 		switch (light->getLightType())
 		{
 		case LightType::AMBIENT:
@@ -480,7 +479,6 @@ void Renderer::renderDiffered()
 		}
 			break;
 		case LightType::SPOT: {
-			SpotLight* spotLight = static_cast<SpotLight*>(light);
 			// スポットライトの位置＆レンジの逆数のマップ
 			result = direct3dContext->Map(
 				_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER),

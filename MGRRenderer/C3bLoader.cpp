@@ -267,6 +267,7 @@ namespace C3bLoader
 			attrib.attributeSizeBytes = sizeof(float) * size;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 			attrib.semantic = parseD3DProgramAttributeString(type);
+			(void)attribute; //ñ¢égópïœêîåxçêó}êß
 #elif defined(MGRRENDERER_USE_OPENGL)
 			attrib.type = parseGLTypeString(type);
 			attrib.location = parseGLProgramAttributeString(attribute);
@@ -485,6 +486,7 @@ namespace C3bLoader
 				attrib.attributeSizeBytes = sizeof(float) * size;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 				attrib.semantic = parseD3DProgramAttributeString(attribute);
+				(void)type; // ñ¢égópïœêîÇÃåxçêó}êß
 #elif defined(MGRRENDERER_USE_OPENGL)
 				attrib.type = parseGLTypeString(type);
 				attrib.location = parseGLProgramAttributeString(attribute);
@@ -551,7 +553,7 @@ namespace C3bLoader
 			// attributes
 			//
 			unsigned int attribSize = 0;
-			size_t readCount = binary.read(&attribSize, 4, 1);
+			readCount = binary.read(&attribSize, 4, 1);
 			if (readCount != 1 || attribSize < 1)
 			{
 				delete mesh;
@@ -562,7 +564,7 @@ namespace C3bLoader
 			mesh->numAttribute = attribSize;
 			mesh->attributes.resize(attribSize);
 
-			for (unsigned int i = 0; i < attribSize; ++i)
+			for (unsigned int j = 0; j < attribSize; ++j)
 			{
 				unsigned int size;
 				readCount = binary.read(&size, 4, 1);
@@ -575,13 +577,14 @@ namespace C3bLoader
 
 				const std::string& type = binary.readString();
 				const std::string& attribStr = binary.readString();
-				mesh->attributes[i].size = size;
-				mesh->attributes[i].attributeSizeBytes = size * sizeof(float);
+				mesh->attributes[j].size = size;
+				mesh->attributes[j].attributeSizeBytes = size * sizeof(float);
 #if defined(MGRRENDERER_USE_DIRECT3D)
-				mesh->attributes[i].semantic = parseD3DProgramAttributeString(attribStr);
+				mesh->attributes[j].semantic = parseD3DProgramAttributeString(attribStr);
+				(void)type; // ñ¢égópïœêîÇÃåxçêó}êß
 #elif defined(MGRRENDERER_USE_OPENGL)
-				mesh->attributes[i].type = parseGLTypeString(type);
-				mesh->attributes[i].location = parseGLProgramAttributeString(attribStr);
+				mesh->attributes[j].type = parseGLTypeString(type);
+				mesh->attributes[j].location = parseGLProgramAttributeString(attribStr);
 #endif
 			}
 
@@ -617,7 +620,7 @@ namespace C3bLoader
 				return "warning: Failed to read meshdata: mesh part count";
 			}
 
-			for (unsigned int i = 0; i < meshPartCount; ++i)
+			for (unsigned int j = 0; j < meshPartCount; ++j)
 			{
 				const std::string& meshPartId = binary.readString();
 				mesh->subMeshIds.push_back(meshPartId);
@@ -1046,8 +1049,6 @@ namespace C3bLoader
 			return false;
 		}
 
-		std::string& boneName = binary.readString();
-
 		// transform
 		float bindShape[4][4];
 		success = binary.readMatrix(&bindShape[0][0]);
@@ -1085,7 +1086,7 @@ namespace C3bLoader
 
 		outSkinData.skinBoneOriginMatrices.resize(numBone);
 
-		boneName = binary.readString(); // Ç»Ç∫Ç©çƒÇ—ì«ÇÒÇ≈Ç¢ÇƒÅAëOÇ…ì«ÇÒÇæÇ‡ÇÃÇÕégÇ¡ÇƒÇ»Ç¢
+		const std::string& boneName = binary.readString();
 		if (boneName.empty())
 		{
 			Logger::log("warning: Failed to load SkinData: bone name");
@@ -1472,7 +1473,6 @@ namespace C3bLoader
 		for (rapidjson::SizeType i = 0; i < nodesValSize; ++i)
 		{
 			const rapidjson::Value& nodeVal = nodesVal[i];
-			const std::string& id = nodeVal["id"].GetString();
 			NodeData* nodeData = parseNodeRecursivelyJson(nodeVal, nodesValSize == 1, version, nullptr);
 			// nullptrÇ™ï‘Ç¡ÇƒÇ‡â¡Ç¶ÇÈ
 
@@ -1862,7 +1862,7 @@ namespace C3bLoader
 			}
 
 			size_t nodeBoneNamesSize = skinData.nodeBoneNames.size();
-			for (size_t i = 0; i < skinBoneNamesSize; ++i)
+			for (size_t i = 0; i < nodeBoneNamesSize; ++i)
 			{
 				nodeDatas[index] = new (std::nothrow)NodeData();
 				nodeDatas[index]->id = skinData.nodeBoneNames[i];
@@ -2028,7 +2028,7 @@ namespace C3bLoader
 			}
 
 			size_t nodeBoneNamesSize = skinData.nodeBoneNames.size();
-			for (size_t i = 0; i < skinBoneNamesSize; ++i)
+			for (size_t i = 0; i < nodeBoneNamesSize; ++i)
 			{
 				nodeDatas[index] = new (std::nothrow)NodeData();
 				nodeDatas[index]->id = skinData.nodeBoneNames[i];

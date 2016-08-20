@@ -42,6 +42,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	LPTSTR    lpCmdLine,
 	int       nCmdShow)
 {
+	(void)nCmdShow; // 未使用変数警告抑制
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 	// デバッグ ヒープ マネージャによるメモリ割り当ての追跡方法を設定
@@ -278,6 +279,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		PostQuitMessage(EXIT_FAILURE);
 	}
 #elif defined(MGRRENDERER_USE_OPENGL)
+	(void)hInstance; // 未使用変数警告抑制
+
 	glfwSetErrorCallback(fwErrorHandler);
 
 	if (glfwInit() == GL_FALSE)
@@ -379,15 +382,12 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	glfwDestroyWindow(window);
 	glfwTerminate();
 #endif
-	exit(EXIT_SUCCESS);
 	return 0;
 }
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
 LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowParam, LONG param)
 {
-	HRESULT result = S_OK;
-
 	switch (message)
 	{
 	case WM_DESTROY:
@@ -403,11 +403,15 @@ LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowPara
 #elif defined(MGRRENDERER_USE_OPENGL)
 void fwErrorHandler(int error, const char* description)
 {
+	(void)error; // 未使用変数警告抑制
 	std::cerr << "glfw Error: " << description << std::endl;
 }
 
 void fwKeyInputHandler(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+	(void)scancode; // 未使用変数警告抑制
+	(void)mods; // 未使用変数警告抑制
+
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE);

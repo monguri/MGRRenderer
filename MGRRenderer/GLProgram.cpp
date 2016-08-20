@@ -308,7 +308,7 @@ GLuint GLProgram::getAttributeLocation(const std::string& attributeName) const
 	catch (...)
 	{
 		Logger::logAssert(false, "存在しないアトリビュート変数へのアクセス uniformName=%s", attributeName.c_str());
-		return -1;
+		return 0;
 	}
 }
 

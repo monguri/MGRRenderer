@@ -25,7 +25,7 @@ LabelAtlas::~LabelAtlas()
 }
 
 #if defined(MGRRENDERER_USE_OPENGL)
-bool LabelAtlas::init(const std::string& string, const GLTexture* texture, int itemWidth, int itemHeight, char mapStartChararcter)
+bool LabelAtlas::init(const std::string& string, const GLTexture* texture, float itemWidth, float itemHeight, char mapStartChararcter)
 {
 	_texture = texture;
 
@@ -45,7 +45,7 @@ void LabelAtlas::setString(const std::string& string)
 	_string = string;
 
 	// setStringの回数は少ないという前提のもと、以下は毎回計算している
-	int itemsPerRow = _texture->getContentSize().width / _itemWidth;
+	unsigned char itemsPerRow = static_cast<unsigned char>(_texture->getContentSize().width / _itemWidth);
 
 	float itemWidthOnTexCoord = _itemWidth / _texture->getContentSize().width;
 	float itemHeightOnTexCoord = _itemHeight / _texture->getContentSize().height;
@@ -59,8 +59,8 @@ void LabelAtlas::setString(const std::string& string)
 	for (size_t i = 0; i < len; ++i)
 	{
 		unsigned char a = (unsigned char)_string[i] - _mapStartCharacter;
-		char column = a % itemsPerRow;
-		char row = a / itemsPerRow;
+		unsigned char column = a % itemsPerRow;
+		unsigned char row = a / itemsPerRow;
 
 		float left = column * itemWidthOnTexCoord;
 		float right = left + itemWidthOnTexCoord;
@@ -79,12 +79,12 @@ void LabelAtlas::setString(const std::string& string)
 		_vertices[4 * i + 3].position = Vec2((i + 1) * _itemWidth, 0.0f);
 
 		// TODO:glDrawElementsを使っていて、インデックスは単純に増やしているだけで頂点の重複は考慮してない。もっと効率いいやり方あるかも
-		_indices[6 * i] = 4 * i;
-		_indices[6 * i + 1] = 4 * i + 1;
-		_indices[6 * i + 2] = 4 * i + 2;
-		_indices[6 * i + 3] = 4 * i + 3;
-		_indices[6 * i + 4] = 4 * i + 2;
-		_indices[6 * i + 5] = 4 * i + 1;
+		_indices[6 * i] = static_cast<unsigned short>(4 * i);
+		_indices[6 * i + 1] = static_cast<unsigned short>(4 * i + 1);
+		_indices[6 * i + 2] = static_cast<unsigned short>(4 * i + 2);
+		_indices[6 * i + 3] = static_cast<unsigned short>(4 * i + 3);
+		_indices[6 * i + 4] = static_cast<unsigned short>(4 * i + 2);
+		_indices[6 * i + 5] = static_cast<unsigned short>(4 * i + 1);
 	}
 }
 #endif

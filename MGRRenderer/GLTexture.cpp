@@ -186,7 +186,7 @@ bool GLTexture::initDepthTexture(const Size& contentSize)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
 
 	// テクスチャ生成
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, contentSize.width, contentSize.height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, static_cast<GLsizei>(contentSize.width), static_cast<GLsizei>(contentSize.height), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
 	err = glGetError();
 	if (err != GL_NO_ERROR)
 	{

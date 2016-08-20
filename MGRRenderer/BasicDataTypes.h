@@ -46,16 +46,16 @@ struct Vec2
 	Vec2() : x(0), y(0) {}
 	Vec2(float x, float y) : x(x), y(y) {}
 
-	Vec2 operator+(const Vec2& v) const { return Vec2(x + v.x, y + v.y); }
-	Vec2 operator-(const Vec2& v) const { return Vec2(x - v.x, y - v.y); }
-	Vec2& operator+=(const Vec2& v) { x += v.x; y += v.y; return *this; }
-	Vec2& operator-=(const Vec2& v) { x -= v.x; y -= v.y; return *this; }
+	Vec2 operator+(const Vec2& vec) const { return Vec2(x + vec.x, y + vec.y); }
+	Vec2 operator-(const Vec2& vec) const { return Vec2(x - vec.x, y - vec.y); }
+	Vec2& operator+=(const Vec2& vec) { x += vec.x; y += vec.y; return *this; }
+	Vec2& operator-=(const Vec2& vec) { x -= vec.x; y -= vec.y; return *this; }
 	Vec2 operator*(float a) const { return Vec2(a * x, a * y); }
 	Vec2 operator/(float a) const { Logger::logAssert(a != 0.0, "0で除算している。");  return Vec2(x / a, y / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
 	Vec2& operator*=(float a) { x *= a; y *= a; return *this; }
 	Vec2& operator/=(float a) { Logger::logAssert(a != 0.0, "0で除算している。"); x /= a; y /= a; return *this; }
-	bool operator==(const Vec2& v) const { return (x == v.x && y == v.y); } //TODO:うーん。。。誤差考慮してない
-	bool operator!=(const Vec2& v) const { return (x != v.x || y != v.y);}
+	bool operator==(const Vec2& vec) const { return (x == vec.x && y == vec.y); } //TODO:うーん。。。誤差考慮してない
+	bool operator!=(const Vec2& vec) const { return (x != vec.x || y != vec.y);}
 	void normalize()
 	{
 		float n = x * x + y * y;
@@ -75,7 +75,7 @@ struct Vec2
 		x *= n;
 		y *= n;
 	}
-	float dot(const Vec2& v) { return (x * v.x + y * v.y); }
+	float dot(const Vec2& vec) { return (x * vec.x + y * vec.y); }
 	static float dot(const Vec2& v1, const Vec2& v2) { return (v1.x * v2.x + v1.y * v2.y); }
 };
 
@@ -217,10 +217,10 @@ struct Vec4
 	Vec4 operator-(const Vec4& v) const { return Vec4(x - v.x, y - v.y, z - v.z, w - v.w); }
 	Vec4& operator+=(const Vec4& v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
 	Vec4& operator-=(const Vec4& v) { x -= v.x; y -= v.y; z -= v.z; w -= v.w; return *this; }
-	Vec4 operator*(float a) const { return Vec4(a * x, a * y, a * z, a * w); }
-	Vec4 operator/(float a) const { Logger::logAssert(a != 0.0, "0で除算している。");  return Vec4(x / a, y / a, z / a, w / a); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
-	Vec4& operator*=(float a) { x *= a; y *= a; z *= a; w *= a; return *this; }
-	Vec4& operator/=(float a) { Logger::logAssert(a != 0.0, "0で除算している。"); x /= a; y /= a; z /= a; w /= a; return *this; }
+	Vec4 operator*(float val) const { return Vec4(val * x, val * y, val * z, val * w); }
+	Vec4 operator/(float val) const { Logger::logAssert(val != 0.0, "0で除算している。");  return Vec4(x / val, y / val, z / val, w / val); } //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
+	Vec4& operator*=(float val) { x *= val; y *= val; z *= val; w *= val; return *this; }
+	Vec4& operator/=(float val) { Logger::logAssert(val != 0.0, "0で除算している。"); x /= val; y /= val; z /= val; w /= val; return *this; }
 	bool operator==(const Vec4& v) const { return (x == v.x && y == v.y && z == v.z && w == v.w); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Vec4& v) const { return (x != v.x || y != v.y || z != v.z || w != v.w);}
 	Vec4& normalize() {
@@ -234,7 +234,9 @@ struct Vec4
 		if (n < FLOAT_TOLERANCE)
 		{
 			Logger::logAssert(n > FLOAT_TOLERANCE, "0に近い値で除算している。");
-			return Vec4();
+			// 0べクトルを返す
+			*this = Vec4(0.0f, 0.0f, 0.0f, 0.0f);
+			return *this;
 		}
 
 		n = 1.0f / n;
@@ -318,61 +320,70 @@ struct Quaternion {
 		{
 			return q2;
 		}
+		// TODO:slerpの計算が間違っている
+		//else if (t == 1.0f)
+		//{
+		//	return q2;
+		//}
+		//else if (t == 1.0f)
+		//{
+		//	return q2;
+		//}
 
-		if (q1 == q2)
-		{
-			return q1;
-		}
+		//if (q1 == q2)
+		//{
+		//	return q1;
+		//}
 
-		//TODO: ここから先はまだ理論がよくわかってない
-		float halfY, alpha, beta;
-		float u, f1, f2a, f2b;
-		float ratio1, ratio2;
-		float halfSecHalfTheta, versHalfTheta;
-		float sqNotU, sqU;
+		////TODO: ここから先はまだ理論がよくわかってない
+		//float halfY, alpha, beta;
+		//float u, f1, f2a, f2b;
+		//float ratio1, ratio2;
+		//float halfSecHalfTheta, versHalfTheta;
+		//float sqNotU, sqU;
 
-		float cosTheta = q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
+		//float cosTheta = q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
 
-		alpha = cosTheta >= 0 ? 1.0f : -1.0f;
-		halfY = 1 + alpha * cosTheta;
+		//alpha = cosTheta >= 0 ? 1.0f : -1.0f;
+		//halfY = 1 + alpha * cosTheta;
 
-		f2b = t - 0.5f;
-		u = f2b >= 0 ? f2b : -f2b;
-		f2a = u - f2b;
-		f2b += u;
-		u += u;
-		f1 = 1.0f - u;
+		//f2b = t - 0.5f;
+		//u = f2b >= 0 ? f2b : -f2b;
+		//f2a = u - f2b;
+		//f2b += u;
+		//u += u;
+		//f1 = 1.0f - u;
 
-		halfSecHalfTheta = 1.09f - (0.476537f - 0.903321f * halfY) * halfY;
-		halfSecHalfTheta *= 1.5f - halfY * halfSecHalfTheta * halfSecHalfTheta;
-		versHalfTheta = 1.0f - halfY * halfSecHalfTheta;
+		//halfSecHalfTheta = 1.09f - (0.476537f - 0.903321f * halfY) * halfY;
+		//halfSecHalfTheta *= 1.5f - halfY * halfSecHalfTheta * halfSecHalfTheta;
+		//versHalfTheta = 1.0f - halfY * halfSecHalfTheta;
 
-		sqNotU = f1 * f1;
-		ratio2 = 0.0000440917108f * versHalfTheta;
-		ratio1 = -0.00158730159f + (sqNotU - 16.0f) * ratio2;
-		ratio1 = 0.0333333333f + ratio1 * (sqNotU - 9.0f) * versHalfTheta;
-		ratio1 = -0.0333333333f + ratio1 * (sqNotU - 4.0f) * versHalfTheta;
-		ratio1 = 1.0f + ratio1 * (sqNotU - 1.0f) * versHalfTheta;
+		//sqNotU = f1 * f1;
+		//ratio2 = 0.0000440917108f * versHalfTheta;
+		//ratio1 = -0.00158730159f + (sqNotU - 16.0f) * ratio2;
+		//ratio1 = 0.0333333333f + ratio1 * (sqNotU - 9.0f) * versHalfTheta;
+		//ratio1 = -0.0333333333f + ratio1 * (sqNotU - 4.0f) * versHalfTheta;
+		//ratio1 = 1.0f + ratio1 * (sqNotU - 1.0f) * versHalfTheta;
 
-		sqU = u * u;
-		ratio2 = -0.00158730159f + (sqU - 16.0f) * ratio2;
-		ratio2 = 0.0333333333f + ratio2 * (sqU - 9.0f) * versHalfTheta;
-		ratio2 = -0.0333333333f + ratio2 * (sqU - 4.0f) * versHalfTheta;
-		ratio2 = 1.0f + ratio2 * (sqU - 1.0f) * versHalfTheta;
+		//sqU = u * u;
+		//ratio2 = -0.00158730159f + (sqU - 16.0f) * ratio2;
+		//ratio2 = 0.0333333333f + ratio2 * (sqU - 9.0f) * versHalfTheta;
+		//ratio2 = -0.0333333333f + ratio2 * (sqU - 4.0f) * versHalfTheta;
+		//ratio2 = 1.0f + ratio2 * (sqU - 1.0f) * versHalfTheta;
 
-		f1 *= ratio1 * halfSecHalfTheta;
-		f2a *= ratio2;
-		f2b *= ratio2;
-		alpha *= f1 + f2a;
-		beta = f1 + f2b;
+		//f1 *= ratio1 * halfSecHalfTheta;
+		//f2a *= ratio2;
+		//f2b *= ratio2;
+		//alpha *= f1 + f2a;
+		//beta = f1 + f2b;
 
-		float x = alpha * q1.x + beta * q2.x;
-		float y = alpha * q1.y + beta * q2.y;
-		float z = alpha * q1.z + beta * q2.z;
-		float w = alpha * q1.w + beta * q2.w;
+		//float x = alpha * q1.x + beta * q2.x;
+		//float y = alpha * q1.y + beta * q2.y;
+		//float z = alpha * q1.z + beta * q2.z;
+		//float w = alpha * q1.w + beta * q2.w;
 
-		f1 = 1.5f - 0.5f * (x * x + y * y + z * z + w * w);
-		return Quaternion(x * f1, y * f1, z * f1, w * f1);
+		//f1 = 1.5f - 0.5f * (x * x + y * y + z * z + w * w);
+		//return Quaternion(x * f1, y * f1, z * f1, w * f1);
 	}
 };
 

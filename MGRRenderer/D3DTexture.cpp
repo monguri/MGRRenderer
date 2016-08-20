@@ -53,6 +53,8 @@ D3DTexture::~D3DTexture()
 
 bool D3DTexture::initWithImage(const Image& image, TextureUtility::PixelFormat format)
 {
+	(void)format; //–¢Žg—p•Ï”Œx—}§
+
 	if (image.getData() == nullptr)
 	{
 		return false;
@@ -274,7 +276,6 @@ bool D3DTexture::initRenderTexture(const Size & size, DXGI_FORMAT textureFormat)
 	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	rtvDesc.Texture2D.MipSlice = 0;
 
-	ID3D11RenderTargetView* rtv = nullptr;
 	result = device->CreateRenderTargetView(texture, &rtvDesc, &_renderTargetView);
 	if (FAILED(result))
 	{

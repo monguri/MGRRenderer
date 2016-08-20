@@ -44,7 +44,7 @@ namespace ObjLoader
 	static float parseFloat(const char*& token)
 	{
 		token += strspn(token, " \t");
-		const char* end = token + strcspn(token, " \t\r");
+		//const char* end = token + strcspn(token, " \t\r");
 		// TODO:なぜcocosはatofを使わない」？+3.1417e+2みたいな記述を許してるから？
 		// TODO:monguri:→たぶんそう。これはatofを使う形に修正しよう
 		// http://www.orchid.co.jp/computer/cschool/CREF/atof.html 
@@ -105,7 +105,7 @@ namespace ObjLoader
 	// Parse triples: i, i/j/k, i//k, i/j
 	static VertexIndex parseVertexIndex(const char*& token, int vsize, int vnsize, int vtsize)
 	{
-		VertexIndex ret(-1);
+		VertexIndex ret;
 
 		ret.vIdx = fixIndexForArray(atoi(token), vsize);
 		token += strcspn(token, "/ \t\r");
@@ -209,7 +209,7 @@ namespace ObjLoader
 
 			// 次のループのための初期値
 			VertexIndex vi0 = face[0];
-			VertexIndex vi1(-1);
+			VertexIndex vi1;
 			VertexIndex vi2 = face[1];
 
 			size_t numPolys = face.size();
@@ -226,7 +226,7 @@ namespace ObjLoader
 					allTexCoords,
 					vi0
 					);
-				mesh.indices.push_back(idx0);
+				mesh.indices.push_back(static_cast<unsigned short>(idx0));
 
 				unsigned int idx1 = addOneVetexDataToMeshData(
 					vertexIndexPositionsArrayIndexMap,
@@ -236,7 +236,7 @@ namespace ObjLoader
 					allTexCoords,
 					vi1
 					);
-				mesh.indices.push_back(idx1);
+				mesh.indices.push_back(static_cast<unsigned short>(idx1));
 
 				unsigned int idx2 = addOneVetexDataToMeshData(
 					vertexIndexPositionsArrayIndexMap,
@@ -246,7 +246,7 @@ namespace ObjLoader
 					allTexCoords,
 					vi2
 					);
-				mesh.indices.push_back(idx2);
+				mesh.indices.push_back(static_cast<unsigned short>(idx2));
 
 				mesh.materialIndices.push_back(materialIndex); // 各頂点ごとにマテリアルIDも持たせる
 				// TODO:これ、複数配列に持たすよりまとめてmapなりなんなりのグループに持たせてもいいのでは。まあ必ずしもPNTすべてデータがあると限らないからメモリ容量的には無駄だけど。。

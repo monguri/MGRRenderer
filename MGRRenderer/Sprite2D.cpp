@@ -408,7 +408,7 @@ void Sprite2D::renderForward()
 					&mappedResource
 				);
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				Mat4 projectionMatrix = Director::getCamera().getProjectionMatrix();
+				projectionMatrix = Director::getCamera().getProjectionMatrix();
 				projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 				projectionMatrix.transpose();
 				CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));

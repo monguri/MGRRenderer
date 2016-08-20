@@ -473,7 +473,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	{
 		// スキニングのマトリックスパレット
 		constantBufferDesc.ByteWidth = sizeof(Mat4) * MAX_SKINNING_JOINT;
-		ID3D11Buffer* constantBuffer = nullptr;
+		constantBuffer = nullptr;
 		result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 		if (FAILED(result))
 		{
@@ -1253,7 +1253,7 @@ void Sprite3D::renderShadowMap()
 		{
 			// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
 			C3bLoader::MeshData* meshData = _meshDatas->meshDatas[0];
-			for (int i = 0, offset = 0; i < meshData->numAttribute; ++i)
+			for (size_t i = 0, offset = 0; i < meshData->numAttribute; ++i)
 			{
 				const C3bLoader::MeshVertexAttribute& attrib = meshData->attributes[i];
 				glVertexAttribPointer((GLuint)attrib.location, attrib.size, attrib.type, GL_FALSE, _perVertexByteSize, (GLvoid*)&meshData->vertices[offset]);
@@ -1349,9 +1349,6 @@ void Sprite3D::renderForward()
 		// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
 		for (Light* light : Director::getLight())
 		{
-			const Color3B& lightColor = light->getColor();
-			float intensity = light->getIntensity();
-
 			switch (light->getLightType())
 			{
 			case LightType::AMBIENT:
@@ -1446,7 +1443,6 @@ void Sprite3D::renderForward()
 			}
 				break;
 			case LightType::SPOT: {
-				SpotLight* spotLight = static_cast<SpotLight*>(light);
 				// スポットライトの位置＆レンジの逆数のマップ
 				result = direct3dContext->Map(
 					_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER),
@@ -1660,7 +1656,7 @@ void Sprite3D::renderForward()
 		{
 			// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
 			C3bLoader::MeshData* meshData = _meshDatas->meshDatas[0];
-			for (int i = 0, offset = 0; i < meshData->numAttribute; ++i)
+			for (size_t i = 0, offset = 0; i < meshData->numAttribute; ++i)
 			{
 				const C3bLoader::MeshVertexAttribute& attrib = meshData->attributes[i];
 				glVertexAttribPointer((GLuint)attrib.location, attrib.size, attrib.type, GL_FALSE, _perVertexByteSize, (GLvoid*)&meshData->vertices[offset]);

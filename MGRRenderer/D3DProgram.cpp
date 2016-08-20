@@ -105,6 +105,8 @@ D3DProgram::~D3DProgram()
 
 void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnable, const std::string& vertexShaderFunctionName, const std::string& geometryShaderFunctionName, const std::string& pixelShaderFunctionName)
 {
+	(void)depthTestEnable; //ñ¢égópïœêîåxçêó}êß
+
 	WCHAR wPath[FileUtility::MAX_PATH_LENGTH] = { 0 };
 	FileUtility::convertWCHARFilePath(path, wPath, FileUtility::MAX_PATH_LENGTH);
 

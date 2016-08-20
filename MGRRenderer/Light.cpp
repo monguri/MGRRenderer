@@ -93,8 +93,6 @@ void DirectionalLight::initShadowMap(const Vec3& targetPosition, float cameraDis
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	_constantBufferData.hasShadowMap = 1.0f;
 
-	ID3D11Device* device = Director::getInstance()->getDirect3dDevice();
-
 	_shadowMapData.depthTexture = new D3DTexture();
 	_shadowMapData.depthTexture->initDepthStencilTexture(size);
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -144,7 +142,7 @@ void DirectionalLight::prepareShadowMapRendering()
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		//TODO:シャドウマップの大きさは画面サイズと同じにしている
-		glViewport(0, 0, Director::getInstance()->getWindowSize().width, Director::getInstance()->getWindowSize().height);
+		glViewport(0, 0, static_cast<GLsizei>(Director::getInstance()->getWindowSize().width), static_cast<GLsizei>(Director::getInstance()->getWindowSize().height));
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);

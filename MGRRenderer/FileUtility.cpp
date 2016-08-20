@@ -26,7 +26,7 @@ FileUtility::FileUtility()
 	WCHAR* utf16DirEnd = wcsrchr(utf16ExePath, L'\\');
 
 	char utf8ExeDir[MAX_PATH_LENGTH] = { 0 };
-	int num = WideCharToMultiByte(CP_UTF8, 0, utf16ExePath, utf16DirEnd - utf16ExePath + 1, utf8ExeDir, sizeof(utf8ExeDir), nullptr, nullptr);
+	WideCharToMultiByte(CP_UTF8, 0, utf16ExePath, utf16DirEnd - utf16ExePath + 1, utf8ExeDir, sizeof(utf8ExeDir), nullptr, nullptr);
 
 	_resourceRootPath = convertPathFormatToUnixStyle(utf8ExeDir);
 }
@@ -167,10 +167,10 @@ bool FileUtility::isValidFileNameAtWindows(const std::string& fullPath, const st
 	// Windowsは大文字小文字区別しないでヒットしちゃうから、ここで大文字小文字区別しても該当するファイルがあるかチェックする
 	// TODO:FileUtils-win32.cppのcheckFileNameから持ってきてるけど処理内容がよくわからん
 
-	std::string& path = convertPathFormatToUnixStyle(fullPath);
+	std::string path = convertPathFormatToUnixStyle(fullPath);
 	size_t pathLen = path.length();
 	size_t nameLen = fileName.length();
-	std::string& realName = std::string();
+	std::string realName;
 
 	while (path.length() >= pathLen - nameLen && path.length() > 2) // おそらく普通は一周しかしない。二周するケースが何なのか不明
 	{

@@ -33,7 +33,9 @@ Particle3D::~Particle3D()
 
 bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 {
-#if defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	(void)parameter; // 未使用変数警告抑制
+#elif defined(MGRRENDERER_USE_OPENGL)
 	// 一個でもParticle3Dがあったらポイントスプライトを有効にする。これを有効にしないとgl_PointCoordが有効に働かない
 	glEnable(GL_POINT_SPRITE);
 
@@ -48,7 +50,7 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 	static_cast<Texture*>(_texture)->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
 
 	// vec3で埋まるので、初期値の(0,0,0)で埋まっている
-	int numParticle = _parameter.loopFlag ? parameter.numParticle * parameter.lifeTime : parameter.numParticle;
+	int numParticle = static_cast<int>(_parameter.loopFlag ? parameter.numParticle * parameter.lifeTime : parameter.numParticle);
 	_vertexArray.resize(numParticle);
 	_initVelocityArray.resize(numParticle);
 	_elapsedTimeArray.resize(numParticle);
@@ -217,7 +219,7 @@ void Particle3D::renderForward()
 
 		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
 
-		int numParticle = _parameter.loopFlag ? _parameter.numParticle * _parameter.lifeTime : _parameter.numParticle;
+		int numParticle = static_cast<int>(_parameter.loopFlag ? _parameter.numParticle * _parameter.lifeTime : _parameter.numParticle);
 		glDrawArrays(GL_POINTS, 0, numParticle);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 #endif

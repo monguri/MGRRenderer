@@ -139,6 +139,8 @@ bool Image::initWithPngData(const unsigned char * data, size_t dataLen)
 		return false;
 	}
 
+	#pragma warning(disable:4611) // 警告をLevel4以上検出で出るので、回避のために抑制する
+	// Warning	C4611	interaction between '_setjmp' and C++ object destruction is non-portable
 	// よくわからん
 	if (setjmp(png_jmpbuf(png))) // 戻り値の型がわからん。。
 	{

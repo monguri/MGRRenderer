@@ -109,7 +109,7 @@ bool FileUtility::isFileExistInternal(const std::string& path) const
 	return true;
 }
 
-unsigned char* FileUtility::getFileData(const std::string& fileName, ssize_t* size, bool forString /* = false */) const
+unsigned char* FileUtility::getFileData(const std::string& fileName, size_t* size, bool forString /* = false */) const
 {
 	unsigned char* ret = nullptr;
 	*size = 0;
@@ -168,8 +168,8 @@ bool FileUtility::isValidFileNameAtWindows(const std::string& fullPath, const st
 	// TODO:FileUtils-win32.cppのcheckFileNameから持ってきてるけど処理内容がよくわからん
 
 	std::string& path = convertPathFormatToUnixStyle(fullPath);
-	ssize_t pathLen = path.length();
-	ssize_t nameLen = fileName.length();
+	size_t pathLen = path.length();
+	size_t nameLen = fileName.length();
 	std::string& realName = std::string();
 
 	while (path.length() >= pathLen - nameLen && path.length() > 2) // おそらく普通は一周しかしない。二周するケースが何なのか不明
@@ -213,7 +213,7 @@ bool FileUtility::isValidFileNameAtWindows(const std::string& fullPath, const st
 
 std::string FileUtility::getStringFromFile(const std::string& fileName) const
 {
-	ssize_t size;
+	size_t size;
 	const unsigned char* data = getFileData(fileName, &size, true);
 	if (data == nullptr)
 	{

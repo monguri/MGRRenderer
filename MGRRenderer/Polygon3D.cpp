@@ -24,7 +24,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 
 	// TODO:GL_TRIANGLESなので重複した法線の場合はパイプラインでどっちが後に処理されたかによる。そこは考慮していない。考慮する場合はGL_TRIANGLESをそもそも使わない
 	size_t numPolygon = vertexArray.size() / 3;
-	for (int i = 0; i < numPolygon; ++i)
+	for (size_t i = 0; i < numPolygon; ++i)
 	{
 		// 0,1,2と左回りになっているのを前提とする
 		Vec3 normal0 = Vec3::cross(vertexArray[3 * i + 1] - vertexArray[3 * i], vertexArray[3 * i + 2] - vertexArray[3 * i]); // 左回りを前提とする

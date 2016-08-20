@@ -9,13 +9,13 @@ namespace ObjLoader
 	static const size_t SSCANF_BUFFER_SIZE = 4096;
 
 	struct VertexIndex {
-		int vIdx;
-		int vtIdx;
-		int vnIdx;
+		size_t vIdx;
+		size_t vtIdx;
+		size_t vnIdx;
 
 		VertexIndex() {};
-		VertexIndex(int idx) : vIdx(idx), vtIdx(idx), vnIdx(idx) {};
-		VertexIndex(int vIdxVal, int vtIdxVal, int vnIdxVal) : vIdx(vIdxVal), vtIdx(vtIdxVal), vnIdx(vnIdxVal) {};
+		VertexIndex(size_t idx) : vIdx(idx), vtIdx(idx), vnIdx(idx) {};
+		VertexIndex(size_t vIdxVal, size_t vtIdxVal, size_t vnIdxVal) : vIdx(vIdxVal), vtIdx(vtIdxVal), vnIdx(vnIdxVal) {};
 
 		// std::mapのテンプレートで指定する型はoperator<の定義が必要
 		bool operator<(const VertexIndex& another) const
@@ -55,7 +55,7 @@ namespace ObjLoader
 		size_t len = strcspn(token, " \t\r");
 		std::string floatStr(token, len);
 		token += len;
-		float ret = atof(floatStr.c_str());
+		float ret = static_cast<float>(atof(floatStr.c_str()));
 		return ret;
 	}
 
@@ -85,11 +85,11 @@ namespace ObjLoader
 	}
 
 	// Make index zero-base, and also support relative index.
-	static int fixIndexForArray(int idx, int size)
+	static size_t fixIndexForArray(int idx, int size)
 	{
 		if (idx > 0)
 		{
-			return idx - 1;
+			return static_cast<size_t>(idx - 1);
 		}
 		else if (idx == 0)
 		{
@@ -97,7 +97,8 @@ namespace ObjLoader
 		}
 		else // idx < 0
 		{
-			return size + idx; // relative idx
+			Logger::logAssert(size + idx >= 0, "objファイルでサイズより大きな負の値が代入された。");
+			return static_cast<size_t>(size + idx); // relative idx
 		}
 	}
 
@@ -404,7 +405,7 @@ namespace ObjLoader
 			else if (token[0] == 'T' && token[1] == 'r' && isSpace(token[2]))
 			{
 				token += 2;
-				material.dissolve = 1.0 - parseFloat(token);
+				material.dissolve = 1.0f - parseFloat(token);
 			}
 			// ambient texture
 			else if (strncmp(token, "map_Ka", 6) == 0 && isSpace(token[6]))
@@ -522,7 +523,7 @@ namespace ObjLoader
 			const char* token = lineBuf.c_str();
 			token += strspn(token, " \t");
 
-			Logger::logAssert(token, "スペースだけの行は本来はないはず");
+			Logger::logAssert(token != nullptr, "スペースだけの行は本来はないはず");
 
 			if (token[0] == '\0')
 			{

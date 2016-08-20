@@ -130,13 +130,13 @@ void Particle3D::update(float dt)
 	if (_parameter.loopFlag)
 	{
 		// %‰‰ŽZŽq‚ð‚Â‚©‚¤‚½‚ß‚É1000”{‚µ‚Äms‚Åˆµ‚¤
-		_elapsedTimeMs += dt * 1000;
+		_elapsedTimeMs += static_cast<int>(dt * 1000);
 
 		int timePerEmit = (int)(1.0f / _parameter.numParticle * 1000);
 
 		if (_elapsedTimeMs > timePerEmit)
 		{
-			int numParticle = _parameter.numParticle * _parameter.lifeTime;
+			int numParticle = static_cast<int>(_parameter.numParticle * _parameter.lifeTime);
 			for (int i = 0; i < numParticle; ++i)
 			{
 				_elapsedTimeArray[i] += dt;

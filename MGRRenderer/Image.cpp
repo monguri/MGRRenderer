@@ -13,7 +13,7 @@ namespace mgrrenderer
 typedef struct
 {
 	const unsigned char* data;
-	ssize_t size;
+	size_t size;
 	int offset;
 } ImageSource;
 
@@ -49,7 +49,7 @@ bool Image::initWithFilePath(const std::string& filePath)
 {
 	FileUtility* fileUtil = FileUtility::getInstance();
 	const std::string& fullPath = fileUtil->getFullPathForFileName(filePath);
-	ssize_t fileSize = 0;
+	size_t fileSize = 0;
 	unsigned char* fileData = fileUtil->getFileData(fullPath, &fileSize);
 	// libpng、libjpegによってrawデータに変換
 
@@ -59,7 +59,7 @@ bool Image::initWithFilePath(const std::string& filePath)
 	return isSucceeded;
 }
 
-bool Image::initWithImageData(const unsigned char* data, ssize_t dataLen)
+bool Image::initWithImageData(const unsigned char* data, size_t dataLen)
 {
 	// libpng、libjpegによってrawデータに変換
 	_data = static_cast<unsigned char*>(malloc(dataLen));
@@ -88,7 +88,7 @@ bool Image::initWithImageData(const unsigned char* data, ssize_t dataLen)
 	return isSucceeded;
 }
 
-Image::FileFormat Image::detectFileFormat(const unsigned char * data, ssize_t dataLen)
+Image::FileFormat Image::detectFileFormat(const unsigned char * data, size_t dataLen)
 {
 	if (isPng(data, dataLen))
 	{
@@ -98,7 +98,7 @@ Image::FileFormat Image::detectFileFormat(const unsigned char * data, ssize_t da
 	return Image::FileFormat::UNKNOWN;
 }
 
-bool Image::isPng(const unsigned char * data, ssize_t dataLen)
+bool Image::isPng(const unsigned char * data, size_t dataLen)
 {
 	if (dataLen < PNG_SIGNATURE_SIZE)
 	{
@@ -110,7 +110,7 @@ bool Image::isPng(const unsigned char * data, ssize_t dataLen)
 	return memcmp(data, PNG_SIGNATURE, sizeof(PNG_SIGNATURE)) == 0;
 }
 
-bool Image::initWithPngData(const unsigned char * data, ssize_t dataLen)
+bool Image::initWithPngData(const unsigned char * data, size_t dataLen)
 {
 	if (dataLen < PNG_SIGNATURE_SIZE)
 	{
@@ -266,7 +266,7 @@ bool Image::initWithPngData(const unsigned char * data, ssize_t dataLen)
 	return true;
 }
 
-bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
+bool Image::initWithTgaData(const unsigned char* data, size_t dataLen)
 {
 	//
 	// ヘッダ部分のロード
@@ -338,7 +338,7 @@ bool Image::initWithTgaData(const unsigned char* data, ssize_t dataLen)
 		unsigned int total = header.width * header.height;
 		_rawDataLen = sizeof(unsigned char) * total * mode;
 		_rawData = static_cast<unsigned char*>(malloc(_rawDataLen));
-		for (int i = 0; i < total; ++i)
+		for (unsigned int i = 0; i < total; ++i)
 		{
 			bool readPixel = false;
 

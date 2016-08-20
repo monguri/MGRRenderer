@@ -166,8 +166,8 @@ struct timeval Director::getCurrentTimeOfDay()
 	QueryPerformanceCounter(&count);
 
 	struct timeval ret;
-	ret.tv_sec = count.QuadPart / freq.QuadPart;
-	ret.tv_usec = count.QuadPart * 1000000 / freq.QuadPart - ret.tv_sec * 1000000;
+	ret.tv_sec = static_cast<long>(count.QuadPart / freq.QuadPart);
+	ret.tv_usec = static_cast<long>(count.QuadPart * 1000000 / freq.QuadPart - ret.tv_sec * 1000000);
 	return ret;
 }
 

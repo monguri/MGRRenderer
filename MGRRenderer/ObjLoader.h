@@ -31,7 +31,7 @@ namespace ObjLoader
 		float shinness;
 		float indexOfRefraction;
 		float dissolve;
-		int illumination;
+		float illumination;
 
 		std::string ambientTextureName;
 		std::string diffuseTextureName;
@@ -48,7 +48,7 @@ namespace ObjLoader
 			shinness(1.0f),
 			indexOfRefraction(1.0f),
 			dissolve(1.0f),
-			illumination(0)
+			illumination(0.0f)
 		{}
 	};
 

@@ -25,7 +25,7 @@ public:
 	Image();
 	~Image();
 	bool initWithFilePath(const std::string& filePath);
-	bool initWithImageData(const unsigned char* data, ssize_t dataLen);
+	bool initWithImageData(const unsigned char* data, size_t dataLen);
 
 	unsigned char* getData() const { return _data; };
 	ssize_t getDataLength() const { return _dataLen; };
@@ -50,10 +50,10 @@ private:
 	bool _hasPremultipliedAlpha;
 	FileFormat _fileFormat;
 
-	FileFormat detectFileFormat(const unsigned char * data, ssize_t dataLen);
-	bool isPng(const unsigned char * data, ssize_t dataLen);
-	bool initWithPngData(const unsigned char * data, ssize_t dataLen);
-	bool initWithTgaData(const unsigned char * data, ssize_t dataLen);
+	FileFormat detectFileFormat(const unsigned char * data, size_t dataLen);
+	bool isPng(const unsigned char * data, size_t dataLen);
+	bool initWithPngData(const unsigned char * data, size_t dataLen);
+	bool initWithTgaData(const unsigned char * data, size_t dataLen);
 	void premultiplyAlpha();
 	inline static unsigned int premultiplyAlpha(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 	{

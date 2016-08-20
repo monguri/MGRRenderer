@@ -1904,7 +1904,7 @@ namespace C3bLoader
 
 	std::string loadC3b(const std::string& fileName, MeshDatas& outMeshDatas, MaterialDatas& outMaterialDatas, NodeDatas& outNodeDatas, AnimationDatas& outAnimationDatas)
 	{
-		ssize_t length;
+		size_t length;
 		unsigned char* buffer = FileUtility::getInstance()->getFileData(fileName, &length);
 		if (buffer == nullptr || length <= 0)
 		{

@@ -138,8 +138,8 @@ bool D3DTexture::initDepthStencilTexture(const Size & size)
 
 	// テクスチャ生成
 	D3D11_TEXTURE2D_DESC texDesc;
-	texDesc.Width = size.width;
-	texDesc.Height = size.height;
+	texDesc.Width = static_cast<UINT>(size.width);
+	texDesc.Height = static_cast<UINT>(size.height);
 	texDesc.MipLevels = 1;
 	texDesc.ArraySize = 1;
 	//texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -248,8 +248,8 @@ bool D3DTexture::initRenderTexture(const Size & size, DXGI_FORMAT textureFormat)
 
 	// テクスチャ生成
 	D3D11_TEXTURE2D_DESC texDesc;
-	texDesc.Width = size.width;
-	texDesc.Height = size.height;
+	texDesc.Width = static_cast<UINT>(size.width);
+	texDesc.Height = static_cast<UINT>(size.height);
 	texDesc.MipLevels = 1;
 	texDesc.ArraySize = 1;
 	texDesc.Format = textureFormat;

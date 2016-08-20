@@ -782,8 +782,10 @@ struct Size
 	float width;
 	float height;
 
-	Size() : width(0), height(0) {}
-	Size(float width, float height) : width(width), height(height) {}
+	Size() : width(0.0f), height(0.0f) {}
+	Size(float width, float height) : width(width), height(height) { Logger::logAssert(width >= 0.0f && height >= 0.0f, "Size‚Ìˆø”‚É•‰‚Ì’l‚ª“ü—Í‚³‚ê‚½"); }
+	Size(unsigned int width, unsigned int height) : width(static_cast<float>(width)), height(static_cast<float>(height)) {}
+	Size(int width, int height) : width(static_cast<float>(width)), height(static_cast<float>(height)) { Logger::logAssert(width >= 0 && height >= 0, "Size‚Ìˆø”‚É•‰‚Ì’l‚ª“ü—Í‚³‚ê‚½"); }
 
 	const Size operator*(float a) const
 	{

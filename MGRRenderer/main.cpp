@@ -12,7 +12,8 @@
 #endif
 
 
-#define STRICT					// 型チェックを厳密に行なう
+// 既にSTRICTは定義されているようだ
+//#define STRICT					// 型チェックを厳密に行なう
 #define WIN32_LEAN_AND_MEAN		// ヘッダーからあまり使われない関数を省く
 
 // Windows Header Files:
@@ -507,7 +508,7 @@ void initialize()
 	};
 	Polygon3D* plane3DNode2 = new Polygon3D();
 	isSucceeded = plane3DNode2->initWithVertexArray(planeVertices3D2);
-	Logger::logAssert(plane3DNode2, "ノードの初期化失敗");
+	Logger::logAssert(plane3DNode2 != nullptr, "ノードの初期化失敗");
 
 	std::vector<Vec3> planeVertices3D3 {
 		Vec3(WINDOW_WIDTH / 2.0f - 320.0f + 1.0f, 1.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 1.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f + 1.0f, 320.0f, -320.0f),
@@ -607,7 +608,7 @@ static float cameraAngle = 0.0f; //TODO:objとc3tが見えやすい位置
 void render()
 {
 	const Vec3& cameraPos = Director::getCamera().getPosition();
-	cameraAngle += 0.003;
+	cameraAngle += 0.003f;
 	Vec3 newCameraPos = Vec3(WINDOW_HEIGHT / 1.1566f * sin(cameraAngle) + WINDOW_WIDTH / 2.0f, cameraPos.y, WINDOW_HEIGHT / 1.1566f * cos(cameraAngle));
 	Director::getCamera().setPosition(newCameraPos);
 

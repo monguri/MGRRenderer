@@ -296,10 +296,10 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		// 入力レイアウトオブジェクトの作成
 		std::vector<D3D11_INPUT_ELEMENT_DESC> layouts(meshData->numAttribute);
-		for (int i = 0, offset = 0; i < meshData->numAttribute; ++i)
+		for (size_t i = 0, offset = 0; i < meshData->numAttribute; ++i)
 		{
 			const C3bLoader::MeshVertexAttribute& attrib = meshData->attributes[i];
-			D3D11_INPUT_ELEMENT_DESC layout = {attrib.semantic.c_str(), 0, D3DProgram::getDxgiFormat(attrib.semantic), 0, offset, D3D11_INPUT_PER_VERTEX_DATA, 0};
+			D3D11_INPUT_ELEMENT_DESC layout = {attrib.semantic.c_str(), 0, D3DProgram::getDxgiFormat(attrib.semantic), 0, static_cast<UINT>(offset), D3D11_INPUT_PER_VERTEX_DATA, 0};
 			layouts[i] = layout;
 			offset += attrib.attributeSizeBytes;
 		}
@@ -902,7 +902,7 @@ void Sprite3D::update(float dt)
 	Logger::logAssert(numSkinJoint == _nodeDatas->nodes[0]->modelNodeDatas[0]->invBindPose.size(), "ジョイント数は一致するはず");
 
 	// 先に各ジョイントのアニメーション行列を作成する
-	for (int i = 0; i < numSkinJoint; ++i)
+	for (size_t i = 0; i < numSkinJoint; ++i)
 	{
 		const std::string& jointName = _nodeDatas->nodes[0]->modelNodeDatas[0]->bones[i];//TODO: nodes下に要素は一個、parts下にも一個だけであることを前提にしている
 
@@ -926,7 +926,7 @@ void Sprite3D::update(float dt)
 	}
 
 	// 次にジョイントのマトリックスパレットをすべて求める
-	for (int i = 0; i < numSkinJoint; ++i)
+	for (size_t i = 0; i < numSkinJoint; ++i)
 	{
 		const std::string& jointName = _nodeDatas->nodes[0]->modelNodeDatas[0]->bones[i];//TODO: nodes下に要素は一個、parts下にも一個だけであることを前提にしている
 

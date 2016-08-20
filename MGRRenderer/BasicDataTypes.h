@@ -747,7 +747,8 @@ struct Mat4
 		if (fabs(det) <= FLOAT_TOLERANCE)
 		{
 			Logger::logAssert(false, "Mat4::inverse(), determinant is 0.");
-			return Mat4(); // ƒ[ƒs—ñ‚ğ•Ô‚·
+			this->setZero(); // ƒ[ƒs—ñ‚ğ•Ô‚·
+			return *this;
 		}
 
 		Mat4 inverse = Mat4(

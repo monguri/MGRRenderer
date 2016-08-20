@@ -210,7 +210,6 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
-	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 
 	// アンビエントライトカラー
@@ -223,7 +222,6 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer);
-	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer);
 
 	// ディレクショナルトライトView行列用
 	constantBufferDesc.ByteWidth = sizeof(Mat4);
@@ -235,7 +233,6 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX, constantBuffer);
-	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX, constantBuffer);
 
 	// ディレクショナルトライトProjection行列用
 	constantBuffer = nullptr;
@@ -246,7 +243,6 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer);
-	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer);
 
 	// ディレクショナルトライトデプスバイアス行列用
 	constantBuffer = nullptr;
@@ -257,7 +253,6 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
-	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
 
 	// ディレクショナルトライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(DirectionalLight::ConstantBufferData);

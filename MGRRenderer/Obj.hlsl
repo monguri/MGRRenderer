@@ -128,8 +128,8 @@ PS_SM_INPUT VS_SM(VS_INPUT input)
 
 	float4 position = float4(input.position, 1.0);
 	position = mul(position, _model);
-	position = mul(position, _lightView);
-	output.lightPosition = mul(position, _lightProjection);
+	position = mul(position, _view);
+	output.lightPosition = mul(position, _projection);
 	return output;
 }
 

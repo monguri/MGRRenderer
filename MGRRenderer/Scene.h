@@ -37,6 +37,7 @@ private:
 	CustomRenderCommand _prepareDifferedRenderingCommand; // Gバッファの描画も含めてディファードレンダリングだが、命名をわかりやすくするためにGバッファを使った最終描画をこう呼んでいる
 	CustomRenderCommand _prepareFowardRenderingCommand;
 	CustomRenderCommand _prepareFowardRendering2DCommand;
+	CustomRenderCommand _renderDifferedCommand;
 };
 
 } // namespace mgrrenderer

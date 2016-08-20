@@ -48,7 +48,6 @@ private:
 	D3DTexture* _gBufferNormal;
 	D3DTexture* _gBufferSpecularPower;
 	D3DProgram _d3dProgram;
-	CustomRenderCommand _renderDifferedCommand;
 	Quadrangle2D _quadrangle;
 #endif
 

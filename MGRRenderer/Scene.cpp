@@ -116,7 +116,11 @@ void Scene::update(float dt)
 	});
 	Director::getRenderer().addCommand(&_prepareDifferedRenderingCommand);
 
-	Director::getRenderer().renderDiffered();
+	_renderDifferedCommand.init([=]
+	{
+		Director::getRenderer().renderDiffered();
+	});
+	Director::getRenderer().addCommand(&_renderDifferedCommand);
 
 	// 非透過モデルはディファードレンダリング
 	// 透過モデルはフォワードレンダリング
@@ -126,7 +130,7 @@ void Scene::update(float dt)
 	});
 	Director::getRenderer().addCommand(&_prepareFowardRenderingCommand);
 
-	//_camera.renderForward();
+	_camera.renderForward();
 
 	//for (Node* child : _children)
 	//{

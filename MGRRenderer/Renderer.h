@@ -1,13 +1,17 @@
 #pragma once
 #include "BasicDataTypes.h"
+#if defined(MGRRENDERER_USE_DIRECT3D)
+#include "D3DProgram.h"
+#endif
+#include "CustomRenderCommand.h"
 #include <vector>
 #include <stack>
 
 namespace mgrrenderer
 {
 
-class RenderCommand;
 class D3DTexture;
+class Light;
 
 class Renderer final
 {
@@ -27,7 +31,8 @@ public:
 	void addCommand(RenderCommand* command);
 	void render();
 	void prepareGBufferRendering();
-	static void renderDiffered();
+	static void prepareDifferedRendering();
+	void renderDiffered();
 	static void prepareFowardRendering();
 	static void prepareFowardRendering2D();
 
@@ -42,6 +47,9 @@ private:
 	D3DTexture* _gBufferColorSpecularIntensity;
 	D3DTexture* _gBufferNormal;
 	D3DTexture* _gBufferSpecularPower;
+	D3DProgram _d3dProgram;
+	CustomRenderCommand _renderDifferedCommand;
+	Quadrangle2D _quadrangle;
 #endif
 
 	void visitRenderQueue(const std::vector<RenderCommand*> queue);

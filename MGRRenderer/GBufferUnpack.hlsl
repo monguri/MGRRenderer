@@ -1,4 +1,4 @@
-cbuffer DepthTextureProjectionMatrix
+cbuffer DepthTextureProjectionMatrix // include前提なのでレジスタは指定しない
 {
 	matrix _depthTextureProjection;
 };

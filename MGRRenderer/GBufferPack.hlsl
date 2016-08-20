@@ -1,6 +1,6 @@
 static const float2 SPECULAR_POWER_RANGE = {10.0, 250.0};
 
-cbuffer DepthTextureProjectionMatrix
+cbuffer DepthTextureProjectionMatrix // include前提なのでレジスタは指定しない
 {
 	matrix _depthTextureProjection;
 };

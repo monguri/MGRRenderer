@@ -145,6 +145,11 @@
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="DifferedLighting.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6BC7B3AF-198E-4A27-9950-D1C347DF439B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

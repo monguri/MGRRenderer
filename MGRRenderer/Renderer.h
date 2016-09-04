@@ -31,8 +31,8 @@ public:
 	void addCommand(RenderCommand* command);
 	void render();
 	void prepareGBufferRendering();
-	static void prepareDifferedRendering();
-	void renderDiffered();
+	static void prepareDeferredRendering();
+	void renderDeferred();
 	static void prepareFowardRendering();
 	static void prepareFowardRendering2D();
 

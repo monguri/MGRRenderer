@@ -34,10 +34,10 @@ private:
 	Camera _cameraFor2D; // 2DようにSize(0,0,WINDOW_WIDTH,WINDOW_HEIGHT)が画面に入るように固定したカメラ
 	std::vector<Light*> _light;
 	CustomRenderCommand _prepareGBufferRenderingCommand;
-	CustomRenderCommand _prepareDifferedRenderingCommand; // Gバッファの描画も含めてディファードレンダリングだが、命名をわかりやすくするためにGバッファを使った最終描画をこう呼んでいる
+	CustomRenderCommand _prepareDeferredRenderingCommand; // Gバッファの描画も含めてディファードレンダリングだが、命名をわかりやすくするためにGバッファを使った最終描画をこう呼んでいる
 	CustomRenderCommand _prepareFowardRenderingCommand;
 	CustomRenderCommand _prepareFowardRendering2DCommand;
-	CustomRenderCommand _renderDifferedCommand;
+	CustomRenderCommand _renderDeferredCommand;
 };
 
 } // namespace mgrrenderer

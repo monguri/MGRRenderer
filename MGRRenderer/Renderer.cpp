@@ -72,7 +72,7 @@ void Renderer::initView(const Size& windowSize)
 	_gBufferSpecularPower = new D3DTexture();
 	_gBufferSpecularPower->initRenderTexture(size, DXGI_FORMAT_R8G8B8A8_UNORM);
 
-	_d3dProgram.initWithShaderFile("DifferedLighting.hlsl", true, "VS", "", "PS");
+	_d3dProgram.initWithShaderFile("DeferredLighting.hlsl", true, "VS", "", "PS");
 
 	// 定数バッファの作成
 	D3D11_BUFFER_DESC constantBufferDesc;
@@ -318,7 +318,7 @@ void Renderer::prepareGBufferRendering()
 #endif
 }
 
-void Renderer::prepareDifferedRendering()
+void Renderer::prepareDeferredRendering()
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
@@ -341,7 +341,7 @@ void Renderer::prepareDifferedRendering()
 #endif
 }
 
-void Renderer::renderDiffered()
+void Renderer::renderDeferred()
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();

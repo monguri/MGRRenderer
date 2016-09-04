@@ -146,7 +146,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="DifferedLighting.hlsl">
+    <None Include="DeferredLighting.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

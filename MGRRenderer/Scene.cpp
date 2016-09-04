@@ -114,17 +114,17 @@ void Scene::update(float dt)
 	//
 	// Gバッファとシャドウマップを使った描画
 	//
-	_prepareDifferedRenderingCommand.init([=]
+	_prepareDeferredRenderingCommand.init([=]
 	{
-		Director::getRenderer().prepareDifferedRendering();
+		Director::getRenderer().prepareDeferredRendering();
 	});
-	Director::getRenderer().addCommand(&_prepareDifferedRenderingCommand);
+	Director::getRenderer().addCommand(&_prepareDeferredRenderingCommand);
 
-	_renderDifferedCommand.init([=]
+	_renderDeferredCommand.init([=]
 	{
-		Director::getRenderer().renderDiffered();
+		Director::getRenderer().renderDeferred();
 	});
-	Director::getRenderer().addCommand(&_renderDifferedCommand);
+	Director::getRenderer().addCommand(&_renderDeferredCommand);
 
 	// 非透過モデルはディファードレンダリング
 	// 透過モデルはフォワードレンダリング

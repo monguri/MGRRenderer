@@ -58,19 +58,17 @@ void Renderer::initView(const Size& windowSize)
 	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
 
-	const Size& size = Director::getInstance()->getWindowSize();
-
 	_gBufferDepthStencil = new D3DTexture();
-	_gBufferDepthStencil->initDepthStencilTexture(size);
+	_gBufferDepthStencil->initDepthStencilTexture(windowSize);
 
 	_gBufferColorSpecularIntensity = new D3DTexture();
-	_gBufferColorSpecularIntensity->initRenderTexture(size, DXGI_FORMAT_R8G8B8A8_UNORM);
+	_gBufferColorSpecularIntensity->initRenderTexture(windowSize, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 	_gBufferNormal = new D3DTexture();
-	_gBufferNormal->initRenderTexture(size, DXGI_FORMAT_R11G11B10_FLOAT);
+	_gBufferNormal->initRenderTexture(windowSize, DXGI_FORMAT_R11G11B10_FLOAT);
 
 	_gBufferSpecularPower = new D3DTexture();
-	_gBufferSpecularPower->initRenderTexture(size, DXGI_FORMAT_R8G8B8A8_UNORM);
+	_gBufferSpecularPower->initRenderTexture(windowSize, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 	_d3dProgram.initWithShaderFile("DeferredLighting.hlsl", true, "VS", "", "PS");
 
@@ -234,8 +232,6 @@ void Renderer::initView(const Size& windowSize)
 		return;
 	}
 	_d3dProgram.setInputLayout(inputLayout);
-
-	(void)windowSize; // 未使用変数の警告抑制
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	// TODO:ブレンドが必要ない時もブレンドをONにしている

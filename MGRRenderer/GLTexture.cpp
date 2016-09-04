@@ -117,7 +117,7 @@ bool GLTexture::initWithImage(const Image& image, TextureUtility::PixelFormat fo
 
 	// TODO:とりあえずMipmap対応はしない
 	glGenTextures(1, &_textureId);
-	glActiveTexture(GL_TEXTURE0); // TODO:とりあえずGL_TEXTURE0
+	//glActiveTexture(GL_TEXTURE0); // とりあえずGL_TEXTURE0だが、デフォルトでGL_TEXTURE0なので必要としない
 	glBindTexture(GL_TEXTURE_2D, _textureId);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -138,6 +138,8 @@ bool GLTexture::initWithImage(const Image& image, TextureUtility::PixelFormat fo
 		goto ERR;
 	}
 	// テクスチャのデータはここで転送完了したので、Imageのもつ画像データは解放されて構わない。CCTextyureCacheでもImageはTexture2D作ったら解放するしね。それなら、別にクラスにしなくてもUtilityクラスでもよかったと思うが、まあデータを中に内包してるクラスの方が扱いやすくはある
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Imageからデータをもらう
 	_contentSize = Size(imageWidth, imageHeight);
@@ -191,6 +193,7 @@ bool GLTexture::initDepthTexture(const Size& contentSize)
 	if (err != GL_NO_ERROR)
 	{
 		Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
+		glBindTexture(GL_TEXTURE_2D, 0);
 		return false;
 	}
 

@@ -45,6 +45,7 @@
     <ClInclude Include="GLTexture.h" />
     <ClInclude Include="TextureUtility.h" />
     <ClInclude Include="D3DTexture.h" />
+    <ClInclude Include="GLFrameBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Director.cpp" />
@@ -84,6 +85,7 @@
     <ClCompile Include="GLTexture.cpp" />
     <ClCompile Include="TextureUtility.cpp" />
     <ClCompile Include="D3DTexture.cpp" />
+    <ClCompile Include="GLFrameBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderPositionMultiplyColor.glsl" />

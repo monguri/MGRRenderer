@@ -14,15 +14,13 @@ public:
 	GLTexture();
 	~GLTexture();
 	bool initWithImage(const Image& image, TextureUtility::PixelFormat format) override;
-	bool initDepthTexture(const Size& contentSize);
+	bool initDepthTexture(GLenum textureUnit, const Size& contentSize);
+	bool initRenderTexture(GLenum textureUnit, GLenum pixelFormat, const Size& contentSize);
 
 	GLuint getTextureId() const { return _textureId; }
-	// デプステクスチャやレンダーテクスチャとして使用するときに使う
-	GLuint getFrameBufferId() const { return _frameBufferId; }
 
 private:
 	GLuint _textureId;
-	GLuint _frameBufferId;
 	bool _hasPremultipliedAlpha;
 };
 

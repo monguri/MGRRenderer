@@ -4,6 +4,8 @@
 #include "CustomRenderCommand.h"
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include <d3d11.h>
+#elif defined(MGRRENDERER_USE_OPENGL)
+#include "GLFrameBuffer.h"
 #endif
 
 namespace mgrrenderer
@@ -87,10 +89,17 @@ public:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		D3DTexture* depthTexture;
 #elif defined(MGRRENDERER_USE_OPENGL)
-		GLTexture* depthTexture;
+		GLFrameBuffer* depthFrameBuffer;
+
+		GLTexture* getDepthTexture() const
+		{
+			Logger::logAssert(depthFrameBuffer != nullptr, "まだシャドウマップ作成していないときにgetDepthTextureId()呼ばれた。");
+			Logger::logAssert(depthFrameBuffer->getTextures().size() == 1, "シャドウマップ用のフレームバッファがデプステクスチャの1枚でない。");
+			return depthFrameBuffer->getTextures()[0];
+		}
 #endif
 
-		ShadowMapData() : depthTexture(nullptr) {};
+		ShadowMapData() : depthFrameBuffer(nullptr) {};
 	};
 
 #if defined(MGRRENDERER_USE_DIRECT3D)

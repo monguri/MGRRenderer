@@ -880,7 +880,7 @@ void Polygon3D::renderForward()
 					// TODO:Vec3‚âMat4‚É“ª‚É‚Â‚¯‚é-‰‰ŽZŽqì‚ç‚È‚¢‚Æ
 
 					glActiveTexture(GL_TEXTURE1);
-					glBindTexture(GL_TEXTURE_2D, dirLight->getShadowMapData().depthTexture->getTextureId());
+					glBindTexture(GL_TEXTURE_2D, dirLight->getShadowMapData().getDepthTexture()->getTextureId());
 					glUniform1i(_glProgram.getUniformLocation("u_shadowTexture"), 1);
 					glActiveTexture(GL_TEXTURE0);
 				}

@@ -2,6 +2,8 @@
 #include "BasicDataTypes.h"
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include "D3DProgram.h"
+#elif defined(MGRRENDERER_USE_OPENGL)
+#include "GLProgram.h"
 #endif
 #include "CustomRenderCommand.h"
 #include <vector>
@@ -11,6 +13,7 @@ namespace mgrrenderer
 {
 
 class D3DTexture;
+class GLFrameBuffer;
 class Light;
 
 class Renderer final
@@ -49,6 +52,9 @@ private:
 	D3DTexture* _gBufferSpecularPower;
 	D3DProgram _d3dProgram;
 	Quadrangle2D _quadrangle;
+#elif defined(MGRRENDERER_USE_OPENGL)
+	GLFrameBuffer* _gBufferFrameBuffer;
+	GLProgram _glProgram;
 #endif
 
 	void visitRenderQueue(const std::vector<RenderCommand*> queue);

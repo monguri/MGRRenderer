@@ -572,7 +572,7 @@ void initialize()
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		depthTextureSprite->initWithRenderBuffer(directionalLight->getShadowMapData().depthTexture, Sprite2D::RenderBufferType::DEPTH_TEXTURE);
 #elif defined(MGRRENDERER_USE_OPENGL)
-		depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().depthTexture);
+		depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().getDepthTexture());
 #endif
 		depthTextureSprite->setScale(1 / 5.0f);
 		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
@@ -593,7 +593,7 @@ void initialize()
 	scene->pushNode(plane3DNode3);
 	scene->pushNode(sprite3DObjNode);
 	scene->pushNode(sprite3DC3tNode);
-	scene->pushNode(particle3DNode);
+	//scene->pushNode(particle3DNode);
 	scene->pushNode2D(pointNode);
 	scene->pushNode2D(lineNode);
 	scene->pushNode2D(polygonNode);

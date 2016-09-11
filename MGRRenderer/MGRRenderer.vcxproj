@@ -31,6 +31,7 @@
     <ClInclude Include="Director.h" />
     <ClInclude Include="FileUtility.h" />
     <ClInclude Include="FPSFontImage.h" />
+    <ClInclude Include="GLFrameBuffer.h" />
     <ClInclude Include="GLProgram.h" />
     <ClInclude Include="GLTexture.h" />
     <ClInclude Include="GroupBeginRenderCommand.h" />
@@ -76,6 +77,7 @@
     <ClCompile Include="Director.cpp" />
     <ClCompile Include="FileUtility.cpp" />
     <ClCompile Include="FPSFontImage.cpp" />
+    <ClCompile Include="GLFrameBuffer.cpp" />
     <ClCompile Include="GLProgram.cpp" />
     <ClCompile Include="GLTexture.cpp" />
     <ClCompile Include="GroupBeginRenderCommand.cpp" />

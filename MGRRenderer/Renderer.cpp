@@ -6,6 +6,8 @@
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include "D3DTexture.h"
 #include "Light.h"
+#elif defined(MGRRENDERER_USE_OPENGL)
+#include "GLFrameBuffer.h"
 #endif
 
 namespace mgrrenderer
@@ -13,12 +15,14 @@ namespace mgrrenderer
 
 static const size_t DEFAULT_RENDER_QUEUE_GROUP_INDEX = 0;
 
-Renderer::Renderer()
+Renderer::Renderer() :
 #if defined(MGRRENDERER_USE_DIRECT3D)
-: _gBufferDepthStencil(nullptr),
+_gBufferDepthStencil(nullptr),
 _gBufferColorSpecularIntensity(nullptr),
 _gBufferNormal(nullptr),
 _gBufferSpecularPower(nullptr)
+#elif defined(MGRRENDERER_USE_OPENGL)
+_gBufferFrameBuffer(nullptr)
 #endif
 {
 	_groupIndexStack.push(DEFAULT_RENDER_QUEUE_GROUP_INDEX);
@@ -32,22 +36,32 @@ Renderer::~Renderer()
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	if (_gBufferSpecularPower != nullptr)
 	{
+		delete _gBufferSpecularPower;
 		_gBufferSpecularPower = nullptr;
 	}
 
 	if (_gBufferNormal != nullptr)
 	{
+		delete _gBufferNormal;
 		_gBufferNormal = nullptr;
 	}
 
 	if (_gBufferColorSpecularIntensity != nullptr)
 	{
+		delete _gBufferColorSpecularIntensity;
 		_gBufferColorSpecularIntensity = nullptr;
 	}
 
 	if (_gBufferDepthStencil != nullptr)
 	{
+		delete _gBufferDepthStencil;
 		_gBufferDepthStencil = nullptr;
+	}
+#elif defined(MGRRENDERER_USE_OPENGL)
+	if (_gBufferFrameBuffer != nullptr)
+	{
+		delete _gBufferFrameBuffer;
+		_gBufferFrameBuffer = nullptr;
 	}
 #endif
 }
@@ -55,9 +69,11 @@ Renderer::~Renderer()
 void Renderer::initView(const Size& windowSize)
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	// ビューポートの準備
 	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
 
+	// Gバッファの準備
 	_gBufferDepthStencil = new D3DTexture();
 	_gBufferDepthStencil->initDepthStencilTexture(windowSize);
 
@@ -69,6 +85,10 @@ void Renderer::initView(const Size& windowSize)
 
 	_gBufferSpecularPower = new D3DTexture();
 	_gBufferSpecularPower->initRenderTexture(windowSize, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+	//
+	// ディファードレンダリングの準備
+	//
 
 	_d3dProgram.initWithShaderFile("DeferredLighting.hlsl", true, "VS", "", "PS");
 
@@ -240,6 +260,19 @@ void Renderer::initView(const Size& windowSize)
 	// OpenGL側でやるビューポート変換のためのパラメータを渡す
 	glViewport(0, 0, static_cast<GLsizei>(windowSize.width), static_cast<GLsizei>(windowSize.height));
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファ
+
+	_gBufferFrameBuffer = new GLFrameBuffer();
+	std::vector<GLenum> drawBuffer;
+	drawBuffer.push_back(GL_NONE);
+	drawBuffer.push_back(GL_COLOR_ATTACHMENT0);
+	drawBuffer.push_back(GL_COLOR_ATTACHMENT1);
+	drawBuffer.push_back(GL_COLOR_ATTACHMENT2);
+	std::vector<GLenum> pixelFormats;
+	pixelFormats.push_back(GL_DEPTH_COMPONENT);
+	pixelFormats.push_back(GL_RGB32F);
+	pixelFormats.push_back(GL_RGB32F);
+	pixelFormats.push_back(GL_RGB);
+	_gBufferFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, windowSize);
 #endif
 }
 
@@ -310,6 +343,15 @@ void Renderer::prepareGBufferRendering()
 	direct3dContext->OMSetRenderTargets(3, gBuffers, _gBufferDepthStencil->getDepthStencilView());
 	direct3dContext->OMSetDepthStencilState(_gBufferDepthStencil->getDepthStencilState(), 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
+	//glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().depthTexture->getFrameBufferId());
+
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//	//TODO:シャドウマップの大きさは画面サイズと同じにしている
+	//glViewport(0, 0, static_cast<GLsizei>(Director::getInstance()->getWindowSize().width), static_cast<GLsizei>(Director::getInstance()->getWindowSize().height));
+
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_FRONT);
 	glEnable(GL_DEPTH_TEST);
 #endif
 }

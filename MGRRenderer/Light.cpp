@@ -3,7 +3,7 @@
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include "D3DTexture.h"
 #elif defined(MGRRENDERER_USE_OPENGL)
-#include "GLTexture.h"
+#include "GLFrameBuffer.h"
 #endif
 
 namespace mgrrenderer
@@ -55,10 +55,10 @@ DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) 
 
 DirectionalLight::~DirectionalLight()
 {
-	if (_shadowMapData.depthTexture != nullptr)
+	if (_shadowMapData.depthFrameBuffer != nullptr)
 	{
-		delete _shadowMapData.depthTexture;
-		_shadowMapData.depthTexture = nullptr;
+		delete _shadowMapData.depthFrameBuffer;
+		_shadowMapData.depthFrameBuffer = nullptr;
 	}
 }
 
@@ -98,8 +98,12 @@ void DirectionalLight::initShadowMap(const Vec3& targetPosition, float cameraDis
 #elif defined(MGRRENDERER_USE_OPENGL)
 	_hasShadowMap = true;
 
-	_shadowMapData.depthTexture = new GLTexture();
-	_shadowMapData.depthTexture->initDepthTexture(size);
+	_shadowMapData.depthFrameBuffer = new GLFrameBuffer();
+	std::vector<GLenum> drawBuffer;
+	drawBuffer.push_back(GL_NONE);
+	std::vector<GLenum> pixelFormats;
+	pixelFormats.push_back(GL_DEPTH_COMPONENT);
+	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, size);
 #endif
 
 }
@@ -137,7 +141,7 @@ void DirectionalLight::prepareShadowMapRendering()
 		direct3dContext->OMSetRenderTargets(1, renderTarget, _shadowMapData.depthTexture->getDepthStencilView());
 		direct3dContext->OMSetDepthStencilState(_shadowMapData.depthTexture->getDepthStencilState(), 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
-		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().depthTexture->getFrameBufferId());
+		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().depthFrameBuffer->getFrameBufferId());
 
 		glClear(GL_DEPTH_BUFFER_BIT);
 

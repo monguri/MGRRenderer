@@ -88,6 +88,13 @@ public:
 		Mat4 projectionMatrix;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		D3DTexture* depthTexture;
+
+		D3DTexture* getDepthTexture() const
+		{
+			return depthTexture;
+		}
+
+		ShadowMapData() : depthTexture(nullptr) {};
 #elif defined(MGRRENDERER_USE_OPENGL)
 		GLFrameBuffer* depthFrameBuffer;
 
@@ -97,9 +104,9 @@ public:
 			Logger::logAssert(depthFrameBuffer->getTextures().size() == 1, "シャドウマップ用のフレームバッファがデプステクスチャの1枚でない。");
 			return depthFrameBuffer->getTextures()[0];
 		}
-#endif
 
 		ShadowMapData() : depthFrameBuffer(nullptr) {};
+#endif
 	};
 
 #if defined(MGRRENDERER_USE_DIRECT3D)

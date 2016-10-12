@@ -55,11 +55,19 @@ DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) 
 
 DirectionalLight::~DirectionalLight()
 {
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	if (_shadowMapData.depthTexture != nullptr)
+	{
+		delete _shadowMapData.depthTexture;
+		_shadowMapData.depthTexture = nullptr;
+	}
+#elif defined(MGRRENDERER_USE_OPENGL)
 	if (_shadowMapData.depthFrameBuffer != nullptr)
 	{
 		delete _shadowMapData.depthFrameBuffer;
 		_shadowMapData.depthFrameBuffer = nullptr;
 	}
+#endif
 }
 
 void DirectionalLight::setColor(const Color3B& color)
@@ -105,7 +113,6 @@ void DirectionalLight::initShadowMap(const Vec3& targetPosition, float cameraDis
 	pixelFormats.push_back(GL_DEPTH_COMPONENT);
 	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, size);
 #endif
-
 }
 
 bool DirectionalLight::hasShadowMap() const

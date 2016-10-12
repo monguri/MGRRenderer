@@ -4,6 +4,7 @@
 #include "D3DProgram.h"
 #elif defined(MGRRENDERER_USE_OPENGL)
 #include "GLProgram.h"
+#include "GLFrameBuffer.h"
 #endif
 #include "CustomRenderCommand.h"
 #include <vector>
@@ -13,7 +14,6 @@ namespace mgrrenderer
 {
 
 class D3DTexture;
-class GLFrameBuffer;
 class Light;
 
 class Renderer final
@@ -28,6 +28,8 @@ public:
 	D3DTexture* getGBufferColorSpecularIntensity() const { return _gBufferColorSpecularIntensity; }
 	D3DTexture* getGBufferNormal() const { return _gBufferNormal; }
 	D3DTexture* getGBufferSpecularPower() const { return _gBufferSpecularPower; }
+#elif defined(MGRRENDERER_USE_OPENGL)
+	const std::vector<GLTexture*>& getGBuffers() const { return _gBufferFrameBuffer->getTextures(); }
 #endif
 
 	// TODO:moveコンストラクタ使う？

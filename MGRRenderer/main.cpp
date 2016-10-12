@@ -430,9 +430,7 @@ void initialize()
 									10.0f, // near clip
 									1000.0f); // far clip
 	Director::getInstance()->setDisplayStats(true);
-#if defined(MGRRENDERER_USE_DIRECT3D)
 	Director::getInstance()->setDisplayGBuffer(true);
-#endif
 
 	// 各ノードの作成はDirector::initの後に呼ぶ。Director::initのもっているウィンドウサイズを使用する場合があるので。
 
@@ -569,11 +567,7 @@ void initialize()
 	{
 		depthTextureSprite = new Sprite2D();
 		const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
-#if defined(MGRRENDERER_USE_DIRECT3D)
-		depthTextureSprite->initWithRenderBuffer(directionalLight->getShadowMapData().depthTexture, Sprite2D::RenderBufferType::DEPTH_TEXTURE);
-#elif defined(MGRRENDERER_USE_OPENGL)
-		depthTextureSprite->initWithTexture(directionalLight->getShadowMapData().getDepthTexture());
-#endif
+		depthTextureSprite->initWithRenderBuffer(directionalLight->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE);
 		depthTextureSprite->setScale(1 / 5.0f);
 		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	}

@@ -103,5 +103,10 @@
     <None Include="GBufferPack.hlsl" />
     <None Include="GBufferUnpack.hlsl" />
     <None Include="DeferredLighting.hlsl" />
+    <None Include="VertexShaderPositionNormalTextureMultiplyColor.glsl" />
+    <None Include="FragmentShaderGBuffer.glsl" />
+    <None Include="VertexShaderPositionNormalMultiplyColor.glsl" />
+    <None Include="FragmentShaderPositionNormalMultiplyColorGBuffer.glsl" />
+    <None Include="FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl" />
   </ItemGroup>
 </Project>

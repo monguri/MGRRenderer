@@ -37,6 +37,11 @@
     <ClInclude Include="GroupBeginRenderCommand.h" />
     <ClInclude Include="GroupEndRenderCommand.h" />
     <ClInclude Include="TextureUtility.h" />
+    <None Include="FragmentShaderGBuffer.glsl" />
+    <None Include="FragmentShaderPositionNormalMultiplyColorGBuffer.glsl" />
+    <None Include="FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl" />
+    <None Include="VertexShaderPositionNormalMultiplyColor.glsl" />
+    <None Include="VertexShaderPositionNormalTextureMultiplyColor.glsl" />
     <None Include="VertexShaderPositionTextureMultiplyColor.glsl">
       <FileType>Document</FileType>
     </None>

@@ -106,9 +106,7 @@ void Director::init(const Size& windowSize, float nearClip, float farClip)
 #endif
 
 	createStatsLabel();
-#if defined(MGRRENDERER_USE_DIRECT3D)
 	createGBufferSprite();
-#endif
 }
 
 void Director::setScene(const Scene& scene)
@@ -129,12 +127,10 @@ void Director::update()
 		updateStats(dt);
 	}
 
-#if defined(MGRRENDERER_USE_DIRECT3D)
 	if (_displayGBuffer)
 	{
 		renderGBufferSprite();
 	}
-#endif
 
 	_renderer.render();
 }
@@ -202,26 +198,41 @@ void Director::createStatsLabel()
 #endif
 }
 
-#if defined(MGRRENDERER_USE_DIRECT3D)
 void Director::createGBufferSprite()
 {
 	_gBufferDepthStencil = new Sprite2D();
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	_gBufferDepthStencil->initWithRenderBuffer(_renderer.getGBufferDepthStencil(), Sprite2D::RenderBufferType::DEPTH_TEXTURE);
+#elif defined(MGRRENDERER_USE_OPENGL)
+	_gBufferDepthStencil->initWithRenderBuffer(_renderer.getGBuffers()[0], Sprite2D::RenderBufferType::DEPTH_TEXTURE);
+#endif
 	_gBufferDepthStencil->setScale(1 / 5.0f);
 	_gBufferDepthStencil->setPosition(Vec3(0.0f, 0.0f, 0.0f));
 
 	_gBufferColorSpecularIntensitySprite = new Sprite2D();
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	_gBufferColorSpecularIntensitySprite->initWithRenderBuffer(_renderer.getGBufferColorSpecularIntensity(), Sprite2D::RenderBufferType::GBUFFER_COLOR_SPECULAR_INTENSITY);
+#elif defined(MGRRENDERER_USE_OPENGL)
+	_gBufferColorSpecularIntensitySprite->initWithRenderBuffer(_renderer.getGBuffers()[1], Sprite2D::RenderBufferType::GBUFFER_COLOR_SPECULAR_INTENSITY);
+#endif
 	_gBufferColorSpecularIntensitySprite->setScale(1 / 5.0f);
 	_gBufferColorSpecularIntensitySprite->setPosition(Vec3(_windowSize.width / 5.0f, 0.0f, 0.0f));
 
 	_gBufferNormal = new Sprite2D();
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	_gBufferNormal->initWithRenderBuffer(_renderer.getGBufferNormal(), Sprite2D::RenderBufferType::GBUFFER_NORMAL);
+#elif defined(MGRRENDERER_USE_OPENGL)
+	_gBufferNormal->initWithRenderBuffer(_renderer.getGBuffers()[2], Sprite2D::RenderBufferType::GBUFFER_NORMAL);
+#endif
 	_gBufferNormal->setScale(1 / 5.0f);
 	_gBufferNormal->setPosition(Vec3(_windowSize.width / 5.0f * 2, 0.0f, 0.0f));
 
 	_gBufferSpecularPower = new Sprite2D();
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	_gBufferSpecularPower->initWithRenderBuffer(_renderer.getGBufferSpecularPower(), Sprite2D::RenderBufferType::GBUFFER_SPECULAR_POWER);
+#elif defined(MGRRENDERER_USE_OPENGL)
+	_gBufferSpecularPower->initWithRenderBuffer(_renderer.getGBuffers()[3], Sprite2D::RenderBufferType::GBUFFER_SPECULAR_POWER);
+#endif
 	_gBufferSpecularPower->setScale(1 / 5.0f);
 	_gBufferSpecularPower->setPosition(Vec3(_windowSize.width / 5.0f * 3, 0.0f, 0.0f));
 }
@@ -239,7 +250,6 @@ void Director::renderGBufferSprite()
 	_gBufferNormal->renderForward();
 	_gBufferSpecularPower->renderForward();
 }
-#endif
 
 void Director::updateStats(float dt)
 {

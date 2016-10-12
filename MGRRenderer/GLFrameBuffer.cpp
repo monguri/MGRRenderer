@@ -1,4 +1,6 @@
 #include "GLFrameBuffer.h"
+
+#if defined(MGRRENDERER_USE_OPENGL)
 #include "Logger.h"
 #include "GLTexture.h"
 
@@ -153,3 +155,4 @@ bool GLFrameBuffer::initWithTextureParams(std::vector<GLenum> drawBuffers, std::
 }
 
 } // namespace mgrrenderer
+#endif

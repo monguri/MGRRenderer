@@ -47,14 +47,14 @@ public:
 	// TODO:本当はメソッドを分けるのでなくマテリアルをノードから切り離してマテリアルを引数で与えるようにしたい
 	bool initWithRenderBuffer(D3DTexture* texture, RenderBufferType renderBufferType);
 #elif defined(MGRRENDERER_USE_OPENGL)
-	bool initWithTexture(GLTexture* texture);
+	bool initWithRenderBuffer(GLTexture* texture, RenderBufferType renderBufferType);
 #endif
 
 protected:
+	RenderBufferType _renderBufferType;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	D3DProgram _d3dProgram;
 	D3DTexture* _texture;
-	RenderBufferType _renderBufferType;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
 	GLTexture* _texture;
@@ -64,7 +64,7 @@ protected:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	bool initCommon(const std::string& path, const std::string& vertexShaderFunctionName, const std::string& geometryShaderFunctionName, const std::string& pixelShaderFunctionName, const Size& contentSize);
 #elif defined(MGRRENDERER_USE_OPENGL)
-	bool initCommon(const Size& contentSize);
+	bool initCommon(const char* vertexShaderFunctionName, const char* geometryShaderFunctionName, const char* pixelShaderFunctionName, const Size& contentSize);
 #endif
 
 private:

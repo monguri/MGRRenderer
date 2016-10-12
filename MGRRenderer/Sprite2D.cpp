@@ -18,9 +18,7 @@ const std::string Sprite2D::CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE
 
 Sprite2D::Sprite2D() :
 _texture(nullptr),
-#if defined(MGRRENDERER_USE_DIRECT3D)
 _renderBufferType(RenderBufferType::NONE),
-#endif
 _isOwnTexture(false)
 {
 }
@@ -169,18 +167,21 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 	return true;
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
-bool Sprite2D::initCommon(const Size& contentSize)
+bool Sprite2D::initCommon(const char* vertexShaderFunctionName, const char* geometryShaderFunctionName, const char* pixelShaderFunctionName, const Size& contentSize)
 {
-	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
-	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
-	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
-	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 1.0f);
-	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
-	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 0.0f);
-	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
-	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 0.0f);
+	// 現状未使用
+	(void)geometryShaderFunctionName;
 
-	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR);
+	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
+	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 0.0f);
+	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
+	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 0.0f);
+	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
+	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 1.0f);
+	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
+	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 1.0f);
+
+	_glProgram.initWithShaderString(vertexShaderFunctionName, pixelShaderFunctionName);
 
 	return true;
 }
@@ -229,7 +230,7 @@ bool Sprite2D::init(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 	return true;
 #elif defined(MGRRENDERER_USE_OPENGL)
-	return initCommon(texture->getContentSize());
+	return initCommon(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, "", shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, texture->getContentSize());
 #endif
 }
 
@@ -319,10 +320,21 @@ bool Sprite2D::initWithRenderBuffer(D3DTexture* texture, RenderBufferType render
 	return true;
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
-bool Sprite2D::initWithTexture(GLTexture* texture)
+bool Sprite2D::initWithRenderBuffer(GLTexture* texture, RenderBufferType renderBufferType)
 {
 	_texture = texture;
-	return initCommon(texture->getContentSize());
+	_renderBufferType = renderBufferType;
+
+	static std::vector<const char*> RenderBufferFSList = {
+		shader::FRAGMENT_SHADER_DEPTH_TEXTURE,
+		shader::FRAGMENT_SHADER_GBUFFER_COLOR_SPECULAR_INTENSITY,
+		shader::FRAGMENT_SHADER_GBUFFER_NORMAL,
+		shader::FRAGMENT_SHADER_GBUFFER_SPECULAR_POWER,
+	};
+
+	const char* fragmentShader = RenderBufferFSList[static_cast<int>(renderBufferType)];
+
+	return initCommon(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, "", fragmentShader, texture->getContentSize());
 }
 #endif
 
@@ -463,13 +475,31 @@ void Sprite2D::renderForward()
 		glUseProgram(_glProgram.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		glUniform3f(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
 		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
 		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getViewMatrix().m);
 		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getProjectionMatrix().m);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		// デプステクスチャ描画時のプロジェクション行列のマップ
+		switch (_renderBufferType) {
+			case RenderBufferType::DEPTH_TEXTURE:
+			{
+				glUniform1f(_glProgram.getUniformLocation("u_nearFarClipDistance"), Director::getInstance()->getFarClip() - Director::getInstance()->getNearClip());
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+				glUniformMatrix4fv(_glProgram.getUniformLocation("u_depthTextureProjectionMatrix"), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				break;
+			}
+			case RenderBufferType::GBUFFER_COLOR_SPECULAR_INTENSITY:
+			case RenderBufferType::GBUFFER_NORMAL:
+			case RenderBufferType::GBUFFER_SPECULAR_POWER:
+				break;
+			default:
+				glUniform3f(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				break;
+		}
 
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::POSITION);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());

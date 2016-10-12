@@ -283,7 +283,7 @@ void convertRGB888ToI8(const unsigned char* data, ssize_t dataLen, unsigned char
 {
 	for (ssize_t i = 0, l = dataLen - 2; i < l; i += 3)
 	{
-		*outData++ = (data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114 + 500) / 1000; // I = (R * 299 + G * 587 + B * 114 + 500) / 1000 // TODO:どういう数式やろかこれ。。
+		*outData++ = (unsigned char)((data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114 + 500) / 1000); // I = (R * 299 + G * 587 + B * 114 + 500) / 1000 // TODO:どういう数式やろかこれ。。
 	}
 }
 
@@ -291,7 +291,7 @@ void convertRGB888ToAI88(const unsigned char* data, ssize_t dataLen, unsigned ch
 {
 	for (ssize_t i = 0, l = dataLen - 2; i < l; i += 3)
 	{
-		*outData++ = (data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114 + 500) / 1000; // I = (R * 299 + G * 587 + B * 114 + 500) / 1000 // TODO:どういう数式やろかこれ。。
+		*outData++ = (unsigned char)((data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114 + 500) / 1000); // I = (R * 299 + G * 587 + B * 114 + 500) / 1000 // TODO:どういう数式やろかこれ。。
 		*outData++ = 0xFF;
 	}
 }
@@ -323,7 +323,7 @@ void convertRGBA8888ToI8(const unsigned char* data, ssize_t dataLen, unsigned ch
 {
 	for (ssize_t i = 0, l = dataLen - 3; i < l; i += 4)
 	{
-		*outData++ = (data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114 + 500) / 1000; // I = (R * 299 + G * 587 + B * 114 + 500) / 1000 // TODO:どういう数式やろかこれ。。
+		*outData++ = (unsigned char)((data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114 + 500) / 1000); // I = (R * 299 + G * 587 + B * 114 + 500) / 1000 // TODO:どういう数式やろかこれ。。
 	}
 }
 
@@ -331,7 +331,7 @@ void convertRGBA8888ToAI88(const unsigned char* data, ssize_t dataLen, unsigned 
 {
 	for (ssize_t i = 0, l = dataLen - 3; i < l; i += 4)
 	{
-		*outData++ = (data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114 + 500) / 1000; // I = (R * 299 + G * 587 + B * 114 + 500) / 1000 // TODO:どういう数式やろかこれ。。
+		*outData++ = (unsigned char)((data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114 + 500) / 1000); // I = (R * 299 + G * 587 + B * 114 + 500) / 1000 // TODO:どういう数式やろかこれ。。
 		*outData++ = data[i + 3];
 	}
 }

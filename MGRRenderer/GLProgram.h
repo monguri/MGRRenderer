@@ -40,6 +40,7 @@ public:
 	GLProgram();
 	~GLProgram();
 	void initWithShaderString(const GLchar* vertexShaderStr, const GLchar* fragmentShaderStr);
+	void initWithShaderFile(const std::string& vertexShaderFile, const std::string& fragmentShaderFile);
 	GLuint getAttributeLocation(const std::string& attributeName) const;
 	GLint getUniformLocation(const std::string& uniformName) const;
 	GLuint getShaderProgram() { return _shaderProgram; }

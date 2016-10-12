@@ -1,6 +1,7 @@
 #include "GLProgram.h"
 #if defined(MGRRENDERER_USE_OPENGL)
 #include "Logger.h"
+#include "FileUtility.h"
 #include <string>
 
 namespace mgrrenderer
@@ -79,6 +80,13 @@ void GLProgram::initWithShaderString(const GLchar* vertexShaderStr, const GLchar
 	// GL_ACTIVE_XXŒn‚ÍƒŠƒ“ƒN‚µ‚ÄƒvƒƒOƒ‰ƒ€‚ªŠ®¬‚µ‚½Œã‚Å‚È‚¢‚ÆŽæ“¾Ž¸”s‚·‚é
 	parseAttributes(_shaderProgram);
 	parseUniforms(_shaderProgram);
+}
+
+void GLProgram::initWithShaderFile(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
+{
+	const std::string& vertexShaderStr = FileUtility::getInstance()->getStringFromFile(vertexShaderFile);
+	const std::string& fragmentShaderStr = FileUtility::getInstance()->getStringFromFile(fragmentShaderFile);
+	return initWithShaderString(vertexShaderStr.c_str(), fragmentShaderStr.c_str());
 }
 
 GLuint GLProgram::createVertexShader(const GLchar* source) const

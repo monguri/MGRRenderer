@@ -487,9 +487,6 @@ void Polygon3D::renderGBuffer()
 		const Mat4& normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
 		glUniformMatrix4fv(_glProgramForGBuffer.getUniformLocation(GLProgram::UNIFORM_NAME_NORMAL_MATRIX), 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
 
-		glLineWidth(1.0f);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::POSITION);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::NORMAL);
@@ -960,9 +957,6 @@ void Polygon3D::renderForward()
 				break;
 			}
 		}
-
-		glLineWidth(1.0f);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::POSITION);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());

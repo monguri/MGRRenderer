@@ -155,8 +155,8 @@ void DirectionalLight::prepareShadowMapRendering()
 		//TODO:シャドウマップの大きさは画面サイズと同じにしている
 		glViewport(0, 0, static_cast<GLsizei>(Director::getInstance()->getWindowSize().width), static_cast<GLsizei>(Director::getInstance()->getWindowSize().height));
 
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
+		//glEnable(GL_CULL_FACE);
+		//glCullFace(GL_FRONT);
 #endif
 	});
 

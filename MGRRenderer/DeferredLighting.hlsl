@@ -173,12 +173,12 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	// 後はここで得たpositionと、normalとcolorを利用して、ライティングをして色を決める
 	float3 diffuseSpecularLightColor = computeLightedColor(normal, -_directionalLightDirection.xyz, _directionalLightColor.rgb, 1.0);
 
-	float3 vertexToPointLightDirection = _pointLightPosition - position;
+	float3 vertexToPointLightDirection = _pointLightPosition - position.xyz;
 	float3 dir = vertexToPointLightDirection * _pointLightRangeInverse;
 	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
 	diffuseSpecularLightColor += computeLightedColor(normal, normalize(vertexToPointLightDirection), _pointLightColor.rgb, attenuation);
 
-	float3 vertexToSpotLightDirection = _spotLightPosition - position;
+	float3 vertexToSpotLightDirection = _spotLightPosition - position.xyz;
 	dir = vertexToSpotLightDirection * _spotLightRangeInverse;
 	attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
 	vertexToSpotLightDirection = normalize(vertexToSpotLightDirection);

@@ -384,7 +384,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	);
 
 	// STRINGIFYによる読み込みだと、GeForce850Mがうまく#versionの行の改行を読み取ってくれずGLSLコンパイルエラーになる
-	_glProgramForGBuffer.initWithShaderFile("../MGRRenderer/VertexShaderPositionNormalMultiplyColor.glsl", "../MGRRenderer/FragmentShaderPositionNormalMultiplyColorGBuffer.glsl");
+	_glProgramForGBuffer.initWithShaderFile("../MGRRenderer/VertexShaderPositionNormal.glsl", "../MGRRenderer/FragmentShaderPositionNormalMultiplyColorGBuffer.glsl");
 #endif
 
 	return true;

@@ -187,7 +187,7 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 
 	return true;
 #elif defined(MGRRENDERER_USE_OPENGL)
-	return initCommon(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, "", shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, texture->getContentSize());
+	return initCommon(shader::VERTEX_SHADER_POSITION_TEXTURE, "", shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, texture->getContentSize());
 #endif
 }
 

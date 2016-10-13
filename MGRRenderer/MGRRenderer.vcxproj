@@ -37,12 +37,13 @@
     <ClInclude Include="GroupBeginRenderCommand.h" />
     <ClInclude Include="GroupEndRenderCommand.h" />
     <ClInclude Include="TextureUtility.h" />
+    <None Include="FragmentShaderDeferredLighting.glsl" />
     <None Include="FragmentShaderGBuffer.glsl" />
     <None Include="FragmentShaderPositionNormalMultiplyColorGBuffer.glsl" />
     <None Include="FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl" />
-    <None Include="VertexShaderPositionNormalMultiplyColor.glsl" />
-    <None Include="VertexShaderPositionNormalTextureMultiplyColor.glsl" />
-    <None Include="VertexShaderPositionTextureMultiplyColor.glsl">
+    <None Include="VertexShaderPositionNormal.glsl" />
+    <None Include="VertexShaderPositionNormalTexture.glsl" />
+    <None Include="VertexShaderPositionTexture.glsl">
       <FileType>Document</FileType>
     </None>
     <ClInclude Include="Image.h" />
@@ -62,7 +63,7 @@
     <ClInclude Include="RenderCommand.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
-    <None Include="VertexShaderPositionMultiplyColor.glsl">
+    <None Include="VertexShaderPosition.glsl">
       <FileType>Document</FileType>
     </None>
     <ClInclude Include="Shaders.h" />

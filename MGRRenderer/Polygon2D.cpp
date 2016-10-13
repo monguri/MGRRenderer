@@ -146,7 +146,7 @@ bool Polygon2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 #elif defined(MGRRENDERER_USE_OPENGL)
-	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_MULTIPLY_COLOR, shader::FRAGMENT_SHADER_POSITION_MULTIPLY_COLOR);
+	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION, shader::FRAGMENT_SHADER_POSITION_MULTIPLY_COLOR);
 #endif
 
 	return true;

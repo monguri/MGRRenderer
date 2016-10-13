@@ -8,6 +8,7 @@
 #include "Light.h"
 #elif defined(MGRRENDERER_USE_OPENGL)
 #include "GLFrameBuffer.h"
+#include "Shaders.h"
 #endif
 
 namespace mgrrenderer
@@ -261,6 +262,7 @@ void Renderer::initView(const Size& windowSize)
 	glViewport(0, 0, static_cast<GLsizei>(windowSize.width), static_cast<GLsizei>(windowSize.height));
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファ
 
+	// Gバッファの準備
 	_gBufferFrameBuffer = new GLFrameBuffer();
 	std::vector<GLenum> drawBuffers;
 	drawBuffers.push_back(GL_NONE);
@@ -273,6 +275,23 @@ void Renderer::initView(const Size& windowSize)
 	pixelFormats.push_back(GL_RGBA);
 	pixelFormats.push_back(GL_RGBA);
 	_gBufferFrameBuffer->initWithTextureParams(drawBuffers, pixelFormats, false, windowSize);
+
+
+	//
+	// ディファードレンダリングの準備
+	//
+	//_d3dProgram.initWithShaderFile("DeferredLighting.hlsl", true, "VS", "", "PS");
+
+	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE, shader::FRAGMENT_SHADER_DEFERRED_LIGHTING);
+
+	_quadrangle.bottomLeft.position = Vec2(-1.0f, -1.0f);
+	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 0.0f);
+	_quadrangle.bottomRight.position = Vec2(1.0, -1.0f);
+	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0, 0.0f);
+	_quadrangle.topLeft.position = Vec2(-1.0f, 1.0f);
+	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 1.0f);
+	_quadrangle.topRight.position = Vec2(1.0, 1.0);
+	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 1.0f);
 #endif
 }
 
@@ -562,6 +581,7 @@ void Renderer::renderDeferred()
 	direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);
 
 	direct3dContext->Draw(4, 0);
+#elif defined(MGRRENDERER_USE_OPENGL)
 #endif
 }
 

@@ -230,7 +230,7 @@ bool Sprite2D::init(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 	return true;
 #elif defined(MGRRENDERER_USE_OPENGL)
-	return initCommon(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, "", shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, texture->getContentSize());
+	return initCommon(shader::VERTEX_SHADER_POSITION_TEXTURE, "", shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, texture->getContentSize());
 #endif
 }
 
@@ -334,7 +334,7 @@ bool Sprite2D::initWithRenderBuffer(GLTexture* texture, RenderBufferType renderB
 
 	const char* fragmentShader = RenderBufferFSList[static_cast<int>(renderBufferType)];
 
-	return initCommon(shader::VERTEX_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, "", fragmentShader, texture->getContentSize());
+	return initCommon(shader::VERTEX_SHADER_POSITION_TEXTURE, "", fragmentShader, texture->getContentSize());
 }
 #endif
 

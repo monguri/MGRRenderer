@@ -97,16 +97,17 @@
     <None Include="Point.hlsl" />
     <None Include="PositionMultiplyColor.hlsl" />
     <None Include="PositionTextureMultiplyColor.hlsl" />
-    <None Include="VertexShaderPositionTextureMultiplyColor.glsl" />
-    <None Include="VertexShaderPositionMultiplyColor.glsl" />
     <None Include="PositionRenderBufferMultiplyColor.hlsl" />
     <None Include="GBufferPack.hlsl" />
     <None Include="GBufferUnpack.hlsl" />
     <None Include="DeferredLighting.hlsl" />
-    <None Include="VertexShaderPositionNormalTextureMultiplyColor.glsl" />
     <None Include="FragmentShaderGBuffer.glsl" />
-    <None Include="VertexShaderPositionNormalMultiplyColor.glsl" />
     <None Include="FragmentShaderPositionNormalMultiplyColorGBuffer.glsl" />
     <None Include="FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl" />
+    <None Include="FragmentShaderDeferredLighting.glsl" />
+    <None Include="VertexShaderPosition.glsl" />
+    <None Include="VertexShaderPositionNormal.glsl" />
+    <None Include="VertexShaderPositionNormalTexture.glsl" />
+    <None Include="VertexShaderPositionTexture.glsl" />
   </ItemGroup>
 </Project>

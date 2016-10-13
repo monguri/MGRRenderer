@@ -109,5 +109,6 @@
     <None Include="VertexShaderPositionNormal.glsl" />
     <None Include="VertexShaderPositionNormalTexture.glsl" />
     <None Include="VertexShaderPositionTexture.glsl" />
+    <None Include="VertexShaderDeferredLighting.glsl" />
   </ItemGroup>
 </Project>

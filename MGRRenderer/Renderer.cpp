@@ -3,11 +3,12 @@
 #include "RenderCommand.h"
 #include "GroupBeginRenderCommand.h"
 #include "Logger.h"
+#include "Light.h"
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include "D3DTexture.h"
-#include "Light.h"
 #elif defined(MGRRENDERER_USE_OPENGL)
 #include "GLFrameBuffer.h"
+#include "GLTexture.h"
 #include "Shaders.h"
 #endif
 
@@ -282,7 +283,7 @@ void Renderer::initView(const Size& windowSize)
 	//
 	//_d3dProgram.initWithShaderFile("DeferredLighting.hlsl", true, "VS", "", "PS");
 
-	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE, shader::FRAGMENT_SHADER_DEFERRED_LIGHTING);
+	_glProgram.initWithShaderString(shader::VERTEX_SHADER_DEFERRED_LIGHTING, shader::FRAGMENT_SHADER_DEFERRED_LIGHTING);
 
 	_quadrangle.bottomLeft.position = Vec2(-1.0f, -1.0f);
 	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 0.0f);
@@ -582,6 +583,140 @@ void Renderer::renderDeferred()
 
 	direct3dContext->Draw(4, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
+	glUseProgram(_glProgram.getShaderProgram());
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+	Mat4 viewMatrix = Director::getCamera().getViewMatrix();
+	viewMatrix.inverse();
+	glUniformMatrix4fv(_glProgram.getUniformLocation("u_viewInverse"), 1, GL_FALSE, (GLfloat*)viewMatrix.m);
+	glUniformMatrix4fv(_glProgram.getUniformLocation("u_depthTextureProjection"), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, getGBuffers()[0]->getTextureId());
+	glUniform1i(_glProgram.getUniformLocation("u_gBufferDepthStencil"), 0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, getGBuffers()[1]->getTextureId());
+	glUniform1i(_glProgram.getUniformLocation("u_gBufferColorSpecularIntensity"), 1);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, getGBuffers()[2]->getTextureId());
+	glUniform1i(_glProgram.getUniformLocation("u_gBufferNormal"), 2);
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, getGBuffers()[3]->getTextureId());
+	glUniform1i(_glProgram.getUniformLocation("u_gBufferSpecularPower"), 3);
+
+	glActiveTexture(GL_TEXTURE0);
+
+	// ライトの設定
+	// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
+	for (Light* light : Director::getLight())
+	{
+		const Color3B& lightColor = light->getColor();
+		float intensity = light->getIntensity();
+
+		switch (light->getLightType())
+		{
+		case LightType::AMBIENT:
+			glUniform3f(_glProgram.getUniformLocation("u_ambientLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+			break;
+		case LightType::DIRECTION: {
+			glUniform3f(_glProgram.getUniformLocation("u_directionalLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
+			Vec3 direction = dirLight->getDirection();
+			direction.normalize();
+			glUniform3fv(_glProgram.getUniformLocation("u_directionalLightDirection"), 1, (GLfloat*)&direction);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			// TODO:とりあえず影つけはDirectionalLightのみを想定
+			if (dirLight->hasShadowMap())
+			{
+				glUniformMatrix4fv(
+					_glProgram.getUniformLocation("u_lightViewMatrix"),
+					1,
+					GL_FALSE,
+					(GLfloat*)dirLight->getShadowMapData().viewMatrix.m
+				);
+
+				glUniformMatrix4fv(
+					_glProgram.getUniformLocation("u_lightProjectionMatrix"),
+					1,
+					GL_FALSE,
+					(GLfloat*)dirLight->getShadowMapData().projectionMatrix.m
+				);
+
+				static const Mat4& depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 0.5f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 1.0f));
+
+				glUniformMatrix4fv(
+					_glProgram.getUniformLocation("u_depthBiasMatrix"),
+					1,
+					GL_FALSE,
+					(GLfloat*)depthBiasMatrix.m
+				);
+
+				glActiveTexture(GL_TEXTURE4);
+				glBindTexture(GL_TEXTURE_2D, dirLight->getShadowMapData().getDepthTexture()->getTextureId());
+				glUniform1i(_glProgram.getUniformLocation("u_shadowTexture"), 4);
+				glActiveTexture(GL_TEXTURE0);
+			}
+		}
+			break;
+		case LightType::POINT: {
+			glUniform3f(_glProgram.getUniformLocation("u_pointLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform3fv(_glProgram.getUniformLocation("u_pointLightPosition"), 1, (GLfloat*)&light->getPosition()); // ライトについてはローカル座標でなくワールド座標である前提
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			PointLight* pointLight = static_cast<PointLight*>(light);
+			glUniform1f(_glProgram.getUniformLocation("u_pointLightRangeInverse"), 1.0f / pointLight->getRange());
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		}
+			break;
+		case LightType::SPOT: {
+			glUniform3f(_glProgram.getUniformLocation("u_spotLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform3fv(_glProgram.getUniformLocation("u_spotLightPosition"), 1, (GLfloat*)&light->getPosition());
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			SpotLight* spotLight = static_cast<SpotLight*>(light);
+			Vec3 direction = spotLight->getDirection();
+			direction.normalize();
+			glUniform3fv(_glProgram.getUniformLocation("u_spotLightDirection"), 1, (GLfloat*)&direction);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform1f(_glProgram.getUniformLocation("u_spotLightRangeInverse"), 1.0f / spotLight->getRange());
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform1f(_glProgram.getUniformLocation("u_spotLightInnerAngleCos"), spotLight->getInnerAngleCos());
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+			glUniform1f(_glProgram.getUniformLocation("u_spotLightOuterAngleCos"), spotLight->getOuterAngleCos());
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		}
+			break;
+		default:
+			break;
+		}
+	}
+
+	glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::POSITION);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+	glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+	glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.position);
+	glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.textureCoordinate);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 #endif
 }
 

@@ -128,6 +128,7 @@ void Scene::update(float dt)
 
 	// 非透過モデルはディファードレンダリング
 	// 透過モデルはフォワードレンダリング
+	// TODO:透過モデルのみフォワードレンダリングするパスを入れる
 	_prepareFowardRenderingCommand.init([=]
 	{
 		Renderer::prepareFowardRendering();
@@ -136,12 +137,12 @@ void Scene::update(float dt)
 
 	_camera.renderForward();
 
-#if defined(MGRRENDERER_USE_OPENGL)
-	for (Node* child : _children)
-	{
-		child->renderForward();
-	}
-#endif
+//#if defined(MGRRENDERER_USE_OPENGL)
+//	for (Node* child : _children)
+//	{
+//		child->renderForward();
+//	}
+//#endif
 
 	// 2Dノードは深度の扱いが違うので一つ準備処理をはさむ
 	_prepareFowardRendering2DCommand.init([=]

@@ -17,7 +17,7 @@ public:
 	GLFrameBuffer();
 	~GLFrameBuffer();
 
-	bool initWithTextureParams(std::vector<GLenum> drawBuffers, std::vector<GLenum> pixelFormats, const Size& size);
+	bool initWithTextureParams(const std::vector<GLenum>& drawBuffers, const std::vector<GLenum>& pixelFormats, bool useRenderBufferForDepthStencil, const Size& size);
 
 	GLuint getFrameBufferId() const { return _frameBufferId; }
 	const std::vector<GLTexture*>& getTextures() const { return _textures; }

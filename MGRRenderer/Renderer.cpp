@@ -262,17 +262,17 @@ void Renderer::initView(const Size& windowSize)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファ
 
 	_gBufferFrameBuffer = new GLFrameBuffer();
-	std::vector<GLenum> drawBuffer;
-	drawBuffer.push_back(GL_NONE);
-	drawBuffer.push_back(GL_COLOR_ATTACHMENT0);
-	drawBuffer.push_back(GL_COLOR_ATTACHMENT1);
-	drawBuffer.push_back(GL_COLOR_ATTACHMENT2);
+	std::vector<GLenum> drawBuffers;
+	drawBuffers.push_back(GL_NONE);
+	drawBuffers.push_back(GL_COLOR_ATTACHMENT0);
+	drawBuffers.push_back(GL_COLOR_ATTACHMENT1);
+	drawBuffers.push_back(GL_COLOR_ATTACHMENT2);
 	std::vector<GLenum> pixelFormats;
 	pixelFormats.push_back(GL_DEPTH_COMPONENT);
-	pixelFormats.push_back(GL_RGB32F);
-	pixelFormats.push_back(GL_RGB32F);
-	pixelFormats.push_back(GL_RGB);
-	_gBufferFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, windowSize);
+	pixelFormats.push_back(GL_RGBA);
+	pixelFormats.push_back(GL_RGBA);
+	pixelFormats.push_back(GL_RGBA);
+	_gBufferFrameBuffer->initWithTextureParams(drawBuffers, pixelFormats, false, windowSize);
 #endif
 }
 
@@ -353,6 +353,7 @@ void Renderer::prepareGBufferRendering()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND); // Gバッファ描画中は不透過しかあつかわないのでブレンドしない
 #endif
 }
 
@@ -373,6 +374,7 @@ void Renderer::prepareDeferredRendering()
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
 	glViewport(0, 0, static_cast<GLsizei>(Director::getInstance()->getWindowSize().width), static_cast<GLsizei>(Director::getInstance()->getWindowSize().height));
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

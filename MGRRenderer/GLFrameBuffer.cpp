@@ -26,7 +26,7 @@ GLFrameBuffer::~GLFrameBuffer()
 	}
 }
 
-bool GLFrameBuffer::initWithTextureParams(std::vector<GLenum> drawBuffers, std::vector<GLenum> pixelFormats, const Size& size)
+bool GLFrameBuffer::initWithTextureParams(const std::vector<GLenum>& drawBuffers, const std::vector<GLenum>& pixelFormats, bool useRenderBufferForDepthStencil, const Size& size)
 {
 	Logger::logAssert(drawBuffers.size() == pixelFormats.size(), "引数の要素数が不一致。");
 
@@ -59,55 +59,61 @@ bool GLFrameBuffer::initWithTextureParams(std::vector<GLenum> drawBuffers, std::
 		switch (drawBuffers[i])
 		{
 		case GL_NONE: // デプス
-		case GL_DEPTH_ATTACHMENT: // デプス
 		{
-#if 0 // デプステクスチャでなくレンダーバッファを使う形式
-			glGenRenderbuffers(1, &textureId);
-			err = glGetError();
-			if (err != GL_NO_ERROR)
+			if (useRenderBufferForDepthStencil)
 			{
-				Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
-				return false;
-			}
-			if (textureId == 0)
-			{
-				Logger::logAssert(false, "フレームバッファ生成失敗");
-				return false;
-			}
+				_textures.push_back(nullptr);
 
-			glBindRenderbuffer(GL_RENDERBUFFER, textureId);
-			err = glGetError();
-			if (err != GL_NO_ERROR)
-			{
-				Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
-				return false;
-			}
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, size.width, size.height);
-			err = glGetError();
-			if (err != GL_NO_ERROR)
-			{
-				Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
-				return false;
-			}
+				GLuint textureId = 0;
+				glGenRenderbuffers(1, &textureId);
+				err = glGetError();
+				if (err != GL_NO_ERROR)
+				{
+					Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
+					return false;
+				}
+				if (textureId == 0)
+				{
+					Logger::logAssert(false, "フレームバッファ生成失敗");
+					return false;
+				}
 
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, textureId);
-			err = glGetError();
-			if (err != GL_NO_ERROR)
-			{
-				Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
-				return false;
-			}
-#endif
-			GLTexture* texture = new GLTexture();
-			texture->initDepthTexture(GL_TEXTURE0 + i, size);
-			_textures.push_back(texture);
+				glBindRenderbuffer(GL_RENDERBUFFER, textureId);
+				err = glGetError();
+				if (err != GL_NO_ERROR)
+				{
+					Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
+					return false;
+				}
+				glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)size.width, (GLsizei)size.height);
+				err = glGetError();
+				if (err != GL_NO_ERROR)
+				{
+					Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
+					return false;
+				}
 
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture->getTextureId(), 0);
-			err = glGetError();
-			if (err != GL_NO_ERROR)
+				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, textureId);
+				err = glGetError();
+				if (err != GL_NO_ERROR)
+				{
+					Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
+					return false;
+				}
+			}
+			else
 			{
-				Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
-				return false;
+				GLTexture* texture = new GLTexture();
+				texture->initDepthTexture(GL_TEXTURE0 + i, size);
+				_textures.push_back(texture);
+
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture->getTextureId(), 0);
+				err = glGetError();
+				if (err != GL_NO_ERROR)
+				{
+					Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
+					return false;
+				}
 			}
 		}
 			break;
@@ -116,7 +122,7 @@ bool GLFrameBuffer::initWithTextureParams(std::vector<GLenum> drawBuffers, std::
 		case GL_COLOR_ATTACHMENT2:
 		{
 			GLTexture* texture = new GLTexture();
-			texture->initRenderTexture(GL_TEXTURE0 + i, pixelFormats[i], size);
+			texture->initRenderTexture(pixelFormats[i], size);
 			_textures.push_back(texture);
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, drawBuffers[i], GL_TEXTURE_2D, texture->getTextureId(), 0);

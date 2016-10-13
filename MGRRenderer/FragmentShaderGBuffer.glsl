@@ -1,5 +1,4 @@
 const char* FRAGMENT_SHADER_DEPTH_TEXTURE = STRINGIFY(
-uniform vec3 u_multipleColor;
 uniform sampler2D u_texture;
 uniform float u_nearFarClipDistance;
 uniform mat4 u_depthTextureProjectionMatrix;
@@ -20,7 +19,6 @@ void main()
 );
 
 const char* FRAGMENT_SHADER_GBUFFER_COLOR_SPECULAR_INTENSITY = STRINGIFY(
-uniform vec3 u_multipleColor;
 uniform sampler2D u_texture;
 
 varying vec2 v_texCoord;
@@ -33,7 +31,6 @@ void main()
 );
 
 const char* FRAGMENT_SHADER_GBUFFER_NORMAL = STRINGIFY(
-uniform vec3 u_multipleColor;
 uniform sampler2D u_texture;
 
 varying vec2 v_texCoord;
@@ -46,7 +43,6 @@ void main()
 );
 
 const char* FRAGMENT_SHADER_GBUFFER_SPECULAR_POWER = STRINGIFY(
-uniform vec3 u_multipleColor;
 uniform sampler2D u_texture;
 
 varying vec2 v_texCoord;

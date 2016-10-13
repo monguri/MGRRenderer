@@ -289,7 +289,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		exit(EXIT_FAILURE);
 	}
 
-	// OpenGL3.2のサンプルでは使用していたが、APIが変わったのかこれを書いているとglCreateShader(GL_VERTEX_SHADER)でGL_INVALID_ENUMエラーが返：る
+	// OpenGL3.2のサンプルでは使用していたが、APIが変わったのかこれを書いているとglCreateShader(GL_VERTEX_SHADER)でGL_INVALID_ENUMエラーが返る
 	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -561,7 +561,6 @@ void initialize()
 	directionalLight->initShadowMap(sprite3DC3tNode->getPosition(), WINDOW_HEIGHT / 1.1566f, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addLight(directionalLight);
 
-	// TODO:シャドウマップをスプライトで描画したかったが機能してない
 	Sprite2D* depthTextureSprite = nullptr;
 	if (directionalLight->hasShadowMap())
 	{
@@ -571,6 +570,7 @@ void initialize()
 		depthTextureSprite->setScale(1 / 5.0f);
 		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	}
+
 	//PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);
 	//pointLight->setIntensity(0.7f);
 	//scene->addLight(pointLight);
@@ -595,7 +595,7 @@ void initialize()
 	scene->pushNode(spriteNode);
 	if (directionalLight->hasShadowMap())
 	{
-		scene->pushNode2D(depthTextureSprite); // TODO:深度テクスチャをうまく表示できない
+		scene->pushNode2D(depthTextureSprite);
 	}
 
 	Director::getInstance()->setScene(*scene);

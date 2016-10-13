@@ -111,7 +111,7 @@ void DirectionalLight::initShadowMap(const Vec3& targetPosition, float cameraDis
 	drawBuffer.push_back(GL_NONE);
 	std::vector<GLenum> pixelFormats;
 	pixelFormats.push_back(GL_DEPTH_COMPONENT);
-	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, size);
+	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, false, size);
 #endif
 }
 

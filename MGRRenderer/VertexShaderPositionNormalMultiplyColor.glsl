@@ -3,8 +3,8 @@
 // Œ»óƒ}ƒNƒ‚Å“Ç‚İ‚ñ‚Å‚é‚Ì‚Å#‚ğg‚¦‚È‚¢
 #version 400
 
-layout( location=0 ) in vec4 a_position;
-layout( location=1 ) in vec4 a_normal;
+in vec4 a_position;
+in vec4 a_normal;
 
 out vec4 v_position;
 out vec4 v_normal;

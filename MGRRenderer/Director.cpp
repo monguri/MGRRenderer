@@ -37,7 +37,6 @@ _farClip(0.0f)
 
 Director::~Director()
 {
-#if defined(MGRRENDERER_USE_DIRECT3D)
 	if (_gBufferSpecularPower != nullptr)
 	{
 		delete _gBufferSpecularPower;
@@ -61,7 +60,6 @@ Director::~Director()
 		delete _gBufferDepthStencil;
 		_gBufferDepthStencil = nullptr;
 	}
-#endif
 
 	if (_FPSLabel != nullptr)
 	{
@@ -200,14 +198,21 @@ void Director::createStatsLabel()
 
 void Director::createGBufferSprite()
 {
-	_gBufferDepthStencil = new Sprite2D();
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	_gBufferDepthStencil = new Sprite2D();
 	_gBufferDepthStencil->initWithRenderBuffer(_renderer.getGBufferDepthStencil(), Sprite2D::RenderBufferType::DEPTH_TEXTURE);
 #elif defined(MGRRENDERER_USE_OPENGL)
-	_gBufferDepthStencil->initWithRenderBuffer(_renderer.getGBuffers()[0], Sprite2D::RenderBufferType::DEPTH_TEXTURE);
+	if (_renderer.getGBuffers()[0] != nullptr) // デプスステンシルにはレンダーバッファを使ってテクスチャを使わなかった場合は表示しない
+	{
+		_gBufferDepthStencil = new Sprite2D();
+		_gBufferDepthStencil->initWithRenderBuffer(_renderer.getGBuffers()[0], Sprite2D::RenderBufferType::DEPTH_TEXTURE);
+	}
 #endif
-	_gBufferDepthStencil->setScale(1 / 5.0f);
-	_gBufferDepthStencil->setPosition(Vec3(0.0f, 0.0f, 0.0f));
+	if (_gBufferDepthStencil != nullptr)
+	{
+		_gBufferDepthStencil->setScale(1 / 5.0f);
+		_gBufferDepthStencil->setPosition(Vec3(0.0f, 0.0f, 0.0f));
+	}
 
 	_gBufferColorSpecularIntensitySprite = new Sprite2D();
 #if defined(MGRRENDERER_USE_DIRECT3D)
@@ -240,12 +245,18 @@ void Director::createGBufferSprite()
 void Director::renderGBufferSprite()
 {
 	// addChildしてないので直接描画する
-	_gBufferDepthStencil->prepareRendering();
+	if (_gBufferDepthStencil != nullptr)
+	{
+		_gBufferDepthStencil->prepareRendering();
+	}
 	_gBufferColorSpecularIntensitySprite->prepareRendering();
 	_gBufferNormal->prepareRendering();
 	_gBufferSpecularPower->prepareRendering();
 
-	_gBufferDepthStencil->renderForward();
+	if (_gBufferDepthStencil != nullptr)
+	{
+		_gBufferDepthStencil->renderForward();
+	}
 	_gBufferColorSpecularIntensitySprite->renderForward();
 	_gBufferNormal->renderForward();
 	_gBufferSpecularPower->renderForward();

@@ -198,7 +198,7 @@ bool GLTexture::initDepthTexture(GLenum textureUnit, const Size& contentSize)
 	return true;
 }
 
-bool GLTexture::initRenderTexture(GLenum textureUnit, GLenum pixelFormat, const Size& contentSize)
+bool GLTexture::initRenderTexture(GLenum pixelFormat, const Size& contentSize)
 {
 	_contentSize = contentSize;
 	GLint maxTextureSize = 0;
@@ -210,8 +210,8 @@ bool GLTexture::initRenderTexture(GLenum textureUnit, GLenum pixelFormat, const 
 	}
 
 	// テクスチャID生成
-	glActiveTexture(textureUnit);
 	glGenTextures(1, &_textureId);
+	//glActiveTexture(GL_TEXTURE0); // とりあえずGL_TEXTURE0だが、デフォルトでGL_TEXTURE0なので必要としない
 	GLenum err = glGetError();
 	if (err != GL_NO_ERROR)
 	{
@@ -241,7 +241,7 @@ bool GLTexture::initRenderTexture(GLenum textureUnit, GLenum pixelFormat, const 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
 
 	// テクスチャ生成
-	glTexImage2D(GL_TEXTURE_2D, 0, pixelFormat, static_cast<GLsizei>(contentSize.width), static_cast<GLsizei>(contentSize.height), 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, pixelFormat, static_cast<GLsizei>(contentSize.width), static_cast<GLsizei>(contentSize.height), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	err = glGetError();
 	if (err != GL_NO_ERROR)
 	{
@@ -251,7 +251,6 @@ bool GLTexture::initRenderTexture(GLenum textureUnit, GLenum pixelFormat, const 
 	}
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glActiveTexture(GL_TEXTURE0);
 
 	return true;
 }

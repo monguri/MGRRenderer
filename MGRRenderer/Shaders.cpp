@@ -23,7 +23,8 @@ namespace shader
 //#include "VertexShaderPositionNormalMultiplyColor.glsl"
 
 // VERTEX_SHADER_POSITION_NORMAL_TEXTURE_MULTIPLY_COLOR
-#include "VertexShaderPositionNormalTextureMultiplyColor.glsl"
+//#include "VertexShaderPositionNormalTextureMultiplyColor.glsl"
+
 // FRAGMENT_SHADER_POSITION_NORMAL_MULTIPLY_COLOR_GBUFFER
 // FRAGMENT_SHADER_POSITION_NORMAL_TEXTURE_MULTIPLY_COLOR_GBUFFER
 // FRAGMENT_SHADER_DEPTH_TEXTURE;

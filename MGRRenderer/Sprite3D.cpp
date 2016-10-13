@@ -814,6 +814,116 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"}"
 		);
 	}
+
+	if (_isObj)
+	{
+		// STRINGIFYによる読み込みだと、GeForce850Mがうまく#versionの行の改行を読み取ってくれずGLSLコンパイルエラーになる
+		_glProgramForGBuffer.initWithShaderFile("../MGRRenderer/VertexShaderPositionNormalTextureMultiplyColor.glsl", "../MGRRenderer/FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl");
+	}
+	else if (_isC3b)
+	{
+		_glProgramForGBuffer.initWithShaderString(
+			// vertex shader
+			// ModelDataしか使わない場合
+			//"attribute vec4 a_position;"
+			//"attribute vec2 a_texCoord;"
+			//"varying vec2 v_texCoord;"
+			//"uniform mat4 u_modelMatrix;"
+			//"uniform mat4 u_viewMatrix;"
+			//"uniform mat4 u_projectionMatrix;"
+			//"void main()"
+			//"{"
+			//"	gl_Position = u_projectionMatrix * u_viewMatrix * a_position;"
+			//"	v_texCoord = a_texCoord;"
+			//"	v_texCoord.y = 1.0 - v_texCoord.y;"
+			//"}"
+			//// アニメーションを使う場合
+			"#version 400\n"
+			""
+			"in vec3 a_position;" // これがvec3になっているのに注意 TODO:なぜなのか？
+			"in vec3 a_normal;"
+			"in vec2 a_texCoord;"
+			"in vec4 a_blendWeight;"
+			"in vec4 a_blendIndex;"
+			""
+			"const int MAX_SKINNING_JOINT = 60;" // TODO:なぜ60個までなのか？
+			""
+			"uniform mat4 u_modelMatrix;"
+			"uniform mat4 u_viewMatrix;"
+			"uniform mat4 u_projectionMatrix;"
+			"uniform mat4 u_normalMatrix;" // scale変換に対応するためにモデル行列の逆行列を転置したものを用いる
+			"uniform mat4 u_matrixPalette[MAX_SKINNING_JOINT];"
+			""
+			"out vec4 v_normal;"
+			"out vec2 v_texCoord;"
+			""
+			"vec4 getPosition()"
+			"{"
+			"	mat4 skinMatrix = u_matrixPalette[int(a_blendIndex[0])] * a_blendWeight[0];"
+			""
+			"	if (a_blendWeight[1] > 0.0)"
+			"	{"
+			"		skinMatrix += u_matrixPalette[int(a_blendIndex[1])] * a_blendWeight[1];"
+			""
+			"		if (a_blendWeight[2] > 0.0)"
+			"		{"
+			"			skinMatrix += u_matrixPalette[int(a_blendIndex[2])] * a_blendWeight[2];"
+			""
+			"			if (a_blendWeight[3] > 0.0)"
+			"			{"
+			"				skinMatrix += u_matrixPalette[int(a_blendIndex[3])] * a_blendWeight[3];"
+			"			}"
+			"		}"
+			"	}"
+			""
+			"	vec4 position = vec4(a_position, 1.0);"
+			"	vec4 skinnedPosition = skinMatrix * position;"
+			"	skinnedPosition.w = 1.0;"
+			"	return skinnedPosition;"
+			"}"
+			""
+			"void main()"
+			"{"
+			"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * getPosition();"
+			"	v_normal = u_normalMatrix * vec4(a_normal, 1.0);"
+			"	v_texCoord = a_texCoord;"
+			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
+			"}"
+			,
+			// fragment shader
+			"#version 400\n"
+			""
+			"float SPECULAR_POWER_RANGE_X = 10.0;"
+			"float SPECULAR_POWER_RANGE_Y = 250.0;"
+			""
+			"in vec4 v_position;"
+			"in vec4 v_normal;"
+			"in vec2 v_texCoord;"
+			""
+			"uniform vec3 u_multipleColor;"
+			"uniform sampler2D u_texture;"
+			""
+			"layout (location = 0) out vec4 FragColor;" // デプスバッファの分
+			"layout (location = 1) out vec4 ColorSpecularIntensity;"
+			"layout (location = 2) out vec4 Normal;"
+			"layout (location = 3) out vec4 SpecularPower;"
+			""
+			"void main()"
+			"{"
+			"	"// Gバッファへのパッキングを行う
+			""
+			"	"// specularは今のところ対応してない
+			"	float specularPower = 0.0;"
+			"	float specularIntensity = 0.0;"
+			"	float specularPowerNorm = max(0.0001, (specularPower - SPECULAR_POWER_RANGE_X) / SPECULAR_POWER_RANGE_Y);"
+			""
+			"	ColorSpecularIntensity = vec4(texture2D(u_texture, v_texCoord).rgb * u_multipleColor.rgb, specularIntensity);"
+			"	Normal = vec4(v_normal.xyz * 0.5 + 0.5, 0.0);"
+			"	SpecularPower = vec4(specularPowerNorm, 0.0, 0.0, 0.0);"
+			"}"
+		);
+	}
+
 #endif
 
 	return true;
@@ -1072,6 +1182,73 @@ void Sprite3D::renderGBuffer()
 		direct3dContext->OMSetBlendState(_d3dProgramForGBuffer.getBlendState(), blendFactor, 0xffffffff);
 
 		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
+#elif defined(MGRRENDERER_USE_OPENGL)
+		glUseProgram(_glProgramForGBuffer.getShaderProgram());
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glUniform3f(_glProgramForGBuffer.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		// 行列の設定
+		glUniformMatrix4fv(_glProgramForGBuffer.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgramForGBuffer.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgramForGBuffer.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		const Mat4& normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
+		glUniformMatrix4fv(_glProgramForGBuffer.getUniformLocation(GLProgram::UNIFORM_NAME_NORMAL_MATRIX), 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
+
+		// 頂点属性の設定
+		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::POSITION);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::NORMAL);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::BLEND_WEIGHT);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::BLEND_INDEX);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		if (_isObj)
+		{
+			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].position);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		}
+		else if (_isC3b)
+		{
+			// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
+			C3bLoader::MeshData* meshData = _meshDatas->meshDatas[0];
+			for (size_t i = 0, offset = 0; i < meshData->numAttribute; ++i)
+			{
+				const C3bLoader::MeshVertexAttribute& attrib = meshData->attributes[i];
+				glVertexAttribPointer((GLuint)attrib.location, attrib.size, attrib.type, GL_FALSE, _perVertexByteSize, (GLvoid*)&meshData->vertices[offset]);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				offset += attrib.size;
+			}
+		}
+
+		// スキニングのマトリックスパレットの設定
+		if (_isC3b) {
+			Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
+			glUniformMatrix4fv(_glProgramForGBuffer.getUniformLocation("u_matrixPalette"), _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette.data()));
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		}
+
+		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, _indices.data());
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		glBindTexture(GL_TEXTURE_2D, 0);
 #endif
 	});
 

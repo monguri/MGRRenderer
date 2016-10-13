@@ -43,6 +43,7 @@ private:
 	D3DProgram _d3dProgramForGBuffer;
 	D3DTexture* _texture;
 #elif defined(MGRRENDERER_USE_OPENGL)
+	GLProgram _glProgramForGBuffer;
 	GLProgram _glProgram;
 	GLProgram _glProgramForShadowMap;
 	GLTexture* _texture;

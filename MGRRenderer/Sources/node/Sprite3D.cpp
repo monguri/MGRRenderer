@@ -1324,9 +1324,9 @@ void Sprite3D::renderShadowMap()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 viewMatrix = Director::getCamera().getViewMatrix();
-		viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
-		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
+		Mat4 lightViewMatrix = shadowMapData.viewMatrix;
+		lightViewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
+		CopyMemory(mappedResource.pData, &lightViewMatrix.m, sizeof(lightViewMatrix));
 		direct3dContext->Unmap(_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
 
 		// プロジェクション行列のマップ
@@ -1338,10 +1338,10 @@ void Sprite3D::renderShadowMap()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 projectionMatrix = Director::getCamera().getProjectionMatrix();
-		projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
-		projectionMatrix.transpose();
-		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
+		Mat4 lightProjectionMatrix = shadowMapData.projectionMatrix;
+		lightProjectionMatrix = Mat4::CHIRARITY_CONVERTER * lightProjectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
+		lightProjectionMatrix.transpose();
+		CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
 		direct3dContext->Unmap(_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
 		if (_isC3b)

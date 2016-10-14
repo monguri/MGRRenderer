@@ -31,5 +31,5 @@ Config.hを編集して切り替えます。
  ![スクリーンショット](differed_rendering.gif "スクリーンショット")
 
 ・OpenGL版
- ![スクリーンショット](particle.gif "スクリーンショット")
+ ![スクリーンショット](differed_rendering_gl.gif "スクリーンショット")
 

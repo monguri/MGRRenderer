@@ -23,30 +23,11 @@
     <Filter Include="Sources\loader">
       <UniqueIdentifier>{798070e3-5532-4313-82f8-70a6dff92ac6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\shader">
+      <UniqueIdentifier>{853f62e5-038f-4891-85aa-9feb51342884}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="FragmentShaderPositionMultiplyColor.glsl" />
-    <None Include="FragmentShaderPositionTextureMultiplyColor.glsl" />
-    <None Include="Polygon3D.hlsl" />
-    <None Include="Obj.hlsl" />
-    <None Include="Point.hlsl" />
-    <None Include="PositionMultiplyColor.hlsl" />
-    <None Include="PositionTextureMultiplyColor.hlsl" />
-    <None Include="PositionRenderBufferMultiplyColor.hlsl" />
-    <None Include="GBufferPack.hlsl" />
-    <None Include="GBufferUnpack.hlsl" />
-    <None Include="FragmentShaderPositionNormalMultiplyColorGBuffer.glsl" />
-    <None Include="FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl" />
-    <None Include="VertexShaderPosition.glsl" />
-    <None Include="VertexShaderPositionNormal.glsl" />
-    <None Include="VertexShaderPositionTexture.glsl" />
-    <None Include="VertexShaderDeferredLighting.glsl" />
-    <None Include="VertexShaderObj.glsl" />
-    <None Include="C3bC3t.hlsl" />
-    <None Include="FragmentShaderDeferredLighting.glsl" />
-    <None Include="FragmentShaderGBuffer.glsl" />
-    <None Include="DeferredLighting.hlsl" />
-    <None Include="Line.hlsl" />
     <None Include="Resources\box.c3t">
       <Filter>Resource Files</Filter>
     </None>
@@ -61,6 +42,39 @@
     </None>
     <None Include="Resources\plane.c3t">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderDeferredLighting.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderGBuffer.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderPositionMultiplyColor.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderPositionNormalMultiplyColorGBuffer.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderPositionTextureMultiplyColor.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\VertexShaderDeferredLighting.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\VertexShaderObj.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\VertexShaderPosition.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\VertexShaderPositionNormal.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\VertexShaderPositionTexture.glsl">
+      <Filter>Resource Files\shader</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -316,5 +330,40 @@
     <Object Include="Resources\boss1.obj">
       <Filter>Resource Files</Filter>
     </Object>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Resources\shader\C3bC3t.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\shader\DeferredLighting.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\shader\GBufferPack.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\shader\GBufferUnpack.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\shader\Line.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\shader\Obj.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\shader\Point.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\shader\Polygon3D.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\shader\PositionMultiplyColor.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\shader\PositionRenderBufferMultiplyColor.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\shader\PositionTextureMultiplyColor.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

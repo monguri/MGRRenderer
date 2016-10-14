@@ -130,9 +130,9 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	_d3dProgramForGBuffer.setIndexBuffer(indexBuffer);
 
 	bool depthEnable = true;
-	_d3dProgram.initWithShaderFile("Polygon3D.hlsl", depthEnable, "VS", "", "PS");
-	_d3dProgramForShadowMap.initWithShaderFile("Polygon3D.hlsl", depthEnable, "VS_SM", "", "");
-	_d3dProgramForGBuffer.initWithShaderFile("Polygon3D.hlsl", depthEnable, "VS_GBUFFER", "", "PS_GBUFFER");
+	_d3dProgram.initWithShaderFile("Resources/shader/Polygon3D.hlsl", depthEnable, "VS", "", "PS");
+	_d3dProgramForShadowMap.initWithShaderFile("Resources/shader/Polygon3D.hlsl", depthEnable, "VS_SM", "", "");
+	_d3dProgramForGBuffer.initWithShaderFile("Resources/shader/Polygon3D.hlsl", depthEnable, "VS_GBUFFER", "", "PS_GBUFFER");
 
 	// 入力レイアウトオブジェクトの作成
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
@@ -384,7 +384,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	);
 
 	// STRINGIFYによる読み込みだと、GeForce850Mがうまく#versionの行の改行を読み取ってくれずGLSLコンパイルエラーになる
-	_glProgramForGBuffer.initWithShaderFile("../MGRRenderer/VertexShaderPositionNormal.glsl", "../MGRRenderer/FragmentShaderPositionNormalMultiplyColorGBuffer.glsl");
+	_glProgramForGBuffer.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionNormal.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionNormalMultiplyColorGBuffer.glsl");
 #endif
 
 	return true;

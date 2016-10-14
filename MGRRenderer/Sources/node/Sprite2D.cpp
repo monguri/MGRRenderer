@@ -206,7 +206,7 @@ bool Sprite2D::init(const std::string& filePath)
 	texture->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	bool success = initCommon("PositionTextureMultiplyColor.hlsl", "VS", "", "PS", texture->getContentSize());
+	bool success = initCommon("Resources/shader/PositionTextureMultiplyColor.hlsl", "VS", "", "PS", texture->getContentSize());
 	if (!success)
 	{
 		return false;
@@ -238,7 +238,7 @@ bool Sprite2D::init(const std::string& filePath)
 bool Sprite2D::initWithTexture(D3DTexture* texture)
 {
 	_texture = texture;
-	bool success = initCommon("PositionTextureMultiplyColor.hlsl", "VS", "", "PS", texture->getContentSize());
+	bool success = initCommon("Resources/shader/PositionTextureMultiplyColor.hlsl", "VS", "", "PS", texture->getContentSize());
 	if (!success)
 	{
 		return false;
@@ -276,10 +276,10 @@ bool Sprite2D::initWithRenderBuffer(D3DTexture* texture, RenderBufferType render
 	};
 
 	static std::vector<RenderBufferMaterial> RenderBufferMaterialList = {
-		{"PositionRenderBufferMultiplyColor.hlsl", "PS_DEPTH_TEXTURE"},
-		{"PositionRenderBufferMultiplyColor.hlsl", "PS_GBUFFER_COLOR_SPECULAR_INTENSITY"},
-		{"PositionRenderBufferMultiplyColor.hlsl", "PS_GBUFFER_NORMAL"},
-		{"PositionRenderBufferMultiplyColor.hlsl", "PS_GBUFFER_SPECULAR_POWER"},
+		{"Resources/shader/PositionRenderBufferMultiplyColor.hlsl", "PS_DEPTH_TEXTURE"},
+		{"Resources/shader/PositionRenderBufferMultiplyColor.hlsl", "PS_GBUFFER_COLOR_SPECULAR_INTENSITY"},
+		{"Resources/shader/PositionRenderBufferMultiplyColor.hlsl", "PS_GBUFFER_NORMAL"},
+		{"Resources/shader/PositionRenderBufferMultiplyColor.hlsl", "PS_GBUFFER_SPECULAR_POWER"},
 	};
 
 	const RenderBufferMaterial& material = RenderBufferMaterialList[static_cast<int>(renderBufferType)];

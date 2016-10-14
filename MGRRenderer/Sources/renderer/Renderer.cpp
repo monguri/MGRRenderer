@@ -92,7 +92,7 @@ void Renderer::initView(const Size& windowSize)
 	// ディファードレンダリングの準備
 	//
 
-	_d3dProgram.initWithShaderFile("DeferredLighting.hlsl", true, "VS", "", "PS");
+	_d3dProgram.initWithShaderFile("Resources/shader/DeferredLighting.hlsl", true, "VS", "", "PS");
 
 	// 定数バッファの作成
 	D3D11_BUFFER_DESC constantBufferDesc;
@@ -280,7 +280,7 @@ void Renderer::initView(const Size& windowSize)
 	//
 	// ディファードレンダリングの準備
 	//
-	//_d3dProgram.initWithShaderFile("DeferredLighting.hlsl", true, "VS", "", "PS");
+	//_d3dProgram.initWithShaderFile("Resources/shader/DeferredLighting.hlsl", true, "VS", "", "PS");
 
 	_glProgram.initWithShaderString(shader::VERTEX_SHADER_DEFERRED_LIGHTING, shader::FRAGMENT_SHADER_DEFERRED_LIGHTING);
 

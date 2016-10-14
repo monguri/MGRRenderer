@@ -204,9 +204,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_d3dProgramForGBuffer.setIndexBuffer(indexBuffer);
 
 		bool depthEnable = true;
-		_d3dProgram.initWithShaderFile("Obj.hlsl", depthEnable, "VS", "", "PS");
-		_d3dProgramForShadowMap.initWithShaderFile("Obj.hlsl", depthEnable, "VS_SM", "", "");
-		_d3dProgramForGBuffer.initWithShaderFile("Obj.hlsl", depthEnable, "VS_GBUFFER", "", "PS_GBUFFER");
+		_d3dProgram.initWithShaderFile("Resources/shader/Obj.hlsl", depthEnable, "VS", "", "PS");
+		_d3dProgramForShadowMap.initWithShaderFile("Resources/shader/Obj.hlsl", depthEnable, "VS_SM", "", "");
+		_d3dProgramForGBuffer.initWithShaderFile("Resources/shader/Obj.hlsl", depthEnable, "VS_GBUFFER", "", "PS_GBUFFER");
 
 		// 入力レイアウトオブジェクトの作成
 		D3D11_INPUT_ELEMENT_DESC layout[] = {
@@ -290,9 +290,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_d3dProgramForGBuffer.setIndexBuffer(indexBuffer);
 
 		bool depthEnable = true;
-		_d3dProgram.initWithShaderFile("C3bC3t.hlsl", depthEnable, "VS", "", "PS");
-		_d3dProgramForShadowMap.initWithShaderFile("C3bC3t.hlsl", depthEnable, "VS_SM", "", "");
-		_d3dProgramForGBuffer.initWithShaderFile("C3bC3t.hlsl", depthEnable, "VS_GBUFFER", "", "PS_GBUFFER");
+		_d3dProgram.initWithShaderFile("Resources/shader/C3bC3t.hlsl", depthEnable, "VS", "", "PS");
+		_d3dProgramForShadowMap.initWithShaderFile("Resources/shader/C3bC3t.hlsl", depthEnable, "VS_SM", "", "");
+		_d3dProgramForGBuffer.initWithShaderFile("Resources/shader/C3bC3t.hlsl", depthEnable, "VS_GBUFFER", "", "PS_GBUFFER");
 
 		// 入力レイアウトオブジェクトの作成
 		std::vector<D3D11_INPUT_ELEMENT_DESC> layouts(meshData->numAttribute);
@@ -818,7 +818,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	if (_isObj)
 	{
 		// STRINGIFYによる読み込みだと、GeForce850Mがうまく#versionの行の改行を読み取ってくれずGLSLコンパイルエラーになる
-		_glProgramForGBuffer.initWithShaderFile("../MGRRenderer/VertexShaderObj.glsl", "../MGRRenderer/FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl");
+		_glProgramForGBuffer.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderObj.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl");
 	}
 	else if (_isC3b)
 	{

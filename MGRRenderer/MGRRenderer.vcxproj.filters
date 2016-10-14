@@ -8,241 +8,21 @@
     <Filter Include="Sources">
       <UniqueIdentifier>{8dd5caaa-3a59-426a-a124-904eaa854a34}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="C3bLoader.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Config.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="CustomRenderCommand.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="D3DProgram.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="D3DTexture.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Director.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="FileUtility.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="FPSFontImage.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="GLFrameBuffer.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="GLProgram.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="GLTexture.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="GroupBeginRenderCommand.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="GroupEndRenderCommand.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Image.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="LabelAtlas.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Light.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Line2D.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Line3D.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Logger.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="BasicDataTypes.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="BillBoard.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="BinaryReader.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="MGRRenderer.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Node.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjLoader.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Particle3D.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Point2D.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Point3D.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Polygon2D.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Polygon3D.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderCommand.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderer.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Shaders.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Sprite2D.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Sprite3D.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureUtility.h">
-      <Filter>Sources</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="C3bLoader.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="CustomRenderCommand.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="D3DProgram.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="D3DTexture.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Director.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="FileUtility.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="FPSFontImage.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="GLFrameBuffer.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="GLProgram.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="GLTexture.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="GroupBeginRenderCommand.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="GroupEndRenderCommand.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Image.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="LabelAtlas.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Light.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Line2D.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Line3D.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Logger.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="BasicDataTypes.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="BillBoard.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="BinaryReader.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Node.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjLoader.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Particle3D.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Point2D.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Point3D.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Polygon2D.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Polygon3D.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderCommand.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderer.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Shaders.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Sprite2D.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Sprite3D.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureUtility.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
+    <Filter Include="Sources\renderer">
+      <UniqueIdentifier>{6eb3f8ce-0d7f-41ac-8b66-3ab3bdf817c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\node">
+      <UniqueIdentifier>{d72859cf-0c07-4dd1-b8be-c574d378509c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\embeddata">
+      <UniqueIdentifier>{37425555-6b04-4c6e-a58f-890872150def}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\utility">
+      <UniqueIdentifier>{422e5893-a50e-446e-b2c6-ca98349b32fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\loader">
+      <UniqueIdentifier>{798070e3-5532-4313-82f8-70a6dff92ac6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderPositionMultiplyColor.glsl" />
@@ -267,5 +47,240 @@
     <None Include="FragmentShaderGBuffer.glsl" />
     <None Include="DeferredLighting.hlsl" />
     <None Include="Line.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Sources\Config.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\MGRRenderer.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\embeddata\FPSFontImage.h">
+      <Filter>Sources\embeddata</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\loader\BinaryReader.h">
+      <Filter>Sources\loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\loader\C3bLoader.h">
+      <Filter>Sources\loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\loader\ObjLoader.h">
+      <Filter>Sources\loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\utility\FileUtility.h">
+      <Filter>Sources\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\utility\Logger.h">
+      <Filter>Sources\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\BillBoard.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\Camera.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\Light.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\Line2D.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\Line3D.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\Node.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\Particle3D.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\Point2D.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\Point3D.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\Polygon2D.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\Polygon3D.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\Scene.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\Sprite2D.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\Sprite3D.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\BasicDataTypes.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\CustomRenderCommand.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\D3DProgram.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\D3DTexture.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\Director.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\GLFrameBuffer.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\GLProgram.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\GLTexture.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\GroupBeginRenderCommand.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\GroupEndRenderCommand.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\Image.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\RenderCommand.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\Renderer.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\Shaders.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\Texture.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\renderer\TextureUtility.h">
+      <Filter>Sources\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\node\LabelAtlas.h">
+      <Filter>Sources\node</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Sources\main.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\embeddata\FPSFontImage.cpp">
+      <Filter>Sources\embeddata</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\loader\BinaryReader.cpp">
+      <Filter>Sources\loader</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\loader\C3bLoader.cpp">
+      <Filter>Sources\loader</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\loader\ObjLoader.cpp">
+      <Filter>Sources\loader</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\utility\FileUtility.cpp">
+      <Filter>Sources\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\utility\Logger.cpp">
+      <Filter>Sources\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\BillBoard.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\Camera.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\LabelAtlas.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\Light.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\Line2D.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\Line3D.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\Node.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\Particle3D.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\Point2D.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\Point3D.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\Polygon2D.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\Polygon3D.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\Scene.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\Sprite2D.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\node\Sprite3D.cpp">
+      <Filter>Sources\node</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\BasicDataTypes.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\CustomRenderCommand.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\D3DProgram.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\D3DTexture.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\Director.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\GLFrameBuffer.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\GLProgram.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\GLTexture.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\GroupBeginRenderCommand.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\GroupEndRenderCommand.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\Image.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\RenderCommand.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\Renderer.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\Shaders.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\Texture.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\renderer\TextureUtility.cpp">
+      <Filter>Sources\renderer</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

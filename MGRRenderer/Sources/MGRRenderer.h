@@ -1,0 +1,22 @@
+#pragma once
+
+//TODO:Macros.hÇçÏÇÎÇ§
+#include "renderer/BasicDataTypes.h"
+#include "utility/Logger.h"
+#include "renderer/Director.h"
+#include "node/Scene.h"
+#include "renderer/Renderer.h"
+#include "node/Node.h"
+#include "node/Point2D.h"
+#include "node/Line2D.h"
+#include "node/Polygon2D.h"
+#include "node/Sprite2D.h"
+#include "node/Point3D.h"
+#include "node/Line3D.h"
+#include "node/Polygon3D.h"
+#include "node/Sprite3D.h"
+#include "node/LabelAtlas.h"
+#include "node/BillBoard.h"
+#include "node/Light.h"
+#include "node/Particle3D.h"
+#include "renderer/TextureUtility.h"

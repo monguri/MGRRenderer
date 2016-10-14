@@ -19,24 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BasicDataTypes.h" />
-    <ClInclude Include="BillBoard.h" />
-    <ClInclude Include="BinaryReader.h" />
-    <ClInclude Include="C3bLoader.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Config.h" />
-    <ClInclude Include="CustomRenderCommand.h" />
-    <ClInclude Include="D3DProgram.h" />
-    <ClInclude Include="D3DTexture.h" />
-    <ClInclude Include="Director.h" />
-    <ClInclude Include="FileUtility.h" />
-    <ClInclude Include="FPSFontImage.h" />
-    <ClInclude Include="GLFrameBuffer.h" />
-    <ClInclude Include="GLProgram.h" />
-    <ClInclude Include="GLTexture.h" />
-    <ClInclude Include="GroupBeginRenderCommand.h" />
-    <ClInclude Include="GroupEndRenderCommand.h" />
-    <ClInclude Include="TextureUtility.h" />
     <None Include="FragmentShaderDeferredLighting.glsl" />
     <None Include="FragmentShaderGBuffer.glsl" />
     <None Include="FragmentShaderPositionNormalMultiplyColorGBuffer.glsl" />
@@ -47,70 +29,9 @@
     <None Include="VertexShaderPositionTexture.glsl">
       <FileType>Document</FileType>
     </None>
-    <ClInclude Include="Image.h" />
-    <ClInclude Include="LabelAtlas.h" />
-    <ClInclude Include="Light.h" />
-    <ClInclude Include="Line2D.h" />
-    <ClInclude Include="Line3D.h" />
-    <ClInclude Include="Logger.h" />
-    <ClInclude Include="MGRRenderer.h" />
-    <ClInclude Include="Node.h" />
-    <ClInclude Include="ObjLoader.h" />
-    <ClInclude Include="Particle3D.h" />
-    <ClInclude Include="Point2D.h" />
-    <ClInclude Include="Point3D.h" />
-    <ClInclude Include="Polygon2D.h" />
-    <ClInclude Include="Polygon3D.h" />
-    <ClInclude Include="RenderCommand.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="Scene.h" />
     <None Include="VertexShaderPosition.glsl">
       <FileType>Document</FileType>
     </None>
-    <ClInclude Include="Shaders.h" />
-    <ClInclude Include="Sprite2D.h" />
-    <ClInclude Include="Sprite3D.h" />
-    <ClInclude Include="Texture.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="BasicDataTypes.cpp" />
-    <ClCompile Include="BillBoard.cpp" />
-    <ClCompile Include="BinaryReader.cpp" />
-    <ClCompile Include="C3bLoader.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="CustomRenderCommand.cpp" />
-    <ClCompile Include="D3DProgram.cpp" />
-    <ClCompile Include="D3DTexture.cpp" />
-    <ClCompile Include="Director.cpp" />
-    <ClCompile Include="FileUtility.cpp" />
-    <ClCompile Include="FPSFontImage.cpp" />
-    <ClCompile Include="GLFrameBuffer.cpp" />
-    <ClCompile Include="GLProgram.cpp" />
-    <ClCompile Include="GLTexture.cpp" />
-    <ClCompile Include="GroupBeginRenderCommand.cpp" />
-    <ClCompile Include="GroupEndRenderCommand.cpp" />
-    <ClCompile Include="Image.cpp" />
-    <ClCompile Include="LabelAtlas.cpp" />
-    <ClCompile Include="Light.cpp" />
-    <ClCompile Include="Line2D.cpp" />
-    <ClCompile Include="Line3D.cpp" />
-    <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Node.cpp" />
-    <ClCompile Include="ObjLoader.cpp" />
-    <ClCompile Include="Particle3D.cpp" />
-    <ClCompile Include="Point2D.cpp" />
-    <ClCompile Include="Point3D.cpp" />
-    <ClCompile Include="Polygon2D.cpp" />
-    <ClCompile Include="Polygon3D.cpp" />
-    <ClCompile Include="RenderCommand.cpp" />
-    <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="Shaders.cpp" />
-    <ClCompile Include="Sprite2D.cpp" />
-    <ClCompile Include="Sprite3D.cpp" />
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="TextureUtility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderPositionMultiplyColor.glsl" />
@@ -158,6 +79,87 @@
     <None Include="DeferredLighting.hlsl">
       <FileType>Document</FileType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Sources\Config.h" />
+    <ClInclude Include="Sources\embeddata\FPSFontImage.h" />
+    <ClInclude Include="Sources\loader\BinaryReader.h" />
+    <ClInclude Include="Sources\loader\C3bLoader.h" />
+    <ClInclude Include="Sources\loader\ObjLoader.h" />
+    <ClInclude Include="Sources\MGRRenderer.h" />
+    <ClInclude Include="Sources\node\BillBoard.h" />
+    <ClInclude Include="Sources\node\Camera.h" />
+    <ClInclude Include="Sources\node\LabelAtlas.h" />
+    <ClInclude Include="Sources\node\Light.h" />
+    <ClInclude Include="Sources\node\Line2D.h" />
+    <ClInclude Include="Sources\node\Line3D.h" />
+    <ClInclude Include="Sources\node\Node.h" />
+    <ClInclude Include="Sources\node\Particle3D.h" />
+    <ClInclude Include="Sources\node\Point2D.h" />
+    <ClInclude Include="Sources\node\Point3D.h" />
+    <ClInclude Include="Sources\node\Polygon2D.h" />
+    <ClInclude Include="Sources\node\Polygon3D.h" />
+    <ClInclude Include="Sources\node\Scene.h" />
+    <ClInclude Include="Sources\node\Sprite2D.h" />
+    <ClInclude Include="Sources\node\Sprite3D.h" />
+    <ClInclude Include="Sources\renderer\BasicDataTypes.h" />
+    <ClInclude Include="Sources\renderer\CustomRenderCommand.h" />
+    <ClInclude Include="Sources\renderer\D3DProgram.h" />
+    <ClInclude Include="Sources\renderer\D3DTexture.h" />
+    <ClInclude Include="Sources\renderer\Director.h" />
+    <ClInclude Include="Sources\renderer\GLFrameBuffer.h" />
+    <ClInclude Include="Sources\renderer\GLProgram.h" />
+    <ClInclude Include="Sources\renderer\GLTexture.h" />
+    <ClInclude Include="Sources\renderer\GroupBeginRenderCommand.h" />
+    <ClInclude Include="Sources\renderer\GroupEndRenderCommand.h" />
+    <ClInclude Include="Sources\renderer\Image.h" />
+    <ClInclude Include="Sources\renderer\RenderCommand.h" />
+    <ClInclude Include="Sources\renderer\Renderer.h" />
+    <ClInclude Include="Sources\renderer\Shaders.h" />
+    <ClInclude Include="Sources\renderer\Texture.h" />
+    <ClInclude Include="Sources\renderer\TextureUtility.h" />
+    <ClInclude Include="Sources\utility\FileUtility.h" />
+    <ClInclude Include="Sources\utility\Logger.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Sources\embeddata\FPSFontImage.cpp" />
+    <ClCompile Include="Sources\loader\BinaryReader.cpp" />
+    <ClCompile Include="Sources\loader\C3bLoader.cpp" />
+    <ClCompile Include="Sources\loader\ObjLoader.cpp" />
+    <ClCompile Include="Sources\main.cpp" />
+    <ClCompile Include="Sources\node\BillBoard.cpp" />
+    <ClCompile Include="Sources\node\Camera.cpp" />
+    <ClCompile Include="Sources\node\LabelAtlas.cpp" />
+    <ClCompile Include="Sources\node\Light.cpp" />
+    <ClCompile Include="Sources\node\Line2D.cpp" />
+    <ClCompile Include="Sources\node\Line3D.cpp" />
+    <ClCompile Include="Sources\node\Node.cpp" />
+    <ClCompile Include="Sources\node\Particle3D.cpp" />
+    <ClCompile Include="Sources\node\Point2D.cpp" />
+    <ClCompile Include="Sources\node\Point3D.cpp" />
+    <ClCompile Include="Sources\node\Polygon2D.cpp" />
+    <ClCompile Include="Sources\node\Polygon3D.cpp" />
+    <ClCompile Include="Sources\node\Scene.cpp" />
+    <ClCompile Include="Sources\node\Sprite2D.cpp" />
+    <ClCompile Include="Sources\node\Sprite3D.cpp" />
+    <ClCompile Include="Sources\renderer\BasicDataTypes.cpp" />
+    <ClCompile Include="Sources\renderer\CustomRenderCommand.cpp" />
+    <ClCompile Include="Sources\renderer\D3DProgram.cpp" />
+    <ClCompile Include="Sources\renderer\D3DTexture.cpp" />
+    <ClCompile Include="Sources\renderer\Director.cpp" />
+    <ClCompile Include="Sources\renderer\GLFrameBuffer.cpp" />
+    <ClCompile Include="Sources\renderer\GLProgram.cpp" />
+    <ClCompile Include="Sources\renderer\GLTexture.cpp" />
+    <ClCompile Include="Sources\renderer\GroupBeginRenderCommand.cpp" />
+    <ClCompile Include="Sources\renderer\GroupEndRenderCommand.cpp" />
+    <ClCompile Include="Sources\renderer\Image.cpp" />
+    <ClCompile Include="Sources\renderer\RenderCommand.cpp" />
+    <ClCompile Include="Sources\renderer\Renderer.cpp" />
+    <ClCompile Include="Sources\renderer\Shaders.cpp" />
+    <ClCompile Include="Sources\renderer\Texture.cpp" />
+    <ClCompile Include="Sources\renderer\TextureUtility.cpp" />
+    <ClCompile Include="Sources\utility\FileUtility.cpp" />
+    <ClCompile Include="Sources\utility\Logger.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6BC7B3AF-198E-4A27-9950-D1C347DF439B}</ProjectGuid>
@@ -210,27 +212,31 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(SolutionDir)\MGRRenderer\Sources;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\directxtex\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(SolutionDir)\MGRRenderer\Sources;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(SolutionDir)\MGRRenderer\Sources;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\directxtex\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\MGRRenderer\external;$(SolutionDir)\MGRRenderer\Sources;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

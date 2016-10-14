@@ -391,7 +391,7 @@ void Renderer::prepareDeferredRendering()
 	direct3dContext->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencilView());
 	direct3dContext->OMSetDepthStencilState(Director::getInstance()->getDirect3dDepthStencilState(), 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
-	glDisable(GL_CULL_FACE);
+	//glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glViewport(0, 0, static_cast<GLsizei>(Director::getInstance()->getWindowSize().width), static_cast<GLsizei>(Director::getInstance()->getWindowSize().height));
@@ -658,10 +658,12 @@ void Renderer::renderDeferred()
 					(GLfloat*)depthBiasMatrix.m
 				);
 
-				glActiveTexture(GL_TEXTURE4);
-				glBindTexture(GL_TEXTURE_2D, dirLight->getShadowMapData().getDepthTexture()->getTextureId());
-				glUniform1i(_glProgram.getUniformLocation("u_shadowTexture"), 4);
-				glActiveTexture(GL_TEXTURE0);
+				// TODO: ディファードレンダリングにおけるシャドウマップはちゃんと動作してない。一旦D3D版での完成を待つ
+				//glActiveTexture(GL_TEXTURE4);
+				//GLuint textureId = dirLight->getShadowMapData().getDepthTexture()->getTextureId();
+				//glBindTexture(GL_TEXTURE_2D, textureId);
+				//glUniform1i(_glProgram.getUniformLocation("u_shadowTexture"), 4);
+				//glActiveTexture(GL_TEXTURE0);
 			}
 		}
 			break;

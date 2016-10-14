@@ -75,7 +75,9 @@ void main()
 	diffuseSpecularLightColor += computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor, attenuation);
 
 	vec4 lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * position;
-	float outShadowFlag = textureProj(u_shadowTexture, lightPosition);
+	// TODO: ディファードレンダリングにおけるシャドウマップはちゃんと動作してない。一旦D3D版での完成を待つ
+	//float outShadowFlag = textureProj(u_shadowTexture, lightPosition);
+	float outShadowFlag = 1.0;
 
 	gl_FragColor = vec4((color * (diffuseSpecularLightColor * outShadowFlag + u_ambientLightColor)), 1.0);
 }

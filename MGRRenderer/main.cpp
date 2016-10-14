@@ -461,11 +461,11 @@ void initialize()
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 	//Sprite2D* spriteNode = new Sprite2D();
-	//isSucceeded = spriteNode->init("../Resources/Hello.png");
+	//isSucceeded = spriteNode->init("../MGRRenderer/Resources/Hello.png");
 	//spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
 	//Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 	BillBoard* spriteNode = new BillBoard();
-	isSucceeded = spriteNode->init("../Resources/Hello.png", BillBoard::Mode::VIEW_PLANE_ORIENTED);
+	isSucceeded = spriteNode->init("../MGRRenderer/Resources/Hello.png", BillBoard::Mode::VIEW_PLANE_ORIENTED);
 	spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
@@ -521,14 +521,14 @@ void initialize()
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 	Sprite3D* sprite3DObjNode = new Sprite3D();
-	isSucceeded = sprite3DObjNode->initWithModel("../Resources/boss1.obj");
+	isSucceeded = sprite3DObjNode->initWithModel("../MGRRenderer/Resources/boss1.obj");
 	sprite3DObjNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 100, WINDOW_HEIGHT / 2.0f - 100, 0)); // カメラのデフォルトの視点位置から少しずれた場所に置いた
 	sprite3DObjNode->setScale(10.0f);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
-	sprite3DObjNode->setTexture("../Resources/boss.png");
+	sprite3DObjNode->setTexture("../MGRRenderer/Resources/boss.png");
 
 	Sprite3D* sprite3DC3tNode = new Sprite3D();
-	isSucceeded = sprite3DC3tNode->initWithModel("../Resources/orc.c3b");
+	isSucceeded = sprite3DC3tNode->initWithModel("../MGRRenderer/Resources/orc.c3b");
 	sprite3DC3tNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)); // カメラのデフォルトの視点位置に置いた
 	sprite3DC3tNode->setRotation(Vec3(0.0f, 180.0f, 0.0f));
 	sprite3DC3tNode->setScale(10.0f);
@@ -541,7 +541,7 @@ void initialize()
 	parameter.initVelocity = 300.0f;
 	parameter.lifeTime = 10.0f;
 	parameter.numParticle = 100;
-	parameter.textureFilePath = "../Resources/bluewater.png";
+	parameter.textureFilePath = "../MGRRenderer/Resources/bluewater.png";
 	parameter.pointSize = 5.0f;
 
 	Particle3D* particle3DNode = new Particle3D();

@@ -103,7 +103,6 @@ void Renderer::initView(const Size& windowSize)
 	constantBufferDesc.StructureByteStride = 0;
 	constantBufferDesc.ByteWidth = sizeof(Mat4);
 
-	// Model行列用
 	ID3D11Buffer* constantBuffer = nullptr;
 	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
 	// View行列用

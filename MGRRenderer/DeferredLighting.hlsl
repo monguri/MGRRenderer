@@ -2,14 +2,14 @@
 
 static const float2 SPECULAR_POWER_RANGE = {10.0, 250.0};
 
-cbuffer DepthTextureProjectionMatrix : register(b0)
-{
-	matrix _depthTextureProjection;
-};
-
-cbuffer ViewMatrixInverse : register(b1)
+cbuffer ViewMatrixInverse : register(b0)
 {
 	matrix _viewInverse;
+};
+
+cbuffer DepthTextureProjectionMatrix : register(b1)
+{
+	matrix _depthTextureProjection;
 };
 
 cbuffer AmbientLightParameter : register(b2)

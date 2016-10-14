@@ -818,7 +818,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	if (_isObj)
 	{
 		// STRINGIFYによる読み込みだと、GeForce850Mがうまく#versionの行の改行を読み取ってくれずGLSLコンパイルエラーになる
-		_glProgramForGBuffer.initWithShaderFile("../MGRRenderer/VertexShaderPositionNormalTexture.glsl", "../MGRRenderer/FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl");
+		_glProgramForGBuffer.initWithShaderFile("../MGRRenderer/VertexShaderObj.glsl", "../MGRRenderer/FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl");
 	}
 	else if (_isC3b)
 	{

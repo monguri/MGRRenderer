@@ -1,4 +1,3 @@
-//const char* VERTEX_SHADER_POSITION_NORMAL_TEXTURE = STRINGIFY(
 // ディファードレンダリングに使うので、マルチレンダーターゲットのためにGLSL4.0.0で書く
 // 現状マクロで読み込んでるので#を使えない
 #version 400
@@ -21,6 +20,6 @@ void main()
 	v_position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;
 	v_normal = u_normalMatrix * a_normal;
 	v_texCoord = a_texCoord;
+	v_texCoord.y = 1.0 - v_texCoord.y; // objの事情によるもの
 	gl_Position = v_position;
 }
-//);

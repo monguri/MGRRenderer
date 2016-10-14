@@ -167,7 +167,7 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 	return true;
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
-bool Sprite2D::initCommon(const char* vertexShaderFunctionName, const char* geometryShaderFunctionName, const char* pixelShaderFunctionName, const Size& contentSize)
+bool Sprite2D::initCommon(const char* geometryShaderFunctionName, const char* pixelShaderFunctionName, const Size& contentSize)
 {
 	// Œ»ó–¢Žg—p
 	(void)geometryShaderFunctionName;
@@ -181,7 +181,7 @@ bool Sprite2D::initCommon(const char* vertexShaderFunctionName, const char* geom
 	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
 	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 1.0f);
 
-	_glProgram.initWithShaderString(vertexShaderFunctionName, pixelShaderFunctionName);
+	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE, pixelShaderFunctionName);
 
 	return true;
 }
@@ -230,7 +230,7 @@ bool Sprite2D::init(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 	return true;
 #elif defined(MGRRENDERER_USE_OPENGL)
-	return initCommon(shader::VERTEX_SHADER_POSITION_TEXTURE, "", shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, texture->getContentSize());
+	return initCommon("", shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, texture->getContentSize());
 #endif
 }
 
@@ -334,7 +334,7 @@ bool Sprite2D::initWithRenderBuffer(GLTexture* texture, RenderBufferType renderB
 
 	const char* fragmentShader = RenderBufferFSList[static_cast<int>(renderBufferType)];
 
-	return initCommon(shader::VERTEX_SHADER_POSITION_TEXTURE, "", fragmentShader, texture->getContentSize());
+	return initCommon("", fragmentShader, texture->getContentSize());
 }
 #endif
 

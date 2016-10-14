@@ -76,6 +76,12 @@
     <None Include="Resources\shader\VertexShaderPositionTexture.glsl">
       <Filter>Resource Files\shader</Filter>
     </None>
+    <None Include="Resources\shader\FragmentShaderPositionTextureMultiplyColorGBuffer.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\VertexShaderPositionTextureMacro.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Config.h">

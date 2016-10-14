@@ -187,7 +187,20 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 
 	return true;
 #elif defined(MGRRENDERER_USE_OPENGL)
-	return initCommon(shader::VERTEX_SHADER_POSITION_TEXTURE, "", shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, texture->getContentSize());
+	// TODO:もはやBillboardがSprite2D継承してる意味あるかな？
+	const Size& contentSize = texture->getContentSize();
+	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
+	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 0.0f);
+	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
+	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 0.0f);
+	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
+	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 1.0f);
+	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
+	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 1.0f);
+
+	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE, shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR);
+	_glProgramForGBuffer.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionTexture.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionTextureMultiplyColorGBuffer.glsl");
+	return true;
 #endif
 }
 
@@ -331,8 +344,29 @@ void BillBoard::renderGBuffer()
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgramForGBuffer.getBlendState(), blendFactor, 0xffffffff);
+#elif defined(MGRRENDERER_USE_OPENGL)
+		glUseProgram(_glProgramForGBuffer.getShaderProgram());
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		direct3dContext->DrawIndexed(4, 0, 0);
+		glUniform3f(_glProgramForGBuffer.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glUniformMatrix4fv(_glProgramForGBuffer.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgramForGBuffer.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgramForGBuffer.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::POSITION);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE);
+		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.position);
+		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.textureCoordinate);
+
+		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 #endif
 	});
 

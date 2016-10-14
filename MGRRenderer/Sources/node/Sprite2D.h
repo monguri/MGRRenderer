@@ -64,7 +64,7 @@ protected:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	bool initCommon(const std::string& path, const std::string& vertexShaderFunctionName, const std::string& geometryShaderFunctionName, const std::string& pixelShaderFunctionName, const Size& contentSize);
 #elif defined(MGRRENDERER_USE_OPENGL)
-	bool initCommon(const char* vertexShaderFunctionName, const char* geometryShaderFunctionName, const char* pixelShaderFunctionName, const Size& contentSize);
+	bool initCommon(const char* geometryShaderFunctionName, const char* pixelShaderFunctionName, const Size& contentSize);
 #endif
 
 private:

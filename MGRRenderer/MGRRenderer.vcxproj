@@ -30,11 +30,13 @@
     <None Include="Resources\shader\FragmentShaderPositionNormalMultiplyColorGBuffer.glsl" />
     <None Include="Resources\shader\FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl" />
     <None Include="Resources\shader\FragmentShaderPositionTextureMultiplyColor.glsl" />
+    <None Include="Resources\shader\FragmentShaderPositionTextureMultiplyColorGBuffer.glsl" />
     <None Include="Resources\shader\VertexShaderDeferredLighting.glsl" />
     <None Include="Resources\shader\VertexShaderObj.glsl" />
     <None Include="Resources\shader\VertexShaderPosition.glsl" />
     <None Include="Resources\shader\VertexShaderPositionNormal.glsl" />
     <None Include="Resources\shader\VertexShaderPositionTexture.glsl" />
+    <None Include="Resources\shader\VertexShaderPositionTextureMacro.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Config.h" />

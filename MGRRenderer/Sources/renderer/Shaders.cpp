@@ -15,7 +15,8 @@ namespace shader
 #include "../Resources/shader/FragmentShaderPositionMultiplyColor.glsl"
 
 // VERTEX_SHADER_POSITION_TEXTURE
-#include "../Resources/shader/VertexShaderPositionTexture.glsl"
+#include "../Resources/shader/VertexShaderPositionTextureMacro.glsl"
+//#include "../Resources/shader/VertexShaderPositionTexture.glsl"
 // FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR
 #include "../Resources/shader/FragmentShaderPositionTextureMultiplyColor.glsl"
 

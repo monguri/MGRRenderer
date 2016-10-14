@@ -18,7 +18,7 @@ uniform mat4 u_normalMatrix;
 void main()
 {
 	v_position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;
-	v_normal = u_normalMatrix * a_normal;
+	v_normal = vec4(normalize((u_normalMatrix * a_normal).xyz), 1.0);
 	v_texCoord = a_texCoord;
 	v_texCoord.y = 1.0 - v_texCoord.y; // objÇÃéñèÓÇ…ÇÊÇÈÇ‡ÇÃ
 	gl_Position = v_position;

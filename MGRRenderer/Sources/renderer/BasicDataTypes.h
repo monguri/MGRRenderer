@@ -775,6 +775,7 @@ struct Mat4
 		return *this;
 	}
 
+	// 行列の絶対値を考慮してないため、乗算するとべクトルの長さが変わる。呼び出し側でベクトルを正規化すること
 	static Mat4 createNormalMatrix(const Mat4& modelMatrix)
 	{
 		Mat4 normalMatrix = modelMatrix;

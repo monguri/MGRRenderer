@@ -513,7 +513,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	v_vertexToPointLightDirection = u_pointLightPosition - worldPosition.xyz;"
 			"	v_vertexToSpotLightDirection = u_spotLightPosition - worldPosition.xyz;"
 			"	gl_Position = u_projectionMatrix * u_viewMatrix * worldPosition;"
-			"	v_normal = u_normalMatrix * a_normal;" // scale変換に対応するためにモデル行列の逆行列を転置したものを用いる
+			"	v_normal = vec4(normalize((u_normalMatrix * a_normal).xyz), 1.0);" // scale変換に対応するためにモデル行列の逆行列を転置したものを用いる
 			"	v_texCoord = a_texCoord;"
 			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
 			"	v_lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * worldPosition;"
@@ -649,7 +649,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"	v_vertexToCameraDirection = u_cameraPosition - worldPosition.xyz;"
 			"	gl_Position = u_projectionMatrix * u_viewMatrix * worldPosition;"
 			"	vec4 normal = vec4(a_normal, 1.0);"
-			"	v_normal = u_normalMatrix * normal;"
+			"	v_normal = vec4(normalize((u_normalMatrix * normal).xyz), 1.0);"
 			"	v_texCoord = a_texCoord;"
 			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
 			"	v_lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * u_modelMatrix * getPosition();"
@@ -885,7 +885,8 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"void main()"
 			"{"
 			"	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * getPosition();"
-			"	v_normal = u_normalMatrix * vec4(a_normal, 1.0);"
+			"	vec4 normal = vec4(a_normal, 1.0);"
+			"	v_normal = vec4(normalize((u_normalMatrix * normal).xyz), 1.0);"
 			"	v_texCoord = a_texCoord;"
 			"	v_texCoord.y = 1.0 - v_texCoord.y;" // c3bの事情によるもの
 			"}"

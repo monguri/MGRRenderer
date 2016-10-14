@@ -312,7 +312,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		"	v_vertexToPointLightDirection = u_pointLightPosition - worldPosition.xyz;"
 		"	v_vertexToSpotLightDirection = u_spotLightPosition - worldPosition.xyz;"
 		"	gl_Position = u_projectionMatrix * u_viewMatrix * worldPosition;"
-		"	v_normal = u_normalMatrix * a_normal;" // scale変換に対応するためにモデル行列の逆行列を転置したものを用いる
+		"	v_normal = vec4(normalize((u_normalMatrix * a_normal).xyz), 1.0);" // scale変換に対応するためにモデル行列の逆行列を転置したものを用いる
 		"	v_lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * worldPosition;"
 		"}"
 		,

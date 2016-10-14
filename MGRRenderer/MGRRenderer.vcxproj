@@ -23,6 +23,11 @@
     <None Include="FragmentShaderGBuffer.glsl" />
     <None Include="FragmentShaderPositionNormalMultiplyColorGBuffer.glsl" />
     <None Include="FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl" />
+    <None Include="Resources\box.c3t" />
+    <None Include="Resources\orc.c3b" />
+    <None Include="Resources\orc.c3t" />
+    <None Include="Resources\orc_jump.c3t" />
+    <None Include="Resources\plane.c3t" />
     <None Include="VertexShaderDeferredLighting.glsl" />
     <None Include="VertexShaderPositionNormal.glsl" />
     <None Include="VertexShaderObj.glsl" />
@@ -160,6 +165,20 @@
     <ClCompile Include="Sources\renderer\TextureUtility.cpp" />
     <ClCompile Include="Sources\utility\FileUtility.cpp" />
     <ClCompile Include="Sources\utility\Logger.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\bluewater.png" />
+    <Image Include="Resources\boss.png" />
+    <Image Include="Resources\Hello.png" />
+    <Image Include="Resources\monguger.tga" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="Resources\boss1.obj">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </Object>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6BC7B3AF-198E-4A27-9950-D1C347DF439B}</ProjectGuid>

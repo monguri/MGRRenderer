@@ -47,6 +47,21 @@
     <None Include="FragmentShaderGBuffer.glsl" />
     <None Include="DeferredLighting.hlsl" />
     <None Include="Line.hlsl" />
+    <None Include="Resources\box.c3t">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\orc.c3b">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\orc.c3t">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\orc_jump.c3t">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\plane.c3t">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Config.h">
@@ -282,5 +297,24 @@
     <ClCompile Include="Sources\renderer\TextureUtility.cpp">
       <Filter>Sources\renderer</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\bluewater.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resources\boss.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resources\Hello.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resources\monguger.tga">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="Resources\boss1.obj">
+      <Filter>Resource Files</Filter>
+    </Object>
   </ItemGroup>
 </Project>

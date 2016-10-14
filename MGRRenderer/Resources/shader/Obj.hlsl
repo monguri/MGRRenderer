@@ -15,46 +15,51 @@ cbuffer ProjectionMatrix : register(b2)
 	matrix _projection;
 };
 
-cbuffer MultiplyColor : register(b3)
+cbuffer NormalMatrix : register(b3)
+{
+	matrix _normal;
+};
+
+cbuffer MultiplyColor : register(b4)
 {
 	float4 _multiplyColor;
 };
 
-cbuffer AmbientLightParameter : register(b4)
+cbuffer AmbientLightParameter : register(b5)
 {
 	float4 _ambientLightColor;
 };
 
-cbuffer DirectionalLightViewMatrix : register(b5)
+cbuffer DirectionalLightViewMatrix : register(b6)
 {
 	matrix _lightView;
 };
 
-cbuffer DirectionalLightProjectionMatrix : register(b6)
+cbuffer DirectionalLightProjectionMatrix : register(b7)
 {
 	matrix _lightProjection;
 };
 
-cbuffer DirectionalLightDepthBiasMatrix : register(b7)
+cbuffer DirectionalLightDepthBiasMatrix : register(b8)
 {
 	matrix _lightDepthBias;
 };
 
-cbuffer DirectionalLightParameter : register(b8)
+cbuffer DirectionalLightParameter : register(b9)
 {
 	float3 _directionalLightDirection;
 	float _directionalLightHasShadowMap;
 	float4 _directionalLightColor;
 };
 
-cbuffer PointLightParameter : register(b9)
+cbuffer PointLightParameter : register(b10)
 {
 	float4 _pointLightColor;
 	float3 _pointLightPosition;
 	float _pointLightRangeInverse;
 };
 
-cbuffer SpotLightParameter : register(b10)
+cbuffer SpotLightParameter : register(b11)
 {
 	float3 _spotLightPosition;
 	float _spotLightRangeInverse;
@@ -113,7 +118,8 @@ PS_INPUT VS(VS_INPUT input)
 	output.lightPosition = mul(lightPosition, _lightDepthBias);
 	output.lightPosition.xyz /= output.lightPosition.w;
 
-	output.normal = input.normal;
+	float4 normal = float4(input.normal, 1.0);
+	output.normal = mul(normal, _normal).xyz;
 	output.vertexToPointLightDirection = _pointLightPosition - worldPosition.xyz;
 	output.vertexToSpotLightDirection = _spotLightPosition - worldPosition.xyz;
 
@@ -142,7 +148,8 @@ PS_GBUFFER_INPUT VS_GBUFFER(VS_INPUT input)
 	position = mul(position, _view);
 	output.position = mul(position, _projection);
 
-	output.normal = input.normal;
+	float4 normal = float4(input.normal, 1.0);
+	output.normal = mul(normal, _normal).xyz;
 	output.texCoord = input.texCoord;
 	output.texCoord.y = 1.0 - output.texCoord.y; // objÇÃéñèÓÇ…ÇÊÇÈÇ‡ÇÃ
 

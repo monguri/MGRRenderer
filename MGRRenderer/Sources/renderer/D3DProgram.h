@@ -27,6 +27,7 @@ public:
 	static const std::string CONSTANT_BUFFER_MODEL_MATRIX;
 	static const std::string CONSTANT_BUFFER_VIEW_MATRIX;
 	static const std::string CONSTANT_BUFFER_PROJECTION_MATRIX;
+	static const std::string CONSTANT_BUFFER_NORMAL_MATRIX;
 	static const std::string CONSTANT_BUFFER_MULTIPLY_COLOR;
 	static const std::string CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER;
 	static const std::string CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX;

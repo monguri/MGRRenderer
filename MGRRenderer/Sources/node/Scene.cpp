@@ -137,12 +137,10 @@ void Scene::update(float dt)
 
 	_camera.renderForward();
 
-//#if defined(MGRRENDERER_USE_OPENGL)
-//	for (Node* child : _children)
-//	{
-//		child->renderForward();
-//	}
-//#endif
+	//for (Node* child : _children)
+	//{
+	//	child->renderForward();
+	//}
 
 	// 2Dƒm[ƒh‚Í[“x‚Ìˆµ‚¢‚ªˆá‚¤‚Ì‚Åˆê‚Â€”õˆ—‚ğ‚Í‚³‚Ş
 	_prepareFowardRendering2DCommand.init([=]

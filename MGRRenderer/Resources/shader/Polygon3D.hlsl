@@ -70,7 +70,7 @@ cbuffer SpotLightParameter : register(b11)
 };
 
 Texture2D _shadowMapTex : register(t0);
-SamplerState _shadowMapSampler : register(s0);
+SamplerComparisonState _pcfSampler : register(s0);
 
 struct VS_INPUT
 {
@@ -173,17 +173,13 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	attenuation = clamp(attenuation, 0.0, 1.0);
 	diffuseSpecularLightColor += computeLightedColor(normal, vertexToSpotLightDirection, _spotLightColor, attenuation);
 
-	float outShadowFlag = 1.0;
+	float shadowAttenuation = 1.0;
 	if (_directionalLightHasShadowMap > 0.0)
 	{
-		float depth = _shadowMapTex.Sample(_shadowMapSampler, input.lightPosition.xy);
-		if (input.lightPosition.z > depth + 0.002)
-		{
-			outShadowFlag = 0.0;
-		}
+		shadowAttenuation = _shadowMapTex.SampleCmpLevelZero(_pcfSampler, input.lightPosition.xy, input.lightPosition.z);
 	}
 
-	return _multiplyColor * float4(outShadowFlag * diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
+	return _multiplyColor * float4(shadowAttenuation * diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
 }
 
 float4 PS_SM(PS_SM_INPUT input) : SV_TARGET

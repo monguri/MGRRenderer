@@ -24,6 +24,9 @@ public:
 	void initView(const Size& windowSize);
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	ID3D11SamplerState* getPointSamplerState() const { return _pointSampler; }
+	ID3D11SamplerState* getLinearSamplerState() const { return _linearSampler; }
+	ID3D11SamplerState* getPCFSamplerState() const { return _pcfSampler; }
 	D3DTexture* getGBufferDepthStencil() const { return _gBufferDepthStencil; }
 	D3DTexture* getGBufferColorSpecularIntensity() const { return _gBufferColorSpecularIntensity; }
 	D3DTexture* getGBufferNormal() const { return _gBufferNormal; }
@@ -49,6 +52,9 @@ private:
 	std::vector<std::vector<RenderCommand*>> _queueGroup;
 	Quadrangle2D _quadrangle;
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	ID3D11SamplerState* _pointSampler;
+	ID3D11SamplerState* _linearSampler;
+	ID3D11SamplerState* _pcfSampler;
 	D3DTexture* _gBufferDepthStencil;
 	D3DTexture* _gBufferColorSpecularIntensity;
 	D3DTexture* _gBufferNormal;

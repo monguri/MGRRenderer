@@ -1203,8 +1203,8 @@ void Sprite3D::renderGBuffer()
 
 		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:型変換がうまくいかないので一度変数に代入している
 		direct3dContext->PSSetShaderResources(0, 1, &resourceView);
-		ID3D11SamplerState* samplerState = _texture->getSamplerState(); //TODO:型変換がうまくいかないので一度変数に代入している
-		direct3dContext->PSSetSamplers(0, 1, &samplerState);
+		ID3D11SamplerState* samplerState = Director::getRenderer().getLinearSamplerState();
+		direct3dContext->PSSetSamplers(0, 1, &samplerState); //TODO:型変換がうまくいかないので一度変数に代入している
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgramForGBuffer.getBlendState(), blendFactor, 0xffffffff);
@@ -1563,7 +1563,6 @@ void Sprite3D::renderForward()
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
 
 		ID3D11ShaderResourceView* depthTextureResourceView = nullptr;
-		ID3D11SamplerState* depthTextureSamplerState = nullptr;
 		// ライトの設定
 		// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
 		for (Light* light : Director::getLight())
@@ -1633,7 +1632,6 @@ void Sprite3D::renderForward()
 					direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX), 0);
 
 					depthTextureResourceView = dirLight->getShadowMapData().depthTexture->getShaderResourceView();
-					depthTextureSamplerState = dirLight->getShadowMapData().depthTexture->getSamplerState();
 				}
 
 				result = direct3dContext->Map(
@@ -1717,15 +1715,17 @@ void Sprite3D::renderForward()
 		{
 			ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:型変換がうまくいかないので一度変数に代入している
 			direct3dContext->PSSetShaderResources(0, 1, &resourceView);
-			ID3D11SamplerState* samplerState = _texture->getSamplerState(); //TODO:型変換がうまくいかないので一度変数に代入している
-			direct3dContext->PSSetSamplers(0, 1, &samplerState);
+
+			ID3D11SamplerState* samplerState = Director::getRenderer().getLinearSamplerState();
+			direct3dContext->PSSetSamplers(0, 1, &samplerState); //TODO:型変換がうまくいかないので一度変数に代入している
 		}
 		else // シャドウマップを作ったとき
 		{
 			ID3D11ShaderResourceView* resourceViews[2] = {_texture->getShaderResourceView(), depthTextureResourceView};
 			direct3dContext->PSSetShaderResources(0, 2, resourceViews);
-			ID3D11SamplerState* samplerStates[2] = {_texture->getSamplerState(), depthTextureSamplerState};
-			direct3dContext->PSSetSamplers(0, 2, samplerStates);
+
+			ID3D11SamplerState* samplerState[2] = { Director::getRenderer().getLinearSamplerState(), Director::getRenderer().getPCFSamplerState() };
+			direct3dContext->PSSetSamplers(0, 2, samplerState); //TODO:型変換がうまくいかないので一度変数に代入している
 		}
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};

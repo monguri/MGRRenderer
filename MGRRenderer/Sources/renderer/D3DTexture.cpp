@@ -13,19 +13,12 @@ D3DTexture::D3DTexture() :
 _depthStencilView(nullptr),
 _depthStencilState(nullptr),
 _renderTargetView(nullptr),
-_shaderResourceView(nullptr),
-_samplerState(nullptr)
+_shaderResourceView(nullptr)
 {
 }
 
 D3DTexture::~D3DTexture()
 {
-	if (_samplerState != nullptr)
-	{
-		_samplerState->Release();
-		_samplerState = nullptr;
-	}
-
 	if (_shaderResourceView != nullptr)
 	{
 		_shaderResourceView->Release();
@@ -93,27 +86,6 @@ bool D3DTexture::initWithImage(const Image& image, TextureUtility::PixelFormat f
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "D3DX11CreateShaderResourceViewFromMemory failed. result=%d", result);
-		return false;
-	}
-
-	D3D11_SAMPLER_DESC desc;
-	desc.Filter = D3D11_FILTER_ANISOTROPIC;
-	desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	desc.MipLODBias = 0.0f;
-	desc.MaxAnisotropy = 2;
-	desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	desc.BorderColor[0] = 0.0f;
-	desc.BorderColor[1] = 0.0f;
-	desc.BorderColor[2] = 0.0f;
-	desc.BorderColor[3] = 0.0f;
-	desc.MinLOD = -FLT_MAX;
-	desc.MaxLOD = FLT_MAX;
-	result = Director::getInstance()->getDirect3dDevice()->CreateSamplerState(&desc, &_samplerState);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateSamplerState failed. result=%d", result);
 		return false;
 	}
 
@@ -216,29 +188,6 @@ bool D3DTexture::initDepthStencilTexture(const Size & size)
 		return false;
 	}
 
-	// サンプラー生成
-	D3D11_SAMPLER_DESC samplerDesc;
-	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-	samplerDesc.MipLODBias = 0.0f;
-	samplerDesc.MaxAnisotropy = 2;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	samplerDesc.BorderColor[0] = 1.0f;
-	samplerDesc.BorderColor[1] = 1.0f;
-	samplerDesc.BorderColor[2] = 1.0f;
-	samplerDesc.BorderColor[3] = 1.0f;
-	samplerDesc.MinLOD = -FLT_MAX;
-	samplerDesc.MaxLOD = FLT_MAX;
-
-	result = result = device->CreateSamplerState(&samplerDesc, &_samplerState);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateSamplerState failed. result=%d", result);
-		return false;
-	}
-
 	return true;
 }
 
@@ -294,29 +243,6 @@ bool D3DTexture::initRenderTexture(const Size & size, DXGI_FORMAT textureFormat)
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateShaderResourceView failed. result=%d", result);
-		return false;
-	}
-
-	// サンプラー生成
-	D3D11_SAMPLER_DESC samplerDesc;
-	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.MipLODBias = 0.0f;
-	samplerDesc.MaxAnisotropy = 2;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	samplerDesc.BorderColor[0] = 0.0f;
-	samplerDesc.BorderColor[1] = 0.0f;
-	samplerDesc.BorderColor[2] = 0.0f;
-	samplerDesc.BorderColor[3] = 0.0f;
-	samplerDesc.MinLOD = -FLT_MAX;
-	samplerDesc.MaxLOD = FLT_MAX;
-
-	result = result = device->CreateSamplerState(&samplerDesc, &_samplerState);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateSamplerState failed. result=%d", result);
 		return false;
 	}
 

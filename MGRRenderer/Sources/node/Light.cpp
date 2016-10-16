@@ -48,7 +48,7 @@ DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) 
 	Vec3 directionVec = direction;
 	directionVec.normalize();
 	_constantBufferData.direction = Mat4::CHIRARITY_CONVERTER * directionVec;
-	_constantBufferData.hasShadowMap = 0.0f;
+	_constantBufferData.hasShadowMap = 1.0f;
 	_constantBufferData.color = Color4F(color) * getIntensity();
 #endif
 }

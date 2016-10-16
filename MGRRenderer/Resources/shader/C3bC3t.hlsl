@@ -77,10 +77,9 @@ cbuffer MatrixPallete : register(b12)
 };
 
 Texture2D<float4> _texture2d : register(t0);
-SamplerState _samplerState : register(s0);
-
 Texture2D<float> _shadowMapTex : register(t1);
-SamplerState _shadowMapSampler : register(s1);
+SamplerState _linearSampler : register(s0);
+SamplerComparisonState _pcfSampler : register(s1);
 
 struct VS_INPUT
 {
@@ -217,17 +216,13 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	attenuation = clamp(attenuation, 0.0, 1.0);
 	diffuseSpecularLightColor += computeLightedColor(normal, vertexToSpotLightDirection, _spotLightColor, attenuation);
 
-	float outShadowFlag = 1.0;
+	float shadowAttenuation = 1.0;
 	if (_directionalLightHasShadowMap > 0.0)
 	{
-		float depth = _shadowMapTex.Sample(_shadowMapSampler, input.lightPosition.xy);
-		if (input.lightPosition.z > depth + 0.002)
-		{
-			outShadowFlag = 0.0;
-		}
+		shadowAttenuation = _shadowMapTex.SampleCmpLevelZero(_pcfSampler, input.lightPosition.xy, input.lightPosition.z);
 	}
 
-	return _texture2d.Sample(_samplerState, input.texCoord) * _multiplyColor * float4(outShadowFlag * diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
+	return _texture2d.Sample(_linearSampler, input.texCoord) * _multiplyColor * float4(shadowAttenuation * diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
 }
 
 float4 PS_SM(PS_SM_INPUT input) : SV_TARGET
@@ -239,6 +234,6 @@ float4 PS_SM(PS_SM_INPUT input) : SV_TARGET
 
 PS_GBUFFER_OUT PS_GBUFFER(PS_GBUFFER_INPUT input)
 {
-	float4 color = _texture2d.Sample(_samplerState, input.texCoord) * _multiplyColor;
+	float4 color = _texture2d.Sample(_linearSampler, input.texCoord) * _multiplyColor;
 	return packGBuffer(color.rgb, normalize(input.normal), 0.0, 0.0); //TODO: specularÇÕç°ÇÃÇ∆Ç±ÇÎëŒâûÇµÇƒÇ»Ç¢
 }

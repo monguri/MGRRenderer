@@ -103,7 +103,9 @@ Texture2D<float4> _gBufferDepthStencil : register(t0); // デプステクスチャはText
 Texture2D<float4> _gBufferColorSpecularIntensity : register(t1);
 Texture2D<float4> _gBufferNormal : register(t2);
 Texture2D<float4> _gBufferSpecularPower : register(t3);
-SamplerState _samplerState : register(s0);
+Texture2D<float4> _shadowMap : register(t4);
+SamplerState _pointSampler : register(s0);
+SamplerComparisonState _pcfSampler : register(s1);
 // まだシャドウマップは考慮してない
 
 //static const float2 vertexPosition[4] = {
@@ -146,21 +148,21 @@ float3 computeLightedColor(float3 normalVector, float3 lightDirection, float3 li
 
 float4 PS(PS_INPUT input) : SV_TARGET
 {
-	//float depth = _gBufferDepthStencil.Sample(_samplerState, input.position.xy).x;
-	float depth = _gBufferDepthStencil.Sample(_samplerState, input.texCoord).x;
+	//float depth = _gBufferDepthStencil.Sample(_pointSampler, input.position.xy).x;
+	float depth = _gBufferDepthStencil.Sample(_pointSampler, input.texCoord).x;
 	float linearDepth = _depthTextureProjection._m32 / (depth + _depthTextureProjection._m22);
 
-	//float4 colorSpecularIntensity = _gBufferColorSpecularIntensity.Sample(_samplerState, input.position.xy);
-	float4 colorSpecularIntensity = _gBufferColorSpecularIntensity.Sample(_samplerState, input.texCoord);
+	//float4 colorSpecularIntensity = _gBufferColorSpecularIntensity.Sample(_pointSampler, input.position.xy);
+	float4 colorSpecularIntensity = _gBufferColorSpecularIntensity.Sample(_pointSampler, input.texCoord);
 	float3 color = colorSpecularIntensity.xyz;
 	float specularIntensity = colorSpecularIntensity.w;
 
-	//float3 normalizedNormal = _gBufferNormal.Sample(_samplerState, input.position.xy).xyz;
-	float3 normalizedNormal = _gBufferNormal.Sample(_samplerState, input.texCoord).xyz;
+	//float3 normalizedNormal = _gBufferNormal.Sample(_pointSampler, input.position.xy).xyz;
+	float3 normalizedNormal = _gBufferNormal.Sample(_pointSampler, input.texCoord).xyz;
 	float3 normal = normalizedNormal * 2.0 - 1.0;
 
-	//float normalizedSpecularPower = _gBufferSpecularPower.Sample(_samplerState, input.position.xy).x;
-	float normalizedSpecularPower = _gBufferSpecularPower.Sample(_samplerState, input.texCoord).x;
+	//float normalizedSpecularPower = _gBufferSpecularPower.Sample(_pointSampler, input.position.xy).x;
+	float normalizedSpecularPower = _gBufferSpecularPower.Sample(_pointSampler, input.texCoord).x;
 	float specularPower = SPECULAR_POWER_RANGE.x + SPECULAR_POWER_RANGE.y * normalizedSpecularPower;
 
 	float4 position;
@@ -187,6 +189,17 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	attenuation = clamp(attenuation, 0.0, 1.0);
 	diffuseSpecularLightColor += computeLightedColor(normal, vertexToSpotLightDirection, _spotLightColor, attenuation);
 
-	return float4((color * (diffuseSpecularLightColor + _ambientLightColor.rgb)), 1.0);
+	float shadowAttenuation = 1.0;
+	if (_directionalLightHasShadowMap > 0.0)
+	{
+		float4 lightPosition = mul(position, _lightView);
+		lightPosition = mul(lightPosition, _lightProjection);
+		lightPosition = mul(lightPosition, _lightDepthBias);
+		lightPosition.xyz /= lightPosition.w;
+
+		shadowAttenuation = _shadowMap.SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
+	}
+
+	return float4((color * (shadowAttenuation * diffuseSpecularLightColor + _ambientLightColor.rgb)), 1.0);
 }
 

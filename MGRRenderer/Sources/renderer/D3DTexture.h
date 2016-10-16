@@ -24,14 +24,12 @@ public:
 
 	// éQè∆Ç∑ÇÈÇ∆Ç´Ç…égÇ§
 	ID3D11ShaderResourceView* getShaderResourceView() const { return _shaderResourceView; }
-	ID3D11SamplerState* getSamplerState() const { return _samplerState; }
 
 private:
 	ID3D11DepthStencilView* _depthStencilView;
 	ID3D11DepthStencilState* _depthStencilState;
 	ID3D11RenderTargetView* _renderTargetView;
 	ID3D11ShaderResourceView* _shaderResourceView;
-	ID3D11SamplerState* _samplerState;
 };
 
 } // namespace mgrrenderer

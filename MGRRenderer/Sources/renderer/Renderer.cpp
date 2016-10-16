@@ -19,6 +19,9 @@ static const size_t DEFAULT_RENDER_QUEUE_GROUP_INDEX = 0;
 
 Renderer::Renderer() :
 #if defined(MGRRENDERER_USE_DIRECT3D)
+_pointSampler(nullptr),
+_linearSampler(nullptr),
+_pcfSampler(nullptr),
 _gBufferDepthStencil(nullptr),
 _gBufferColorSpecularIntensity(nullptr),
 _gBufferNormal(nullptr),
@@ -59,6 +62,30 @@ Renderer::~Renderer()
 		delete _gBufferDepthStencil;
 		_gBufferDepthStencil = nullptr;
 	}
+
+	if (_gBufferDepthStencil != nullptr)
+	{
+		delete _gBufferDepthStencil;
+		_gBufferDepthStencil = nullptr;
+	}
+
+	if (_pcfSampler != nullptr)
+	{
+		_pcfSampler->Release();
+		_pcfSampler = nullptr;
+	}
+
+	if (_linearSampler != nullptr)
+	{
+		_linearSampler->Release();
+		_linearSampler = nullptr;
+	}
+
+	if (_pointSampler != nullptr)
+	{
+		_pointSampler->Release();
+		_pointSampler = nullptr;
+	}
 #elif defined(MGRRENDERER_USE_OPENGL)
 	if (_gBufferFrameBuffer != nullptr)
 	{
@@ -74,6 +101,48 @@ void Renderer::initView(const Size& windowSize)
 	// ビューポートの準備
 	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
+
+	// 汎用サンプラの用意
+	D3D11_SAMPLER_DESC desc;
+	desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	desc.MipLODBias = 0.0f;
+	desc.MaxAnisotropy = 1;
+	desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	desc.BorderColor[0] = 0.0f;
+	desc.BorderColor[1] = 0.0f;
+	desc.BorderColor[2] = 0.0f;
+	desc.BorderColor[3] = 0.0f;
+	desc.MinLOD = -FLT_MAX;
+	desc.MaxLOD = FLT_MAX;
+	HRESULT result = Director::getInstance()->getDirect3dDevice()->CreateSamplerState(&desc, &_pointSampler);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateSamplerState failed. result=%d", result);
+		return;
+	}
+
+	desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	result = Director::getInstance()->getDirect3dDevice()->CreateSamplerState(&desc, &_linearSampler);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateSamplerState failed. result=%d", result);
+		return;
+	}
+
+	desc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	desc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+	result = Director::getInstance()->getDirect3dDevice()->CreateSamplerState(&desc, &_pcfSampler);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateSamplerState failed. result=%d", result);
+		return;
+	}
 
 	// Gバッファの準備
 	_gBufferDepthStencil = new D3DTexture();
@@ -107,7 +176,7 @@ void Renderer::initView(const Size& windowSize)
 	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
 	// View行列用
 	constantBuffer = nullptr;
-	HRESULT result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -438,8 +507,7 @@ void Renderer::renderDeferred()
 	CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
-	ID3D11ShaderResourceView* depthTextureResourceView = nullptr;
-	ID3D11SamplerState* depthTextureSamplerState = nullptr;
+	ID3D11ShaderResourceView* shadowMapResourceView = nullptr;
 	// ライトの設定
 	// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
 	for (Light* light : Director::getLight())
@@ -508,8 +576,7 @@ void Renderer::renderDeferred()
 				CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
 				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX), 0);
 
-				depthTextureResourceView = dirLight->getShadowMapData().depthTexture->getShaderResourceView();
-				depthTextureSamplerState = dirLight->getShadowMapData().depthTexture->getSamplerState();
+				shadowMapResourceView = dirLight->getShadowMapData().depthTexture->getShaderResourceView();
 			}
 
 			result = direct3dContext->Map(
@@ -565,17 +632,31 @@ void Renderer::renderDeferred()
 
 	direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
 
-	ID3D11ShaderResourceView* gBufferShaderResourceViews[4] = {
-		getGBufferDepthStencil()->getShaderResourceView(),
-		getGBufferColorSpecularIntensity()->getShaderResourceView(),
-		getGBufferNormal()->getShaderResourceView(),
-		getGBufferSpecularPower()->getShaderResourceView(),
-	};
-	direct3dContext->PSSetShaderResources(0, 4, gBufferShaderResourceViews);
+	if (shadowMapResourceView == nullptr)
+	{
+		ID3D11ShaderResourceView* gBufferShaderResourceViews[4] = {
+			getGBufferDepthStencil()->getShaderResourceView(),
+			getGBufferColorSpecularIntensity()->getShaderResourceView(),
+			getGBufferNormal()->getShaderResourceView(),
+			getGBufferSpecularPower()->getShaderResourceView(),
+		};
+		direct3dContext->PSSetShaderResources(0, 4, gBufferShaderResourceViews);
+	}
+	else
+	{
+		ID3D11ShaderResourceView* gBufferShaderResourceViews[5] = {
+			getGBufferDepthStencil()->getShaderResourceView(),
+			getGBufferColorSpecularIntensity()->getShaderResourceView(),
+			getGBufferNormal()->getShaderResourceView(),
+			getGBufferSpecularPower()->getShaderResourceView(),
+			shadowMapResourceView,
+		};
+		direct3dContext->PSSetShaderResources(0, 5, gBufferShaderResourceViews);
+	}
 
 	// TODO:サンプラはテクスチャごとに作る必要はない
-	ID3D11SamplerState* samplerState = getGBufferDepthStencil()->getSamplerState(); //TODO:型変換がうまくいかないので一度変数に代入している
-	direct3dContext->PSSetSamplers(0, 1, &samplerState);
+	ID3D11SamplerState* samplerStates[2] = {_pointSampler, _pcfSampler};
+	direct3dContext->PSSetSamplers(0, 2, samplerStates);
 
 	FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);

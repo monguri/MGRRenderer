@@ -463,7 +463,7 @@ void Sprite2D::renderForward()
 
 		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:Œ^•ÏŠ·‚ª‚¤‚Ü‚­‚¢‚©‚È‚¢‚Ì‚Åˆê“x•Ï”‚É‘ã“ü‚µ‚Ä‚¢‚é
 		direct3dContext->PSSetShaderResources(0, 1, &resourceView);
-		ID3D11SamplerState* samplerState = _texture->getSamplerState();
+		ID3D11SamplerState* samplerState = Director::getRenderer().getLinearSamplerState();
 		direct3dContext->PSSetSamplers(0, 1, &samplerState); //TODO:Œ^•ÏŠ·‚ª‚¤‚Ü‚­‚¢‚©‚È‚¢‚Ì‚Åˆê“x•Ï”‚É‘ã“ü‚µ‚Ä‚¢‚é
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};

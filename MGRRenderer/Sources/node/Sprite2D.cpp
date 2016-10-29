@@ -14,7 +14,7 @@ namespace mgrrenderer
 {
 
 const std::string Sprite2D::CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX = "CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX";
-const std::string Sprite2D::CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE = "CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE";
+const std::string Sprite2D::CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_Z = "CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_Z";
 
 Sprite2D::Sprite2D() :
 _texture(nullptr),
@@ -306,7 +306,7 @@ bool Sprite2D::initWithRenderBuffer(D3DTexture* texture, RenderBufferType render
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE, constantBuffer);
+	_d3dProgram.addConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_Z, constantBuffer);
 
 	constantBufferDesc.ByteWidth = sizeof(Mat4);
 	result = Director::getInstance()->getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
@@ -396,21 +396,22 @@ void Sprite2D::renderForward()
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
-		// デプステクスチャ描画時のプロジェクション行列のマップ
+		// デプステクスチャ描画時のプロジェクション行列の情報のマップ
 		switch (_renderBufferType) {
 			case RenderBufferType::DEPTH_TEXTURE:
 			{
 				result = direct3dContext->Map(
-					_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE),
+					_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_Z),
 					0,
 					D3D11_MAP_WRITE_DISCARD,
 					0,
 					&mappedResource
 				);
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				const Vec4& vec = Vec4(Director::getInstance()->getFarClip() - Director::getInstance()->getNearClip(), 0.0f, 0.0f, 0.0f);
+				// nearClip, farClipの値を正にしているときは右手系ではzは負。zの値を渡す
+				const Vec4& vec = Vec4(-Director::getInstance()->getNearClip(), -Director::getInstance()->getFarClip(), 0.0f, 0.0f);
 				CopyMemory(mappedResource.pData, &vec, sizeof(vec));
-				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_DISTANCE), 0);
+				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_Z), 0);
 
 				result = direct3dContext->Map(
 					_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX),
@@ -421,7 +422,6 @@ void Sprite2D::renderForward()
 				);
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 				projectionMatrix = Director::getCamera().getProjectionMatrix();
-				projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 				projectionMatrix.transpose();
 				CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX), 0);

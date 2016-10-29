@@ -15,8 +15,9 @@ cbuffer ProjectionMatrix : register(b2)
 
 cbuffer DepthTextureNearFarClipDistance : register(b3)
 {
-	float _nearFarClipDistance;
-	float3 _padding; // 16バイトアラインメントのためのパディング
+	float _nearClipZ;
+	float _farClipZ;
+	float2 _padding; // 16バイトアラインメントのためのパディング
 };
 
 // GBuffer.hlslに必要な定数バッファを追加するためにここでインクルードする
@@ -49,11 +50,13 @@ PS_INPUT VS(VS_INPUT input)
 
 float4 PS_DEPTH_TEXTURE(PS_INPUT input) : SV_TARGET
 {
-	float linearDepth = unpackDepthGBuffer(input.texCoord);
+	// 右手系で計算
+	float viewDepth = unpackDepthGBuffer(input.texCoord);
+	float grayScale = 1.0 - saturate((_nearClipZ - viewDepth) / (_nearClipZ - _farClipZ));
 	return float4(
-		1.0 - saturate(linearDepth / _nearFarClipDistance),
-		1.0 - saturate(linearDepth / _nearFarClipDistance),
-		1.0 - saturate(linearDepth / _nearFarClipDistance),
+		grayScale,
+		grayScale,
+		grayScale,
 		1.0
 	);
 }

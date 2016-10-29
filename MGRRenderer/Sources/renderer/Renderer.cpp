@@ -492,7 +492,7 @@ void Renderer::renderDeferred()
 	CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
 	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
 
-	// プロジェクション行列のマップ
+	// プロジェクション行列の逆行列のマップ
 	result = direct3dContext->Map(
 		_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX),
 		0,
@@ -502,7 +502,6 @@ void Renderer::renderDeferred()
 	);
 	Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 	Mat4 projectionMatrix = Director::getCamera().getProjectionMatrix();
-	projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 	projectionMatrix.transpose();
 	CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);

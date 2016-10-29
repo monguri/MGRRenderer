@@ -35,6 +35,7 @@ public:
 	void setDirect3dViewport(D3D11_VIEWPORT* viewport) { _direct3dViewport = viewport; }
 #endif
 	void destroy();
+	// 正のnearClip、farClipを渡すと、右手系でニアクリップとファークリップのz座標は負として扱うので注意
 	void init(const Size& windowSize, float nearClip, float farClip);
 	const Size& getWindowSize() const { return _windowSize; }
 	const float getNearClip() const { return _nearClip; }

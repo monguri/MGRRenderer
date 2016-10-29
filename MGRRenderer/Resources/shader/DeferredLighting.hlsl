@@ -150,7 +150,15 @@ float4 PS(PS_INPUT input) : SV_TARGET
 {
 	//float depth = _gBufferDepthStencil.Sample(_pointSampler, input.position.xy).x;
 	float depth = _gBufferDepthStencil.Sample(_pointSampler, input.texCoord).x;
-	float linearDepth = _depthTextureProjection._m32 / (depth + _depthTextureProjection._m22);
+	float4 viewPosition;
+	viewPosition.x = input.texCoord.x * 2 - 1; // [0, 1]から[-1, 1]への変換
+	viewPosition.x = -viewPosition.x * _depthTextureProjection._m32 / (depth - _depthTextureProjection._m22) / _depthTextureProjection._m00;
+	viewPosition.y = -(input.texCoord.y * 2 - 1); // [1, 0]から[-1, 1]への変換
+	viewPosition.y = -viewPosition.y * _depthTextureProjection._m32 / (depth - _depthTextureProjection._m22) / _depthTextureProjection._m11;
+	viewPosition.z = _depthTextureProjection._m32 / (depth - _depthTextureProjection._m22);
+	viewPosition.w = 1.0;
+	
+	float4 worldPosition = mul(viewPosition, _viewInverse);
 
 	//float4 colorSpecularIntensity = _gBufferColorSpecularIntensity.Sample(_pointSampler, input.position.xy);
 	float4 colorSpecularIntensity = _gBufferColorSpecularIntensity.Sample(_pointSampler, input.texCoord);
@@ -165,22 +173,15 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	float normalizedSpecularPower = _gBufferSpecularPower.Sample(_pointSampler, input.texCoord).x;
 	float specularPower = SPECULAR_POWER_RANGE.x + SPECULAR_POWER_RANGE.y * normalizedSpecularPower;
 
-	float4 position;
-	position.x = input.texCoord.x * _depthTextureProjection._m00 * linearDepth;
-	position.y = input.texCoord.y * _depthTextureProjection._m11 * linearDepth;
-	position.z = linearDepth;
-	position.w = 1.0;
-	position = mul(position, _viewInverse); // TODO:サンプルでは3x3の計算だが、4x4で大丈夫か？
-
 	// 後はここで得たpositionと、normalとcolorを利用して、ライティングをして色を決める
 	float3 diffuseSpecularLightColor = computeLightedColor(normal, -_directionalLightDirection.xyz, _directionalLightColor.rgb, 1.0);
 
-	float3 vertexToPointLightDirection = _pointLightPosition - position.xyz;
+	float3 vertexToPointLightDirection = _pointLightPosition - worldPosition.xyz;
 	float3 dir = vertexToPointLightDirection * _pointLightRangeInverse;
 	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
 	diffuseSpecularLightColor += computeLightedColor(normal, normalize(vertexToPointLightDirection), _pointLightColor.rgb, attenuation);
 
-	float3 vertexToSpotLightDirection = _spotLightPosition - position.xyz;
+	float3 vertexToSpotLightDirection = _spotLightPosition - worldPosition.xyz;
 	dir = vertexToSpotLightDirection * _spotLightRangeInverse;
 	attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
 	vertexToSpotLightDirection = normalize(vertexToSpotLightDirection);
@@ -192,7 +193,7 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	float shadowAttenuation = 1.0;
 	if (_directionalLightHasShadowMap > 0.0)
 	{
-		float4 lightPosition = mul(position, _lightView);
+		float4 lightPosition = mul(worldPosition, _lightView);
 		lightPosition = mul(lightPosition, _lightProjection);
 		lightPosition = mul(lightPosition, _lightDepthBias);
 		lightPosition.xyz /= lightPosition.w;
@@ -202,4 +203,3 @@ float4 PS(PS_INPUT input) : SV_TARGET
 
 	return float4((color * (shadowAttenuation * diffuseSpecularLightColor + _ambientLightColor.rgb)), 1.0);
 }
-

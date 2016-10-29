@@ -615,7 +615,8 @@ struct Mat4
 		float factor = 1.0f / divisor;
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		// OpenGL‚ÍzÀ•W‚ğ[-1, 1]‚É•ÏŠ·‚·‚é‚ªDirectX‚Í[0, 1]‚È‚Ì‚Å‚»‚±‚ğC³
+		// [-zNearPlane, -zFarPlane]‚ğ[0, -1]‚É•ÏŠ·
+		// ‚±‚ê‚É¶‚©‚çCHIRARITY_CONVERTER‚ğ‚©‚¯‚½s—ñ‚¾‚ÆA[0, 1]‚É•ÏŠ·‚·‚é
 		return Mat4(
 			factor / aspectRatio,	0.0f,	0.0f,							0.0f,
 			0.0f,					factor,	0.0f,							0.0f,
@@ -623,6 +624,7 @@ struct Mat4
 			0.0f,					0.0f,	-1.0f,							0.0f
 		);
 #elif defined(MGRRENDERER_USE_OPENGL)
+		// [-zNearPlane, -zFarPlane]‚ğ[1, -1]‚É•ÏŠ·
 		return Mat4(
 			factor / aspectRatio,	0.0f,	0.0f,										0.0f,
 			0.0f,					factor,	0.0f,										0.0f,

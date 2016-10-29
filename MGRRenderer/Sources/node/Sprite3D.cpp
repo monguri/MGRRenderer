@@ -1199,7 +1199,7 @@ void Sprite3D::renderGBuffer()
 		_d3dProgramForGBuffer.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForGBuffer.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		direct3dContext->RSSetState(_d3dProgramForGBuffer.getRasterizeState());
+		direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
 
 		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:型変換がうまくいかないので一度変数に代入している
 		direct3dContext->PSSetShaderResources(0, 1, &resourceView);
@@ -1406,7 +1406,7 @@ void Sprite3D::renderShadowMap()
 		_d3dProgramForShadowMap.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		direct3dContext->RSSetState(_d3dProgramForShadowMap.getRasterizeState());
+		direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgramForShadowMap.getBlendState(), blendFactor, 0xffffffff);
@@ -1709,7 +1709,7 @@ void Sprite3D::renderForward()
 		_d3dProgram.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgram.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
+		direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
 
 		if (depthTextureResourceView == nullptr) // シャドウマップを作ってないとき
 		{

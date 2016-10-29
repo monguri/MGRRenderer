@@ -27,6 +27,9 @@ public:
 	ID3D11SamplerState* getPointSamplerState() const { return _pointSampler; }
 	ID3D11SamplerState* getLinearSamplerState() const { return _linearSampler; }
 	ID3D11SamplerState* getPCFSamplerState() const { return _pcfSampler; }
+	ID3D11RasterizerState* getRasterizeStateCullFaceNormal() const { return _rasterizeStateNormal; }
+	ID3D11RasterizerState* getRasterizeStateCullFaceFront() const { return _rasterizeStateCullFaceFront; }
+	ID3D11RasterizerState* getRasterizeStateCullFaceBack() const { return _rasterizeStateCullFaceBack; }
 	D3DTexture* getGBufferDepthStencil() const { return _gBufferDepthStencil; }
 	D3DTexture* getGBufferColorSpecularIntensity() const { return _gBufferColorSpecularIntensity; }
 	D3DTexture* getGBufferNormal() const { return _gBufferNormal; }
@@ -55,6 +58,9 @@ private:
 	ID3D11SamplerState* _pointSampler;
 	ID3D11SamplerState* _linearSampler;
 	ID3D11SamplerState* _pcfSampler;
+	ID3D11RasterizerState* _rasterizeStateNormal;
+	ID3D11RasterizerState* _rasterizeStateCullFaceFront;
+	ID3D11RasterizerState* _rasterizeStateCullFaceBack;
 	D3DTexture* _gBufferDepthStencil;
 	D3DTexture* _gBufferColorSpecularIntensity;
 	D3DTexture* _gBufferNormal;

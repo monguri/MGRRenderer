@@ -37,7 +37,6 @@ _vertexShaderBlob(nullptr),
 _geometryShader(nullptr),
 _pixelShader(nullptr),
 _blendState(nullptr),
-_rasterizeState(nullptr),
 _indexBuffer(nullptr),
 _inputLayout(nullptr)
 {
@@ -65,12 +64,6 @@ D3DProgram::~D3DProgram()
 	for (ID3D11Buffer* vertexBuffer : _vertexBuffers)
 	{
 		vertexBuffer->Release();
-	}
-
-	if (_rasterizeState != nullptr)
-	{
-		_rasterizeState->Release();
-		_rasterizeState = nullptr;
 	}
 
 	if (_blendState != nullptr)
@@ -234,25 +227,6 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBlendState failed. result=%d", result);
-		return;
-	}
-
-	// ラスタライズステートオブジェクトの作成
-	D3D11_RASTERIZER_DESC rasterizeDesc;
-	rasterizeDesc.FillMode = D3D11_FILL_SOLID;
-	rasterizeDesc.CullMode = D3D11_CULL_NONE;
-	rasterizeDesc.FrontCounterClockwise = FALSE;
-	rasterizeDesc.DepthBias = 0;
-	rasterizeDesc.DepthBiasClamp = 0;
-	rasterizeDesc.SlopeScaledDepthBias = 0;
-	rasterizeDesc.DepthClipEnable = TRUE;
-	rasterizeDesc.ScissorEnable = FALSE;
-	rasterizeDesc.MultisampleEnable = FALSE;
-	rasterizeDesc.AntialiasedLineEnable = FALSE;
-	result = direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeState);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
 		return;
 	}
 }

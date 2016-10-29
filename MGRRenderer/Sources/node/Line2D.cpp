@@ -233,7 +233,7 @@ void Line2D::renderForward()
 		_d3dProgram.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgram.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
+		direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);

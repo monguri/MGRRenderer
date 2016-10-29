@@ -22,6 +22,9 @@ Renderer::Renderer() :
 _pointSampler(nullptr),
 _linearSampler(nullptr),
 _pcfSampler(nullptr),
+_rasterizeStateNormal(nullptr),
+_rasterizeStateCullFaceFront(nullptr),
+_rasterizeStateCullFaceBack(nullptr),
 _gBufferDepthStencil(nullptr),
 _gBufferColorSpecularIntensity(nullptr),
 _gBufferNormal(nullptr),
@@ -67,6 +70,24 @@ Renderer::~Renderer()
 	{
 		delete _gBufferDepthStencil;
 		_gBufferDepthStencil = nullptr;
+	}
+
+	if (_rasterizeStateCullFaceBack != nullptr)
+	{
+		_rasterizeStateCullFaceBack->Release();
+		_rasterizeStateCullFaceBack = nullptr;
+	}
+
+	if (_rasterizeStateCullFaceFront != nullptr)
+	{
+		_rasterizeStateCullFaceFront ->Release();
+		_rasterizeStateCullFaceFront  = nullptr;
+	}
+
+	if (_rasterizeStateNormal != nullptr)
+	{
+		_rasterizeStateNormal->Release();
+		_rasterizeStateNormal = nullptr;
 	}
 
 	if (_pcfSampler != nullptr)
@@ -141,6 +162,41 @@ void Renderer::initView(const Size& windowSize)
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateSamplerState failed. result=%d", result);
+		return;
+	}
+
+	// ラスタライズステートオブジェクトの作成　フェイスカリングなし
+	D3D11_RASTERIZER_DESC rasterizeDesc;
+	rasterizeDesc.FillMode = D3D11_FILL_SOLID;
+	rasterizeDesc.CullMode = D3D11_CULL_NONE;
+	rasterizeDesc.FrontCounterClockwise = FALSE;
+	rasterizeDesc.DepthBias = 0;
+	rasterizeDesc.DepthBiasClamp = 0;
+	rasterizeDesc.SlopeScaledDepthBias = 0;
+	rasterizeDesc.DepthClipEnable = TRUE;
+	rasterizeDesc.ScissorEnable = FALSE;
+	rasterizeDesc.MultisampleEnable = FALSE;
+	rasterizeDesc.AntialiasedLineEnable = FALSE;
+	result = Director::getInstance()->getDirect3dDevice()->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateNormal);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
+		return;
+	}
+
+	rasterizeDesc.CullMode = D3D11_CULL_FRONT;
+	result = Director::getInstance()->getDirect3dDevice()->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateCullFaceFront);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
+		return;
+	}
+
+	rasterizeDesc.CullMode = D3D11_CULL_BACK;
+	result = Director::getInstance()->getDirect3dDevice()->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateCullFaceBack);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
 		return;
 	}
 
@@ -629,7 +685,7 @@ void Renderer::renderDeferred()
 	_d3dProgram.setShadersToDirect3DContext(direct3dContext);
 	_d3dProgram.setConstantBuffersToDirect3DContext(direct3dContext);
 
-	direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
+	direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
 
 	if (shadowMapResourceView == nullptr)
 	{

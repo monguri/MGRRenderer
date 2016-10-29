@@ -459,7 +459,7 @@ void Sprite2D::renderForward()
 		_d3dProgram.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgram.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		direct3dContext->RSSetState(_d3dProgram.getRasterizeState());
+		direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
 
 		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:Œ^•ÏŠ·‚ª‚¤‚Ü‚­‚¢‚©‚È‚¢‚Ì‚Åˆê“x•Ï”‚É‘ã“ü‚µ‚Ä‚¢‚é
 		direct3dContext->PSSetShaderResources(0, 1, &resourceView);

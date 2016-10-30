@@ -6,7 +6,7 @@ float SPECULAR_POWER_RANGE_Y = 250.0;
 uniform sampler2D u_gBufferDepthStencil;
 uniform sampler2D u_gBufferColorSpecularIntensity;
 uniform sampler2D u_gBufferNormal;
-uniform sampler2D u_gBufferSpecularPower;
+//uniform sampler2D u_gBufferSpecularPower;
 uniform sampler2DShadow u_shadowTexture;
 uniform vec3 u_ambientLightColor;
 uniform vec3 u_directionalLightColor;
@@ -60,8 +60,8 @@ void main()
 	vec3 normalizedNormal = texture2D(u_gBufferNormal, v_texCoord).xyz;
 	vec3 normal = normalizedNormal * 2.0 - 1.0;
 
-	float normalizedSpecularPower = texture2D(u_gBufferSpecularPower, v_texCoord).x;
-	float specularPower = SPECULAR_POWER_RANGE_X + SPECULAR_POWER_RANGE_Y * normalizedSpecularPower;
+	//float normalizedSpecularPower = texture2D(u_gBufferSpecularPower, v_texCoord).x;
+	//float specularPower = SPECULAR_POWER_RANGE_X + SPECULAR_POWER_RANGE_Y * normalizedSpecularPower;
 
 	vec3 diffuseSpecularLightColor = computeLightedColor(normal, -u_directionalLightDirection.xyz, u_directionalLightColor.rgb, 1.0);
 
@@ -82,6 +82,8 @@ void main()
 	float shadowAttenuation = 1.0;
 	if (u_directionalLightHasShadowMap) {
 		vec4 lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * worldPosition;
+		// zファイティングを避けるための微調整
+		lightPosition.z -= 1;
 
 		// PCF
 		shadowAttenuation = 0.0;

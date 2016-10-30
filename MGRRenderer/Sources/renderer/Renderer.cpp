@@ -740,9 +740,9 @@ void Renderer::renderDeferred()
 	glBindTexture(GL_TEXTURE_2D, getGBuffers()[2]->getTextureId());
 	glUniform1i(_glProgram.getUniformLocation("u_gBufferNormal"), 2);
 
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, getGBuffers()[3]->getTextureId());
-	glUniform1i(_glProgram.getUniformLocation("u_gBufferSpecularPower"), 3);
+	//glActiveTexture(GL_TEXTURE3);
+	//glBindTexture(GL_TEXTURE_2D, getGBuffers()[3]->getTextureId());
+	//glUniform1i(_glProgram.getUniformLocation("u_gBufferSpecularPower"), 3);
 
 	glActiveTexture(GL_TEXTURE0);
 

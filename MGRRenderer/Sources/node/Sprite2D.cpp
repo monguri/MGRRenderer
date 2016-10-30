@@ -482,7 +482,10 @@ void Sprite2D::renderForward()
 		switch (_renderBufferType) {
 			case RenderBufferType::DEPTH_TEXTURE:
 			{
-				glUniform1f(_glProgram.getUniformLocation("u_nearFarClipDistance"), Director::getInstance()->getFarClip() - Director::getInstance()->getNearClip());
+				glUniform1f(_glProgram.getUniformLocation("u_nearClipZ"), -Director::getInstance()->getNearClip());
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+				glUniform1f(_glProgram.getUniformLocation("u_farClipZ"), -Director::getInstance()->getFarClip());
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 				glUniformMatrix4fv(_glProgram.getUniformLocation("u_depthTextureProjectionMatrix"), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);

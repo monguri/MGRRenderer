@@ -22,6 +22,7 @@ uniform float u_spotLightInnerAngleCos;
 uniform float u_spotLightOuterAngleCos;
 uniform mat4 u_depthTextureProjection;
 uniform mat4 u_viewInverse;
+uniform bool u_directionalLightHasShadowMap;
 uniform mat4 u_lightViewMatrix;
 uniform mat4 u_lightProjectionMatrix;
 uniform mat4 u_depthBiasMatrix;
@@ -38,8 +39,20 @@ vec3 computeLightedColor(vec3 normalVector, vec3 lightDirection, vec3 lightColor
 void main()
 {
 	float depth = texture2D(u_gBufferDepthStencil, v_texCoord).x;
-	float linearDepth = u_depthTextureProjection[3][2] / (depth + u_depthTextureProjection[2][2]);
+	// [0, 1]から[-1, 1]への変換
+	depth = -depth * 2 + 1;
 
+	vec4 viewPosition;
+	viewPosition.x = v_texCoord.x * 2 - 1; // [0, 1]から[-1, 1]への変換
+	viewPosition.x = -viewPosition.x * u_depthTextureProjection[3][2] / (depth - u_depthTextureProjection[2][2]) / u_depthTextureProjection[0][0];
+	viewPosition.y = v_texCoord.y * 2 - 1; // [0, 1]から[-1, 1]への変換
+	viewPosition.y = -viewPosition.y * u_depthTextureProjection[3][2] / (depth - u_depthTextureProjection[2][2]) / u_depthTextureProjection[1][1];
+	viewPosition.z = u_depthTextureProjection[3][2] / (depth - u_depthTextureProjection[2][2]);
+	viewPosition.w = 1.0;
+
+	vec4 worldPosition = u_viewInverse * viewPosition;
+
+	// 後はここで得たworldPositionと、normalとcolorを利用して、ライティングをして色を決める
 	vec4 colorSpecularIntensity = texture2D(u_gBufferColorSpecularIntensity, v_texCoord);
 	vec3 color = colorSpecularIntensity.xyz;
 	float specularIntensity = colorSpecularIntensity.w;
@@ -50,22 +63,14 @@ void main()
 	float normalizedSpecularPower = texture2D(u_gBufferSpecularPower, v_texCoord).x;
 	float specularPower = SPECULAR_POWER_RANGE_X + SPECULAR_POWER_RANGE_Y * normalizedSpecularPower;
 
-	vec4 position;
-	position.x = v_texCoord.x * u_depthTextureProjection[0][0] * linearDepth;
-	position.y = v_texCoord.y * u_depthTextureProjection[1][1] * linearDepth;
-	position.z = linearDepth;
-	position.w = 1.0;
-	position = u_viewInverse * position;
-
-	// 後はここで得たpositionと、normalとcolorを利用して、ライティングをして色を決める
 	vec3 diffuseSpecularLightColor = computeLightedColor(normal, -u_directionalLightDirection.xyz, u_directionalLightColor.rgb, 1.0);
 
-	vec3 vertexToPointLightDirection = u_pointLightPosition - position.xyz;
+	vec3 vertexToPointLightDirection = u_pointLightPosition - worldPosition.xyz;
 	vec3 dir = vertexToPointLightDirection * u_pointLightRangeInverse;
 	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
 	diffuseSpecularLightColor += computeLightedColor(normal, normalize(vertexToPointLightDirection), u_pointLightColor, attenuation);
 
-	vec3 vertexToSpotLightDirection = u_spotLightPosition - position.xyz;
+	vec3 vertexToSpotLightDirection = u_spotLightPosition - worldPosition.xyz;
 	dir = vertexToSpotLightDirection * u_spotLightRangeInverse;
 	attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
 	vertexToSpotLightDirection = normalize(vertexToSpotLightDirection);
@@ -74,11 +79,21 @@ void main()
 	attenuation = clamp(attenuation, 0.0, 1.0);
 	diffuseSpecularLightColor += computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor, attenuation);
 
-	vec4 lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * position;
-	// TODO: ディファードレンダリングにおけるシャドウマップはちゃんと動作してない。一旦D3D版での完成を待つ
-	//float outShadowFlag = textureProj(u_shadowTexture, lightPosition);
-	float outShadowFlag = 1.0;
+	float shadowAttenuation = 1.0;
+	if (u_directionalLightHasShadowMap) {
+		vec4 lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * worldPosition;
 
-	gl_FragColor = vec4((color * (diffuseSpecularLightColor * outShadowFlag + u_ambientLightColor)), 1.0);
+		// PCF
+		shadowAttenuation = 0.0;
+		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(-1, -1));
+		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(-1, 1));
+		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(1, 1));
+		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(1, -1));
+		shadowAttenuation *= 0.25;
+
+		//shadowAttenuation = textureProj(u_shadowTexture, lightPosition);
+	}
+
+	gl_FragColor = vec4((color * (shadowAttenuation * diffuseSpecularLightColor + u_ambientLightColor)), 1.0);
 }
 ); 

@@ -769,6 +769,11 @@ void Renderer::renderDeferred()
 			glUniform3fv(_glProgram.getUniformLocation("u_directionalLightDirection"), 1, (GLfloat*)&direction);
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
+			glUniform1i(
+				_glProgram.getUniformLocation("u_directionalLightHasShadowMap"),
+				dirLight->hasShadowMap()
+			);
+
 			// TODO:とりあえず影つけはDirectionalLightのみを想定
 			if (dirLight->hasShadowMap())
 			{
@@ -795,12 +800,11 @@ void Renderer::renderDeferred()
 					(GLfloat*)depthBiasMatrix.m
 				);
 
-				// TODO: ディファードレンダリングにおけるシャドウマップはちゃんと動作してない。一旦D3D版での完成を待つ
-				//glActiveTexture(GL_TEXTURE4);
-				//GLuint textureId = dirLight->getShadowMapData().getDepthTexture()->getTextureId();
-				//glBindTexture(GL_TEXTURE_2D, textureId);
-				//glUniform1i(_glProgram.getUniformLocation("u_shadowTexture"), 4);
-				//glActiveTexture(GL_TEXTURE0);
+				glActiveTexture(GL_TEXTURE4);
+				GLuint textureId = dirLight->getShadowMapData().getDepthTexture()->getTextureId();
+				glBindTexture(GL_TEXTURE_2D, textureId);
+				glUniform1i(_glProgram.getUniformLocation("u_shadowTexture"), 4);
+				glActiveTexture(GL_TEXTURE0);
 			}
 		}
 			break;

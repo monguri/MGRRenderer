@@ -482,6 +482,7 @@ void Renderer::prepareGBufferRendering()
 	direct3dContext->ClearDepthStencilView(_gBufferDepthStencil->getDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
+	direct3dContext->RSSetState(getRasterizeStateCullFaceNormal());
 
 	ID3D11RenderTargetView* gBuffers[3] = {_gBufferColorSpecularIntensity->getRenderTargetView(), _gBufferNormal->getRenderTargetView(), _gBufferSpecularPower->getRenderTargetView()};
 	direct3dContext->OMSetRenderTargets(3, gBuffers, _gBufferDepthStencil->getDepthStencilView());
@@ -513,6 +514,8 @@ void Renderer::prepareDeferredRendering()
 
 	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
 	ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
+	direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
+
 	direct3dContext->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencilView());
 	direct3dContext->OMSetDepthStencilState(Director::getInstance()->getDirect3dDepthStencilState(), 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -684,8 +687,6 @@ void Renderer::renderDeferred()
 
 	_d3dProgram.setShadersToDirect3DContext(direct3dContext);
 	_d3dProgram.setConstantBuffersToDirect3DContext(direct3dContext);
-
-	direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
 
 	if (shadowMapResourceView == nullptr)
 	{

@@ -342,6 +342,8 @@ void BillBoard::renderGBuffer()
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgramForGBuffer.getBlendState(), blendFactor, 0xffffffff);
+
+		direct3dContext->DrawIndexed(4, 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForGBuffer.getShaderProgram());
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGLˆ—‚ÅƒGƒ‰[”­¶ glGetError()=%d", glGetError());

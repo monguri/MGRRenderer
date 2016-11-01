@@ -20,8 +20,8 @@
 #include <windows.h>
 #include <tchar.h>
 
-static const int WINDOW_WIDTH = 640;
-static const int WINDOW_HEIGHT = 480;
+static const int WINDOW_WIDTH = 960;
+static const int WINDOW_HEIGHT = 720;
 static const int FPS = 60;
 
 using namespace mgrrenderer;
@@ -428,14 +428,14 @@ void initialize()
 
 	Director::getInstance()->init(Size(WINDOW_WIDTH, WINDOW_HEIGHT),
 									10.0f, // near clip
-									1000.0f); // far clip
+									WINDOW_WIDTH * 2.0f); // far clip
 	Director::getInstance()->setDisplayStats(true);
 	Director::getInstance()->setDisplayGBuffer(true);
 
 	// 各ノードの作成はDirector::initの後に呼ぶ。Director::initのもっているウィンドウサイズを使用する場合があるので。
 
 	std::vector<Point2DData> positionAndPointSize{
-		Point2DData(320.0f, 240.0f, 15.0f),
+		Point2DData(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 15.0f),
 		Point2DData(80.0f, 60.0f, 15.0f),
 	};
 	Point2D* pointNode = new Point2D();
@@ -443,8 +443,8 @@ void initialize()
 	pointNode->initWithPointArray(positionAndPointSize);
 
 	std::vector<Vec2> lineVertices{
-		Vec2(0.0f, 240.0f), Vec2(640.0f, 240.0f),
-		Vec2(320.0f, 480.0f), Vec2(320.0f, 0.0f),
+		Vec2(0.0f, WINDOW_HEIGHT / 2.0f), Vec2((float)WINDOW_WIDTH, WINDOW_HEIGHT / 2.0f),
+		Vec2(WINDOW_WIDTH / 2.0f, (float)WINDOW_HEIGHT), Vec2(WINDOW_WIDTH / 2.0f, 0.0f),
 	};
 	Line2D* lineNode = new Line2D();
 	lineNode->setColor(Color3B::GREEN);
@@ -466,21 +466,21 @@ void initialize()
 	//Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 	BillBoard* spriteNode = new BillBoard();
 	isSucceeded = spriteNode->init("../MGRRenderer/Resources/Hello.png", BillBoard::Mode::VIEW_PLANE_ORIENTED);
-	spriteNode->setPosition(Vec3(400.0f, 300.0f, 0.0f));
+	spriteNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f + 80.0f, WINDOW_HEIGHT / 2.0f + 60.0f, 0.0f));
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 
 	std::vector<Point3DData> positionAndPointSize3D {
-		Point3DData(320.0f, 240.0f, -240.0f, 15.0f),
-		Point3DData(80.0f, 80.0f, 240.0f, 15.0f),
+		Point3DData(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, -WINDOW_HEIGHT / 2.0f, 15.0f),
+		Point3DData(80.0f, 80.0f, WINDOW_HEIGHT / 2.0f, 15.0f),
 	};
 	Point3D* point3DNode = new Point3D();
 	point3DNode->setColor(Color3B::RED);
 	point3DNode->initWithPointArray(positionAndPointSize3D);
 
 	std::vector<Vec3> lineVertices3D {
-		Vec3(0.0f, 240.0f, -360.0f), Vec3(640.0f, 240.0f, 360.0f),
-		Vec3(320.0f, 480.0f, 360.0f), Vec3(320.0f, 0.0f, -360.0f),
+		Vec3(0.0f, WINDOW_HEIGHT / 2.0f, -360.0f), Vec3((float)WINDOW_WIDTH, WINDOW_HEIGHT / 2.0f, 360.0f),
+		Vec3(WINDOW_WIDTH / 2.0f, (float)WINDOW_HEIGHT, 360.0f), Vec3(WINDOW_WIDTH / 2.0f, 0.0f, -360.0f),
 	};
 	Line3D* line3DNode = new Line3D();
 	line3DNode->setColor(Color3B::GREEN);
@@ -497,24 +497,24 @@ void initialize()
 
 	// 1.0fずつ境界線をずらすことで境界線を見えるようにしている
 	std::vector<Vec3> planeVertices3D1 {
-		Vec3(WINDOW_WIDTH / 2.0f + 320.0f, -1.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, -1.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, -1.0f, 320.0f),
-		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, -1.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, -1.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, -1.0f, -320.0f),
+		Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH / 2.0f, -1.0f, WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH / 2.0f, -1.0f, -WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, -1.0f, WINDOW_WIDTH / 2.0f),
+		Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, -1.0f, -WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, -1.0f, WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH / 2.0f, -1.0f, -WINDOW_WIDTH / 2.0f),
 	};
 	Polygon3D* plane3DNode1 = new Polygon3D();
 	isSucceeded = plane3DNode1->initWithVertexArray(planeVertices3D1);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 	std::vector<Vec3> planeVertices3D2 {
-		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 1.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 1.0f, -320.0f + 1.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, 320.0f),
-		Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, -320.0f + 1.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 320.0f, 320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f, 1.0f, -320.0f + 1.0f),
+		Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, 1.0f, WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, 1.0f, -WINDOW_WIDTH / 2.0f + 1.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, WINDOW_WIDTH / 2.0f, WINDOW_WIDTH / 2.0f),
+		Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, WINDOW_WIDTH / 2.0f, -WINDOW_WIDTH / 2.0f + 1.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, WINDOW_WIDTH / 2.0f, WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, 1.0f, -WINDOW_WIDTH / 2.0f + 1.0f),
 	};
 	Polygon3D* plane3DNode2 = new Polygon3D();
 	isSucceeded = plane3DNode2->initWithVertexArray(planeVertices3D2);
 	Logger::logAssert(plane3DNode2 != nullptr, "ノードの初期化失敗");
 
 	std::vector<Vec3> planeVertices3D3 {
-		Vec3(WINDOW_WIDTH / 2.0f - 320.0f + 1.0f, 1.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 1.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f + 1.0f, 320.0f, -320.0f),
-		Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 320.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f - 320.0f + 1.0f, 320.0f, -320.0f), Vec3(WINDOW_WIDTH / 2.0f + 320.0f, 1.0f, -320.0f),
+		Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f + 1.0f, 1.0f, -WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH / 2.0f, 1.0f, -WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f + 1.0f, WINDOW_WIDTH / 2.0f, -WINDOW_WIDTH / 2.0f),
+		Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH / 2.0f, WINDOW_WIDTH / 2.0f, -WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f + 1.0f, WINDOW_WIDTH / 2.0f, -WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH / 2.0f, 1.0f, -WINDOW_WIDTH / 2.0f),
 	};
 	Polygon3D* plane3DNode3 = new Polygon3D();
 	isSucceeded = plane3DNode3->initWithVertexArray(planeVertices3D3);

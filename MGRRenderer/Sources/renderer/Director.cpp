@@ -99,6 +99,16 @@ void Director::init(const Size& windowSize, float nearClip, float farClip)
 #if defined(MGRRENDERER_USE_OPENGL)
 	Logger::log("GPU vendor: %s\nGPU:%s\nOpenGL version:%s\nGLSLversion:%s", glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
 
+	GLint numExtensions = 0;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
+
+	Logger::log("================OpenGL Extension, from this line.=================");
+	for (int i = 0; i < numExtensions; i++)
+	{
+		Logger::log("%s", glGetStringi(GL_EXTENSIONS, i));
+	}
+	Logger::log("================OpenGL Extension to this line.====================");
+
 	// デフォルトのピクセルフォーマットをRGBA8888に。
 	GLTexture::setDefaultPixelFormat(TextureUtility::PixelFormat::RGBA8888);
 #endif

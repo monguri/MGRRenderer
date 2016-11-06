@@ -12,7 +12,7 @@ Camera::~Camera()
 {
 }
 
-void Camera::initAsDefault()
+void Camera::initAsDefault3D()
 {
 	const Size& size = Director::getInstance()->getWindowSize();
 
@@ -26,6 +26,14 @@ void Camera::initAsDefault()
 					Director::getInstance()->getFarClip());
 
 	// _projectionMatrixと_viewMatrixの計算だけに特化し、Nodeに対してsetRotationとかsetPositionとかはしない
+}
+
+void Camera::initAsDefault2D()
+{
+	const Size& size = Director::getInstance()->getWindowSize();
+	// 2Dノードはすべてz座標は0扱いなので、カメラ位置とニアクリップ、ファークリップはz=0.0fを含むように、
+	// カメラ位置z=1.0（右手座標系）、ニアクリップ=0.0、ファークリップ=2.0とする
+	initAsOrthographicAtCenter(Vec3(size.width / 2.0f, size.height / 2.0f, 1.0f), size.width, size.height, 0.0f, 2.0f);
 }
 
 void Camera::initAsPerspective(const Vec3& position, float fieldOfView, float aspectRatio, float zNearPlane, float zFarPlane)
@@ -44,18 +52,18 @@ void Camera::initAsPerspective(const Vec3& position, float fieldOfView, float as
 									Vec3(0.0f, 1.0f, 0.0f)); // up
 }
 
-void Camera::initAsOrthographic(const Vec3& position, float width, float height, float zNearPlane, float zFarPlane)
+void Camera::initAsOrthographicAtCenter(const Vec3& position, float width, float height, float zNearPlane, float zFarPlane)
 {
 	setPosition(position);
 
 	//TODO:ここにtargetPositionとupの引数も必要
 	const Size& size = Director::getInstance()->getWindowSize();
 
-	_projectionMatrix = Mat4::createOrthographic(0, width, 0, height, zNearPlane, zFarPlane);
+	_projectionMatrix = Mat4::createOrthographicAtCenter(width, height, zNearPlane, zFarPlane);
 
 	_targetPosition = Vec3(size.width / 2.0f, size.height / 2.0f, 0.0f);
 
-	_viewMatrix = Mat4::createLookAt(Vec3(size.width / 2.0f, size.height / 2.0f, 0.0f), // eyePosition
+	_viewMatrix = Mat4::createLookAt(position, // eyePosition
 									_targetPosition,
 									Vec3(0.0f, 1.0f, 0.0f)); // up  // TODO:これでいいのか？　cocos2d-xがsetPostion(0,0,0)としてるからこうしてるけど
 }

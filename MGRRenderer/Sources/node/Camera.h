@@ -12,9 +12,12 @@ class Camera
 public:
 	Camera();
 	~Camera();
-	void initAsDefault();
+	// 3Dカメラとしてデフォルトの設定
+	void initAsDefault3D();
+	// 2Dカメラとしてデフォルトの設定
+	void initAsDefault2D();
 	void initAsPerspective(const Vec3& position, float fieldOfView, float aspectRatio, float zNearPlane, float zFarPlane);
-	void initAsOrthographic(const Vec3& position, float width, float height, float zNearPlane, float zFarPlane);
+	void initAsOrthographicAtCenter(const Vec3& position, float width, float height, float zNearPlane, float zFarPlane);
 	void setPosition(const Vec3& position) override;
 	const Mat4& getViewMatrix() const { return _viewMatrix; }
 	const Mat4& getProjectionMatrix() const {return _projectionMatrix;}

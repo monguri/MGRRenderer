@@ -25,11 +25,8 @@ Scene::~Scene()
 
 void Scene::init()
 {
-	Camera defaultCamera;
-	defaultCamera.initAsDefault();
-	_camera = defaultCamera;
-
-	_cameraFor2D = defaultCamera;
+	_camera.initAsDefault3D();
+	_cameraFor2D.initAsDefault2D();
 
 	// デフォルトでアンビエントライトを持たせる
 	AmbientLight* defaultLight = new (std::nothrow) AmbientLight(Color3B::WHITE);

@@ -198,7 +198,7 @@ float4 PS(PS_INPUT input) : SV_TARGET
 		lightPosition = mul(lightPosition, _lightDepthBias);
 		lightPosition.xyz /= lightPosition.w;
 		// zファイティングを避けるための微調整
-		lightPosition.z -= 0.0001;
+		lightPosition.z -= 0.001;
 
 		shadowAttenuation = _shadowMap.SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
 	}

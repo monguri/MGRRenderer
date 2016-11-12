@@ -676,14 +676,14 @@ struct Mat4
 		return Mat4(
 			2 / (right - left),	0.0f,				0.0f,							(left + right) / (left - right),
 			0.0f,				2 / (top - bottom),	0.0f,							(bottom + top) / (bottom - top),
-			0.0f,				0.0f,				1 / (zFarPlane - zNearPlane),	zNearPlane / (zNearPlane - zFarPlane),
+			0.0f,				0.0f,				1 / (zFarPlane - zNearPlane),	-zNearPlane / (zFarPlane - zNearPlane),
 			0.0f,				0.0f,				0.0f,							1.0f	
 		);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		return Mat4(
 			2 / (right - left),	0.0f,				0.0f,							(left + right) / (left - right),
 			0.0f,				2 / (top - bottom),	0.0f,							(bottom + top) / (bottom - top),
-			0.0f,				0.0f,				2 / (zFarPlane - zNearPlane),	(zNearPlane + zFarPlane) / (zNearPlane - zFarPlane),
+			0.0f,				0.0f,				2 / (zFarPlane - zNearPlane),	(zNearPlane + zFarPlane) / (zFarPlane - zNearPlane),
 			0.0f,				0.0f,				0.0f,							1.0f	
 		);
 #endif

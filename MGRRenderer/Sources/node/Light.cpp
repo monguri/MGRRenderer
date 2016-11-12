@@ -86,16 +86,15 @@ void DirectionalLight::setIntensity(float intensity)
 #endif
 }
 
-void DirectionalLight::initShadowMap(const Vec3& targetPosition, float cameraDistanceFromTaret, const Size& size)
+void DirectionalLight::initShadowMap(const Vec3& cameraPosition, float nearClip, float farClip, const Size& size)
 {
-	_shadowMapData.viewMatrix = Mat4::createLookAt(
-		getDirection() * (-1) * cameraDistanceFromTaret + targetPosition, // 近すぎるとカメラに入らないので適度に離す
-		targetPosition,
+	_shadowMapData.viewMatrix = Mat4::createLookAtWithDirection(
+		cameraPosition,
+		getDirection(),
 		Vec3(0.0f, 1.0f, 0.0f) // とりあえずy方向を上にして固定
 	);
 
-	//_shadowMapData.projectionMatrix = Mat4::createPerspective(60.0, size.width / size.height, 10, cameraDistanceFromTaret + size.height / 2.0f);
-	_shadowMapData.projectionMatrix = Mat4::createPerspective(60.0, size.width / size.height, 10.0f, 10000.0f);
+	_shadowMapData.projectionMatrix = Mat4::createOrthographicAtCenter(size.width, size.height, nearClip, farClip);
 
 	// デプステクスチャ作成
 #if defined(MGRRENDERER_USE_DIRECT3D)

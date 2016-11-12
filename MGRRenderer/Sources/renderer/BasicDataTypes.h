@@ -572,13 +572,35 @@ struct Mat4
 		return *this;
 	}
 
-	static Mat4 createLookAt(const Vec3& eyePosition, const Vec3& targetPosition, const Vec3& up)
+	static Mat4 createLookAtFrom(const Vec3& eyePosition, const Vec3& targetPosition, const Vec3& up)
 	{
 		Vec3 upVec = up;
 		upVec.normalize();
 
 
 		Vec3 zAxis = eyePosition - targetPosition;
+		zAxis.normalize();
+
+		Vec3 xAxis = Vec3::cross(upVec, zAxis);
+		xAxis.normalize();
+
+		Vec3 yAxis = Vec3::cross(zAxis, xAxis);
+		yAxis.normalize();
+
+		return Mat4(
+			xAxis.x,	xAxis.y,	xAxis.z,	-Vec3::dot(xAxis, eyePosition),
+			yAxis.x,	yAxis.y,	yAxis.z,	-Vec3::dot(yAxis, eyePosition),
+			zAxis.x,	zAxis.y,	zAxis.z,	-Vec3::dot(zAxis, eyePosition),
+			0.0f,		0.0f,		0.0f,		1.0f
+			);
+	}
+
+	static Mat4 createLookAtWithDirection(const Vec3& eyePosition, const Vec3& direction, const Vec3& up)
+	{
+		Vec3 upVec = up;
+		upVec.normalize();
+
+		Vec3 zAxis = direction * -1;
 		zAxis.normalize();
 
 		Vec3 xAxis = Vec3::cross(upVec, zAxis);

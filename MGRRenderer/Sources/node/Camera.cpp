@@ -47,7 +47,7 @@ void Camera::initAsPerspective(const Vec3& position, float fieldOfView, float as
 
 	_targetPosition = Vec3(size.width / 2.0f, size.height / 2.0f, 0.0f);
 
-	_viewMatrix = Mat4::createLookAt(position, // eyePosition
+	_viewMatrix = Mat4::createLookAtFrom(position, // eyePosition
 									_targetPosition,
 									Vec3(0.0f, 1.0f, 0.0f)); // up
 }
@@ -63,7 +63,7 @@ void Camera::initAsOrthographicAtCenter(const Vec3& position, float width, float
 
 	_targetPosition = Vec3(size.width / 2.0f, size.height / 2.0f, 0.0f);
 
-	_viewMatrix = Mat4::createLookAt(position, // eyePosition
+	_viewMatrix = Mat4::createLookAtFrom(position, // eyePosition
 									_targetPosition,
 									Vec3(0.0f, 1.0f, 0.0f)); // up  // TODO:Ç±ÇÍÇ≈Ç¢Ç¢ÇÃÇ©ÅHÅ@cocos2d-xÇ™setPostion(0,0,0)Ç∆ÇµÇƒÇÈÇ©ÇÁÇ±Ç§ÇµÇƒÇÈÇØÇ«
 }
@@ -76,7 +76,7 @@ void Camera::setPosition(const Vec3& position)
 
 	_targetPosition = Vec3(size.width / 2.0f, size.height / 2.0f, 0.0f);
 
-	_viewMatrix = Mat4::createLookAt(position, // eyePosition
+	_viewMatrix = Mat4::createLookAtFrom(position, // eyePosition
 									_targetPosition,
 									Vec3(0.0f, 1.0f, 0.0f)); // up
 }

@@ -129,7 +129,7 @@ public:
 #endif
 	void setColor(const Color3B& color) override;
 	void setIntensity(float intensity) override;
-	void initShadowMap(const Vec3& targetPosition, float cameraDistanceFromTarget, const Size& size);
+	void initShadowMap(const Vec3& cameraPosition, float nearClip, float farClip, const Size& size);
 	bool hasShadowMap() const override;
 	void prepareShadowMapRendering() override;
 

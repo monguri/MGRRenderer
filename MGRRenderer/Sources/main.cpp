@@ -22,6 +22,8 @@
 
 static const int WINDOW_WIDTH = 960;
 static const int WINDOW_HEIGHT = 720;
+static const float NEAR_CLIP = 10.0f;
+static const float FAR_CLIP = WINDOW_WIDTH * 2.0f;
 static const int FPS = 60;
 
 using namespace mgrrenderer;
@@ -426,9 +428,7 @@ void initialize()
 	//
 	bool isSucceeded = false;
 
-	Director::getInstance()->init(Size(WINDOW_WIDTH, WINDOW_HEIGHT),
-									10.0f, // near clip
-									WINDOW_WIDTH * 2.0f); // far clip
+	Director::getInstance()->init(Size(WINDOW_WIDTH, WINDOW_HEIGHT), NEAR_CLIP, FAR_CLIP);
 	Director::getInstance()->setDisplayStats(true);
 	Director::getInstance()->setDisplayGBuffer(true);
 
@@ -496,25 +496,28 @@ void initialize()
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 	// 1.0fずつ境界線をずらすことで境界線を見えるようにしている
+	// y軸に垂直な平面
 	std::vector<Vec3> planeVertices3D1 {
-		Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH / 2.0f, -1.0f, WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH / 2.0f, -1.0f, -WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, -1.0f, WINDOW_WIDTH / 2.0f),
-		Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, -1.0f, -WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, -1.0f, WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH / 2.0f, -1.0f, -WINDOW_WIDTH / 2.0f),
+		Vec3(WINDOW_WIDTH / 3.0f + WINDOW_WIDTH / 3.0f, -1.0f, WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f + WINDOW_WIDTH / 3.0f, -1.0f, -WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, -1.0f, WINDOW_WIDTH / 3.0f),
+		Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, -1.0f, -WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, -1.0f, WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f + WINDOW_WIDTH / 3.0f, -1.0f, -WINDOW_WIDTH / 3.0f),
 	};
 	Polygon3D* plane3DNode1 = new Polygon3D();
 	isSucceeded = plane3DNode1->initWithVertexArray(planeVertices3D1);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
+	// x軸に垂直な平面
 	std::vector<Vec3> planeVertices3D2 {
-		Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, 1.0f, WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, 1.0f, -WINDOW_WIDTH / 2.0f + 1.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, WINDOW_WIDTH / 2.0f, WINDOW_WIDTH / 2.0f),
-		Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, WINDOW_WIDTH / 2.0f, -WINDOW_WIDTH / 2.0f + 1.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, WINDOW_WIDTH / 2.0f, WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f, 1.0f, -WINDOW_WIDTH / 2.0f + 1.0f),
+		Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, 1.0f, WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, 1.0f, -WINDOW_WIDTH / 3.0f + 1.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, WINDOW_WIDTH / 3.0f, WINDOW_WIDTH / 3.0f),
+		Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, WINDOW_WIDTH / 3.0f, -WINDOW_WIDTH / 3.0f + 1.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, WINDOW_WIDTH / 3.0f, WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, 1.0f, -WINDOW_WIDTH / 3.0f + 1.0f),
 	};
 	Polygon3D* plane3DNode2 = new Polygon3D();
 	isSucceeded = plane3DNode2->initWithVertexArray(planeVertices3D2);
 	Logger::logAssert(plane3DNode2 != nullptr, "ノードの初期化失敗");
 
+	// z軸に垂直な平面
 	std::vector<Vec3> planeVertices3D3 {
-		Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f + 1.0f, 1.0f, -WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH / 2.0f, 1.0f, -WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f + 1.0f, WINDOW_WIDTH / 2.0f, -WINDOW_WIDTH / 2.0f),
-		Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH / 2.0f, WINDOW_WIDTH / 2.0f, -WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f - WINDOW_WIDTH / 2.0f + 1.0f, WINDOW_WIDTH / 2.0f, -WINDOW_WIDTH / 2.0f), Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH / 2.0f, 1.0f, -WINDOW_WIDTH / 2.0f),
+		Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f + 1.0f, 1.0f, -WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f + WINDOW_WIDTH / 3.0f, 1.0f, -WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f + 1.0f, WINDOW_WIDTH / 3.0f, -WINDOW_WIDTH / 3.0f),
+		Vec3(WINDOW_WIDTH / 3.0f + WINDOW_WIDTH / 3.0f, WINDOW_WIDTH / 3.0f, -WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f + 1.0f, WINDOW_WIDTH / 3.0f, -WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f + WINDOW_WIDTH / 3.0f, 1.0f, -WINDOW_WIDTH / 3.0f),
 	};
 	Polygon3D* plane3DNode3 = new Polygon3D();
 	isSucceeded = plane3DNode3->initWithVertexArray(planeVertices3D3);
@@ -557,8 +560,12 @@ void initialize()
 
 	DirectionalLight* directionalLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
 	directionalLight->setIntensity(0.7f);
-	//TODO:ディファードレンダリング開発のため、一時的にシャドウマップ機能はOFFに
-	directionalLight->initShadowMap(sprite3DC3tNode->getPosition(), WINDOW_HEIGHT / 1.1566f, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+	directionalLight->initShadowMap(
+		// Polygon3Dのついたての中心をターゲットにし、シーン全体が入るように、カメラのWINDOW_HEIGHT / 1.1566fに比べると遠目に
+		Vec3(0.0f, 0.0f, -WINDOW_WIDTH / 3.0f) - Vec3(-1.0f, -1.0f, -1.0f) * (WINDOW_HEIGHT / 1.1566f),
+		NEAR_CLIP,
+		FAR_CLIP,
+		Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addLight(directionalLight);
 
 	Sprite2D* depthTextureSprite = nullptr;
@@ -571,11 +578,11 @@ void initialize()
 		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	}
 
-	//PointLight* pointLight = new (std::nothrow) PointLight(Vec3(1000, 1000, 1000), Color3B::WHITE, 100000);
+	//PointLight* pointLight = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0), Color3B::WHITE, 1000);
 	//pointLight->setIntensity(0.7f);
 	//scene->addLight(pointLight);
 
-	//SpotLight* spotLight = new (std::nothrow) SpotLight(Vec3(1000, 1000, 1000), Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE, 10000, 0.0, 0.5);
+	//SpotLight* spotLight = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0), Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE, 10000, 0.0, 0.5);
 	//spotLight->setIntensity(0.7f);
 	//scene->addLight(spotLight);
 
@@ -607,7 +614,7 @@ void render()
 {
 	const Vec3& cameraPos = Director::getCamera().getPosition();
 	cameraAngle += 0.003f;
-	Vec3 newCameraPos = Vec3(WINDOW_HEIGHT / 1.1566f * sin(cameraAngle) + WINDOW_WIDTH / 2.0f, cameraPos.y, WINDOW_HEIGHT / 1.1566f * cos(cameraAngle));
+	Vec3 newCameraPos = Vec3(WINDOW_HEIGHT / 1.1566f * abs(sin(cameraAngle)) + WINDOW_WIDTH / 2.0f, cameraPos.y, WINDOW_HEIGHT / 1.1566f * abs(cos(cameraAngle)));
 	Director::getCamera().setPosition(newCameraPos);
 
 	// MGRRendererに毎フレームの描画命令

@@ -758,7 +758,7 @@ struct Mat4
 		float b4 = m[2][1] * m[3][3] - m[2][3] * m[3][1];
 		float b5 = m[2][2] * m[3][3] - m[2][3] * m[3][2];
 
-		float det = a0 * b5 - a1 * b4 + a2 * b3 - a4 * b1 + a5 * b0;
+		float det = a0 * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0;
 
 		// Close to zero. cannot inverse.
 		if (fabs(det) <= FLOAT_TOLERANCE)

@@ -462,7 +462,7 @@ void Polygon3D::renderGBuffer()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
+		Mat4 normalMatrix = Mat4::CHIRARITY_CONVERTER * Mat4::createNormalMatrix(getModelMatrix());
 		normalMatrix.transpose();
 		CopyMemory(mappedResource.pData, &normalMatrix.m, sizeof(normalMatrix));
 		direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_NORMAL_MATRIX), 0);
@@ -714,7 +714,7 @@ void Polygon3D::renderForward()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
+		Mat4 normalMatrix = Mat4::CHIRARITY_CONVERTER * Mat4::createNormalMatrix(getModelMatrix());
 		normalMatrix.transpose();
 		CopyMemory(mappedResource.pData, &normalMatrix.m, sizeof(normalMatrix));
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_NORMAL_MATRIX), 0);

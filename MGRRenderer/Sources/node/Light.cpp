@@ -47,7 +47,7 @@ _direction(direction)
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	Vec3 directionVec = direction;
 	directionVec.normalize();
-	_constantBufferData.direction = Mat4::CHIRARITY_CONVERTER * directionVec;
+	_constantBufferData.direction = directionVec;
 	_constantBufferData.color = Color4F(color) * getIntensity();
 	_constantBufferData.hasShadowMap = 0.0f;
 #endif

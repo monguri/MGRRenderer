@@ -560,6 +560,8 @@ void initialize()
 	defaultLight->setIntensity(0.3f);
 	defaultLight->setColor(Color3B::WHITE);
 
+	Sprite2D* depthTextureSprite = nullptr;
+
 	//DirectionalLight* directionalLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
 	//directionalLight->setIntensity(0.7f);
 	//directionalLight->initShadowMap(
@@ -569,8 +571,6 @@ void initialize()
 	//	FAR_CLIP,
 	//	Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	//scene->addLight(directionalLight);
-
-	Sprite2D* depthTextureSprite = nullptr;
 
 	//if (directionalLight->hasShadowMap())
 	//{
@@ -584,6 +584,7 @@ void initialize()
 	//PointLight* pointLight = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0), Color3B::WHITE, 1000);
 	//pointLight->setIntensity(0.7f);
 	//scene->addLight(pointLight);
+
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(-1,-1,-1)方向の光が降り注ぐようにしている
 	SpotLight* spotLight = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, (float)WINDOW_WIDTH), Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
 	spotLight->setIntensity(0.7f);
@@ -629,6 +630,7 @@ void render()
 	const Vec3& cameraPos = Director::getCamera().getPosition();
 	cameraAngle += 0.003f;
 	Vec3 newCameraPos = Vec3(WINDOW_HEIGHT / 1.1566f * abs(sin(cameraAngle)) + WINDOW_WIDTH / 2.0f, cameraPos.y, WINDOW_HEIGHT / 1.1566f * abs(cos(cameraAngle)));
+	//Vec3 newCameraPos = Vec3(WINDOW_HEIGHT / 1.1566f * sin(cameraAngle) + WINDOW_WIDTH / 2.0f, cameraPos.y, WINDOW_HEIGHT / 1.1566f * cos(cameraAngle));
 	Director::getCamera().setPosition(newCameraPos);
 
 	// MGRRendererに毎フレームの描画命令

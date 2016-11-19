@@ -39,17 +39,17 @@ void AmbientLight::setIntensity(float intensity)
 
 DirectionalLight::DirectionalLight(const Vec3& direction, const Color3B& color) :
 #if defined(MGRRENDERER_USE_OPENGL)
-	_hasShadowMap(false),
+_hasShadowMap(false),
 #endif
-	_direction(direction)
+_direction(direction)
 {
 	setColor(color);
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	Vec3 directionVec = direction;
 	directionVec.normalize();
 	_constantBufferData.direction = Mat4::CHIRARITY_CONVERTER * directionVec;
-	_constantBufferData.hasShadowMap = 1.0f;
 	_constantBufferData.color = Color4F(color) * getIntensity();
+	_constantBufferData.hasShadowMap = 0.0f;
 #endif
 }
 
@@ -125,7 +125,7 @@ bool DirectionalLight::hasShadowMap() const
 
 void DirectionalLight::prepareShadowMapRendering()
 {
-	Logger::logAssert(hasShadowMap(), "beginRenderShadowMap呼び出しはシャドウマップを使う前提");
+	Logger::logAssert(hasShadowMap(), "prepareShadowMapRendering呼び出しはシャドウマップを使う前提");
 
 	_prepareShadowMapRenderingCommand.init([=]
 	{
@@ -193,8 +193,13 @@ void PointLight::setIntensity(float intensity)
 }
 
 SpotLight::SpotLight(const Vec3& position, const Vec3& direction, const Color3B& color, float range, float innerAngle, float outerAngle) :
+#if defined(MGRRENDERER_USE_OPENGL)
+_hasShadowMap(false),
+#endif
 _direction(direction),
 _range(range),
+_innerAngle(innerAngle),
+_outerAngle(outerAngle),
 _innerAngleCos(cosf(innerAngle)),
 _outerAngleCos(cosf(outerAngle))
 {
@@ -202,12 +207,15 @@ _outerAngleCos(cosf(outerAngle))
 	setColor(color);
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	Vec3 directionVec = direction;
+	directionVec.normalize();
 	_constantBufferData.position = position;
 	_constantBufferData.rangeInverse = 1.0f / range;
 	_constantBufferData.color = Color3F(color) * getIntensity();
 	_constantBufferData.innerAngleCos = cosf(innerAngle);
-	_constantBufferData.direction = Mat4::CHIRARITY_CONVERTER * direction;
+	_constantBufferData.direction = directionVec;
 	_constantBufferData.outerAngleCos = cosf(outerAngle);
+	_constantBufferData.hasShadowMap = 0.0f;
 #endif
 }
 
@@ -225,6 +233,88 @@ void SpotLight::setIntensity(float intensity)
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	_constantBufferData.color = Color3F(getColor()) * intensity;
 #endif
+}
+
+void SpotLight::initShadowMap(float nearClip, const Size& size)
+{
+	_shadowMapData.viewMatrix = Mat4::createLookAtWithDirection(
+		getPosition(),
+		getDirection(),
+		Vec3(0.0f, 1.0f, 0.0f) // とりあえずy方向を上にして固定
+	);
+
+	_shadowMapData.projectionMatrix = Mat4::createPerspective(
+		_outerAngle, // field of view
+		size.width / size.height, // aspectratio
+		nearClip, // near clip
+		_range // far clip
+	);
+
+	// デプステクスチャ作成
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.hasShadowMap = 1.0f;
+
+	_shadowMapData.depthTexture = new D3DTexture();
+	_shadowMapData.depthTexture->initDepthStencilTexture(size);
+#elif defined(MGRRENDERER_USE_OPENGL)
+	_hasShadowMap = true;
+
+	_shadowMapData.depthFrameBuffer = new GLFrameBuffer();
+	std::vector<GLenum> drawBuffer;
+	drawBuffer.push_back(GL_NONE);
+	std::vector<GLenum> pixelFormats;
+	pixelFormats.push_back(GL_DEPTH_COMPONENT);
+	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, false, size);
+#endif
+}
+
+bool SpotLight::hasShadowMap() const
+{
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	return _constantBufferData.hasShadowMap > 0.0f;
+#elif defined(MGRRENDERER_USE_OPENGL)
+	return _hasShadowMap;
+#endif
+}
+
+void SpotLight::prepareShadowMapRendering() {
+	Logger::logAssert(hasShadowMap(), "prepareShadowMapRendering呼び出しはシャドウマップを使う前提");
+
+	_prepareShadowMapRenderingCommand.init([=]
+	{
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		direct3dContext->ClearState();
+		direct3dContext->ClearDepthStencilView(_shadowMapData.depthTexture->getDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+		D3D11_VIEWPORT viewport[1];
+		viewport[0].TopLeftX = 0.0f;
+		viewport[0].TopLeftY = 0.0f;
+		viewport[0].Width = Director::getInstance()->getWindowSize().width;
+		viewport[0].Height = Director::getInstance()->getWindowSize().height;
+		viewport[0].MinDepth = 0.0f;
+		viewport[0].MaxDepth = 1.0f;
+		direct3dContext->RSSetViewports(1, viewport);
+
+		direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
+		
+		ID3D11RenderTargetView* renderTarget[1] = {nullptr}; // シャドウマップ描画はDepthStencilViewはあるがRenderTargetはないのでnullでいい
+		direct3dContext->OMSetRenderTargets(1, renderTarget, _shadowMapData.depthTexture->getDepthStencilView());
+		direct3dContext->OMSetDepthStencilState(_shadowMapData.depthTexture->getDepthStencilState(), 1);
+#elif defined(MGRRENDERER_USE_OPENGL)
+		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().depthFrameBuffer->getFrameBufferId());
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		//TODO:シャドウマップの大きさは画面サイズと同じにしている
+		glViewport(0, 0, static_cast<GLsizei>(Director::getInstance()->getWindowSize().width), static_cast<GLsizei>(Director::getInstance()->getWindowSize().height));
+
+		//glEnable(GL_CULL_FACE);
+		//glCullFace(GL_FRONT);
+#endif
+	});
+
+	Director::getRenderer().addCommand(&_prepareShadowMapRenderingCommand);
 }
 
 } // namespace mgrrenderer

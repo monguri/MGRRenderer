@@ -33,6 +33,33 @@ class Light :
 	public Node
 {
 public:
+	struct ShadowMapData
+	{
+		Mat4 viewMatrix;
+		Mat4 projectionMatrix;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		D3DTexture* depthTexture;
+
+		D3DTexture* getDepthTexture() const
+		{
+			return depthTexture;
+		}
+
+		ShadowMapData() : depthTexture(nullptr) {};
+#elif defined(MGRRENDERER_USE_OPENGL)
+		GLFrameBuffer* depthFrameBuffer;
+
+		GLTexture* getDepthTexture() const
+		{
+			Logger::logAssert(depthFrameBuffer != nullptr, "まだシャドウマップ作成していないときにgetDepthTextureId()呼ばれた。");
+			Logger::logAssert(depthFrameBuffer->getTextures().size() == 1, "シャドウマップ用のフレームバッファがデプステクスチャの1枚でない。");
+			return depthFrameBuffer->getTextures()[0];
+		}
+
+		ShadowMapData() : depthFrameBuffer(nullptr) {};
+#endif
+	};
+
 	// 直接Lightのインスタンスを作ることはできない
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	virtual const void* getConstantBufferDataPointer() const = 0;
@@ -41,9 +68,11 @@ public:
 	float getIntensity() const { return _intensity; }
 	virtual void setIntensity(float intensity) { _intensity = intensity; }
 	virtual bool hasShadowMap() const = 0;
+	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 	virtual void prepareShadowMapRendering() = 0;
 
 protected:
+	ShadowMapData _shadowMapData;
 	Light();
 
 private:
@@ -82,33 +111,6 @@ class DirectionalLight :
 	public Light
 {
 public:
-	struct ShadowMapData
-	{
-		Mat4 viewMatrix;
-		Mat4 projectionMatrix;
-#if defined(MGRRENDERER_USE_DIRECT3D)
-		D3DTexture* depthTexture;
-
-		D3DTexture* getDepthTexture() const
-		{
-			return depthTexture;
-		}
-
-		ShadowMapData() : depthTexture(nullptr) {};
-#elif defined(MGRRENDERER_USE_OPENGL)
-		GLFrameBuffer* depthFrameBuffer;
-
-		GLTexture* getDepthTexture() const
-		{
-			Logger::logAssert(depthFrameBuffer != nullptr, "まだシャドウマップ作成していないときにgetDepthTextureId()呼ばれた。");
-			Logger::logAssert(depthFrameBuffer->getTextures().size() == 1, "シャドウマップ用のフレームバッファがデプステクスチャの1枚でない。");
-			return depthFrameBuffer->getTextures()[0];
-		}
-
-		ShadowMapData() : depthFrameBuffer(nullptr) {};
-#endif
-	};
-
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	struct ConstantBufferData
 	{
@@ -123,7 +125,6 @@ public:
 
 	LightType getLightType() const override { return LightType::DIRECTION; };
 	const Vec3& getDirection() const { return _direction; }
-	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	const void* getConstantBufferDataPointer() const { return &_constantBufferData; }
 #endif
@@ -140,7 +141,6 @@ private:
 #elif defined(MGRRENDERER_USE_OPENGL)
 	bool _hasShadowMap;
 #endif
-	ShadowMapData _shadowMapData;
 	CustomRenderCommand _prepareShadowMapRenderingCommand;
 };
 
@@ -181,6 +181,33 @@ class SpotLight :
 	public Light
 {
 public:
+	struct ShadowMapData
+	{
+		Mat4 viewMatrix;
+		Mat4 projectionMatrix;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		D3DTexture* depthTexture;
+
+		D3DTexture* getDepthTexture() const
+		{
+			return depthTexture;
+		}
+
+		ShadowMapData() : depthTexture(nullptr) {};
+#elif defined(MGRRENDERER_USE_OPENGL)
+		GLFrameBuffer* depthFrameBuffer;
+
+		GLTexture* getDepthTexture() const
+		{
+			Logger::logAssert(depthFrameBuffer != nullptr, "まだシャドウマップ作成していないときにgetDepthTextureId()呼ばれた。");
+			Logger::logAssert(depthFrameBuffer->getTextures().size() == 1, "シャドウマップ用のフレームバッファがデプステクスチャの1枚でない。");
+			return depthFrameBuffer->getTextures()[0];
+		}
+
+		ShadowMapData() : depthFrameBuffer(nullptr) {};
+#endif
+	};
+
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	struct ConstantBufferData
 	{
@@ -190,6 +217,8 @@ public:
 		float innerAngleCos;
 		Vec3 direction;
 		float outerAngleCos;
+		float hasShadowMap;
+		Vec3 padding;
 	};
 #endif
 
@@ -205,17 +234,23 @@ public:
 #endif
 	void setColor(const Color3B& color) override;
 	void setIntensity(float intensity) override;
-	bool hasShadowMap() const override { return false; } // シャドウマップはスポットライトには使えない
-	void prepareShadowMapRendering() override {};
+	void initShadowMap(float nearClip, const Size& size);
+	bool hasShadowMap() const override;
+	void prepareShadowMapRendering() override;
 
 private:
 	Vec3 _direction;
 	float _range;
+	float _innerAngle;
+	float _outerAngle;
 	float _innerAngleCos;
 	float _outerAngleCos;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	ConstantBufferData _constantBufferData;
+#elif defined(MGRRENDERER_USE_OPENGL)
+	bool _hasShadowMap;
 #endif
+	CustomRenderCommand _prepareShadowMapRenderingCommand;
 };
 
 } // namespace mgrrenderer

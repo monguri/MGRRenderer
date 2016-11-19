@@ -307,7 +307,6 @@ void Director::updateStats(float dt)
 		// ‰e‚ÍŠÖŒW‚È‚¢‚Ì‚Åˆê‹C‚É‘SƒpƒX•`‰æ‚µ‚Ä‚µ‚Ü‚¤
 		_FPSLabel->update(dt);
 		_FPSLabel->prepareRendering();
-		_FPSLabel->renderShadowMap();
 		_FPSLabel->renderForward();
 	}
 }

@@ -1286,31 +1286,15 @@ void Sprite3D::renderShadowMap()
 	_renderShadowMapCommand.init([=]
 	{
 		bool makeShadowMap = false;
-		DirectionalLight::ShadowMapData shadowMapData;
+		Light::ShadowMapData shadowMapData;
 
 		for (Light* light : Director::getLight())
 		{
-			switch (light->getLightType())
+			if (light->hasShadowMap())
 			{
-			case LightType::AMBIENT:
-				break;
-			case LightType::DIRECTION: {
-				DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
-				// TODO:とりあえず影つけはDirectionalLightのみを想定
-				// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
-				if (dirLight->hasShadowMap())
-				{
-					makeShadowMap = true;
-					shadowMapData = dirLight->getShadowMapData();
-				}
-			}
-				break;
-			case LightType::POINT: {
-			}
-				break;
-			case LightType::SPOT: {
-			}
-			default:
+				makeShadowMap = true;
+				shadowMapData = light->getShadowMapData();
+				// 現状シャドウマップは一個しか想定してない
 				break;
 			}
 		}

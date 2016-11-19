@@ -19,17 +19,17 @@ cbuffer AmbientLightParameter : register(b2)
 
 cbuffer DirectionalLightViewMatrix : register(b3)
 {
-	matrix _lightView;
+	matrix _directionalLightView;
 };
 
 cbuffer DirectionalLightProjectionMatrix : register(b4)
 {
-	matrix _lightProjection;
+	matrix _directionalLightProjection;
 };
 
 cbuffer DirectionalLightDepthBiasMatrix : register(b5)
 {
-	matrix _lightDepthBias;
+	matrix _directionalLightDepthBias;
 };
 
 cbuffer DirectionalLightParameter : register(b6)
@@ -46,7 +46,22 @@ cbuffer PointLightParameter : register(b7)
 	float _pointLightRangeInverse;
 };
 
-cbuffer SpotLightParameter : register(b8)
+cbuffer SpotLightViewMatrix : register(b8)
+{
+	matrix _spotLightView;
+};
+
+cbuffer SpotLightProjectionMatrix : register(b9)
+{
+	matrix _spotLightProjection;
+};
+
+cbuffer SpotLightDepthBiasMatrix : register(b10)
+{
+	matrix _spotLightDepthBias;
+};
+
+cbuffer SpotLightParameter : register(b11)
 {
 	float3 _spotLightPosition;
 	float _spotLightRangeInverse;
@@ -54,14 +69,16 @@ cbuffer SpotLightParameter : register(b8)
 	float _spotLightInnerAngleCos;
 	float3 _spotLightDirection;
 	float _spotLightOuterAngleCos;
+	float _spotLightHasShadowMap;
+	float3 _padding;
 };
 
 //static const int MAX_EACH_LIGHT = 10; // CPU側のソースと最大値定数を一致させること
 //
 //struct DirectionalLightParam
 //{
-//	matrix _lightView;
-//	matrix _lightProjection;
+//	matrix _directionalLightView;
+//	matrix _directionalLightProjection;
 //	float3 _directionalLightDirection;
 //	float _directionalLightHasShadowMap;
 //	float4 _directionalLightColor;
@@ -193,9 +210,21 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	float shadowAttenuation = 1.0;
 	if (_directionalLightHasShadowMap > 0.0)
 	{
-		float4 lightPosition = mul(worldPosition, _lightView);
-		lightPosition = mul(lightPosition, _lightProjection);
-		lightPosition = mul(lightPosition, _lightDepthBias);
+		float4 lightPosition = mul(worldPosition, _directionalLightView);
+		lightPosition = mul(lightPosition, _directionalLightProjection);
+		lightPosition = mul(lightPosition, _directionalLightDepthBias);
+		lightPosition.xyz /= lightPosition.w;
+		// zファイティングを避けるための微調整
+		lightPosition.z -= 0.001;
+
+		shadowAttenuation = _shadowMap.SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
+	}
+
+	if (_spotLightHasShadowMap > 0.0)
+	{
+		float4 lightPosition = mul(worldPosition, _spotLightView);
+		lightPosition = mul(lightPosition, _spotLightProjection);
+		lightPosition = mul(lightPosition, _spotLightDepthBias);
 		lightPosition.xyz /= lightPosition.w;
 		// zファイティングを避けるための微調整
 		lightPosition.z -= 0.001;

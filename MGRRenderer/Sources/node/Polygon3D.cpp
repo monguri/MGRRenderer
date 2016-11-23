@@ -533,14 +533,33 @@ void Polygon3D::renderShadowMap()
 	_renderShadowMapCommand.init([=]
 	{
 		bool makeShadowMap = false;
-		Light::ShadowMapData shadowMapData;
+		Mat4 lightViewMatrix;
+		Mat4 lightProjectionMatrix;
 
 		for (Light* light : Director::getLight())
 		{
 			if (light->hasShadowMap())
 			{
 				makeShadowMap = true;
-				shadowMapData = light->getShadowMapData();
+
+				switch (light->getLightType())
+				{
+				case LightType::DIRECTION:
+					lightViewMatrix = static_cast<DirectionalLight*>(light)->getShadowMapData().viewMatrix;
+					lightProjectionMatrix = static_cast<DirectionalLight*>(light)->getShadowMapData().projectionMatrix;
+					break;
+				case LightType::POINT:
+					lightViewMatrix = static_cast<PointLight*>(light)->getShadowMapData().viewMatrix;
+					lightProjectionMatrix = static_cast<PointLight*>(light)->getShadowMapData().projectionMatrix;
+					break;
+				case LightType::SPOT:
+					lightViewMatrix = static_cast<SpotLight*>(light)->getShadowMapData().viewMatrix;
+					lightProjectionMatrix = static_cast<SpotLight*>(light)->getShadowMapData().projectionMatrix;
+					break;
+				default:
+					Logger::logAssert(false, "シャドウマップをもたないはずのライトタイプが入力された。");
+					break;
+				}
 				// 現状シャドウマップは一個しか想定してない
 				break;
 			}
@@ -580,7 +599,6 @@ void Polygon3D::renderShadowMap()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 lightViewMatrix = shadowMapData.viewMatrix;
 		lightViewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
 		CopyMemory(mappedResource.pData, &lightViewMatrix.m, sizeof(lightViewMatrix));
 		direct3dContext->Unmap(_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
@@ -594,7 +612,6 @@ void Polygon3D::renderShadowMap()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 lightProjectionMatrix = shadowMapData.projectionMatrix;
 		lightProjectionMatrix = Mat4::CHIRARITY_CONVERTER * lightProjectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 		lightProjectionMatrix.transpose();
 		CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
@@ -623,7 +640,7 @@ void Polygon3D::renderShadowMap()
 			_glProgramForShadowMap.getUniformLocation("u_lightViewMatrix"),
 			1,
 			GL_FALSE,
-			(GLfloat*)shadowMapData.viewMatrix.m
+			(GLfloat*)lightViewMatrix.m
 		);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 		// TODO:Vec3やMat4に頭につける-演算子作らないと
@@ -631,7 +648,7 @@ void Polygon3D::renderShadowMap()
 			_glProgramForShadowMap.getUniformLocation("u_lightProjectionMatrix"),
 			1,
 			GL_FALSE,
-			(GLfloat*)shadowMapData.projectionMatrix.m
+			(GLfloat*)lightProjectionMatrix.m
 		);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 

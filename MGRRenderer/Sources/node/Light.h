@@ -33,33 +33,6 @@ class Light :
 	public Node
 {
 public:
-	struct ShadowMapData
-	{
-		Mat4 viewMatrix;
-		Mat4 projectionMatrix;
-#if defined(MGRRENDERER_USE_DIRECT3D)
-		D3DTexture* depthTexture;
-
-		D3DTexture* getDepthTexture() const
-		{
-			return depthTexture;
-		}
-
-		ShadowMapData() : depthTexture(nullptr) {};
-#elif defined(MGRRENDERER_USE_OPENGL)
-		GLFrameBuffer* depthFrameBuffer;
-
-		GLTexture* getDepthTexture() const
-		{
-			Logger::logAssert(depthFrameBuffer != nullptr, "まだシャドウマップ作成していないときにgetDepthTextureId()呼ばれた。");
-			Logger::logAssert(depthFrameBuffer->getTextures().size() == 1, "シャドウマップ用のフレームバッファがデプステクスチャの1枚でない。");
-			return depthFrameBuffer->getTextures()[0];
-		}
-
-		ShadowMapData() : depthFrameBuffer(nullptr) {};
-#endif
-	};
-
 	// 直接Lightのインスタンスを作ることはできない
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	virtual const void* getConstantBufferDataPointer() const = 0;
@@ -68,11 +41,9 @@ public:
 	float getIntensity() const { return _intensity; }
 	virtual void setIntensity(float intensity) { _intensity = intensity; }
 	virtual bool hasShadowMap() const = 0;
-	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 	virtual void prepareShadowMapRendering() = 0;
 
 protected:
-	ShadowMapData _shadowMapData;
 	Light();
 
 private:
@@ -111,6 +82,33 @@ class DirectionalLight :
 	public Light
 {
 public:
+	struct ShadowMapData
+	{
+		Mat4 viewMatrix;
+		Mat4 projectionMatrix;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		D3DTexture* depthTexture;
+
+		D3DTexture* getDepthTexture() const
+		{
+			return depthTexture;
+		}
+
+		ShadowMapData() : depthTexture(nullptr) {};
+#elif defined(MGRRENDERER_USE_OPENGL)
+		GLFrameBuffer* depthFrameBuffer;
+
+		GLTexture* getDepthTexture() const
+		{
+			Logger::logAssert(depthFrameBuffer != nullptr, "まだシャドウマップ作成していないときにgetDepthTextureId()呼ばれた。");
+			Logger::logAssert(depthFrameBuffer->getTextures().size() == 1, "シャドウマップ用のフレームバッファがデプステクスチャの1枚でない。");
+			return depthFrameBuffer->getTextures()[0];
+		}
+
+		ShadowMapData() : depthFrameBuffer(nullptr) {};
+#endif
+	};
+
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	struct ConstantBufferData
 	{
@@ -132,6 +130,7 @@ public:
 	void setIntensity(float intensity) override;
 	void initShadowMap(const Vec3& cameraPosition, float nearClip, float farClip, const Size& size);
 	bool hasShadowMap() const override;
+	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 	void prepareShadowMapRendering() override;
 
 private:
@@ -141,6 +140,7 @@ private:
 #elif defined(MGRRENDERER_USE_OPENGL)
 	bool _hasShadowMap;
 #endif
+	ShadowMapData _shadowMapData;
 	CustomRenderCommand _prepareShadowMapRenderingCommand;
 };
 
@@ -148,6 +148,33 @@ class PointLight :
 	public Light
 {
 public:
+	struct ShadowMapData
+	{
+		Mat4 viewMatrix;
+		Mat4 projectionMatrix;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		D3DTexture* depthTexture;
+
+		D3DTexture* getDepthTexture() const
+		{
+			return depthTexture;
+		}
+
+		ShadowMapData() : depthTexture(nullptr) {};
+#elif defined(MGRRENDERER_USE_OPENGL)
+		GLFrameBuffer* depthFrameBuffer;
+
+		GLTexture* getDepthTexture() const
+		{
+			Logger::logAssert(depthFrameBuffer != nullptr, "まだシャドウマップ作成していないときにgetDepthTextureId()呼ばれた。");
+			Logger::logAssert(depthFrameBuffer->getTextures().size() == 1, "シャドウマップ用のフレームバッファがデプステクスチャの1枚でない。");
+			return depthFrameBuffer->getTextures()[0];
+		}
+
+		ShadowMapData() : depthFrameBuffer(nullptr) {};
+#endif
+	};
+
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	struct ConstantBufferData
 	{
@@ -172,6 +199,7 @@ public:
 	void setIntensity(float intensity) override;
 	void initShadowMap(float nearClip, float size);
 	bool hasShadowMap() const override;
+	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 	void prepareShadowMapRendering() override;
 
 private:
@@ -182,6 +210,7 @@ private:
 #elif defined(MGRRENDERER_USE_OPENGL)
 	bool _hasShadowMap;
 #endif
+	ShadowMapData _shadowMapData;
 	CustomRenderCommand _prepareShadowMapRenderingCommand;
 };
 
@@ -189,6 +218,32 @@ class SpotLight :
 	public Light
 {
 public:
+	struct ShadowMapData
+	{
+		Mat4 viewMatrix;
+		Mat4 projectionMatrix;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		D3DTexture* depthTexture;
+
+		D3DTexture* getDepthTexture() const
+		{
+			return depthTexture;
+		}
+
+		ShadowMapData() : depthTexture(nullptr) {};
+#elif defined(MGRRENDERER_USE_OPENGL)
+		GLFrameBuffer* depthFrameBuffer;
+
+		GLTexture* getDepthTexture() const
+		{
+			Logger::logAssert(depthFrameBuffer != nullptr, "まだシャドウマップ作成していないときにgetDepthTextureId()呼ばれた。");
+			Logger::logAssert(depthFrameBuffer->getTextures().size() == 1, "シャドウマップ用のフレームバッファがデプステクスチャの1枚でない。");
+			return depthFrameBuffer->getTextures()[0];
+		}
+
+		ShadowMapData() : depthFrameBuffer(nullptr) {};
+#endif
+	};
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	struct ConstantBufferData
@@ -218,6 +273,7 @@ public:
 	void setIntensity(float intensity) override;
 	void initShadowMap(float nearClip, const Size& size);
 	bool hasShadowMap() const override;
+	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 	void prepareShadowMapRendering() override;
 
 private:
@@ -232,6 +288,7 @@ private:
 #elif defined(MGRRENDERER_USE_OPENGL)
 	bool _hasShadowMap;
 #endif
+	ShadowMapData _shadowMapData;
 	CustomRenderCommand _prepareShadowMapRenderingCommand;
 };
 

@@ -622,6 +622,8 @@ void Renderer::renderDeferred()
 		{
 			if (light->hasShadowMap())
 			{
+				DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
+
 				result = direct3dContext->Map(
 					_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX),
 					0,
@@ -630,7 +632,7 @@ void Renderer::renderDeferred()
 					&mappedResource
 				);
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				Mat4 lightViewMatrix = light->getShadowMapData().viewMatrix;
+				Mat4 lightViewMatrix = dirLight->getShadowMapData().viewMatrix;
 				lightViewMatrix.transpose();
 				CopyMemory(mappedResource.pData, &lightViewMatrix.m, sizeof(lightViewMatrix));
 				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX), 0);
@@ -643,7 +645,7 @@ void Renderer::renderDeferred()
 					&mappedResource
 				);
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				Mat4 lightProjectionMatrix = light->getShadowMapData().projectionMatrix;
+				Mat4 lightProjectionMatrix = dirLight->getShadowMapData().projectionMatrix;
 				lightProjectionMatrix = Mat4::CHIRARITY_CONVERTER * lightProjectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 				lightProjectionMatrix.transpose();
 				CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
@@ -661,7 +663,7 @@ void Renderer::renderDeferred()
 				CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
 				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX), 0);
 
-				shadowMapResourceView = light->getShadowMapData().depthTexture->getShaderResourceView();
+				shadowMapResourceView = dirLight->getShadowMapData().depthTexture->getShaderResourceView();
 			}
 
 			result = direct3dContext->Map(
@@ -679,7 +681,7 @@ void Renderer::renderDeferred()
 		case LightType::POINT: {
 			if (light->hasShadowMap())
 			{
-				shadowMapResourceView = light->getShadowMapData().depthTexture->getShaderResourceView();
+				shadowMapResourceView = static_cast<PointLight*>(light)->getShadowMapData().depthTexture->getShaderResourceView();
 			}
 			result = direct3dContext->Map(
 				_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER),
@@ -696,6 +698,8 @@ void Renderer::renderDeferred()
 		case LightType::SPOT: {
 			if (light->hasShadowMap())
 			{
+				SpotLight* spotLight = static_cast<SpotLight*>(light);
+
 				result = direct3dContext->Map(
 					_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX),
 					0,
@@ -704,7 +708,7 @@ void Renderer::renderDeferred()
 					&mappedResource
 				);
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				Mat4 lightViewMatrix = light->getShadowMapData().viewMatrix;
+				Mat4 lightViewMatrix = spotLight->getShadowMapData().viewMatrix;
 				lightViewMatrix.transpose();
 				CopyMemory(mappedResource.pData, &lightViewMatrix.m, sizeof(lightViewMatrix));
 				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX), 0);
@@ -717,7 +721,7 @@ void Renderer::renderDeferred()
 					&mappedResource
 				);
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				Mat4 lightProjectionMatrix = light->getShadowMapData().projectionMatrix;
+				Mat4 lightProjectionMatrix = spotLight->getShadowMapData().projectionMatrix;
 				lightProjectionMatrix = Mat4::CHIRARITY_CONVERTER * lightProjectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 				lightProjectionMatrix.transpose();
 				CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
@@ -735,7 +739,7 @@ void Renderer::renderDeferred()
 				CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
 				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_DEPTH_BIAS_MATRIX), 0);
 
-				shadowMapResourceView = light->getShadowMapData().depthTexture->getShaderResourceView();
+				shadowMapResourceView = spotLight->getShadowMapData().depthTexture->getShaderResourceView();
 			}
 
 			// スポットライトの位置＆レンジの逆数のマップ

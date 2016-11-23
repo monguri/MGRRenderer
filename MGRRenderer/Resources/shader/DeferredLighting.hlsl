@@ -41,7 +41,11 @@ cbuffer DirectionalLightParameter : register(b6)
 
 cbuffer PointLightParameter : register(b7)
 {
-	float4 _pointLightColor;
+	matrix _pointLightView;
+	matrix _pointLightProjection;
+	matrix _pointLightDepthBias;
+	float3 _pointLightColor;
+	float _pointLightHasShadowMap;
 	float3 _pointLightPosition;
 	float _pointLightRangeInverse;
 };
@@ -196,7 +200,7 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	float3 vertexToPointLightDirection = _pointLightPosition - worldPosition.xyz;
 	float3 dir = vertexToPointLightDirection * _pointLightRangeInverse;
 	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
-	diffuseSpecularLightColor += computeLightedColor(normal, normalize(vertexToPointLightDirection), _pointLightColor.rgb, attenuation);
+	diffuseSpecularLightColor += computeLightedColor(normal, normalize(vertexToPointLightDirection), _pointLightColor, attenuation);
 
 	float3 vertexToSpotLightDirection = _spotLightPosition - worldPosition.xyz;
 	dir = vertexToSpotLightDirection * _spotLightRangeInverse;
@@ -213,6 +217,18 @@ float4 PS(PS_INPUT input) : SV_TARGET
 		float4 lightPosition = mul(worldPosition, _directionalLightView);
 		lightPosition = mul(lightPosition, _directionalLightProjection);
 		lightPosition = mul(lightPosition, _directionalLightDepthBias);
+		lightPosition.xyz /= lightPosition.w;
+		// zファイティングを避けるための微調整
+		lightPosition.z -= 0.001;
+
+		shadowAttenuation = _shadowMap.SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
+	}
+
+	if (_pointLightHasShadowMap > 0.0)
+	{
+		float4 lightPosition = mul(worldPosition, _pointLightView);
+		lightPosition = mul(lightPosition, _pointLightProjection);
+		lightPosition = mul(lightPosition, _pointLightDepthBias);
 		lightPosition.xyz /= lightPosition.w;
 		// zファイティングを避けるための微調整
 		lightPosition.z -= 0.001;

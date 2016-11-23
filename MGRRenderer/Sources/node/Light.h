@@ -151,7 +151,11 @@ public:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	struct ConstantBufferData
 	{
-		Color4F color;
+		Mat4 viewMatrix;
+		Mat4 projectionMatrix;
+		Mat4 depthBiasMatrix;
+		Color3F color;
+		float hasShadowMap;
 		Vec3 position;
 		float rangeInverse;
 	};
@@ -166,47 +170,25 @@ public:
 #endif
 	void setColor(const Color3B& color) override;
 	void setIntensity(float intensity) override;
-	bool hasShadowMap() const override { return false; } // シャドウマップはポイントライトには使えない
-	void prepareShadowMapRendering() override {};
+	void initShadowMap(float nearClip, float size);
+	bool hasShadowMap() const override;
+	void prepareShadowMapRendering() override;
 
 private:
 	// 減衰率計算に用いる、光の届く範囲　正しい物理計算だと無限遠まで届くが、そうでないモデルをcocosが使ってるのでそれを採用
 	float _range;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	ConstantBufferData _constantBufferData;
+#elif defined(MGRRENDERER_USE_OPENGL)
+	bool _hasShadowMap;
 #endif
+	CustomRenderCommand _prepareShadowMapRenderingCommand;
 };
 
 class SpotLight :
 	public Light
 {
 public:
-	struct ShadowMapData
-	{
-		Mat4 viewMatrix;
-		Mat4 projectionMatrix;
-#if defined(MGRRENDERER_USE_DIRECT3D)
-		D3DTexture* depthTexture;
-
-		D3DTexture* getDepthTexture() const
-		{
-			return depthTexture;
-		}
-
-		ShadowMapData() : depthTexture(nullptr) {};
-#elif defined(MGRRENDERER_USE_OPENGL)
-		GLFrameBuffer* depthFrameBuffer;
-
-		GLTexture* getDepthTexture() const
-		{
-			Logger::logAssert(depthFrameBuffer != nullptr, "まだシャドウマップ作成していないときにgetDepthTextureId()呼ばれた。");
-			Logger::logAssert(depthFrameBuffer->getTextures().size() == 1, "シャドウマップ用のフレームバッファがデプステクスチャの1枚でない。");
-			return depthFrameBuffer->getTextures()[0];
-		}
-
-		ShadowMapData() : depthFrameBuffer(nullptr) {};
-#endif
-	};
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	struct ConstantBufferData

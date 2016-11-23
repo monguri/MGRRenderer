@@ -164,13 +164,17 @@ void DirectionalLight::prepareShadowMapRendering()
 	Director::getRenderer().addCommand(&_prepareShadowMapRenderingCommand);
 }
 
-PointLight::PointLight(const Vec3& position, const Color3B& color, float range) : _range(range)
+PointLight::PointLight(const Vec3& position, const Color3B& color, float range) :
+#if defined(MGRRENDERER_USE_OPENGL)
+_hasShadowMap(false),
+#endif
+_range(range)
 {
 	setPosition(position);
 	setColor(color);
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	_constantBufferData.color = Color4F(color) * getIntensity();
+	_constantBufferData.color = Color3F(color) * getIntensity();
 	_constantBufferData.position = position;
 	_constantBufferData.rangeInverse = 1.0f / range;
 #endif
@@ -180,7 +184,7 @@ void PointLight::setColor(const Color3B& color)
 {
 	Light::setColor(color);
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	_constantBufferData.color = Color4F(color) * getIntensity();
+	_constantBufferData.color = Color3F(color) * getIntensity();
 #endif
 }
 
@@ -188,8 +192,100 @@ void PointLight::setIntensity(float intensity)
 {
 	Light::setIntensity(intensity);
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	_constantBufferData.color = Color4F(getColor()) * intensity;
+	_constantBufferData.color = Color3F(getColor()) * intensity;
 #endif
+}
+
+void PointLight::initShadowMap(float nearClip, float size) {
+	_shadowMapData.viewMatrix = Mat4::createLookAtWithDirection(
+		getPosition(),
+		Vec3(-1.0f, -1.0f, -1.0f),
+		Vec3(0.0f, 1.0f, 0.0f)
+	);
+
+	_shadowMapData.projectionMatrix = Mat4::createPerspective(
+		45.0f, // field of view
+		1.0f, // aspectratio
+		nearClip, // near clip
+		_range // far clip
+	);
+
+	// デプステクスチャ作成
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_constantBufferData.hasShadowMap = 1.0f;
+
+	Mat4 lightViewMatrix = _shadowMapData.viewMatrix;
+	lightViewMatrix.transpose();
+	_constantBufferData.viewMatrix = lightViewMatrix;
+
+	Mat4 lightProjectionMatrix = _shadowMapData.projectionMatrix;
+	lightProjectionMatrix = Mat4::CHIRARITY_CONVERTER * lightProjectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
+	lightProjectionMatrix.transpose();
+	_constantBufferData.projectionMatrix = lightProjectionMatrix;
+
+	Mat4 depthBiasMatrix = (Mat4::TEXTURE_COORDINATE_CONVERTER * Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, -1.0f, 0.0f))).transpose(); //TODO: Mat4を参照型にすると値がおかしくなってしまう
+	_constantBufferData.depthBiasMatrix = depthBiasMatrix;
+
+	_shadowMapData.depthTexture = new D3DTexture();
+	_shadowMapData.depthTexture->initDepthStencilTexture(Size(size, size));
+#elif defined(MGRRENDERER_USE_OPENGL)
+	_hasShadowMap = true;
+
+	_shadowMapData.depthFrameBuffer = new GLFrameBuffer();
+	std::vector<GLenum> drawBuffer;
+	drawBuffer.push_back(GL_NONE);
+	std::vector<GLenum> pixelFormats;
+	pixelFormats.push_back(GL_DEPTH_COMPONENT);
+	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, false, size);
+#endif
+}
+
+bool PointLight::hasShadowMap() const {
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	return _constantBufferData.hasShadowMap > 0.0f;
+#elif defined(MGRRENDERER_USE_OPENGL)
+	return _hasShadowMap;
+#endif
+}
+
+void PointLight::prepareShadowMapRendering() {
+	Logger::logAssert(hasShadowMap(), "prepareShadowMapRendering呼び出しはシャドウマップを使う前提");
+
+	_prepareShadowMapRenderingCommand.init([=]
+	{
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		direct3dContext->ClearState();
+		direct3dContext->ClearDepthStencilView(_shadowMapData.depthTexture->getDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+		D3D11_VIEWPORT viewport[1];
+		viewport[0].TopLeftX = 0.0f;
+		viewport[0].TopLeftY = 0.0f;
+		viewport[0].Width = Director::getInstance()->getWindowSize().width;
+		viewport[0].Height = Director::getInstance()->getWindowSize().width; // ポイントライトのシャドウマップは正方形
+		viewport[0].MinDepth = 0.0f;
+		viewport[0].MaxDepth = 1.0f;
+		direct3dContext->RSSetViewports(1, viewport);
+
+		direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
+		
+		ID3D11RenderTargetView* renderTarget[1] = {nullptr}; // シャドウマップ描画はDepthStencilViewはあるがRenderTargetはないのでnullでいい
+		direct3dContext->OMSetRenderTargets(1, renderTarget, _shadowMapData.depthTexture->getDepthStencilView());
+		direct3dContext->OMSetDepthStencilState(_shadowMapData.depthTexture->getDepthStencilState(), 1);
+#elif defined(MGRRENDERER_USE_OPENGL)
+		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().depthFrameBuffer->getFrameBufferId());
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		//TODO:シャドウマップの大きさは画面サイズと同じにしているが、ポイントライトは正方形
+		glViewport(0, 0, static_cast<GLsizei>(Director::getInstance()->getWindowSize().width), static_cast<GLsizei>(Director::getInstance()->getWindowSize().width));
+
+		//glEnable(GL_CULL_FACE);
+		//glCullFace(GL_FRONT);
+#endif
+	});
+
+	Director::getRenderer().addCommand(&_prepareShadowMapRenderingCommand);
 }
 
 SpotLight::SpotLight(const Vec3& position, const Vec3& direction, const Color3B& color, float range, float innerAngle, float outerAngle) :

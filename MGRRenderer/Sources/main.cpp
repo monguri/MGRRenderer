@@ -572,8 +572,8 @@ void initialize()
 	//	Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	//scene->addLight(light);
 
-	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(-1,-1,-1)方向の光が降り注ぐようにしている
-	PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, (float)WINDOW_WIDTH), Color3B::WHITE, 3000.0f);
+	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
+	PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Color3B::WHITE, 3000.0f);
 	light->setIntensity(0.7f);
 	light->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
 	scene->addLight(light);
@@ -609,7 +609,7 @@ void initialize()
 	scene->pushNode(spriteNode);
 	if (light->hasShadowMap())
 	{
-		scene->pushNode2D(depthTextureSprite);
+		//scene->pushNode2D(depthTextureSprite);
 	}
 
 	Director::getInstance()->setScene(*scene);

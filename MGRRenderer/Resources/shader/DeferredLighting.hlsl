@@ -39,9 +39,11 @@ cbuffer DirectionalLightParameter : register(b6)
 	float4 _directionalLightColor;
 };
 
+static const int NUM_FACE_CUBEMAP_TEXTURE = 6;
+
 cbuffer PointLightParameter : register(b7)
 {
-	matrix _pointLightView;
+	matrix _pointLightView[NUM_FACE_CUBEMAP_TEXTURE];
 	matrix _pointLightProjection;
 	matrix _pointLightDepthBias;
 	float3 _pointLightColor;
@@ -125,6 +127,7 @@ Texture2D<float4> _gBufferColorSpecularIntensity : register(t1);
 Texture2D<float4> _gBufferNormal : register(t2);
 Texture2D<float4> _gBufferSpecularPower : register(t3);
 Texture2D<float4> _shadowMap : register(t4);
+TextureCube<float4> _shadowCubeMap : register(t5);
 SamplerState _pointSampler : register(s0);
 SamplerComparisonState _pcfSampler : register(s1);
 // まだシャドウマップは考慮してない
@@ -226,14 +229,15 @@ float4 PS(PS_INPUT input) : SV_TARGET
 
 	if (_pointLightHasShadowMap > 0.0)
 	{
-		float4 lightPosition = mul(worldPosition, _pointLightView);
-		lightPosition = mul(lightPosition, _pointLightProjection);
-		lightPosition = mul(lightPosition, _pointLightDepthBias);
-		lightPosition.xyz /= lightPosition.w;
+		//TODO:とりあえず行列計算でなくhlsl本のとおりに書いておく
+		// キューブマップのどの面か調べるため、3軸で一番座標が大きい値を探す
+		float3 absPosition = abs(-vertexToPointLightDirection);
+		float maxCoordinateVal = max(absPosition.x, max(absPosition.y, absPosition.z));
+		float depth = (_pointLightProjection._m22 * maxCoordinateVal + _pointLightProjection._m32) / maxCoordinateVal;
 		// zファイティングを避けるための微調整
-		lightPosition.z -= 0.001;
+		//lightPosition.z -= 0.001;
 
-		shadowAttenuation = _shadowMap.SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
+		shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, -vertexToPointLightDirection, depth);
 	}
 
 	if (_spotLightHasShadowMap > 0.0)

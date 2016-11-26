@@ -197,9 +197,45 @@ void PointLight::setIntensity(float intensity)
 }
 
 void PointLight::initShadowMap(float nearClip, float size) {
-	_shadowMapData.viewMatrix = Mat4::createLookAtWithDirection(
+	// x正方向
+	_shadowMapData.viewMatrices[0] = Mat4::createLookAtWithDirection(
 		getPosition(),
-		Vec3(-1.0f, -1.0f, -1.0f),
+		Vec3(1.0f, 0.0f, 0.0f),
+		Vec3(0.0f, 1.0f, 0.0f)
+	);
+
+	// x負方向
+	_shadowMapData.viewMatrices[1] = Mat4::createLookAtWithDirection(
+		getPosition(),
+		Vec3(-1.0f, 0.0f, 0.0f),
+		Vec3(0.0f, 1.0f, 0.0f)
+	);
+
+	// y正方向
+	_shadowMapData.viewMatrices[2] = Mat4::createLookAtWithDirection(
+		getPosition(),
+		Vec3(0.0f, 1.0f, 0.0f),
+		Vec3(0.0f, 0.0f, 1.0f)
+	);
+
+	// y負方向
+	_shadowMapData.viewMatrices[3] = Mat4::createLookAtWithDirection(
+		getPosition(),
+		Vec3(0.0f, -1.0f, 0.0f),
+		Vec3(0.0f, 0.0f, -1.0f)
+	);
+
+	// z正方向
+	_shadowMapData.viewMatrices[4] = Mat4::createLookAtWithDirection(
+		getPosition(),
+		Vec3(0.0f, 0.0f, 1.0f),
+		Vec3(0.0f, 1.0f, 0.0f)
+	);
+
+	// z負方向
+	_shadowMapData.viewMatrices[5] = Mat4::createLookAtWithDirection(
+		getPosition(),
+		Vec3(0.0f, 0.0f, -1.0f),
 		Vec3(0.0f, 1.0f, 0.0f)
 	);
 
@@ -214,10 +250,6 @@ void PointLight::initShadowMap(float nearClip, float size) {
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	_constantBufferData.hasShadowMap = 1.0f;
 
-	Mat4 lightViewMatrix = _shadowMapData.viewMatrix;
-	lightViewMatrix.transpose();
-	_constantBufferData.viewMatrix = lightViewMatrix;
-
 	Mat4 lightProjectionMatrix = _shadowMapData.projectionMatrix;
 	lightProjectionMatrix = Mat4::CHIRARITY_CONVERTER * lightProjectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 	lightProjectionMatrix.transpose();
@@ -226,8 +258,15 @@ void PointLight::initShadowMap(float nearClip, float size) {
 	Mat4 depthBiasMatrix = (Mat4::TEXTURE_COORDINATE_CONVERTER * Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, -1.0f, 0.0f))).transpose(); //TODO: Mat4を参照型にすると値がおかしくなってしまう
 	_constantBufferData.depthBiasMatrix = depthBiasMatrix;
 
+	for (int i = 0; i < NUM_FACE_CUBEMAP_TEXTURE; i++)
+	{
+		Mat4 lightViewMatrix = _shadowMapData.viewMatrices[i];
+		lightViewMatrix.transpose();
+		_constantBufferData.viewMatrices[i] = lightViewMatrix;
+	}
+
 	_shadowMapData.depthTexture = new D3DTexture();
-	_shadowMapData.depthTexture->initDepthStencilTexture(Size(size, size));
+	_shadowMapData.depthTexture->initDepthStencilCubeMapTexture(size);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	_hasShadowMap = true;
 
@@ -236,7 +275,7 @@ void PointLight::initShadowMap(float nearClip, float size) {
 	drawBuffer.push_back(GL_NONE);
 	std::vector<GLenum> pixelFormats;
 	pixelFormats.push_back(GL_DEPTH_COMPONENT);
-	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, false, size);
+	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, false, Size(size, size));
 #endif
 }
 

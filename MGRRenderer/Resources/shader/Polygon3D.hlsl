@@ -52,9 +52,15 @@ cbuffer DirectionalLightParameter : register(b9)
 	float4 _directionalLightColor;
 };
 
+static const int NUM_FACE_CUBEMAP_TEXTURE = 6;
+
 cbuffer PointLightParameter : register(b10)
 {
-	float4 _pointLightColor;
+	matrix _pointLightViewMatrices[NUM_FACE_CUBEMAP_TEXTURE];
+	matrix _pointLightProjectionMatrix;
+	matrix _pointLightDepthBiasMatrix;
+	float3 _pointLightColor;
+	float _pointLightHasShadowMap;
 	float3 _pointLightPosition;
 	float _pointLightRangeInverse;
 };
@@ -87,9 +93,20 @@ struct PS_INPUT
 	float3 vertexToSpotLightDirection : SPOT_LIGHT_DIRECTION;
 };
 
+struct GS_SM_POINT_LIGHT_INPUT
+{
+	float4 position : SV_POSITION;
+};
+
 struct PS_SM_INPUT
 {
 	float4 lightPosition : SV_POSITION;
+};
+
+struct PS_SM_POINT_LIGHT_INPUT
+{
+	float4 lightPosition : SV_POSITION;
+	uint cubeMapFaceIndex : SV_RenderTargetArrayIndex;
 };
 
 struct PS_GBUFFER_INPUT
@@ -130,6 +147,33 @@ PS_SM_INPUT VS_SM(VS_INPUT input)
 	position = mul(position, _view);
 	output.lightPosition = mul(position, _projection);
 	return output;
+}
+
+GS_SM_POINT_LIGHT_INPUT VS_SM_POINT_LIGHT(VS_INPUT input)
+{
+	GS_SM_POINT_LIGHT_INPUT output;
+
+	float4 position = float4(input.position, 1.0);
+	output.position = mul(position, _model);
+	return output;
+}
+
+[maxvertexcount(18)]
+void GS_SM_POINT_LIGHT(triangle GS_SM_POINT_LIGHT_INPUT input[3], inout TriangleStream<PS_SM_POINT_LIGHT_INPUT> triangleStream)
+{
+	for (int i = 0; i < NUM_FACE_CUBEMAP_TEXTURE; i++)
+	{
+		PS_SM_POINT_LIGHT_INPUT output;
+
+		output.cubeMapFaceIndex = i;
+		for (int j = 0; j < 3; j++)
+		{
+			float4 position = mul(input[j].position, _pointLightViewMatrices[i]);
+			output.lightPosition = mul(position, _pointLightProjectionMatrix);
+			triangleStream.Append(output);
+		}
+		triangleStream.RestartStrip();
+	}
 }
 
 PS_GBUFFER_INPUT VS_GBUFFER(VS_INPUT input)
@@ -182,12 +226,13 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	return _multiplyColor * float4(shadowAttenuation * diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
 }
 
-float4 PS_SM(PS_SM_INPUT input) : SV_TARGET
-{
-	// 深度をグレースケールで表現する
-	float z = input.lightPosition.z;
-	return float4(z, z, z, 1.0);
-}
+// 使っていないのでコメントアウト
+//float4 PS_SM(PS_SM_INPUT input) : SV_TARGET
+//{
+//	// 深度をグレースケールで表現する
+//	float z = input.lightPosition.z;
+//	return float4(z, z, z, 1.0);
+//}
 
 PS_GBUFFER_OUT PS_GBUFFER(PS_GBUFFER_INPUT input)
 {

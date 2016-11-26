@@ -597,6 +597,8 @@ void Renderer::renderDeferred()
 	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
 	ID3D11ShaderResourceView* shadowMapResourceView = nullptr;
+	ID3D11ShaderResourceView* shadowCubeMapResourceView = nullptr;
+
 	// ライトの設定
 	// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
 	for (Light* light : Director::getLight())
@@ -681,8 +683,9 @@ void Renderer::renderDeferred()
 		case LightType::POINT: {
 			if (light->hasShadowMap())
 			{
-				shadowMapResourceView = static_cast<PointLight*>(light)->getShadowMapData().depthTexture->getShaderResourceView();
+				shadowCubeMapResourceView = static_cast<PointLight*>(light)->getShadowMapData().depthTexture->getShaderResourceView();
 			}
+
 			result = direct3dContext->Map(
 				_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER),
 				0,
@@ -767,26 +770,28 @@ void Renderer::renderDeferred()
 	_d3dProgram.setShadersToDirect3DContext(direct3dContext);
 	_d3dProgram.setConstantBuffersToDirect3DContext(direct3dContext);
 
-	if (shadowMapResourceView == nullptr)
+	ID3D11ShaderResourceView* gBufferShaderResourceViews[4] = {
+		getGBufferDepthStencil()->getShaderResourceView(),
+		getGBufferColorSpecularIntensity()->getShaderResourceView(),
+		getGBufferNormal()->getShaderResourceView(),
+		getGBufferSpecularPower()->getShaderResourceView(),
+	};
+	direct3dContext->PSSetShaderResources(0, 4, gBufferShaderResourceViews);
+
+	if (shadowMapResourceView != nullptr)
 	{
-		ID3D11ShaderResourceView* gBufferShaderResourceViews[4] = {
-			getGBufferDepthStencil()->getShaderResourceView(),
-			getGBufferColorSpecularIntensity()->getShaderResourceView(),
-			getGBufferNormal()->getShaderResourceView(),
-			getGBufferSpecularPower()->getShaderResourceView(),
-		};
-		direct3dContext->PSSetShaderResources(0, 4, gBufferShaderResourceViews);
-	}
-	else
-	{
-		ID3D11ShaderResourceView* gBufferShaderResourceViews[5] = {
-			getGBufferDepthStencil()->getShaderResourceView(),
-			getGBufferColorSpecularIntensity()->getShaderResourceView(),
-			getGBufferNormal()->getShaderResourceView(),
-			getGBufferSpecularPower()->getShaderResourceView(),
+		ID3D11ShaderResourceView* shaderResourceViews[1] = {
 			shadowMapResourceView,
 		};
-		direct3dContext->PSSetShaderResources(0, 5, gBufferShaderResourceViews);
+		direct3dContext->PSSetShaderResources(4, 1, shaderResourceViews);
+	}
+
+	if (shadowCubeMapResourceView != nullptr)
+	{
+		ID3D11ShaderResourceView* shaderResourceViews[1] = {
+			shadowCubeMapResourceView,
+		};
+		direct3dContext->PSSetShaderResources(5, 1, shaderResourceViews);
 	}
 
 	// TODO:サンプラはテクスチャごとに作る必要はない

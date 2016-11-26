@@ -22,6 +22,7 @@ private:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	D3DProgram _d3dProgramForGBuffer;
 	D3DProgram _d3dProgramForShadowMap;
+	D3DProgram _d3dProgramForPointLightShadowMap;
 	D3DProgram _d3dProgram;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgramForGBuffer;

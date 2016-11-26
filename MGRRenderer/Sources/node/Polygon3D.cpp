@@ -79,6 +79,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.addVertexBuffer(vertexBuffer);
 	_d3dProgramForShadowMap.addVertexBuffer(vertexBuffer);
+	_d3dProgramForPointLightShadowMap.addVertexBuffer(vertexBuffer);
 	_d3dProgramForGBuffer.addVertexBuffer(vertexBuffer);
 
 	// ノーマルバッファのサブリソースの作成
@@ -92,6 +93,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.addVertexBuffer(vertexBuffer);
 	_d3dProgramForShadowMap.addVertexBuffer(vertexBuffer);
+	_d3dProgramForPointLightShadowMap.addVertexBuffer(vertexBuffer);
 	_d3dProgramForGBuffer.addVertexBuffer(vertexBuffer);
 
 	// インデックスバッファ用の配列の用意。素直に昇順に番号付けする
@@ -127,11 +129,13 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.setIndexBuffer(indexBuffer);
 	_d3dProgramForShadowMap.setIndexBuffer(indexBuffer);
+	_d3dProgramForPointLightShadowMap.setIndexBuffer(indexBuffer);
 	_d3dProgramForGBuffer.setIndexBuffer(indexBuffer);
 
 	bool depthEnable = true;
 	_d3dProgram.initWithShaderFile("Resources/shader/Polygon3D.hlsl", depthEnable, "VS", "", "PS");
 	_d3dProgramForShadowMap.initWithShaderFile("Resources/shader/Polygon3D.hlsl", depthEnable, "VS_SM", "", "");
+	_d3dProgramForPointLightShadowMap.initWithShaderFile("Resources/shader/Polygon3D.hlsl", depthEnable, "VS_SM_POINT_LIGHT", "GS_SM_POINT_LIGHT", "");
 	_d3dProgramForGBuffer.initWithShaderFile("Resources/shader/Polygon3D.hlsl", depthEnable, "VS_GBUFFER", "", "PS_GBUFFER");
 
 	// 入力レイアウトオブジェクトの作成
@@ -154,6 +158,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.setInputLayout(inputLayout);
 	_d3dProgramForShadowMap.setInputLayout(inputLayout);
+	_d3dProgramForPointLightShadowMap.setInputLayout(inputLayout);
 	_d3dProgramForGBuffer.setInputLayout(inputLayout);
 
 	// 定数バッファの作成
@@ -175,6 +180,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
 
 	// View行列用
@@ -187,6 +193,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 
 	// Projection行列用
@@ -199,6 +206,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 
 	// Normal行列用
@@ -210,6 +218,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_NORMAL_MATRIX, constantBuffer);
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_NORMAL_MATRIX, constantBuffer);
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_NORMAL_MATRIX, constantBuffer);
 
 	// 乗算色
@@ -222,6 +231,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 
 	// アンビエントライトカラー
@@ -234,6 +244,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer);
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer);
 
 	// ディレクショナルトライトView行列用
 	constantBufferDesc.ByteWidth = sizeof(Mat4);
@@ -245,6 +256,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX, constantBuffer);
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX, constantBuffer);
 
 	// ディレクショナルトライトProjection行列用
 	constantBuffer = nullptr;
@@ -255,6 +267,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer);
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer);
 
 	// ディレクショナルトライトデプスバイアス行列用
 	constantBuffer = nullptr;
@@ -265,6 +278,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
 
 	// ディレクショナルトライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(DirectionalLight::ConstantBufferData);
@@ -276,6 +290,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer);
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer);
 
 	// ポイントライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(PointLight::ConstantBufferData);
@@ -287,6 +302,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer);
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer);
 
 	// スポットライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(SpotLight::ConstantBufferData);
@@ -533,34 +549,15 @@ void Polygon3D::renderShadowMap()
 	_renderShadowMapCommand.init([=]
 	{
 		bool makeShadowMap = false;
-		Mat4 lightViewMatrix;
-		Mat4 lightProjectionMatrix;
 
-		for (Light* light : Director::getLight())
+		// 現状シャドウマップは一個しか想定してない
+		Light* light = nullptr;
+		for (Light* oneLight : Director::getLight())
 		{
-			if (light->hasShadowMap())
+			if (oneLight->hasShadowMap())
 			{
 				makeShadowMap = true;
-
-				switch (light->getLightType())
-				{
-				case LightType::DIRECTION:
-					lightViewMatrix = static_cast<DirectionalLight*>(light)->getShadowMapData().viewMatrix;
-					lightProjectionMatrix = static_cast<DirectionalLight*>(light)->getShadowMapData().projectionMatrix;
-					break;
-				case LightType::POINT:
-					lightViewMatrix = static_cast<PointLight*>(light)->getShadowMapData().viewMatrix;
-					lightProjectionMatrix = static_cast<PointLight*>(light)->getShadowMapData().projectionMatrix;
-					break;
-				case LightType::SPOT:
-					lightViewMatrix = static_cast<SpotLight*>(light)->getShadowMapData().viewMatrix;
-					lightProjectionMatrix = static_cast<SpotLight*>(light)->getShadowMapData().projectionMatrix;
-					break;
-				default:
-					Logger::logAssert(false, "シャドウマップをもたないはずのライトタイプが入力された。");
-					break;
-				}
-				// 現状シャドウマップは一個しか想定してない
+				light = oneLight;
 				break;
 			}
 		}
@@ -571,64 +568,131 @@ void Polygon3D::renderShadowMap()
 			return;
 		}
 
+		Mat4 lightViewMatrix;
+		Mat4 lightProjectionMatrix;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 
-		// モデル行列のマップ
-		HRESULT result = direct3dContext->Map(
-			_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX),
-			0,
-			D3D11_MAP_WRITE_DISCARD,
-			0,
-			&mappedResource
-		);
-		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 modelMatrix = getModelMatrix();
-		modelMatrix.transpose();
-		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
-		direct3dContext->Unmap(_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
+		switch (light->getLightType())
+		{
+		case LightType::DIRECTION:
+			lightViewMatrix = static_cast<DirectionalLight*>(light)->getShadowMapData().viewMatrix;
+			lightProjectionMatrix = static_cast<DirectionalLight*>(light)->getShadowMapData().projectionMatrix;
+			break;
+		case LightType::SPOT:
+			lightViewMatrix = static_cast<SpotLight*>(light)->getShadowMapData().viewMatrix;
+			lightProjectionMatrix = static_cast<SpotLight*>(light)->getShadowMapData().projectionMatrix;
+			break;
+		}
 
-		// ビュー行列のマップ
-		result = direct3dContext->Map(
-			_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX),
-			0,
-			D3D11_MAP_WRITE_DISCARD,
-			0,
-			&mappedResource
-		);
-		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		lightViewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
-		CopyMemory(mappedResource.pData, &lightViewMatrix.m, sizeof(lightViewMatrix));
-		direct3dContext->Unmap(_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
+		switch (light->getLightType())
+		{
+		case LightType::DIRECTION:
+		case LightType::SPOT:
+		{
+			// モデル行列のマップ
+			HRESULT result = direct3dContext->Map(
+				_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX),
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&mappedResource
+			);
+			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+			Mat4 modelMatrix = getModelMatrix();
+			modelMatrix.transpose();
+			CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
+			direct3dContext->Unmap(_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
 
-		// プロジェクション行列のマップ
-		result = direct3dContext->Map(
-			_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX),
-			0,
-			D3D11_MAP_WRITE_DISCARD,
-			0,
-			&mappedResource
-		);
-		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		lightProjectionMatrix = Mat4::CHIRARITY_CONVERTER * lightProjectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
-		lightProjectionMatrix.transpose();
-		CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
-		direct3dContext->Unmap(_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
+			// ビュー行列のマップ
+			result = direct3dContext->Map(
+				_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX),
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&mappedResource
+			);
+			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+			lightViewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
+			CopyMemory(mappedResource.pData, &lightViewMatrix.m, sizeof(lightViewMatrix));
+			direct3dContext->Unmap(_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
 
-		UINT strides[2] = {sizeof(Vec3), sizeof(Vec3)};
-		UINT offsets[2] = {0, 0};
-		direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers().size(), _d3dProgramForShadowMap.getVertexBuffers().data(), strides, offsets);
-		direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
-		direct3dContext->IASetInputLayout(_d3dProgramForShadowMap.getInputLayout());
-		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			// プロジェクション行列のマップ
+			result = direct3dContext->Map(
+				_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX),
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&mappedResource
+			);
+			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+			lightProjectionMatrix = Mat4::CHIRARITY_CONVERTER * lightProjectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
+			lightProjectionMatrix.transpose();
+			CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
+			direct3dContext->Unmap(_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
-		_d3dProgramForShadowMap.setShadersToDirect3DContext(direct3dContext);
-		_d3dProgramForShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
+			UINT strides[2] = {sizeof(Vec3), sizeof(Vec3)};
+			UINT offsets[2] = {0, 0};
+			direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers().size(), _d3dProgramForShadowMap.getVertexBuffers().data(), strides, offsets);
+			direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+			direct3dContext->IASetInputLayout(_d3dProgramForShadowMap.getInputLayout());
+			direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(_d3dProgramForShadowMap.getBlendState(), blendFactor, 0xffffffff);
+			_d3dProgramForShadowMap.setShadersToDirect3DContext(direct3dContext);
+			_d3dProgramForShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
+
+			FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+			direct3dContext->OMSetBlendState(_d3dProgramForShadowMap.getBlendState(), blendFactor, 0xffffffff);
+		}
+			break;
+		case LightType::POINT:
+		{
+			// モデル行列のマップ
+			HRESULT result = direct3dContext->Map(
+				_d3dProgramForPointLightShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX),
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&mappedResource
+			);
+			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+			Mat4 modelMatrix = getModelMatrix();
+			modelMatrix.transpose();
+			CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
+			direct3dContext->Unmap(_d3dProgramForPointLightShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
+
+			// ビュー行列とプロジェクション行列のマップ
+			result = direct3dContext->Map(
+				_d3dProgramForPointLightShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER),
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&mappedResource
+			);
+			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+			CopyMemory(mappedResource.pData, light->getConstantBufferDataPointer(), sizeof(PointLight::ConstantBufferData));
+			direct3dContext->Unmap(_d3dProgramForPointLightShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER), 0);
+
+			UINT strides[2] = {sizeof(Vec3), sizeof(Vec3)};
+			UINT offsets[2] = {0, 0};
+			direct3dContext->IASetVertexBuffers(0, _d3dProgramForPointLightShadowMap.getVertexBuffers().size(), _d3dProgramForPointLightShadowMap.getVertexBuffers().data(), strides, offsets);
+			direct3dContext->IASetIndexBuffer(_d3dProgramForPointLightShadowMap.getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+			direct3dContext->IASetInputLayout(_d3dProgramForPointLightShadowMap.getInputLayout());
+			direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			_d3dProgramForPointLightShadowMap.setShadersToDirect3DContext(direct3dContext);
+			_d3dProgramForPointLightShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
+
+			FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+			direct3dContext->OMSetBlendState(_d3dProgramForPointLightShadowMap.getBlendState(), blendFactor, 0xffffffff);
+		}
+			break;
+		default:
+			Logger::logAssert(false, "シャドウマップをもたないはずのライトタイプが入力された。");
+			break;
+		}
 
 		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)

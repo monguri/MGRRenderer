@@ -148,9 +148,12 @@ class PointLight :
 	public Light
 {
 public:
+	static constexpr int NUM_FACE_CUBEMAP_TEXTURE = 6;
+
 	struct ShadowMapData
 	{
-		Mat4 viewMatrix;
+		// 順番は、x正方向、x負方向、y正方向、y負方向、z正方向、z負方向
+		Mat4 viewMatrices[NUM_FACE_CUBEMAP_TEXTURE];
 		Mat4 projectionMatrix;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		D3DTexture* depthTexture;
@@ -178,7 +181,8 @@ public:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	struct ConstantBufferData
 	{
-		Mat4 viewMatrix;
+		// 順番は、x正方向、x負方向、y正方向、y負方向、z正方向、z負方向
+		Mat4 viewMatrices[NUM_FACE_CUBEMAP_TEXTURE];
 		Mat4 projectionMatrix;
 		Mat4 depthBiasMatrix;
 		Color3F color;

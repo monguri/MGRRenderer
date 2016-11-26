@@ -191,6 +191,95 @@ bool D3DTexture::initDepthStencilTexture(const Size & size)
 	return true;
 }
 
+bool D3DTexture::initDepthStencilCubeMapTexture(float size)
+{
+	_contentSize = Size(size, size);
+
+	ID3D11Device* device = Director::getInstance()->getDirect3dDevice();
+
+	// テクスチャ生成
+	D3D11_TEXTURE2D_DESC texDesc;
+	texDesc.Width = static_cast<UINT>(size);
+	texDesc.Height = static_cast<UINT>(size);
+	texDesc.MipLevels = 1;
+	texDesc.ArraySize = 6;
+	//texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	//texDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	texDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+	texDesc.SampleDesc.Count = 1;
+	texDesc.SampleDesc.Quality = 0;
+	texDesc.Usage = D3D11_USAGE_DEFAULT;
+	texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	texDesc.CPUAccessFlags = 0;
+	texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+
+	ID3D11Texture2D* texture = nullptr;
+	HRESULT result = device->CreateTexture2D(&texDesc, nullptr, &texture);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateTexture2D failed. result=%d", result);
+		return false;
+	}
+
+	// デプスステンシルビュー生成
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+	//dsvDesc.Format = texDesc.Format;
+	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+	dsvDesc.Flags = 0;
+	dsvDesc.Texture2DArray.MipSlice = 0;
+	dsvDesc.Texture2DArray.FirstArraySlice = 0;
+	dsvDesc.Texture2DArray.ArraySize = 6;
+
+	result = device->CreateDepthStencilView(texture, &dsvDesc, &_depthStencilView);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateDepthStencilView failed. result=%d", result);
+		return false;
+	}
+
+	// シェーダリソースビュー生成
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	//srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	//srvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+
+	result = device->CreateShaderResourceView(texture, &srvDesc, &_shaderResourceView);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateShaderResourceView failed. result=%d", result);
+		return false;
+	}
+
+	// 深度、ステンシルステートオブジェクトの作成
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+	depthStencilDesc.DepthEnable = TRUE;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthStencilDesc.StencilEnable = TRUE;
+	depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+	depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_REPLACE;
+	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_REPLACE;
+	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
+	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_REPLACE;
+	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_REPLACE;
+	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
+	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	result = device->CreateDepthStencilState(&depthStencilDesc, &_depthStencilState);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateDepthStencilState failed. result=%d", result);
+		return false;
+	}
+
+	return true;
+}
+
 bool D3DTexture::initRenderTexture(const Size & size, DXGI_FORMAT textureFormat)
 {
 	_contentSize = size;

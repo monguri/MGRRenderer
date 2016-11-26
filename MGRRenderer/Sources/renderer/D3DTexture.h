@@ -15,6 +15,7 @@ public:
 	~D3DTexture();
 	bool initWithImage(const Image& image, TextureUtility::PixelFormat format) override;
 	bool initDepthStencilTexture(const Size& size);
+	bool initDepthStencilCubeMapTexture(float size);
 	bool initRenderTexture(const Size& size, DXGI_FORMAT textureFormat);
 
 	// デプステクスチャやレンダーターゲットなど描画により書き込みするときにのみ使う

@@ -84,7 +84,8 @@ private:
 	float calculateDeltaTime();
 	void updateStats(float dt);
 	void createStatsLabel();
-	void createGBufferSprite();
+	void initGBufferSprite();
+	void clearGBufferSprite();
 	void renderGBufferSprite();
 };
 

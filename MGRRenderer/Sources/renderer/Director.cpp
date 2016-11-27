@@ -37,29 +37,7 @@ _farClip(0.0f)
 
 Director::~Director()
 {
-	if (_gBufferSpecularPower != nullptr)
-	{
-		delete _gBufferSpecularPower;
-		_gBufferSpecularPower = nullptr;
-	}
-
-	if (_gBufferNormal != nullptr)
-	{
-		delete _gBufferNormal;
-		_gBufferNormal = nullptr;
-	}
-
-	if (_gBufferColorSpecularIntensitySprite != nullptr)
-	{
-		delete _gBufferColorSpecularIntensitySprite;
-		_gBufferColorSpecularIntensitySprite = nullptr;
-	}
-
-	if (_gBufferDepthStencil != nullptr)
-	{
-		delete _gBufferDepthStencil;
-		_gBufferDepthStencil = nullptr;
-	}
+	clearGBufferSprite();
 
 	if (_FPSLabel != nullptr)
 	{
@@ -114,13 +92,14 @@ void Director::init(const Size& windowSize, float nearClip, float farClip)
 #endif
 
 	createStatsLabel();
-	createGBufferSprite();
 }
 
 void Director::setScene(const Scene& scene)
 {
 	// Sceneはサイズの大きなstd::vectorを含むのでコピーコンストラクトさせたくないのでmoveする。
 	_scene = std::move(scene);
+	// Gバッファのデプスのプロジェクション行列はシーンに設定したカメラの設定に依存するのでここでGバッファを初期化する
+	initGBufferSprite();
 }
 
 void Director::update()
@@ -206,11 +185,40 @@ void Director::createStatsLabel()
 #endif
 }
 
-void Director::createGBufferSprite()
+void Director::clearGBufferSprite()
 {
+	if (_gBufferSpecularPower != nullptr)
+	{
+		delete _gBufferSpecularPower;
+		_gBufferSpecularPower = nullptr;
+	}
+
+	if (_gBufferNormal != nullptr)
+	{
+		delete _gBufferNormal;
+		_gBufferNormal = nullptr;
+	}
+
+	if (_gBufferColorSpecularIntensitySprite != nullptr)
+	{
+		delete _gBufferColorSpecularIntensitySprite;
+		_gBufferColorSpecularIntensitySprite = nullptr;
+	}
+
+	if (_gBufferDepthStencil != nullptr)
+	{
+		delete _gBufferDepthStencil;
+		_gBufferDepthStencil = nullptr;
+	}
+}
+
+void Director::initGBufferSprite()
+{
+	clearGBufferSprite();
+
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	_gBufferDepthStencil = new Sprite2D();
-	_gBufferDepthStencil->initWithRenderBuffer(_renderer.getGBufferDepthStencil(), Sprite2D::RenderBufferType::DEPTH_TEXTURE);
+	_gBufferDepthStencil->initWithDepthStencilTexture(_renderer.getGBufferDepthStencil(), Sprite2D::RenderBufferType::DEPTH_TEXTURE, getNearClip(), getFarClip(), getCamera().getProjectionMatrix());
 #elif defined(MGRRENDERER_USE_OPENGL)
 	if (_renderer.getGBuffers()[0] != nullptr) // デプスステンシルにはレンダーバッファを使ってテクスチャを使わなかった場合は表示しない
 	{

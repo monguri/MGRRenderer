@@ -205,10 +205,13 @@ public:
 	bool hasShadowMap() const override;
 	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 	void prepareShadowMapRendering() override;
+	float getNearClip() const { Logger::logAssert(hasShadowMap(), "シャドウマップを持っていないのに持っている前提のメソッドを呼び出した。"); return _nearClip; }
+	Mat4 getProjectionMatrix() const { Logger::logAssert(hasShadowMap(), "シャドウマップを持っていないのに持っている前提のメソッドを呼び出した。"); return _shadowMapData.projectionMatrix; }
 
 private:
 	// 減衰率計算に用いる、光の届く範囲　正しい物理計算だと無限遠まで届くが、そうでないモデルをcocosが使ってるのでそれを採用
 	float _range;
+	float _nearClip;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	ConstantBufferData _constantBufferData;
 #elif defined(MGRRENDERER_USE_OPENGL)

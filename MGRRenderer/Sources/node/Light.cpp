@@ -168,6 +168,7 @@ PointLight::PointLight(const Vec3& position, const Color3B& color, float range) 
 #if defined(MGRRENDERER_USE_OPENGL)
 _hasShadowMap(false),
 #endif
+_nearClip(0.0f),
 _range(range)
 {
 	setPosition(position);
@@ -196,7 +197,10 @@ void PointLight::setIntensity(float intensity)
 #endif
 }
 
-void PointLight::initShadowMap(float nearClip, float size) {
+void PointLight::initShadowMap(float nearClip, float size)
+{
+	_nearClip = nearClip;
+
 	// xê≥ï˚å¸
 	_shadowMapData.viewMatrices[0] = Mat4::createLookAtWithDirection(
 		getPosition(),

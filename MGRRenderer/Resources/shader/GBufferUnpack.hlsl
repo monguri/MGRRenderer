@@ -4,6 +4,7 @@ cbuffer DepthTextureProjectionMatrix // include前提なのでレジスタは指定しない
 };
 
 Texture2D<float4> _gBuffer : register(t0); // デプステクスチャはTexture2D<float>で十分だが、Texture2D<float4>でも読み込める
+TextureCube<float4> _depthCubeMap : register(t1);
 SamplerState _samplerState : register(s0);
 
 struct UnpackGBufferData
@@ -18,6 +19,13 @@ struct UnpackGBufferData
 float unpackDepthGBuffer(float2 uv)
 {
 	float depth = _gBuffer.Sample(_samplerState, uv).x;
+	// 右手系で計算
+	return _depthTextureProjection._m32 / (depth - _depthTextureProjection._m22);
+}
+
+float unpackDepthCubeMap(float3 uvw)
+{
+	float depth = _depthCubeMap.Sample(_samplerState, uvw).x;
 	// 右手系で計算
 	return _depthTextureProjection._m32 / (depth - _depthTextureProjection._m22);
 }

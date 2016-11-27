@@ -13,11 +13,19 @@ cbuffer ProjectionMatrix : register(b2)
 	matrix _projection;
 };
 
+static const uint CUBEMAP_FACE_X_POSITIVE = 0;
+static const uint CUBEMAP_FACE_X_NEGATIVE = 1;
+static const uint CUBEMAP_FACE_Y_POSITIVE = 2;
+static const uint CUBEMAP_FACE_Y_NEGATIVE = 3;
+static const uint CUBEMAP_FACE_Z_POSITIVE = 4;
+static const uint CUBEMAP_FACE_Z_NEGATIVE = 5;
+
 cbuffer DepthTextureNearFarClipDistance : register(b3)
 {
 	float _nearClipZ;
 	float _farClipZ;
-	float2 _padding; // 16バイトアラインメントのためのパディング
+	uint _cubeMapFace;
+	float _padding; // 16バイトアラインメントのためのパディング
 };
 
 // GBuffer.hlslに必要な定数バッファを追加するためにここでインクルードする
@@ -26,6 +34,12 @@ cbuffer DepthTextureNearFarClipDistance : register(b3)
 struct VS_INPUT
 {
 	float3 position : POSITION;
+	float2 texCoord : TEX_COORD;
+};
+
+struct GS_INPUT
+{
+	float4 position : SV_POSITION;
 	float2 texCoord : TEX_COORD;
 };
 
@@ -48,10 +62,63 @@ PS_INPUT VS(VS_INPUT input)
 	return output;
 }
 
+//[maxvertexcount(3)]
+//void GS_DEPTH_CUBEMAP_TEXTURE(triangle GS_INPUT input[3], inout TriangleStream<PS_DEPTH_CUBEMAP_TEXTURE_INPUT> triangleStream)
+//{
+//	PS_DEPTH_CUBEMAP_TEXTURE_INPUT output;
+//
+//	output.cubeMapFaceIndex = _cubeMapFace;
+//	for (int i = 0; i < 3; i++)
+//	{
+//		output.position = input[i].position;
+//		output.texCoord = input[i].texCoord;
+//		triangleStream.Append(output);
+//	}
+//	triangleStream.RestartStrip();
+//}
+
 float4 PS_DEPTH_TEXTURE(PS_INPUT input) : SV_TARGET
 {
 	// 右手系で計算
 	float viewDepth = unpackDepthGBuffer(input.texCoord);
+	float grayScale = 1.0 - saturate((_nearClipZ - viewDepth) / (_nearClipZ - _farClipZ));
+	return float4(
+		grayScale,
+		grayScale,
+		grayScale,
+		1.0
+	);
+}
+
+float4 PS_DEPTH_CUBEMAP_TEXTURE(PS_INPUT input) : SV_TARGET
+{
+	// キューブマップ用の座標系に変換
+	float2 texCoord = input.texCoord * 2.0 - 1.0;
+	// 右手系で計算
+	float3 str;
+	switch (_cubeMapFace)
+	{
+		case CUBEMAP_FACE_X_POSITIVE:
+			str = float3(1.0, texCoord.y, texCoord.x);
+			break;
+		case CUBEMAP_FACE_X_NEGATIVE:
+			str = float3(-1.0, texCoord.y, texCoord.x);
+			break;
+		case CUBEMAP_FACE_Y_POSITIVE:
+			str = float3(texCoord.x, 1.0, texCoord.y);
+			break;
+		case CUBEMAP_FACE_Y_NEGATIVE:
+			str = float3(texCoord.x, -1.0, texCoord.y);
+			break;
+		case CUBEMAP_FACE_Z_POSITIVE:
+			str = float3(texCoord.x, texCoord.y, 1.0);
+			break;
+		case CUBEMAP_FACE_Z_NEGATIVE:
+			str = float3(texCoord.x, texCoord.y, -1.0);
+			break;
+	}
+
+	float viewDepth = unpackDepthCubeMap(str);
 	float grayScale = 1.0 - saturate((_nearClipZ - viewDepth) / (_nearClipZ - _farClipZ));
 	return float4(
 		grayScale,

@@ -31,12 +31,25 @@ public:
 	friend Director; // Gバッファのデバッグ描画のためDirectorには公開している
 
 	// TODO:本当はenumを分けるのでなくマテリアルをノードから切り離してマテリアルを引数で与えるようにしたい
-	enum class RenderBufferType : int {
+	enum class RenderBufferType : int
+	{
 		NONE = -1,
 		DEPTH_TEXTURE,
+		DEPTH_CUBEMAP_TEXTURE,
 		GBUFFER_COLOR_SPECULAR_INTENSITY,
 		GBUFFER_NORMAL,
 		GBUFFER_SPECULAR_POWER,
+	};
+
+	enum class CubeMapFace : int
+	{
+		NONE = -1,
+		X_POSITIVE,
+		X_NEGATIVE,
+		Y_POSITIVE,
+		Y_NEGATIVE,
+		Z_POSITIVE,
+		Z_NEGATIVE,
 	};
 
 	Sprite2D();
@@ -46,6 +59,7 @@ public:
 	bool initWithTexture(D3DTexture* texture);
 	// TODO:本当はメソッドを分けるのでなくマテリアルをノードから切り離してマテリアルを引数で与えるようにしたい
 	bool initWithRenderBuffer(D3DTexture* texture, RenderBufferType renderBufferType);
+	bool initWithDepthStencilTexture(D3DTexture* texture, RenderBufferType renderBufferType, float nearClip, float farClip, const Mat4& projectionMatrix, CubeMapFace face = CubeMapFace::NONE);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	bool initWithRenderBuffer(GLTexture* texture, RenderBufferType renderBufferType);
 #endif
@@ -68,10 +82,15 @@ protected:
 #endif
 
 private:
+	// デプステクスチャはリニアデプスに戻すのに3Dカメラのプロジェクション行列が必要なので、Sprite2Dの2Dカメラ用のプロジェクション行列の変数と区別している
 	static const std::string CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX;
-	static const std::string CONSTANT_BUFFER_DEPTH_TEXTURE_NEAR_FAR_CLIP_Z;
+	static const std::string CONSTANT_BUFFER_DEPTH_TEXTURE_PARAMETER;
 	bool _isOwnTexture; // 自前で生成したテクスチャであればこのクラス内で解放する
 	bool _isDepthTexture; // デプステクスチャを扱う場合
+	float _nearClip;
+	float _farClip;
+	Mat4 _projectionMatrix;
+	CubeMapFace _cubeMapFace;
 
 	void renderGBuffer() override;
 	void renderForward() override;

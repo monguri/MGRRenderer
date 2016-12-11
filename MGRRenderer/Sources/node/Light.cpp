@@ -88,6 +88,9 @@ void DirectionalLight::setIntensity(float intensity)
 
 void DirectionalLight::initShadowMap(const Vec3& cameraPosition, float nearClip, float farClip, const Size& size)
 {
+	_nearClip = nearClip;
+	_farClip = farClip;
+
 	_shadowMapData.viewMatrix = Mat4::createLookAtWithDirection(
 		cameraPosition,
 		getDirection(),
@@ -243,6 +246,7 @@ void PointLight::initShadowMap(float nearClip, float size)
 		Vec3(0.0f, 1.0f, 0.0f)
 	);
 
+	// プロジェクション行列は、キューブの中心からある面への四角錘を視錘台としたときの変換
 	_shadowMapData.projectionMatrix = Mat4::createPerspective(
 		45.0f, // field of view
 		1.0f, // aspectratio
@@ -336,6 +340,7 @@ SpotLight::SpotLight(const Vec3& position, const Vec3& direction, const Color3B&
 _hasShadowMap(false),
 #endif
 _direction(direction),
+_nearClip(0.0f),
 _range(range),
 _innerAngle(innerAngle),
 _outerAngle(outerAngle),
@@ -376,6 +381,8 @@ void SpotLight::setIntensity(float intensity)
 
 void SpotLight::initShadowMap(float nearClip, const Size& size)
 {
+	_nearClip = nearClip;
+
 	_shadowMapData.viewMatrix = Mat4::createLookAtWithDirection(
 		getPosition(),
 		getDirection(),

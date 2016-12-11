@@ -280,6 +280,7 @@ bool Sprite2D::initWithRenderBuffer(D3DTexture* texture, RenderBufferType render
 
 	static std::vector<RenderBufferMaterial> RenderBufferMaterialList = {
 		{"Resources/shader/PositionRenderBufferMultiplyColor.hlsl", "PS_DEPTH_TEXTURE"},
+		{"Resources/shader/PositionRenderBufferMultiplyColor.hlsl", "PS_DEPTH_TEXTURE_ORTHOGONAL"},
 		{"Resources/shader/PositionRenderBufferMultiplyColor.hlsl", "PS_DEPTH_CUBEMAP_TEXTURE"},
 		{"Resources/shader/PositionRenderBufferMultiplyColor.hlsl", "PS_GBUFFER_COLOR_SPECULAR_INTENSITY"},
 		{"Resources/shader/PositionRenderBufferMultiplyColor.hlsl", "PS_GBUFFER_NORMAL"},
@@ -293,7 +294,7 @@ bool Sprite2D::initWithRenderBuffer(D3DTexture* texture, RenderBufferType render
 
 bool Sprite2D::initWithDepthStencilTexture(D3DTexture* texture, RenderBufferType renderBufferType, float nearClip, float farClip, const Mat4& projectionMatrix, CubeMapFace face)
 {
-	Logger::logAssert(renderBufferType == RenderBufferType::DEPTH_TEXTURE || renderBufferType == RenderBufferType::DEPTH_CUBEMAP_TEXTURE, "レンダーバッファがデプスステンシルテクスチャでないのに専用の初期化メソッドを呼んだ。");
+	Logger::logAssert(renderBufferType == RenderBufferType::DEPTH_TEXTURE || renderBufferType == RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL || renderBufferType == RenderBufferType::DEPTH_CUBEMAP_TEXTURE, "レンダーバッファがデプスステンシルテクスチャでないのに専用の初期化メソッドを呼んだ。");
 
 	_nearClip = nearClip;
 	_farClip = farClip;
@@ -416,6 +417,7 @@ void Sprite2D::renderForward()
 		// デプステクスチャ描画時のプロジェクション行列の情報のマップ
 		switch (_renderBufferType) {
 			case RenderBufferType::DEPTH_TEXTURE:
+			case RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL:
 			case RenderBufferType::DEPTH_CUBEMAP_TEXTURE:
 			{
 				result = direct3dContext->Map(
@@ -445,7 +447,7 @@ void Sprite2D::renderForward()
 					&mappedResource
 				);
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				projectionMatrix = _projectionMatrix;
+				projectionMatrix = Mat4::CHIRARITY_CONVERTER * _projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
 				projectionMatrix.transpose();
 				CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX), 0);
@@ -512,6 +514,7 @@ void Sprite2D::renderForward()
 		// デプステクスチャ描画時のプロジェクション行列のマップ
 		switch (_renderBufferType) {
 			case RenderBufferType::DEPTH_TEXTURE:
+			case RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL:
 			case RenderBufferType::DEPTH_CUBEMAP_TEXTURE: //TODO:未対応
 			{
 				glUniform1f(_glProgram.getUniformLocation("u_nearClipZ"), -Director::getInstance()->getNearClip());

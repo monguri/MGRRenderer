@@ -591,7 +591,7 @@ void Renderer::renderDeferred()
 		&mappedResource
 	);
 	Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-	Mat4 projectionMatrix = Director::getCamera().getProjectionMatrix();
+	Mat4 projectionMatrix = Mat4::CHIRARITY_CONVERTER * Director::getCamera().getProjectionMatrix();
 	projectionMatrix.transpose();
 	CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);

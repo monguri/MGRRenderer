@@ -132,8 +132,12 @@ public:
 	bool hasShadowMap() const override;
 	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 	void prepareShadowMapRendering() override;
+	float getNearClip() const { Logger::logAssert(hasShadowMap(), "シャドウマップを持っていないのに持っている前提のメソッドを呼び出した。"); return _nearClip; }
+	float getFarClip() const { Logger::logAssert(hasShadowMap(), "シャドウマップを持っていないのに持っている前提のメソッドを呼び出した。"); return _farClip; }
 
 private:
+	float _nearClip;
+	float _farClip;
 	Vec3 _direction;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	ConstantBufferData _constantBufferData;
@@ -206,7 +210,6 @@ public:
 	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 	void prepareShadowMapRendering() override;
 	float getNearClip() const { Logger::logAssert(hasShadowMap(), "シャドウマップを持っていないのに持っている前提のメソッドを呼び出した。"); return _nearClip; }
-	Mat4 getProjectionMatrix() const { Logger::logAssert(hasShadowMap(), "シャドウマップを持っていないのに持っている前提のメソッドを呼び出した。"); return _shadowMapData.projectionMatrix; }
 
 private:
 	// 減衰率計算に用いる、光の届く範囲　正しい物理計算だと無限遠まで届くが、そうでないモデルをcocosが使ってるのでそれを採用
@@ -282,9 +285,11 @@ public:
 	bool hasShadowMap() const override;
 	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 	void prepareShadowMapRendering() override;
+	float getNearClip() const { Logger::logAssert(hasShadowMap(), "シャドウマップを持っていないのに持っている前提のメソッドを呼び出した。"); return _nearClip; }
 
 private:
 	Vec3 _direction;
+	float _nearClip;
 	float _range;
 	float _innerAngle;
 	float _outerAngle;

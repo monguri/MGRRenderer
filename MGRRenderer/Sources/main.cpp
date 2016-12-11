@@ -430,7 +430,8 @@ void initialize()
 
 	Director::getInstance()->init(Size(WINDOW_WIDTH, WINDOW_HEIGHT), NEAR_CLIP, FAR_CLIP);
 	Director::getInstance()->setDisplayStats(true);
-	Director::getInstance()->setDisplayGBuffer(true);
+	//Director::getInstance()->setDisplayGBuffer(true);
+	Director::getInstance()->setDisplayGBuffer(false);
 
 	// 各ノードの作成はDirector::initの後に呼ぶ。Director::initのもっているウィンドウサイズを使用する場合があるので。
 
@@ -494,6 +495,13 @@ void initialize()
 	polygon3DNode->setColor(Color3B::BLUE);
 	isSucceeded = polygon3DNode->initWithVertexArray(polygonVertices3D);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
+
+	// y軸情報から見下ろした図
+	// ============== 
+	// ||           |
+	// ||           |
+	// ||           |
+	// ||___________|
 
 	// 1.0fずつ境界線をずらすことで境界線を見えるようにしている
 	// (WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f = 0, 0, -WINDOW_WIDTH / 3.0f)が3つのついたての中心となる
@@ -576,14 +584,14 @@ void initialize()
 	//{
 	//	depthTextureSprite = new Sprite2D();
 	//	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
-	//	depthTextureSprite->initWithRenderBuffer(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE);
+	//	depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL, light->getNearClip(), light->getFarClip(), light->getShadowMapData().projectionMatrix);
 	//	depthTextureSprite->setScale(1 / 5.0f);
 	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	//}
 
 
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
-	PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Color3B::WHITE, 3000.0f);
+	PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH * 1.5, 0.0f), Color3B::WHITE, 3000.0f);
 	light->setIntensity(0.7f);
 	light->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
 	scene->addLight(light);
@@ -592,8 +600,8 @@ void initialize()
 	{
 		depthTextureSprite = new Sprite2D();
 		const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
-		depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_CUBEMAP_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix, Sprite2D::CubeMapFace::Y_NEGATIVE);
 		depthTextureSprite->setScale(1 / 5.0f);
+		depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_CUBEMAP_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix, Sprite2D::CubeMapFace::Y_NEGATIVE);
 		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	}
 
@@ -607,7 +615,7 @@ void initialize()
 	//{
 	//	depthTextureSprite = new Sprite2D();
 	//	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
-	//	depthTextureSprite->initWithRenderBuffer(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE);
+	//	depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix);
 	//	depthTextureSprite->setScale(1 / 5.0f);
 	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	//}

@@ -127,7 +127,7 @@ Texture2D<float4> _gBufferColorSpecularIntensity : register(t1);
 Texture2D<float4> _gBufferNormal : register(t2);
 Texture2D<float4> _gBufferSpecularPower : register(t3);
 Texture2D<float4> _shadowMap : register(t4);
-TextureCube<float4> _shadowCubeMap : register(t5);
+TextureCube<float> _shadowCubeMap : register(t5);
 SamplerState _pointSampler : register(s0);
 SamplerComparisonState _pcfSampler : register(s1);
 // まだシャドウマップは考慮してない
@@ -176,10 +176,10 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	float depth = _gBufferDepthStencil.Sample(_pointSampler, input.texCoord).x;
 	float4 viewPosition;
 	viewPosition.x = input.texCoord.x * 2 - 1; // [0, 1]から[-1, 1]への変換
-	viewPosition.x = -viewPosition.x * _depthTextureProjection._m32 / (depth - _depthTextureProjection._m22) / _depthTextureProjection._m00;
+	viewPosition.x = viewPosition.x * _depthTextureProjection._m32 / (depth + _depthTextureProjection._m22) / _depthTextureProjection._m00;
 	viewPosition.y = -(input.texCoord.y * 2 - 1); // [1, 0]から[-1, 1]への変換
-	viewPosition.y = -viewPosition.y * _depthTextureProjection._m32 / (depth - _depthTextureProjection._m22) / _depthTextureProjection._m11;
-	viewPosition.z = _depthTextureProjection._m32 / (depth - _depthTextureProjection._m22);
+	viewPosition.y = viewPosition.y * _depthTextureProjection._m32 / (depth + _depthTextureProjection._m22) / _depthTextureProjection._m11;
+	viewPosition.z = -_depthTextureProjection._m32 / (depth + _depthTextureProjection._m22);
 	viewPosition.w = 1.0;
 	
 	float4 worldPosition = mul(viewPosition, _viewInverse);
@@ -233,11 +233,20 @@ float4 PS(PS_INPUT input) : SV_TARGET
 		// キューブマップのどの面か調べるため、3軸で一番座標が大きい値を探す
 		float3 absPosition = abs(-vertexToPointLightDirection);
 		float maxCoordinateVal = max(absPosition.x, max(absPosition.y, absPosition.z));
-		float depth = (_pointLightProjection._m22 * maxCoordinateVal + _pointLightProjection._m32) / maxCoordinateVal;
-		// zファイティングを避けるための微調整
-		//lightPosition.z -= 0.001;
+		float pointLightDepth = (-_pointLightProjection._m22 * maxCoordinateVal + _pointLightProjection._m32) / maxCoordinateVal;
 
-		shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, -vertexToPointLightDirection, depth);
+		//TODO:とりあえず決め打ちでY_NEGATIVEに
+		//float3 uvw = float3(-vertexToPointLightDirection.x / maxCoordinateVal, -1.0, vertexToPointLightDirection.z / maxCoordinateVal); 
+
+		pointLightDepth -= 0.00001;
+		//TODO:とりあえず決め打ちでY_NEGATIVEに
+		shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, float3(-vertexToPointLightDirection.x, -vertexToPointLightDirection.y, vertexToPointLightDirection.z), pointLightDepth); //zだけは最後にここで左手座標系に反転
+		//shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, uvw, pointLightDepth);
+		//float shadowDepth = _shadowCubeMap.Sample(_pointSampler, -vertexToPointLightDirection);
+		//float shadowDepth = _shadowCubeMap.Sample(_pointSampler, uvw);
+		//if (pointLightDepth > shadowDepth) {
+		//	shadowAttenuation = 0.0;
+		//}
 	}
 
 	if (_spotLightHasShadowMap > 0.0)

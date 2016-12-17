@@ -729,7 +729,7 @@ struct Mat4
 		return ret;
 	}
 
-	Mat4& transpose()
+	Mat4 createTranspose() const
 	{
 		Mat4 mat(
 			m[0][0], m[0][1], m[0][2], m[0][3],
@@ -738,11 +738,17 @@ struct Mat4
 			m[3][0], m[3][1], m[3][2], m[3][3]
 		);
 
+		return mat;
+	}
+
+	Mat4& transpose()
+	{
+		const Mat4& mat = createTranspose();
 		memcpy(this, &mat, sizeof(Mat4));
 		return *this;
 	}
 
-	Mat4& inverse()
+	Mat4 createInverse() const
 	{
 		float a0 = m[0][0] * m[1][1] - m[0][1] * m[1][0];
 		float a1 = m[0][0] * m[1][2] - m[0][2] * m[1][0];
@@ -764,11 +770,10 @@ struct Mat4
 		if (fabs(det) <= FLOAT_TOLERANCE)
 		{
 			Logger::logAssert(false, "Mat4::inverse(), determinant is 0.");
-			this->setZero(); // ƒ[ƒs—ñ‚ğ•Ô‚·
-			return *this;
+			return Mat4::ZERO;
 		}
 
-		Mat4 inverse = Mat4(
+		Mat4 inverse(
 			m[1][1] * b5 - m[1][2] * b4 + m[1][3] * b3, -m[1][0] * b5 + m[1][2] * b2 - m[1][3] * b1, m[1][0] * b4 - m[1][1] * b2 + m[1][3] * b0, -m[1][0] * b3 + m[1][1] * b1 - m[1][2] * b0,
 			-m[0][1] * b5 + m[0][2] * b4 - m[0][3] * b3, m[0][0] * b5 - m[0][2] * b2 + m[0][3] * b1, -m[0][0] * b4 + m[0][1] * b2 - m[0][3] * b0, m[0][0] * b3 - m[0][1] * b1 + m[0][2] * b0,
 			m[3][1] * a5 - m[3][2] * a4 + m[3][3] * a3, -m[3][0] * a5 + m[3][2] * a2 - m[3][3] * a1, m[3][0] * a4 - m[3][1] * a2 + m[3][3] * a0, -m[3][0] * a3 + m[3][1] * a1 - m[3][2] * a0,
@@ -776,6 +781,12 @@ struct Mat4
 		);
 
 		inverse /= det;
+		return inverse;
+	}
+
+	Mat4& inverse()
+	{
+		const Mat4& inverse = createInverse();
 		memcpy(this, &inverse, sizeof(Mat4));
 
 		return *this;

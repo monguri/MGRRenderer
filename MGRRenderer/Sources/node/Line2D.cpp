@@ -176,8 +176,7 @@ void Line2D::renderForward()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 modelMatrix = getModelMatrix();
-		modelMatrix.transpose();
+		Mat4 modelMatrix = getModelMatrix().createTranspose();
 		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
 
@@ -190,8 +189,7 @@ void Line2D::renderForward()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 viewMatrix = Director::getCameraFor2D().getViewMatrix();
-		viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
+		Mat4 viewMatrix = Director::getCameraFor2D().getViewMatrix().createTranspose();
 		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
 
@@ -204,9 +202,7 @@ void Line2D::renderForward()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 projectionMatrix = Director::getCameraFor2D().getProjectionMatrix();
-		projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
-		projectionMatrix.transpose();
+		Mat4 projectionMatrix = (Mat4::CHIRARITY_CONVERTER * Director::getCameraFor2D().getProjectionMatrix()).transpose();// 左手系変換行列はプロジェクション行列に最初からかけておく
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 

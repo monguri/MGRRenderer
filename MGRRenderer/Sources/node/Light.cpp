@@ -258,19 +258,14 @@ void PointLight::initShadowMap(float nearClip, float size)
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	_constantBufferData.hasShadowMap = 1.0f;
 
-	Mat4 lightProjectionMatrix = _shadowMapData.projectionMatrix;
-	lightProjectionMatrix = Mat4::CHIRARITY_CONVERTER * lightProjectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
-	lightProjectionMatrix.transpose();
-	_constantBufferData.projectionMatrix = lightProjectionMatrix;
+	_constantBufferData.projectionMatrix = (Mat4::CHIRARITY_CONVERTER * _shadowMapData.projectionMatrix).transpose(); // 左手系変換行列はプロジェクション行列に最初からかけておく
 
 	Mat4 depthBiasMatrix = (Mat4::TEXTURE_COORDINATE_CONVERTER * Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, -1.0f, 0.0f))).transpose(); //TODO: Mat4を参照型にすると値がおかしくなってしまう
 	_constantBufferData.depthBiasMatrix = depthBiasMatrix;
 
 	for (int i = 0; i < NUM_FACE_CUBEMAP_TEXTURE; i++)
 	{
-		Mat4 lightViewMatrix = _shadowMapData.viewMatrices[i];
-		lightViewMatrix.transpose();
-		_constantBufferData.viewMatrices[i] = lightViewMatrix;
+		_constantBufferData.viewMatrices[i] = _shadowMapData.viewMatrices[i].createTranspose();
 	}
 
 	_shadowMapData.depthTexture = new D3DTexture();

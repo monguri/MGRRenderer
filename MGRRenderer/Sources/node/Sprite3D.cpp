@@ -1125,8 +1125,7 @@ void Sprite3D::renderGBuffer()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 modelMatrix = getModelMatrix();
-		modelMatrix.transpose();
+		Mat4 modelMatrix = getModelMatrix().createTranspose();
 		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
 		direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
 
@@ -1139,8 +1138,7 @@ void Sprite3D::renderGBuffer()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 viewMatrix = Director::getCamera().getViewMatrix();
-		viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
+		Mat4 viewMatrix = Director::getCamera().getViewMatrix().createTranspose();
 		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
 		direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
 
@@ -1153,9 +1151,7 @@ void Sprite3D::renderGBuffer()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 projectionMatrix = Director::getCamera().getProjectionMatrix();
-		projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
-		projectionMatrix.transpose();
+		Mat4 projectionMatrix = (Mat4::CHIRARITY_CONVERTER * Director::getCamera().getProjectionMatrix()).transpose();
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 		direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
@@ -1242,7 +1238,7 @@ void Sprite3D::renderGBuffer()
 		glUniformMatrix4fv(_glProgramForGBuffer.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		const Mat4& normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
+		Mat4 normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
 		glUniformMatrix4fv(_glProgramForGBuffer.getUniformLocation(GLProgram::UNIFORM_NAME_NORMAL_MATRIX), 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
 
 		// 頂点属性の設定
@@ -1359,8 +1355,7 @@ void Sprite3D::renderShadowMap()
 				&mappedResource
 			);
 			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-			Mat4 modelMatrix = getModelMatrix();
-			modelMatrix.transpose();
+			Mat4 modelMatrix = getModelMatrix().createTranspose();
 			CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
 			direct3dContext->Unmap(_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
 
@@ -1440,8 +1435,7 @@ void Sprite3D::renderShadowMap()
 				&mappedResource
 			);
 			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-			Mat4 modelMatrix = getModelMatrix();
-			modelMatrix.transpose();
+			Mat4 modelMatrix = getModelMatrix().createTranspose();
 			CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
 			direct3dContext->Unmap(_d3dProgramForPointLightShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
 
@@ -1590,8 +1584,7 @@ void Sprite3D::renderForward()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 modelMatrix = getModelMatrix();
-		modelMatrix.transpose();
+		Mat4 modelMatrix = getModelMatrix().createTranspose();
 		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
 
@@ -1604,8 +1597,7 @@ void Sprite3D::renderForward()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 viewMatrix = Director::getCamera().getViewMatrix();
-		viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
+		Mat4 viewMatrix = Director::getCamera().getViewMatrix().createTranspose();
 		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
 
@@ -1618,9 +1610,7 @@ void Sprite3D::renderForward()
 			&mappedResource
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-		Mat4 projectionMatrix = Director::getCamera().getProjectionMatrix();
-		projectionMatrix = Mat4::CHIRARITY_CONVERTER * projectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
-		projectionMatrix.transpose();
+		Mat4 projectionMatrix = (Mat4::CHIRARITY_CONVERTER * Director::getCamera().getProjectionMatrix()).transpose();
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
@@ -1833,7 +1823,7 @@ void Sprite3D::renderForward()
 		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-		const Mat4& normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
+		Mat4 normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
 		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_NORMAL_MATRIX), 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
 
 		// ライトの設定
@@ -1877,7 +1867,7 @@ void Sprite3D::renderForward()
 						(GLfloat*)dirLight->getShadowMapData().projectionMatrix.m
 					);
 
-					static const Mat4& depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 0.5f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 1.0f));
+					static Mat4 depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 0.5f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 1.0f));
 
 					glUniformMatrix4fv(
 						_glProgram.getUniformLocation("u_depthBiasMatrix"),

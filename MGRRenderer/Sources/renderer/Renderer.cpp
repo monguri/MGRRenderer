@@ -576,9 +576,7 @@ void Renderer::renderDeferred()
 		&mappedResource
 	);
 	Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-	Mat4 viewMatrix = Director::getCamera().getViewMatrix();
-	viewMatrix.inverse();
-	viewMatrix.transpose(); // Direct3Dでは転置した状態で入れる
+	Mat4 viewMatrix = Director::getCamera().getViewMatrix().createInverse().transpose();
 	CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
 	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
 
@@ -591,8 +589,7 @@ void Renderer::renderDeferred()
 		&mappedResource
 	);
 	Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-	Mat4 projectionMatrix = Mat4::CHIRARITY_CONVERTER * Director::getCamera().getProjectionMatrix();
-	projectionMatrix.transpose();
+	Mat4 projectionMatrix = (Mat4::CHIRARITY_CONVERTER * Director::getCamera().getProjectionMatrix()).transpose();
 	CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
@@ -634,8 +631,7 @@ void Renderer::renderDeferred()
 					&mappedResource
 				);
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				Mat4 lightViewMatrix = dirLight->getShadowMapData().viewMatrix;
-				lightViewMatrix.transpose();
+				Mat4 lightViewMatrix = dirLight->getShadowMapData().viewMatrix.createTranspose();
 				CopyMemory(mappedResource.pData, &lightViewMatrix.m, sizeof(lightViewMatrix));
 				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX), 0);
 
@@ -647,9 +643,7 @@ void Renderer::renderDeferred()
 					&mappedResource
 				);
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				Mat4 lightProjectionMatrix = dirLight->getShadowMapData().projectionMatrix;
-				lightProjectionMatrix = Mat4::CHIRARITY_CONVERTER * lightProjectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
-				lightProjectionMatrix.transpose();
+				Mat4 lightProjectionMatrix = (Mat4::CHIRARITY_CONVERTER * dirLight->getShadowMapData().projectionMatrix).transpose(); // 左手系変換行列はプロジェクション行列に最初からかけておく
 				CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
 				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX), 0);
 
@@ -711,8 +705,7 @@ void Renderer::renderDeferred()
 					&mappedResource
 				);
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				Mat4 lightViewMatrix = spotLight->getShadowMapData().viewMatrix;
-				lightViewMatrix.transpose();
+				Mat4 lightViewMatrix = spotLight->getShadowMapData().viewMatrix.createTranspose();
 				CopyMemory(mappedResource.pData, &lightViewMatrix.m, sizeof(lightViewMatrix));
 				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX), 0);
 
@@ -724,9 +717,7 @@ void Renderer::renderDeferred()
 					&mappedResource
 				);
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				Mat4 lightProjectionMatrix = spotLight->getShadowMapData().projectionMatrix;
-				lightProjectionMatrix = Mat4::CHIRARITY_CONVERTER * lightProjectionMatrix; // 左手系変換行列はプロジェクション行列に最初からかけておく
-				lightProjectionMatrix.transpose();
+				Mat4 lightProjectionMatrix = (Mat4::CHIRARITY_CONVERTER * spotLight->getShadowMapData().projectionMatrix).transpose(); // 左手系変換行列はプロジェクション行列に最初からかけておく
 				CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
 				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX), 0);
 

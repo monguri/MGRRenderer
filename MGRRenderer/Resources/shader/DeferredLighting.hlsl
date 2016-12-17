@@ -35,7 +35,7 @@ cbuffer DirectionalLightDepthBiasMatrix : register(b5)
 cbuffer DirectionalLightParameter : register(b6)
 {
 	float3 _directionalLightDirection;
-	float _directionalLightHasShadowMap;
+	bool _directionalLightHasShadowMap;
 	float4 _directionalLightColor;
 };
 
@@ -47,7 +47,7 @@ cbuffer PointLightParameter : register(b7)
 	matrix _pointLightProjection;
 	matrix _pointLightDepthBias;
 	float3 _pointLightColor;
-	float _pointLightHasShadowMap;
+	bool _pointLightHasShadowMap;
 	float3 _pointLightPosition;
 	float _pointLightRangeInverse;
 };
@@ -75,7 +75,7 @@ cbuffer SpotLightParameter : register(b11)
 	float _spotLightInnerAngleCos;
 	float3 _spotLightDirection;
 	float _spotLightOuterAngleCos;
-	float _spotLightHasShadowMap;
+	bool _spotLightHasShadowMap;
 	float3 _padding;
 };
 

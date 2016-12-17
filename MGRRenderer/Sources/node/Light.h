@@ -113,7 +113,7 @@ public:
 	struct ConstantBufferData
 	{
 		Vec3 direction;
-		float hasShadowMap; // ConstantBufferのパッキングのためにfloatにしているが、0.0fか1.0fを入れてboolの代わりに使う
+		bool hasShadowMap; // ConstantBufferのパッキングのためにfloatにしているが、0.0fか1.0fを入れてboolの代わりに使う
 		Color4F color;
 	};
 #endif
@@ -190,7 +190,7 @@ public:
 		Mat4 projectionMatrix;
 		Mat4 depthBiasMatrix;
 		Color3F color;
-		float hasShadowMap;
+		bool hasShadowMap;
 		Vec3 position;
 		float rangeInverse;
 	};
@@ -264,7 +264,7 @@ public:
 		float innerAngleCos;
 		Vec3 direction;
 		float outerAngleCos;
-		float hasShadowMap;
+		bool hasShadowMap;
 		Vec3 padding;
 	};
 #endif

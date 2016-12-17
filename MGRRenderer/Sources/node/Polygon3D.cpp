@@ -871,10 +871,10 @@ void Polygon3D::renderForward()
 					CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
 					direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX), 0);
 
-					ID3D11SamplerState* samplerState = Director::getRenderer().getPCFSamplerState();
-					direct3dContext->PSSetSamplers(0, 1, &samplerState); //TODO:Œ^•ÏŠ·‚ª‚¤‚Ü‚­‚¢‚©‚È‚¢‚Ì‚Åˆê“x•Ï”‚É‘ã“ü‚µ‚Ä‚¢‚é
-					ID3D11ShaderResourceView* shaderResouceView = dirLight->getShadowMapData().depthTexture->getShaderResourceView();
-					direct3dContext->PSSetShaderResources(0, 1, &shaderResouceView);
+					ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getPCFSamplerState() };
+					direct3dContext->PSSetSamplers(0, 1, samplerState);
+					ID3D11ShaderResourceView* shaderResouceView[1] = { dirLight->getShadowMapData().depthTexture->getShaderResourceView() };
+					direct3dContext->PSSetShaderResources(0, 1, shaderResouceView);
 				}
 
 				result = direct3dContext->Map(

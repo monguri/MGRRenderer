@@ -1216,10 +1216,10 @@ void Sprite3D::renderGBuffer()
 		_d3dProgramForGBuffer.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForGBuffer.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:型変換がうまくいかないので一度変数に代入している
-		direct3dContext->PSSetShaderResources(0, 1, &resourceView);
-		ID3D11SamplerState* samplerState = Director::getRenderer().getLinearSamplerState();
-		direct3dContext->PSSetSamplers(0, 1, &samplerState); //TODO:型変換がうまくいかないので一度変数に代入している
+		ID3D11ShaderResourceView* resourceView[1] = { _texture->getShaderResourceView() };
+		direct3dContext->PSSetShaderResources(0, 1, resourceView);
+		ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getLinearSamplerState() };
+		direct3dContext->PSSetSamplers(0, 1, samplerState);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgramForGBuffer.getBlendState(), blendFactor, 0xffffffff);
@@ -1790,11 +1790,11 @@ void Sprite3D::renderForward()
 
 		if (depthTextureResourceView == nullptr) // シャドウマップを作ってないとき
 		{
-			ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:型変換がうまくいかないので一度変数に代入している
-			direct3dContext->PSSetShaderResources(0, 1, &resourceView);
+			ID3D11ShaderResourceView* resourceView[1] = { _texture->getShaderResourceView() };
+			direct3dContext->PSSetShaderResources(0, 1, resourceView);
 
-			ID3D11SamplerState* samplerState = Director::getRenderer().getLinearSamplerState();
-			direct3dContext->PSSetSamplers(0, 1, &samplerState); //TODO:型変換がうまくいかないので一度変数に代入している
+			ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getLinearSamplerState() };
+			direct3dContext->PSSetSamplers(0, 1, samplerState);
 		}
 		else // シャドウマップを作ったとき
 		{
@@ -1802,7 +1802,7 @@ void Sprite3D::renderForward()
 			direct3dContext->PSSetShaderResources(0, 2, resourceViews);
 
 			ID3D11SamplerState* samplerState[2] = { Director::getRenderer().getLinearSamplerState(), Director::getRenderer().getPCFSamplerState() };
-			direct3dContext->PSSetSamplers(0, 2, samplerState); //TODO:型変換がうまくいかないので一度変数に代入している
+			direct3dContext->PSSetSamplers(0, 2, samplerState);
 		}
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};

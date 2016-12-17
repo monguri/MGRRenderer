@@ -331,10 +331,10 @@ void BillBoard::renderGBuffer()
 		_d3dProgramForGBuffer.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForGBuffer.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:Œ^•ÏŠ·‚ª‚¤‚Ü‚­‚¢‚©‚È‚¢‚Ì‚Åˆê“x•Ï”‚É‘ã“ü‚µ‚Ä‚¢‚é
-		direct3dContext->PSSetShaderResources(0, 1, &resourceView);
-		ID3D11SamplerState* samplerState = Director::getRenderer().getLinearSamplerState();
-		direct3dContext->PSSetSamplers(0, 1, &samplerState); //TODO:Œ^•ÏŠ·‚ª‚¤‚Ü‚­‚¢‚©‚È‚¢‚Ì‚Åˆê“x•Ï”‚É‘ã“ü‚µ‚Ä‚¢‚é
+		ID3D11ShaderResourceView* resourceView[1] = { _texture->getShaderResourceView() };
+		direct3dContext->PSSetShaderResources(0, 1, resourceView);
+		ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getLinearSamplerState() };
+		direct3dContext->PSSetSamplers(0, 1, samplerState);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgramForGBuffer.getBlendState(), blendFactor, 0xffffffff);
@@ -442,10 +442,10 @@ void BillBoard::renderForward()
 		_d3dProgram.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgram.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		ID3D11ShaderResourceView* resourceView = _texture->getShaderResourceView(); //TODO:Œ^•ÏŠ·‚ª‚¤‚Ü‚­‚¢‚©‚È‚¢‚Ì‚Åˆê“x•Ï”‚É‘ã“ü‚µ‚Ä‚¢‚é
-		direct3dContext->PSSetShaderResources(0, 1, &resourceView);
-		ID3D11SamplerState* samplerState = Director::getRenderer().getLinearSamplerState();
-		direct3dContext->PSSetSamplers(0, 1, &samplerState); //TODO:Œ^•ÏŠ·‚ª‚¤‚Ü‚­‚¢‚©‚È‚¢‚Ì‚Åˆê“x•Ï”‚É‘ã“ü‚µ‚Ä‚¢‚é
+		ID3D11ShaderResourceView* resourceView[1] = { _texture->getShaderResourceView() };
+		direct3dContext->PSSetShaderResources(0, 1, resourceView);
+		ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getLinearSamplerState() };
+		direct3dContext->PSSetSamplers(0, 1, samplerState);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);

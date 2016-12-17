@@ -111,11 +111,13 @@ float4 PS_DEPTH_CUBEMAP_TEXTURE(PS_INPUT input) : SV_TARGET
 	float3 str;
 	switch (_cubeMapFace)
 	{
+		// キューブマップのレンダーターゲットの向きのとりかたは各面で違い単純でないが、
+		// カメラでとった向きの通りにデバッグ表示されるように座標系の符号を変換している
 		case CUBEMAP_FACE_X_POSITIVE:
-			str = float3(1.0, texCoord.y, -texCoord.x);
+			str = float3(1.0, -texCoord.y, -texCoord.x);
 			break;
 		case CUBEMAP_FACE_X_NEGATIVE:
-			str = float3(-1.0, texCoord.y, texCoord.x);
+			str = float3(-1.0, -texCoord.y, texCoord.x);
 			break;
 		case CUBEMAP_FACE_Y_POSITIVE:
 			str = float3(texCoord.x, 1.0, texCoord.y);
@@ -124,10 +126,10 @@ float4 PS_DEPTH_CUBEMAP_TEXTURE(PS_INPUT input) : SV_TARGET
 			str = float3(texCoord.x, -1.0, -texCoord.y);
 			break;
 		case CUBEMAP_FACE_Z_POSITIVE:
-			str = float3(-texCoord.x, texCoord.y, 1.0);
+			str = float3(texCoord.x, -texCoord.y, 1.0);
 			break;
 		case CUBEMAP_FACE_Z_NEGATIVE:
-			str = float3(texCoord.x, texCoord.y, -1.0);
+			str = float3(-texCoord.x, -texCoord.y, -1.0);
 			break;
 	}
 

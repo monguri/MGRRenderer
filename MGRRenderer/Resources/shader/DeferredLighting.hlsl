@@ -231,22 +231,35 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	{
 		//TODO:とりあえず行列計算でなくhlsl本のとおりに書いておく
 		// キューブマップのどの面か調べるため、3軸で一番座標が大きい値を探す
-		float3 absPosition = abs(-vertexToPointLightDirection);
+		float3 pointLightToVertexDirection = -vertexToPointLightDirection;
+		float3 absPosition = abs(pointLightToVertexDirection);
 		float maxCoordinateVal = max(absPosition.x, max(absPosition.y, absPosition.z));
 		float pointLightDepth = (-_pointLightProjection._m22 * maxCoordinateVal + _pointLightProjection._m32) / maxCoordinateVal;
 
-		//TODO:とりあえず決め打ちでY_NEGATIVEに
-		//float3 uvw = float3(-vertexToPointLightDirection.x / maxCoordinateVal, -1.0, vertexToPointLightDirection.z / maxCoordinateVal); 
+		pointLightDepth -= 0.0001;
 
-		pointLightDepth -= 0.00001;
-		//TODO:とりあえず決め打ちでY_NEGATIVEに
-		shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, float3(-vertexToPointLightDirection.x, -vertexToPointLightDirection.y, vertexToPointLightDirection.z), pointLightDepth); //zだけは最後にここで左手座標系に反転
-		//shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, uvw, pointLightDepth);
-		//float shadowDepth = _shadowCubeMap.Sample(_pointSampler, -vertexToPointLightDirection);
-		//float shadowDepth = _shadowCubeMap.Sample(_pointSampler, uvw);
-		//if (pointLightDepth > shadowDepth) {
-		//	shadowAttenuation = 0.0;
-		//}
+		// 符号変換は表示してみて決めた
+		// TODO:POSITIVE側の向きはテストしてない
+		if (maxCoordinateVal == absPosition.x)
+		{
+			shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, float3(pointLightToVertexDirection.x, pointLightToVertexDirection.y, -pointLightToVertexDirection.z), pointLightDepth);
+		}
+		else if (maxCoordinateVal == absPosition.y)
+		{
+			if (pointLightToVertexDirection.y > 0)
+			{
+				shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, float3(-pointLightToVertexDirection.x, pointLightToVertexDirection.y, pointLightToVertexDirection.z), pointLightDepth);
+			}
+			else
+			{
+				shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, float3(pointLightToVertexDirection.x, pointLightToVertexDirection.y, -pointLightToVertexDirection.z), pointLightDepth);
+			}
+
+		}
+		else // if (maxCoordinateVal == absPosition.z)
+		{
+			shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, float3(-pointLightToVertexDirection.x, pointLightToVertexDirection.y, pointLightToVertexDirection.z), pointLightDepth);
+		}
 	}
 
 	if (_spotLightHasShadowMap > 0.0)

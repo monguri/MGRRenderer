@@ -248,7 +248,7 @@ void PointLight::initShadowMap(float nearClip, float size)
 
 	// プロジェクション行列は、キューブの中心からある面への四角錘を視錘台としたときの変換
 	_shadowMapData.projectionMatrix = Mat4::createPerspective(
-		45.0f, // field of view
+		90.0f, // field of view キューブの中心からなので固定で90度
 		1.0f, // aspectratio
 		nearClip, // near clip
 		_range // far clip

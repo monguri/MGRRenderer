@@ -497,11 +497,12 @@ void initialize()
 	Logger::logAssert(isSucceeded, "ƒm[ƒh‚Ì‰Šú‰»Ž¸”s");
 
 	// yŽ²î•ñ‚©‚çŒ©‰º‚ë‚µ‚½}
-	// ============== 
+	// ============== xŽ²•½s
 	// ||           |
 	// ||           |
 	// ||           |
 	// ||___________|
+	// zŽ²•½s
 
 	// 1.0f‚¸‚Â‹«ŠEü‚ð‚¸‚ç‚·‚±‚Æ‚Å‹«ŠEü‚ðŒ©‚¦‚é‚æ‚¤‚É‚µ‚Ä‚¢‚é
 	// (WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f = 0, 0, -WINDOW_WIDTH / 3.0f)‚ª3‚Â‚Ì‚Â‚¢‚½‚Ä‚Ì’†S‚Æ‚È‚é
@@ -591,7 +592,7 @@ void initialize()
 
 
 	// ƒI[ƒN‚Ì(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)‚É(0,-1,0)•ûŒü‚ÌŒõ‚ª~‚è’‚®‚æ‚¤‚É‚µ‚Ä‚¢‚é
-	PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH * 1.5, 0.0f), Color3B::WHITE, 3000.0f);
+	PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Color3B::WHITE, 3000.0f);
 	light->setIntensity(0.7f);
 	light->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
 	scene->addLight(light);
@@ -601,7 +602,7 @@ void initialize()
 		depthTextureSprite = new Sprite2D();
 		const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
 		depthTextureSprite->setScale(1 / 5.0f);
-		depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_CUBEMAP_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix, Sprite2D::CubeMapFace::Y_NEGATIVE);
+		depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_CUBEMAP_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix, Sprite2D::CubeMapFace::Z_NEGATIVE);
 		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	}
 

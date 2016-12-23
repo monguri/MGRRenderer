@@ -23,6 +23,7 @@ uniform float u_spotLightOuterAngleCos;
 uniform mat4 u_depthTextureProjection;
 uniform mat4 u_viewInverse;
 uniform bool u_directionalLightHasShadowMap;
+uniform bool u_spotLightHasShadowMap;
 uniform mat4 u_lightViewMatrix;
 uniform mat4 u_lightProjectionMatrix;
 uniform mat4 u_depthBiasMatrix;
@@ -82,8 +83,24 @@ void main()
 	float shadowAttenuation = 1.0;
 	if (u_directionalLightHasShadowMap) {
 		vec4 lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * worldPosition;
-		// zファイティングを避けるための微調整
-		lightPosition.z -= 1;
+		//// zファイティングを避けるための微調整
+		//lightPosition.z -= 0.001;
+
+		// PCF
+		//shadowAttenuation = 0.0;
+		//shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(-1, -1));
+		//shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(-1, 1));
+		//shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(1, 1));
+		//shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(1, -1));
+		//shadowAttenuation *= 0.25;
+
+		shadowAttenuation = textureProj(u_shadowTexture, lightPosition);
+	}
+
+	if (u_spotLightHasShadowMap) {
+		vec4 lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * worldPosition;
+		//// zファイティングを避けるための微調整
+		lightPosition.z -= 0.05;
 
 		// PCF
 		shadowAttenuation = 0.0;
@@ -93,7 +110,7 @@ void main()
 		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(1, -1));
 		shadowAttenuation *= 0.25;
 
-		//shadowAttenuation = textureProj(u_shadowTexture, lightPosition);
+		shadowAttenuation = textureProj(u_shadowTexture, lightPosition);
 	}
 
 	gl_FragColor = vec4((color * (shadowAttenuation * diffuseSpecularLightColor + u_ambientLightColor)), 1.0);

@@ -917,6 +917,42 @@ void Renderer::renderDeferred()
 
 			glUniform1f(_glProgram.getUniformLocation("u_spotLightOuterAngleCos"), spotLight->getOuterAngleCos());
 			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGLˆ—‚ÅƒGƒ‰[”­¶ glGetError()=%d", glGetError());
+
+			glUniform1i(
+				_glProgram.getUniformLocation("u_spotLightHasShadowMap"),
+				spotLight->hasShadowMap()
+			);
+
+			if (spotLight->hasShadowMap()) {
+				glUniformMatrix4fv(
+					_glProgram.getUniformLocation("u_lightViewMatrix"),
+					1,
+					GL_FALSE,
+					(GLfloat*)spotLight->getShadowMapData().viewMatrix.m
+				);
+
+				glUniformMatrix4fv(
+					_glProgram.getUniformLocation("u_lightProjectionMatrix"),
+					1,
+					GL_FALSE,
+					(GLfloat*)spotLight->getShadowMapData().projectionMatrix.m
+				);
+
+				static const Mat4& depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 0.5f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 1.0f));
+
+				glUniformMatrix4fv(
+					_glProgram.getUniformLocation("u_depthBiasMatrix"),
+					1,
+					GL_FALSE,
+					(GLfloat*)depthBiasMatrix.m
+				);
+
+				glActiveTexture(GL_TEXTURE4);
+				GLuint textureId = spotLight->getShadowMapData().getDepthTexture()->getTextureId();
+				glBindTexture(GL_TEXTURE_2D, textureId);
+				glUniform1i(_glProgram.getUniformLocation("u_shadowTexture"), 4);
+				glActiveTexture(GL_TEXTURE0);
+			}
 		}
 			break;
 		default:

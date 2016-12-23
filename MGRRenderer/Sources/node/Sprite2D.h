@@ -63,6 +63,7 @@ public:
 	bool initWithDepthStencilTexture(D3DTexture* texture, RenderBufferType renderBufferType, float nearClip, float farClip, const Mat4& projectionMatrix, CubeMapFace face = CubeMapFace::NONE);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	bool initWithRenderBuffer(GLTexture* texture, RenderBufferType renderBufferType);
+	bool initWithDepthStencilTexture(GLTexture* texture, RenderBufferType renderBufferType, float nearClip, float farClip, const Mat4& projectionMatrix, CubeMapFace face = CubeMapFace::NONE);
 #endif
 
 protected:

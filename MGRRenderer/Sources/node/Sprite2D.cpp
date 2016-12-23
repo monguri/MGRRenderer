@@ -345,6 +345,7 @@ bool Sprite2D::initWithRenderBuffer(GLTexture* texture, RenderBufferType renderB
 	static std::vector<const char*> RenderBufferFSList = {
 		shader::FRAGMENT_SHADER_DEPTH_TEXTURE,
 		"", //TODO:まだ未対応
+		"", //TODO:まだ未対応
 		shader::FRAGMENT_SHADER_GBUFFER_COLOR_SPECULAR_INTENSITY,
 		shader::FRAGMENT_SHADER_GBUFFER_NORMAL,
 		shader::FRAGMENT_SHADER_GBUFFER_SPECULAR_POWER,
@@ -353,6 +354,18 @@ bool Sprite2D::initWithRenderBuffer(GLTexture* texture, RenderBufferType renderB
 	const char* fragmentShader = RenderBufferFSList[static_cast<int>(renderBufferType)];
 
 	return initCommon("", fragmentShader, texture->getContentSize());
+}
+
+bool Sprite2D::initWithDepthStencilTexture(GLTexture* texture, RenderBufferType renderBufferType, float nearClip, float farClip, const Mat4& projectionMatrix, CubeMapFace face)
+{
+	Logger::logAssert(renderBufferType == RenderBufferType::DEPTH_TEXTURE || renderBufferType == RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL || renderBufferType == RenderBufferType::DEPTH_CUBEMAP_TEXTURE, "レンダーバッファがデプスステンシルテクスチャでないのに専用の初期化メソッドを呼んだ。");
+
+	_nearClip = nearClip;
+	_farClip = farClip;
+	_projectionMatrix = projectionMatrix;
+	_cubeMapFace = face;
+
+	return initWithRenderBuffer(texture, renderBufferType);
 }
 #endif
 

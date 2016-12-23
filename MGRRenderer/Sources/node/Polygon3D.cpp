@@ -566,11 +566,6 @@ void Polygon3D::renderShadowMap()
 
 		Mat4 lightViewMatrix;
 		Mat4 lightProjectionMatrix;
-#if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
-
-		D3D11_MAPPED_SUBRESOURCE mappedResource;
-
 		switch (light->getLightType())
 		{
 		case LightType::DIRECTION:
@@ -582,6 +577,10 @@ void Polygon3D::renderShadowMap()
 			lightProjectionMatrix = static_cast<SpotLight*>(light)->getShadowMapData().projectionMatrix;
 			break;
 		}
+
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 		switch (light->getLightType())
 		{

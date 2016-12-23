@@ -84,17 +84,17 @@ void main()
 	if (u_directionalLightHasShadowMap) {
 		vec4 lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * worldPosition;
 		//// zファイティングを避けるための微調整
-		//lightPosition.z -= 0.001;
+		lightPosition.z -= 0.005;
 
 		// PCF
-		//shadowAttenuation = 0.0;
-		//shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(-1, -1));
-		//shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(-1, 1));
-		//shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(1, 1));
-		//shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(1, -1));
-		//shadowAttenuation *= 0.25;
+		shadowAttenuation = 0.0;
+		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(-1, -1));
+		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(-1, 1));
+		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(1, 1));
+		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(1, -1));
+		shadowAttenuation *= 0.25;
 
-		shadowAttenuation = textureProj(u_shadowTexture, lightPosition);
+		//shadowAttenuation = textureProj(u_shadowTexture, lightPosition);
 	}
 
 	if (u_spotLightHasShadowMap) {

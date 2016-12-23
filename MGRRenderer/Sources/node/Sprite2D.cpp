@@ -344,7 +344,7 @@ bool Sprite2D::initWithRenderBuffer(GLTexture* texture, RenderBufferType renderB
 
 	static std::vector<const char*> RenderBufferFSList = {
 		shader::FRAGMENT_SHADER_DEPTH_TEXTURE,
-		"", //TODO:まだ未対応
+		shader::FRAGMENT_SHADER_DEPTH_TEXTURE_ORTHOGONAL,
 		"", //TODO:まだ未対応
 		shader::FRAGMENT_SHADER_GBUFFER_COLOR_SPECULAR_INTENSITY,
 		shader::FRAGMENT_SHADER_GBUFFER_NORMAL,
@@ -523,15 +523,15 @@ void Sprite2D::renderForward()
 		switch (_renderBufferType) {
 			case RenderBufferType::DEPTH_TEXTURE:
 			case RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL:
-			case RenderBufferType::DEPTH_CUBEMAP_TEXTURE: //TODO:未対応
+			case RenderBufferType::DEPTH_CUBEMAP_TEXTURE:
 			{
-				glUniform1f(_glProgram.getUniformLocation("u_nearClipZ"), -Director::getInstance()->getNearClip());
+				glUniform1f(_glProgram.getUniformLocation("u_nearClipZ"), -_nearClip);
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-				glUniform1f(_glProgram.getUniformLocation("u_farClipZ"), -Director::getInstance()->getFarClip());
+				glUniform1f(_glProgram.getUniformLocation("u_farClipZ"), -_farClip);
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-				glUniformMatrix4fv(_glProgram.getUniformLocation("u_depthTextureProjectionMatrix"), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+				glUniformMatrix4fv(_glProgram.getUniformLocation("u_depthTextureProjectionMatrix"), 1, GL_FALSE, (GLfloat*)_projectionMatrix.m);
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 				break;
 			}

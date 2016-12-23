@@ -628,7 +628,7 @@ struct Mat4
 			0.0f,					0.0f,	-1.0f,							0.0f
 		);
 #elif defined(MGRRENDERER_USE_OPENGL)
-		// [-zNearPlane, -zFarPlane]を[1, -1]に変換
+		// [-zNearPlane, -zFarPlane]を[-1, 1]に変換 //TODO:なぜ[1,-1]でないのだ？フォワードレンダリングのときはそうだったのでは？いつからつじつま合わなくなった？
 		return Mat4(
 			factor / aspectRatio,	0.0f,	0.0f,										0.0f,
 			0.0f,					factor,	0.0f,										0.0f,
@@ -662,10 +662,11 @@ struct Mat4
 			0.0f,				0.0f,				0.0f,							1.0f	
 		);
 #elif defined(MGRRENDERER_USE_OPENGL)
+		// [-zNearPlane, -zFarPlane]を[-1, 1]に変換 //TODO:なぜ[1,-1]でないのだ？フォワードレンダリングのときはそうだったのでは？いつからつじつま合わなくなった？
 		return Mat4(
 			2 / (right - left),	0.0f,				0.0f,							(left + right) / (left - right),
 			0.0f,				2 / (top - bottom),	0.0f,							(bottom + top) / (bottom - top),
-			0.0f,				0.0f,				2 / (zFarPlane - zNearPlane),	(zNearPlane + zFarPlane) / (zFarPlane - zNearPlane),
+			0.0f,				0.0f,				-2 / (zFarPlane - zNearPlane),	-(zNearPlane + zFarPlane) / (zFarPlane - zNearPlane),
 			0.0f,				0.0f,				0.0f,							1.0f	
 		);
 #endif

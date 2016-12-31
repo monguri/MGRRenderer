@@ -183,7 +183,7 @@ public:
 	struct ConstantBufferData
 	{
 		// 順番は、x正方向、x負方向、y正方向、y負方向、z正方向、z負方向
-		Mat4 viewMatrices[NUM_FACE_CUBEMAP_TEXTURE];
+		Mat4 viewMatrices[(size_t)CubeMapFace::NUM_CUBEMAP_FACE];
 		Mat4 projectionMatrix;
 		Mat4 depthBiasMatrix;
 		Color3F color;

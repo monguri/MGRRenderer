@@ -263,7 +263,7 @@ void PointLight::initShadowMap(float nearClip, float size)
 	Mat4 depthBiasMatrix = (Mat4::TEXTURE_COORDINATE_CONVERTER * Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, -1.0f, 0.0f))).transpose(); //TODO: Mat4‚ğQÆŒ^‚É‚·‚é‚Æ’l‚ª‚¨‚©‚µ‚­‚È‚Á‚Ä‚µ‚Ü‚¤
 	_constantBufferData.depthBiasMatrix = depthBiasMatrix;
 
-	for (int i = 0; i < NUM_FACE_CUBEMAP_TEXTURE; i++)
+	for (int i = (int)CubeMapFace::X_POSITIVE; i < (int)CubeMapFace::NUM_CUBEMAP_FACE; i++)
 	{
 		_constantBufferData.viewMatrices[i] = _shadowMapData.viewMatrices[i].createTranspose();
 	}

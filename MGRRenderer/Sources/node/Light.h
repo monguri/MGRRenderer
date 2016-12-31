@@ -15,6 +15,7 @@ namespace mgrrenderer
 class D3DTexture;
 #elif defined(MGRRENDERER_USE_OPENGL)
 class GLTexture;
+enum class CubeMapFace : int;
 #endif
 
 enum class LightType : int
@@ -41,7 +42,6 @@ public:
 	float getIntensity() const { return _intensity; }
 	virtual void setIntensity(float intensity) { _intensity = intensity; }
 	virtual bool hasShadowMap() const = 0;
-	virtual void prepareShadowMapRendering() = 0;
 
 protected:
 	Light();
@@ -70,7 +70,6 @@ public:
 	void setColor(const Color3B& color) override;
 	void setIntensity(float intensity) override;
 	bool hasShadowMap() const override { return false; } // シャドウマップはアンビエントライトには使えない
-	void prepareShadowMapRendering() override {};
 
 private:
 #if defined(MGRRENDERER_USE_DIRECT3D)
@@ -131,7 +130,7 @@ public:
 	void initShadowMap(const Vec3& cameraPosition, float nearClip, float farClip, const Size& size);
 	bool hasShadowMap() const override;
 	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
-	void prepareShadowMapRendering() override;
+	void prepareShadowMapRendering();
 	float getNearClip() const { Logger::logAssert(hasShadowMap(), "シャドウマップを持っていないのに持っている前提のメソッドを呼び出した。"); return _nearClip; }
 	float getFarClip() const { Logger::logAssert(hasShadowMap(), "シャドウマップを持っていないのに持っている前提のメソッドを呼び出した。"); return _farClip; }
 
@@ -152,12 +151,10 @@ class PointLight :
 	public Light
 {
 public:
-	static constexpr int NUM_FACE_CUBEMAP_TEXTURE = 6;
-
 	struct ShadowMapData
 	{
 		// 順番は、x正方向、x負方向、y正方向、y負方向、z正方向、z負方向
-		Mat4 viewMatrices[NUM_FACE_CUBEMAP_TEXTURE];
+		Mat4 viewMatrices[(size_t)CubeMapFace::NUM_CUBEMAP_FACE];
 		Mat4 projectionMatrix;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		D3DTexture* depthTexture;
@@ -208,7 +205,11 @@ public:
 	void initShadowMap(float nearClip, float size);
 	bool hasShadowMap() const override;
 	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
-	void prepareShadowMapRendering() override;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	void prepareShadowMapRendering();
+#elif defined(MGRRENDERER_USE_OPENGL)
+	void prepareShadowMapRendering(CubeMapFace face);
+#endif
 	float getNearClip() const { Logger::logAssert(hasShadowMap(), "シャドウマップを持っていないのに持っている前提のメソッドを呼び出した。"); return _nearClip; }
 
 private:
@@ -284,7 +285,7 @@ public:
 	void initShadowMap(float nearClip, const Size& size);
 	bool hasShadowMap() const override;
 	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
-	void prepareShadowMapRendering() override;
+	void prepareShadowMapRendering();
 	float getNearClip() const { Logger::logAssert(hasShadowMap(), "シャドウマップを持っていないのに持っている前提のメソッドを呼び出した。"); return _nearClip; }
 
 private:

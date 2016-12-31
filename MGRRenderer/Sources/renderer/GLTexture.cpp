@@ -198,6 +198,72 @@ bool GLTexture::initDepthTexture(GLenum textureUnit, const Size& contentSize)
 	return true;
 }
 
+bool GLTexture::initDepthCubeMapTexture(GLenum textureUnit, float size)
+{
+	_contentSize = Size(size, size);
+
+	GLint maxTextureSize = 0;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+
+	if (size > maxTextureSize)
+	{	
+		return false;
+	}
+
+	// テクスチャID生成
+	glActiveTexture(textureUnit);
+	glEnable(GL_TEXTURE_CUBE_MAP); //TODO:必要か？
+	glGenTextures(1, &_textureId);
+	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	Logger::logAssert(_textureId != 0, "デプステクスチャ生成失敗");
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, _textureId);
+	GLenum err = glGetError();
+	if (err != GL_NO_ERROR)
+	{
+		Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
+		glActiveTexture(GL_TEXTURE0);
+		return false;
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	GLfloat boarderColor[] = {1.0f, 0.0f, 0.0f, 0.0f};
+	glTexParameterfv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BORDER_COLOR, boarderColor);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
+
+	// キューブマップの6枚のテクスチャ生成
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_DEPTH_COMPONENT, static_cast<GLsizei>(size), static_cast<GLsizei>(size), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+	err = glGetError();
+	if (err != GL_NO_ERROR)
+	{
+		Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+		glActiveTexture(GL_TEXTURE0);
+		return false;
+	}
+
+	for (int i = 0; i < 6; i++) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X + i, 0, GL_DEPTH_COMPONENT, static_cast<GLsizei>(size), static_cast<GLsizei>(size), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+		err = glGetError();
+		if (err != GL_NO_ERROR)
+		{
+			Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+			glActiveTexture(GL_TEXTURE0);
+			return false;
+		}
+	}
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	glActiveTexture(GL_TEXTURE0);
+	return true;
+}
+
 bool GLTexture::initRenderTexture(GLenum pixelFormat, const Size& contentSize)
 {
 	_contentSize = contentSize;

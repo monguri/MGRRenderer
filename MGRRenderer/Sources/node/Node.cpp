@@ -24,8 +24,9 @@ void Node::renderGBuffer()
 	// ‰½‚à‚µ‚È‚¢
 }
 
-void Node::renderShadowMap()
+void Node::renderShadowMap(CubeMapFace face)
 {
+	(void)face;
 	// ‰½‚à‚µ‚È‚¢
 }
 

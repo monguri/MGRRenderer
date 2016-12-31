@@ -540,7 +540,7 @@ void Polygon3D::renderGBuffer()
 	Director::getRenderer().addCommand(&_renderGBufferCommand);
 }
 
-void Polygon3D::renderShadowMap()
+void Polygon3D::renderShadowMap(CubeMapFace face)
 {
 	_renderShadowMapCommand.init([=]
 	{
@@ -579,6 +579,7 @@ void Polygon3D::renderShadowMap()
 		}
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
+		(void)face;
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 
@@ -693,14 +694,38 @@ void Polygon3D::renderShadowMap()
 		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 		glUniformMatrix4fv(_glProgramForShadowMap.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-		glUniformMatrix4fv(
-			_glProgramForShadowMap.getUniformLocation("u_lightViewMatrix"),
-			1,
-			GL_FALSE,
-			(GLfloat*)lightViewMatrix.m
-		);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
-		// TODO:Vec3やMat4に頭につける-演算子作らないと
+
+		switch (light->getLightType())
+		{
+		case LightType::DIRECTION:
+		case LightType::SPOT:
+		{
+			glUniformMatrix4fv(
+				_glProgramForShadowMap.getUniformLocation("u_lightViewMatrix"),
+				1,
+				GL_FALSE,
+				(GLfloat*)lightViewMatrix.m
+			);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		}
+			break;
+		case LightType::POINT:
+		{
+			lightViewMatrix = static_cast<PointLight*>(light)->getShadowMapData().viewMatrices[(int)face];
+			glUniformMatrix4fv(
+				_glProgramForShadowMap.getUniformLocation("u_lightViewMatrix"),
+				1,
+				GL_FALSE,
+				(GLfloat*)lightViewMatrix.m
+			);
+			Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		}
+			break;
+		default:
+			Logger::logAssert(false, "存在しないライトタイプを入力された。");
+			break;
+		}
+
 		glUniformMatrix4fv(
 			_glProgramForShadowMap.getUniformLocation("u_lightProjectionMatrix"),
 			1,

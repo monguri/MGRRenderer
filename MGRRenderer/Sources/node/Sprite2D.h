@@ -42,17 +42,6 @@ public:
 		GBUFFER_SPECULAR_POWER,
 	};
 
-	enum class CubeMapFace : int
-	{
-		NONE = -1,
-		X_POSITIVE,
-		X_NEGATIVE,
-		Y_POSITIVE,
-		Y_NEGATIVE,
-		Z_POSITIVE,
-		Z_NEGATIVE,
-	};
-
 	Sprite2D();
 	virtual ~Sprite2D();
 	bool init(const std::string& filePath);

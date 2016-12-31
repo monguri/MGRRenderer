@@ -97,15 +97,70 @@ void Scene::update(float dt)
 	//
 	for (Light* light : getLight())
 	{
-		if (light->hasShadowMap())
+		switch (light->getLightType()) {
+		case LightType::AMBIENT:
+			// ‰½‚à‚µ‚È‚¢
+			break;
+		case LightType::DIRECTION:
 		{
-			light->prepareShadowMapRendering();
-		}
-	}
+			DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
+			if (dirLight->hasShadowMap())
+			{
+				dirLight->prepareShadowMapRendering();
+			}
 
-	for (Node* child : _children)
-	{
-		child->renderShadowMap();
+			for (Node* child : _children)
+			{
+				child->renderShadowMap();
+			}
+		}
+			break;
+		case LightType::POINT:
+		{
+			PointLight* pointLight = static_cast<PointLight*>(light);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+			if (pointLight->hasShadowMap())
+			{
+				pointLight->prepareShadowMapRendering();
+			}
+
+			for (Node* child : _children)
+			{
+				child->renderShadowMap();
+			}
+#elif defined(MGRRENDERER_USE_OPENGL)
+			if (pointLight->hasShadowMap())
+			{
+				for (int i = (int)CubeMapFace::X_POSITIVE; i < (int)CubeMapFace::NUM_CUBEMAP_FACE; i++)
+				{
+					pointLight->prepareShadowMapRendering((CubeMapFace)i);
+
+					for (Node* child : _children)
+					{
+						child->renderShadowMap((CubeMapFace)i);
+					}
+				}
+			}
+#endif
+		}
+			break;
+		case LightType::SPOT:
+		{
+			SpotLight* spotLight = static_cast<SpotLight*>(light);
+			if (spotLight->hasShadowMap())
+			{
+				spotLight->prepareShadowMapRendering();
+			}
+
+			for (Node* child : _children)
+			{
+				child->renderShadowMap();
+			}
+		}
+			break;
+		default:
+			break;
+		}
 	}
 
 	//

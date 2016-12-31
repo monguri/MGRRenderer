@@ -8,7 +8,7 @@ namespace mgrrenderer
 {
 
 
-GLFrameBuffer::GLFrameBuffer() : _frameBufferId(0)
+GLFrameBuffer::GLFrameBuffer() : _frameBufferId(0), _isCubeMap(false)
 {
 }
 
@@ -26,9 +26,11 @@ GLFrameBuffer::~GLFrameBuffer()
 	}
 }
 
-bool GLFrameBuffer::initWithTextureParams(const std::vector<GLenum>& drawBuffers, const std::vector<GLenum>& pixelFormats, bool useRenderBufferForDepthStencil, const Size& size)
+bool GLFrameBuffer::initWithTextureParams(const std::vector<GLenum>& drawBuffers, const std::vector<GLenum>& pixelFormats, bool useRenderBufferForDepthStencil, bool isCubeMap, const Size& size)
 {
 	Logger::logAssert(drawBuffers.size() == pixelFormats.size(), "引数の要素数が不一致。");
+
+	_isCubeMap = isCubeMap;
 
 	// レンダーテクスチャに描画するためのフレームバッファ作成
 	glGenFramebuffers(1, &_frameBufferId);
@@ -104,10 +106,19 @@ bool GLFrameBuffer::initWithTextureParams(const std::vector<GLenum>& drawBuffers
 			else
 			{
 				GLTexture* texture = new GLTexture();
-				texture->initDepthTexture(GL_TEXTURE0 + i, size);
-				_textures.push_back(texture);
 
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture->getTextureId(), 0);
+				if (isCubeMap)
+				{
+					texture->initDepthCubeMapTexture(GL_TEXTURE0 + i, size.width);
+					// とりあえずGL_TEXTURE_CUBE_MAP_POSITIVE_Xにバインドする
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X, texture->getTextureId(), 0);
+				}
+				else
+				{
+					texture->initDepthTexture(GL_TEXTURE0 + i, size);
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture->getTextureId(), 0);
+				}
+				_textures.push_back(texture);
 				err = glGetError();
 				if (err != GL_NO_ERROR)
 				{
@@ -158,6 +169,24 @@ bool GLFrameBuffer::initWithTextureParams(const std::vector<GLenum>& drawBuffers
 	}
 
 	return true;
+}
+
+void GLFrameBuffer::bindCubeMapFaceDepthStencil(GLenum face, size_t indexOfDrawBuffers)
+{
+	Logger::logAssert(_isCubeMap, "キューブマップでないフレームバッファに対してbindCubeMapFaceを呼んだ");
+	Logger::logAssert(face >= GL_TEXTURE_CUBE_MAP_POSITIVE_X && face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, "bindCubeMapFaceの引数がGL_TEXTURE_CUBE_MAP_DIRECTIONでない");
+	Logger::logAssert(indexOfDrawBuffers < _textures.size(), "bindCubeMapFaceの引数がGL_TEXTURE_CUBE_MAP_DIRECTIONでない");
+
+	glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferId);
+	Logger::logAssert(glGetError() != GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, face, _textures[indexOfDrawBuffers]->getTextureId(), 0);
+	Logger::logAssert(glGetError() != GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+	Logger::logAssert(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファに戻す
+	Logger::logAssert(glGetError() != GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 }
 
 } // namespace mgrrenderer

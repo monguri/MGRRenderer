@@ -19,6 +19,7 @@ public:
 	static const std::string GLProgram::UNIFORM_NAME_VIEW_MATRIX;
 	static const std::string GLProgram::UNIFORM_NAME_NORMAL_MATRIX;
 	static const std::string GLProgram::UNIFORM_NAME_PROJECTION_MATRIX;
+	static const std::string GLProgram::UNIFORM_NAME_CUBEMAP_FACE;
 
 	enum class AttributeLocation : int
 	{

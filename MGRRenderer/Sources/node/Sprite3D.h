@@ -79,7 +79,7 @@ private:
 	void update(float dt) override;
 	C3bLoader::NodeData* findJointByName(const std::string& jointName, const std::vector<C3bLoader::NodeData*> children);
 	void renderGBuffer() override;
-	void renderShadowMap() override;
+	void renderShadowMap(CubeMapFace face) override;
 	void renderForward() override;
 };
 

@@ -28,6 +28,18 @@ static float convertDegreeToRadian(float angle)
 	return angle * 0.0174532925f; // 2*pi / 360
 }
 
+enum class CubeMapFace : int
+{
+	NONE = -1,
+	X_POSITIVE,
+	X_NEGATIVE,
+	Y_POSITIVE,
+	Y_NEGATIVE,
+	Z_POSITIVE,
+	Z_NEGATIVE,
+	NUM_CUBEMAP_FACE,
+};
+
 struct Vec2
 {
 	union

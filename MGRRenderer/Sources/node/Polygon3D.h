@@ -38,7 +38,7 @@ private:
 	CustomRenderCommand _renderCommand;
 
 	void renderGBuffer() override;
-	void renderShadowMap() override;
+	void renderShadowMap(CubeMapFace face) override;
 	void renderForward() override;
 };
 

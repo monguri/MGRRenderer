@@ -12,7 +12,7 @@ public:
 	virtual void update(float dt);
 	virtual void prepareRendering();
 	virtual void renderGBuffer();
-	virtual void renderShadowMap();
+	virtual void renderShadowMap(CubeMapFace face = CubeMapFace::X_POSITIVE);
 	virtual void renderForward();
 	const Vec3& getPosition() const { return _position; }
 	virtual void setPosition(const Vec3& position) { _position = position; };

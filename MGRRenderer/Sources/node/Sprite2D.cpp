@@ -345,7 +345,7 @@ bool Sprite2D::initWithRenderBuffer(GLTexture* texture, RenderBufferType renderB
 	static std::vector<const char*> RenderBufferFSList = {
 		shader::FRAGMENT_SHADER_DEPTH_TEXTURE,
 		shader::FRAGMENT_SHADER_DEPTH_TEXTURE_ORTHOGONAL,
-		"", //TODO:まだ未対応
+		shader::FRAGMENT_SHADER_DEPTH_CUBEMAP_TEXTURE,
 		shader::FRAGMENT_SHADER_GBUFFER_COLOR_SPECULAR_INTENSITY,
 		shader::FRAGMENT_SHADER_GBUFFER_NORMAL,
 		shader::FRAGMENT_SHADER_GBUFFER_SPECULAR_POWER,
@@ -521,9 +521,12 @@ void Sprite2D::renderForward()
 
 		// デプステクスチャ描画時のプロジェクション行列のマップ
 		switch (_renderBufferType) {
+			case RenderBufferType::DEPTH_CUBEMAP_TEXTURE:
+				glUniform1i(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_CUBEMAP_FACE), (GLint)_cubeMapFace);
+				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				// そのまま通過する
 			case RenderBufferType::DEPTH_TEXTURE:
 			case RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL:
-			case RenderBufferType::DEPTH_CUBEMAP_TEXTURE:
 			{
 				glUniform1f(_glProgram.getUniformLocation("u_nearClipZ"), -_nearClip);
 				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());

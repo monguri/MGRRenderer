@@ -113,7 +113,7 @@ void DirectionalLight::initShadowMap(const Vec3& cameraPosition, float nearClip,
 	drawBuffer.push_back(GL_NONE);
 	std::vector<GLenum> pixelFormats;
 	pixelFormats.push_back(GL_DEPTH_COMPONENT);
-	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, false, size);
+	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, false, false, size);
 #endif
 }
 
@@ -205,42 +205,42 @@ void PointLight::initShadowMap(float nearClip, float size)
 	_nearClip = nearClip;
 
 	// x正方向
-	_shadowMapData.viewMatrices[0] = Mat4::createLookAtWithDirection(
+	_shadowMapData.viewMatrices[(int)CubeMapFace::X_POSITIVE] = Mat4::createLookAtWithDirection(
 		getPosition(),
 		Vec3(1.0f, 0.0f, 0.0f),
 		Vec3(0.0f, 1.0f, 0.0f)
 	);
 
 	// x負方向
-	_shadowMapData.viewMatrices[1] = Mat4::createLookAtWithDirection(
+	_shadowMapData.viewMatrices[(int)CubeMapFace::X_NEGATIVE] = Mat4::createLookAtWithDirection(
 		getPosition(),
 		Vec3(-1.0f, 0.0f, 0.0f),
 		Vec3(0.0f, 1.0f, 0.0f)
 	);
 
 	// y正方向
-	_shadowMapData.viewMatrices[2] = Mat4::createLookAtWithDirection(
+	_shadowMapData.viewMatrices[(int)CubeMapFace::Y_POSITIVE] = Mat4::createLookAtWithDirection(
 		getPosition(),
 		Vec3(0.0f, 1.0f, 0.0f),
 		Vec3(0.0f, 0.0f, 1.0f)
 	);
 
 	// y負方向
-	_shadowMapData.viewMatrices[3] = Mat4::createLookAtWithDirection(
+	_shadowMapData.viewMatrices[(int)CubeMapFace::Y_NEGATIVE] = Mat4::createLookAtWithDirection(
 		getPosition(),
 		Vec3(0.0f, -1.0f, 0.0f),
 		Vec3(0.0f, 0.0f, -1.0f)
 	);
 
 	// z正方向
-	_shadowMapData.viewMatrices[4] = Mat4::createLookAtWithDirection(
+	_shadowMapData.viewMatrices[(int)CubeMapFace::Z_POSITIVE] = Mat4::createLookAtWithDirection(
 		getPosition(),
 		Vec3(0.0f, 0.0f, 1.0f),
 		Vec3(0.0f, 1.0f, 0.0f)
 	);
 
 	// z負方向
-	_shadowMapData.viewMatrices[5] = Mat4::createLookAtWithDirection(
+	_shadowMapData.viewMatrices[(int)CubeMapFace::Z_NEGATIVE] = Mat4::createLookAtWithDirection(
 		getPosition(),
 		Vec3(0.0f, 0.0f, -1.0f),
 		Vec3(0.0f, 1.0f, 0.0f)
@@ -278,7 +278,7 @@ void PointLight::initShadowMap(float nearClip, float size)
 	drawBuffer.push_back(GL_NONE);
 	std::vector<GLenum> pixelFormats;
 	pixelFormats.push_back(GL_DEPTH_COMPONENT);
-	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, false, Size(size, size));
+	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, false, true, Size(size, size));
 #endif
 }
 
@@ -290,12 +290,12 @@ bool PointLight::hasShadowMap() const {
 #endif
 }
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
 void PointLight::prepareShadowMapRendering() {
 	Logger::logAssert(hasShadowMap(), "prepareShadowMapRendering呼び出しはシャドウマップを使う前提");
 
 	_prepareShadowMapRenderingCommand.init([=]
 	{
-#if defined(MGRRENDERER_USE_DIRECT3D)
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 		direct3dContext->ClearState();
 		direct3dContext->ClearDepthStencilView(_shadowMapData.depthTexture->getDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -314,7 +314,18 @@ void PointLight::prepareShadowMapRendering() {
 		ID3D11RenderTargetView* renderTarget[1] = {nullptr}; // シャドウマップ描画はDepthStencilViewはあるがRenderTargetはないのでnullでいい
 		direct3dContext->OMSetRenderTargets(1, renderTarget, _shadowMapData.depthTexture->getDepthStencilView());
 		direct3dContext->OMSetDepthStencilState(_shadowMapData.depthTexture->getDepthStencilState(), 1);
+	});
+
+	Director::getRenderer().addCommand(&_prepareShadowMapRenderingCommand);
+}
 #elif defined(MGRRENDERER_USE_OPENGL)
+void PointLight::prepareShadowMapRendering(CubeMapFace face) {
+	Logger::logAssert(hasShadowMap(), "prepareShadowMapRendering呼び出しはシャドウマップを使う前提");
+
+	_prepareShadowMapRenderingCommand.init([=]
+	{
+		getShadowMapData().depthFrameBuffer->bindCubeMapFaceDepthStencil(GL_TEXTURE_CUBE_MAP_POSITIVE_X + (size_t)face,
+																		0); // このメソッドを使うときがデプスバッファだけのフレームバッファである前提
 		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().depthFrameBuffer->getFrameBufferId());
 
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -324,11 +335,11 @@ void PointLight::prepareShadowMapRendering() {
 
 		//glEnable(GL_CULL_FACE);
 		//glCullFace(GL_FRONT);
-#endif
 	});
 
 	Director::getRenderer().addCommand(&_prepareShadowMapRenderingCommand);
 }
+#endif
 
 SpotLight::SpotLight(const Vec3& position, const Vec3& direction, const Color3B& color, float range, float innerAngle, float outerAngle) :
 #if defined(MGRRENDERER_USE_OPENGL)
@@ -405,7 +416,7 @@ void SpotLight::initShadowMap(float nearClip, const Size& size)
 	drawBuffer.push_back(GL_NONE);
 	std::vector<GLenum> pixelFormats;
 	pixelFormats.push_back(GL_DEPTH_COMPONENT);
-	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, false, size);
+	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, false, false, size);
 #endif
 }
 

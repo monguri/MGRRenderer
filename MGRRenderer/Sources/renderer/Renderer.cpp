@@ -430,7 +430,7 @@ void Renderer::initView(const Size& windowSize)
 	pixelFormats.push_back(GL_RGBA);
 	pixelFormats.push_back(GL_RGBA);
 	pixelFormats.push_back(GL_RGBA);
-	_gBufferFrameBuffer->initWithTextureParams(drawBuffers, pixelFormats, false, windowSize);
+	_gBufferFrameBuffer->initWithTextureParams(drawBuffers, pixelFormats, false, false, windowSize);
 
 
 	//

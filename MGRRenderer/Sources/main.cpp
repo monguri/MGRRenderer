@@ -34,6 +34,7 @@ LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowPara
 #elif defined(MGRRENDERER_USE_OPENGL)
 static void fwErrorHandler(int error, const char* description);
 static void fwKeyInputHandler(GLFWwindow* window, int key, int scancode, int action, int mods);
+static void debugMessageHandler(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam);
 #endif
 static void initialize();
 static void render();
@@ -315,6 +316,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		std::cerr << "Error: " << glewGetErrorString(err) << std::endl;
 		exit(EXIT_FAILURE);
 	}
+
+	glDebugMessageCallbackARB((GLDEBUGPROCARB)debugMessageHandler, nullptr);
 #endif
 
 	// •`‰æ‚Ì‰Šú‰»
@@ -418,6 +421,17 @@ void fwKeyInputHandler(GLFWwindow* window, int key, int scancode, int action, in
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
+}
+
+void debugMessageHandler(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
+{
+	(void)source;
+	(void)type;
+	(void)id;
+	(void)severity;
+	(void)length;
+	(void)userParam;
+	Logger::logAssert(false, message);
 }
 #endif
 

@@ -494,7 +494,7 @@ void Sprite2D::renderForward()
 		_d3dProgram.setConstantBuffersToDirect3DContext(direct3dContext);
 
 		UINT startSlot = 0;
-		// キューブマップテクスチャは別の
+		// キューブマップテクスチャは別のスロットを使う
 		if (_renderBufferType == RenderBufferType::DEPTH_CUBEMAP_TEXTURE)
 		{
 			startSlot = 1;
@@ -557,7 +557,14 @@ void Sprite2D::renderForward()
 		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.position);
 		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.textureCoordinate);
 
-		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
+		if (_renderBufferType == RenderBufferType::DEPTH_CUBEMAP_TEXTURE)
+		{
+			glBindTexture(GL_TEXTURE_CUBE_MAP, _texture->getTextureId());
+		}
+		else
+		{
+			glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
+		}
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 #endif
 	});

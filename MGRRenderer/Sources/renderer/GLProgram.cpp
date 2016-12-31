@@ -36,25 +36,33 @@ _shaderProgram(0)
 GLProgram::~GLProgram()
 {
 	glUseProgram(0);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	GLProgram::checkGLError();
 
 	if (_shaderProgram > 0)
 	{
 		glDeleteProgram(_shaderProgram);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		GLProgram::checkGLError();
 	}
 
 	if (_vertexShader > 0)
 	{
 		glDeleteShader(_vertexShader);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		GLProgram::checkGLError();
 	}
 
 	if (_fragmentShader > 0)
 	{
 		glDeleteShader(_fragmentShader);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		GLProgram::checkGLError();
 	}
+}
+
+GLenum GLProgram::_glError;
+
+void GLProgram::checkGLError()
+{
+	_glError = glGetError();
+	Logger::logAssert(_glError == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", _glError);
 }
 
 void GLProgram::initWithShaderString(const GLchar* vertexShaderStr, const GLchar* fragmentShaderStr)
@@ -67,13 +75,13 @@ void GLProgram::initWithShaderString(const GLchar* vertexShaderStr, const GLchar
 	if (_vertexShader > 0)
 	{
 		glDeleteShader(_vertexShader);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		GLProgram::checkGLError();
 	}
 
 	if (_fragmentShader > 0)
 	{
 		glDeleteShader(_fragmentShader);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		GLProgram::checkGLError();
 	}
 
 	_vertexShader = _fragmentShader = 0;
@@ -94,7 +102,7 @@ GLuint GLProgram::createVertexShader(const GLchar* source) const
 {
 	GLuint ret = glCreateShader(GL_VERTEX_SHADER);
 	Logger::logAssert(ret != 0, "シェーダ作成失敗");
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	GLProgram::checkGLError();
 	if (ret == 0)
 	{
 		return ret;
@@ -114,7 +122,7 @@ GLuint GLProgram::createFragmentShader(const GLchar* source) const
 {
 	GLuint ret = glCreateShader(GL_FRAGMENT_SHADER);
 	Logger::logAssert(ret != 0, "シェーダプログラム作成失敗。");
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	GLProgram::checkGLError();
 	if (ret == 0)
 	{
 		return ret;
@@ -161,16 +169,16 @@ GLuint GLProgram::createShaderProgram(const GLuint vertexShader, const GLuint fr
 {
 	GLuint ret = glCreateProgram();
 	Logger::logAssert(ret != 0, "シェーダプログラム生成失敗");
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	GLProgram::checkGLError();
 	if (ret == 0)
 	{
 		return 0;
 	}
 
 	glAttachShader(ret, vertexShader);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	GLProgram::checkGLError();
 	glAttachShader(ret, fragmentShader);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	GLProgram::checkGLError();
 
 	// 固定のattribute変数文字列を固定のattribute変数IDに結びつける
 	static const struct Attribute {
@@ -248,7 +256,7 @@ void GLProgram::parseAttributes(GLuint shaderProgram)
 				attributeName[length] = '\0';
 
 				GLint location = glGetAttribLocation(shaderProgram, attributeName);
-				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				GLProgram::checkGLError();
 				_attributeList[attributeName] = location;
 			}
 		}
@@ -295,7 +303,7 @@ void GLProgram::parseUniforms(GLuint shaderProgram)
 				}
 
 				GLint location = glGetUniformLocation(shaderProgram, uniformName);
-				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				GLProgram::checkGLError();
 				_uniformList[uniformName] = location;
 			}
 		}

@@ -40,6 +40,7 @@ public:
 
 	GLProgram();
 	~GLProgram();
+	static void checkGLError();
 	void initWithShaderString(const GLchar* vertexShaderStr, const GLchar* fragmentShaderStr);
 	void initWithShaderFile(const std::string& vertexShaderFile, const std::string& fragmentShaderFile);
 	GLuint getAttributeLocation(const std::string& attributeName) const;
@@ -47,6 +48,8 @@ public:
 	GLuint getShaderProgram() { return _shaderProgram; }
 
 private:
+	static GLenum _glError;
+
 	GLuint _vertexShader;
 	GLuint _fragmentShader;
 	GLuint _shaderProgram;

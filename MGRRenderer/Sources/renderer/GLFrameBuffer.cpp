@@ -3,6 +3,7 @@
 #if defined(MGRRENDERER_USE_OPENGL)
 #include "utility/Logger.h"
 #include "GLTexture.h"
+#include "GLProgram.h"
 
 namespace mgrrenderer
 {
@@ -178,15 +179,15 @@ void GLFrameBuffer::bindCubeMapFaceDepthStencil(GLenum face, size_t indexOfDrawB
 	Logger::logAssert(indexOfDrawBuffers < _textures.size(), "bindCubeMapFaceの引数がGL_TEXTURE_CUBE_MAP_DIRECTIONでない");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferId);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	GLProgram::checkGLError();
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, face, _textures[indexOfDrawBuffers]->getTextureId(), 0);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	GLProgram::checkGLError();
 
 	Logger::logAssert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファに戻す
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	GLProgram::checkGLError();
 }
 
 } // namespace mgrrenderer

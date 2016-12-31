@@ -512,30 +512,30 @@ void Sprite2D::renderForward()
 #elif defined(MGRRENDERER_USE_OPENGL)
 		// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
 		glUseProgram(_glProgram.getShaderProgram());
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		GLProgram::checkGLError();
 
 		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
 		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getViewMatrix().m);
 		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getProjectionMatrix().m);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		GLProgram::checkGLError();
 
 		// デプステクスチャ描画時のプロジェクション行列のマップ
 		switch (_renderBufferType) {
 			case RenderBufferType::DEPTH_CUBEMAP_TEXTURE:
 				glUniform1i(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_CUBEMAP_FACE), (GLint)_cubeMapFace);
-				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				GLProgram::checkGLError();
 				// そのまま通過する
 			case RenderBufferType::DEPTH_TEXTURE:
 			case RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL:
 			{
 				glUniform1f(_glProgram.getUniformLocation("u_nearClipZ"), -_nearClip);
-				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				GLProgram::checkGLError();
 
 				glUniform1f(_glProgram.getUniformLocation("u_farClipZ"), -_farClip);
-				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				GLProgram::checkGLError();
 
 				glUniformMatrix4fv(_glProgram.getUniformLocation("u_depthTextureProjectionMatrix"), 1, GL_FALSE, (GLfloat*)_projectionMatrix.m);
-				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				GLProgram::checkGLError();
 				break;
 			}
 			case RenderBufferType::GBUFFER_COLOR_SPECULAR_INTENSITY:
@@ -544,15 +544,15 @@ void Sprite2D::renderForward()
 				break;
 			default:
 				glUniform3f(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
-				Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+				GLProgram::checkGLError();
 				break;
 		}
 
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::POSITION);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		GLProgram::checkGLError();
 
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE);
-		Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+		GLProgram::checkGLError();
 
 		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.position);
 		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position2DTextureCoordinates), (GLvoid*)&_quadrangle.topLeft.textureCoordinate);

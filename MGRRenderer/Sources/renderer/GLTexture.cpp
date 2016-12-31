@@ -3,6 +3,7 @@
 #if defined(MGRRENDERER_USE_OPENGL)
 #include "Image.h"
 #include "TextureUtility.h"
+#include "GLProgram.h"
 
 namespace mgrrenderer
 {
@@ -162,7 +163,7 @@ bool GLTexture::initDepthTexture(GLenum textureUnit, const Size& contentSize)
 	// テクスチャID生成
 	glActiveTexture(textureUnit);
 	glGenTextures(1, &_textureId);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	GLProgram::checkGLError();
 	Logger::logAssert(_textureId != 0, "デプステクスチャ生成失敗");
 
 	glBindTexture(GL_TEXTURE_2D, _textureId);
@@ -214,7 +215,7 @@ bool GLTexture::initDepthCubeMapTexture(GLenum textureUnit, float size)
 	glActiveTexture(textureUnit);
 	glEnable(GL_TEXTURE_CUBE_MAP); //TODO:必要か？
 	glGenTextures(1, &_textureId);
-	Logger::logAssert(glGetError() == GL_NO_ERROR, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
+	GLProgram::checkGLError();
 	Logger::logAssert(_textureId != 0, "デプステクスチャ生成失敗");
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, _textureId);

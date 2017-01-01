@@ -34,7 +34,7 @@ private:
 	std::vector<Vec3> _normalArray;
 
 	CustomRenderCommand _renderGBufferCommand;
-	CustomRenderCommand _renderShadowMapCommand;
+	CustomRenderCommand _renderShadowMapCommand[(size_t)CubeMapFace::NUM_CUBEMAP_FACE]; //TODO:openglでポイントライトの1パス未対応なので
 	CustomRenderCommand _renderCommand;
 
 	void renderGBuffer() override;

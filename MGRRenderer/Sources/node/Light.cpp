@@ -294,7 +294,7 @@ bool PointLight::hasShadowMap() const {
 void PointLight::prepareShadowMapRendering() {
 	Logger::logAssert(hasShadowMap(), "prepareShadowMapRendering呼び出しはシャドウマップを使う前提");
 
-	_prepareShadowMapRenderingCommand.init([=]
+	_prepareShadowMapRenderingCommand[(int)face].init([=]
 	{
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 		direct3dContext->ClearState();
@@ -316,13 +316,13 @@ void PointLight::prepareShadowMapRendering() {
 		direct3dContext->OMSetDepthStencilState(_shadowMapData.depthTexture->getDepthStencilState(), 1);
 	});
 
-	Director::getRenderer().addCommand(&_prepareShadowMapRenderingCommand);
+	Director::getRenderer().addCommand(&_prepareShadowMapRenderingCommand[(int)face]);
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
 void PointLight::prepareShadowMapRendering(CubeMapFace face) {
 	Logger::logAssert(hasShadowMap(), "prepareShadowMapRendering呼び出しはシャドウマップを使う前提");
 
-	_prepareShadowMapRenderingCommand.init([=]
+	_prepareShadowMapRenderingCommand[(int)face].init([=]
 	{
 		getShadowMapData().depthFrameBuffer->bindCubeMapFaceDepthStencil(GL_TEXTURE_CUBE_MAP_POSITIVE_X + (size_t)face,
 																		0); // このメソッドを使うときがデプスバッファだけのフレームバッファである前提
@@ -337,7 +337,7 @@ void PointLight::prepareShadowMapRendering(CubeMapFace face) {
 		//glCullFace(GL_FRONT);
 	});
 
-	Director::getRenderer().addCommand(&_prepareShadowMapRenderingCommand);
+	Director::getRenderer().addCommand(&_prepareShadowMapRenderingCommand[(int)face]);
 }
 #endif
 

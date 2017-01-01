@@ -1300,7 +1300,7 @@ void Sprite3D::renderGBuffer()
 
 void Sprite3D::renderShadowMap(CubeMapFace face)
 {
-	_renderShadowMapCommand.init([=]
+	_renderShadowMapCommand[(int)face].init([=]
 	{
 		bool makeShadowMap = false;
 
@@ -1586,7 +1586,7 @@ void Sprite3D::renderShadowMap(CubeMapFace face)
 #endif
 	});
 
-	Director::getRenderer().addCommand(&_renderShadowMapCommand);
+	Director::getRenderer().addCommand(&_renderShadowMapCommand[(int)face]);
 }
 
 void Sprite3D::renderForward()

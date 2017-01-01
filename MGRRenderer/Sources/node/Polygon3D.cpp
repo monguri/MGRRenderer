@@ -542,7 +542,7 @@ void Polygon3D::renderGBuffer()
 
 void Polygon3D::renderShadowMap(CubeMapFace face)
 {
-	_renderShadowMapCommand.init([=]
+	_renderShadowMapCommand[(int)face].init([=]
 	{
 		bool makeShadowMap = false;
 
@@ -749,7 +749,7 @@ void Polygon3D::renderShadowMap(CubeMapFace face)
 #endif
 	});
 
-	Director::getRenderer().addCommand(&_renderShadowMapCommand);
+	Director::getRenderer().addCommand(&_renderShadowMapCommand[(int)face]);
 }
 
 void Polygon3D::renderForward()

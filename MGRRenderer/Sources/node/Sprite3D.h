@@ -50,7 +50,7 @@ private:
 	GLTexture* _texture;
 #endif
 	CustomRenderCommand _renderGBufferCommand;
-	CustomRenderCommand _renderShadowMapCommand;
+	CustomRenderCommand _renderShadowMapCommand[(size_t)CubeMapFace::NUM_CUBEMAP_FACE]; //TODO:openglでポイントライトの1パス未対応なので
 	CustomRenderCommand _renderCommand;
 	//TODO: Textureは今のところモデルファイルで指定できない。一枚のみに対応
 	Color3F _ambient;

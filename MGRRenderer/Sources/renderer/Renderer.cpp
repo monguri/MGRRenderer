@@ -411,6 +411,7 @@ void Renderer::initView(const Size& windowSize)
 	_d3dProgram.setInputLayout(inputLayout);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearDepth(1.0f); // デフォルト値は一番奥にしておく
 	// TODO:ブレンドが必要ない時もブレンドをONにしている
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

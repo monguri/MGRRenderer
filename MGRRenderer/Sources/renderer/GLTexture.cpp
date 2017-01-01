@@ -238,18 +238,8 @@ bool GLTexture::initDepthCubeMapTexture(GLenum textureUnit, float size)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
 
 	// キューブマップの6枚のテクスチャ生成
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_DEPTH_COMPONENT, static_cast<GLsizei>(size), static_cast<GLsizei>(size), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
-	err = glGetError();
-	if (err != GL_NO_ERROR)
-	{
-		Logger::logAssert(false, "OpenGL処理でエラー発生 glGetError()=%d", err);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-		glActiveTexture(GL_TEXTURE0);
-		return false;
-	}
-
-	for (int i = 0; i < 6; i++) {
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X + i, 0, GL_DEPTH_COMPONENT, static_cast<GLsizei>(size), static_cast<GLsizei>(size), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+	for (int i = 0; i < (int)CubeMapFace::NUM_CUBEMAP_FACE; i++) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, static_cast<GLsizei>(size), static_cast<GLsizei>(size), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
 		err = glGetError();
 		if (err != GL_NO_ERROR)
 		{

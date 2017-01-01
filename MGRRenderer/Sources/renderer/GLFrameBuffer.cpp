@@ -178,8 +178,8 @@ void GLFrameBuffer::bindCubeMapFaceDepthStencil(GLenum face, size_t indexOfDrawB
 	Logger::logAssert(face >= GL_TEXTURE_CUBE_MAP_POSITIVE_X && face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, "bindCubeMapFaceの引数がGL_TEXTURE_CUBE_MAP_DIRECTIONでない");
 	Logger::logAssert(indexOfDrawBuffers < _textures.size(), "bindCubeMapFaceの引数がGL_TEXTURE_CUBE_MAP_DIRECTIONでない");
 
-	glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferId);
-	GLProgram::checkGLError();
+	//glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferId);
+	//GLProgram::checkGLError();
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, face, _textures[indexOfDrawBuffers]->getTextureId(), 0);
 	GLProgram::checkGLError();
@@ -189,8 +189,8 @@ void GLFrameBuffer::bindCubeMapFaceDepthStencil(GLenum face, size_t indexOfDrawB
 
 	Logger::logAssert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファに戻す
-	GLProgram::checkGLError();
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファに戻す
+	//GLProgram::checkGLError();
 }
 
 } // namespace mgrrenderer

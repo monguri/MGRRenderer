@@ -324,9 +324,10 @@ void PointLight::prepareShadowMapRendering(CubeMapFace face) {
 
 	_prepareShadowMapRenderingCommand[(int)face].init([=]
 	{
+		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().depthFrameBuffer->getFrameBufferId());
+
 		getShadowMapData().depthFrameBuffer->bindCubeMapFaceDepthStencil(GL_TEXTURE_CUBE_MAP_POSITIVE_X + (size_t)face,
 																		0); // このメソッドを使うときがデプスバッファだけのフレームバッファである前提
-		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().depthFrameBuffer->getFrameBufferId());
 
 		glClear(GL_DEPTH_BUFFER_BIT);
 

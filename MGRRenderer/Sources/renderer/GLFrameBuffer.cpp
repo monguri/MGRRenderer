@@ -184,6 +184,9 @@ void GLFrameBuffer::bindCubeMapFaceDepthStencil(GLenum face, size_t indexOfDrawB
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, face, _textures[indexOfDrawBuffers]->getTextureId(), 0);
 	GLProgram::checkGLError();
 
+	//GLenum drawBuffers[1] = {GL_NONE};
+	//glDrawBuffers(1, drawBuffers);
+
 	Logger::logAssert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "OpenGL処理でエラー発生 glGetError()=%d", glGetError());
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファに戻す

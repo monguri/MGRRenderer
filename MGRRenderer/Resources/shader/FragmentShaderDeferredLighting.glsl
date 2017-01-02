@@ -8,6 +8,7 @@ uniform sampler2D u_gBufferColorSpecularIntensity;
 uniform sampler2D u_gBufferNormal;
 //uniform sampler2D u_gBufferSpecularPower;
 uniform sampler2DShadow u_shadowTexture;
+uniform samplerCubeShadow u_shadowCubeMapTexture;
 uniform vec3 u_ambientLightColor;
 uniform vec3 u_directionalLightColor;
 uniform vec3 u_directionalLightDirection;
@@ -23,12 +24,21 @@ uniform float u_spotLightOuterAngleCos;
 uniform mat4 u_depthTextureProjection;
 uniform mat4 u_viewInverse;
 uniform bool u_directionalLightHasShadowMap;
+uniform bool u_pointLightHasShadowMap;
 uniform bool u_spotLightHasShadowMap;
 uniform mat4 u_lightViewMatrix;
+uniform mat4 u_lightViewMatrices[6];
 uniform mat4 u_lightProjectionMatrix;
 uniform mat4 u_depthBiasMatrix;
 
 varying vec2 v_texCoord;
+
+const int CUBEMAP_FACE_X_POSITIVE = 0;
+const int CUBEMAP_FACE_X_NEGATIVE = 1;
+const int CUBEMAP_FACE_Y_POSITIVE = 2;
+const int CUBEMAP_FACE_Y_NEGATIVE = 3;
+const int CUBEMAP_FACE_Z_POSITIVE = 4;
+const int CUBEMAP_FACE_Z_NEGATIVE = 5;
 
 vec3 computeLightedColor(vec3 normalVector, vec3 lightDirection, vec3 lightColor, float attenuation)
 {
@@ -95,6 +105,60 @@ void main()
 		shadowAttenuation *= 0.25;
 
 		//shadowAttenuation = textureProj(u_shadowTexture, lightPosition);
+	}
+
+	if (u_pointLightHasShadowMap)
+	{
+		// キューブマップのどの面か調べるため、3軸で一番座標が大きい値を探す
+		vec3 pointLightToVertexDirection = -vertexToPointLightDirection;
+		vec3 absPosition = abs(pointLightToVertexDirection);
+		float maxCoordinateVal = max(absPosition.x, max(absPosition.y, absPosition.z));
+
+		// 符号変換は表示してみて決めた
+		// TODO:POSITIVE側の向きはテストしてない
+		vec4 lightPosition;
+		mat4 lightViewMatrix;
+
+		if (maxCoordinateVal == absPosition.x)
+		{
+			if (pointLightToVertexDirection.x > 0)
+			{
+				lightViewMatrix = u_lightViewMatrices[CUBEMAP_FACE_X_POSITIVE];
+			}
+			else
+			{
+				lightViewMatrix = u_lightViewMatrices[CUBEMAP_FACE_X_NEGATIVE];
+			}
+		}
+		else if (maxCoordinateVal == absPosition.y)
+		{
+			if (pointLightToVertexDirection.y > 0)
+			{
+				lightViewMatrix = u_lightViewMatrices[CUBEMAP_FACE_Y_POSITIVE];
+			}
+			else
+			{
+				lightViewMatrix = u_lightViewMatrices[CUBEMAP_FACE_Y_NEGATIVE];
+			}
+		}
+		else // if (maxCoordinateVal == absPosition.z)
+		{
+			if (pointLightToVertexDirection.z > 0)
+			{
+				lightViewMatrix = u_lightViewMatrices[CUBEMAP_FACE_Z_POSITIVE];
+			}
+			else
+			{
+				lightViewMatrix = u_lightViewMatrices[CUBEMAP_FACE_Z_NEGATIVE];
+			}
+		}
+
+		lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * lightViewMatrix * worldPosition;
+		//// zファイティングを避けるための微調整
+		lightPosition.z -= 0.05;
+
+		// PCFはsamplerCubeMapShadowにはない
+		shadowAttenuation = texture(u_shadowCubeMapTexture, lightPosition);
 	}
 
 	if (u_spotLightHasShadowMap) {

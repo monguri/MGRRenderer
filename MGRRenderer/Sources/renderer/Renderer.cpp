@@ -850,7 +850,6 @@ void Renderer::renderDeferred()
 				dirLight->hasShadowMap()
 			);
 
-			// TODO:‚Æ‚è‚ ‚¦‚¸‰e‚Â‚¯‚ÍDirectionalLight‚Ì‚Ý‚ð‘z’è
 			if (dirLight->hasShadowMap())
 			{
 				glUniformMatrix4fv(
@@ -895,6 +894,35 @@ void Renderer::renderDeferred()
 			PointLight* pointLight = static_cast<PointLight*>(light);
 			glUniform1f(_glProgram.getUniformLocation("u_pointLightRangeInverse"), 1.0f / pointLight->getRange());
 			GLProgram::checkGLError();
+
+			glUniform1i(
+				_glProgram.getUniformLocation("u_pointLightHasShadowMap"),
+				pointLight->hasShadowMap()
+			);
+
+			if (pointLight->hasShadowMap()) {
+				glUniformMatrix4fv(
+					_glProgram.getUniformLocation("u_lightProjectionMatrix"),
+					1,
+					GL_FALSE,
+					(GLfloat*)pointLight->getShadowMapData().projectionMatrix.m
+				);
+
+				static const Mat4& depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 0.5f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 1.0f));
+
+				glUniformMatrix4fv(
+					_glProgram.getUniformLocation("u_depthBiasMatrix"),
+					1,
+					GL_FALSE,
+					(GLfloat*)depthBiasMatrix.m
+				);
+
+				glActiveTexture(GL_TEXTURE4);
+				GLuint textureId = pointLight->getShadowMapData().getDepthTexture()->getTextureId();
+				glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+				glUniform1i(_glProgram.getUniformLocation("u_shadowCubeMapTexture"), 4);
+				glActiveTexture(GL_TEXTURE0);
+			}
 		}
 			break;
 		case LightType::SPOT: {

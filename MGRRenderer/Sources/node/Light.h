@@ -222,7 +222,11 @@ private:
 	bool _hasShadowMap;
 #endif
 	ShadowMapData _shadowMapData;
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	CustomRenderCommand _prepareShadowMapRenderingCommand;
+#elif defined(MGRRENDERER_USE_OPENGL)
 	CustomRenderCommand _prepareShadowMapRenderingCommand[(size_t)CubeMapFace::NUM_CUBEMAP_FACE]; //TODO:openglでポイントライトの1パス未対応なので
+#endif
 };
 
 class SpotLight :

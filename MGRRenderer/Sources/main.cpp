@@ -614,7 +614,7 @@ void initialize()
 		depthTextureSprite = new Sprite2D();
 		const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
 		depthTextureSprite->setScale(1 / 5.0f);
-		depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_CUBEMAP_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix, CubeMapFace::Y_NEGATIVE);
+		depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_CUBEMAP_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix, CubeMapFace::Z_NEGATIVE);
 		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	}
 

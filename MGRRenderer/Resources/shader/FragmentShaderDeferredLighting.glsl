@@ -154,10 +154,15 @@ void main()
 		}
 
 		lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * lightViewMatrix * worldPosition;
-		//// zファイティングを避けるための微調整
+		// zファイティングを避けるための微調整
 		lightPosition.z -= 0.05;
 
+		//float pointLightDepth = -(u_lightProjectionMatrix[2][2] * maxCoordinateVal + u_lightProjectionMatrix[3][2]) / maxCoordinateVal;
+		// zファイティングを避けるための微調整
+		//pointLightDepth -= 0.05;
+
 		// PCFはsamplerCubeMapShadowにはない
+		//shadowAttenuation = shadowCube(u_shadowCubeMapTexture, vec4(lightPosition, pointLightDepth));
 		shadowAttenuation = texture(u_shadowCubeMapTexture, lightPosition);
 	}
 

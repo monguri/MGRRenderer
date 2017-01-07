@@ -184,7 +184,7 @@ bool GLTexture::initDepthTexture(GLenum textureUnit, const Size& contentSize)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
 
 	// テクスチャ生成
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, static_cast<GLsizei>(contentSize.width), static_cast<GLsizei>(contentSize.height), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, static_cast<GLsizei>(contentSize.width), static_cast<GLsizei>(contentSize.height), 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	err = glGetError();
 	if (err != GL_NO_ERROR)
 	{
@@ -239,7 +239,7 @@ bool GLTexture::initDepthCubeMapTexture(GLenum textureUnit, float size)
 
 	// キューブマップの6枚のテクスチャ生成
 	for (int i = 0; i < (int)CubeMapFace::NUM_CUBEMAP_FACE; i++) {
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, static_cast<GLsizei>(size), static_cast<GLsizei>(size), 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, nullptr);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, static_cast<GLsizei>(size), static_cast<GLsizei>(size), 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 		err = glGetError();
 		if (err != GL_NO_ERROR)
 		{

@@ -186,6 +186,8 @@ void GLFrameBuffer::bindCubeMapFaceDepthStencil(GLenum face, size_t indexOfDrawB
 
 	//GLenum drawBuffers[1] = {GL_NONE};
 	//glDrawBuffers(1, drawBuffers);
+	//glDrawBuffer(GL_NONE);
+	//glReadBuffer(GL_NONE);
 
 	Logger::logAssert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "OpenGLèàóùÇ≈ÉGÉâÅ[î≠ê∂ glGetError()=%d", glGetError());
 

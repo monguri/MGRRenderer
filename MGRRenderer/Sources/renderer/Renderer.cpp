@@ -437,9 +437,7 @@ void Renderer::initView(const Size& windowSize)
 	//
 	// ディファードレンダリングの準備
 	//
-	//_d3dProgram.initWithShaderFile("Resources/shader/DeferredLighting.hlsl", true, "VS", "", "PS");
-
-	_glProgram.initWithShaderString(shader::VERTEX_SHADER_DEFERRED_LIGHTING, shader::FRAGMENT_SHADER_DEFERRED_LIGHTING);
+	_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderDeferredLighting.glsl", "../MGRRenderer/Resources/shader/FragmentShaderDeferredLighting.glsl");
 
 	_quadrangle.bottomLeft.position = Vec2(-1.0f, -1.0f);
 	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 0.0f);

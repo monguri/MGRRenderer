@@ -170,10 +170,10 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 	return true;
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
-bool Sprite2D::initCommon(const char* geometryShaderFunctionName, const char* pixelShaderFunctionName, const Size& contentSize)
+bool Sprite2D::initCommon(const std::string& geometryShaderFunctionPath, const std::string& pixelShaderFunctionPath, const Size& contentSize)
 {
 	// Œ»ó–¢Žg—p
-	(void)geometryShaderFunctionName;
+	(void)geometryShaderFunctionPath;
 
 	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
 	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 0.0f);
@@ -184,7 +184,7 @@ bool Sprite2D::initCommon(const char* geometryShaderFunctionName, const char* pi
 	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
 	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 1.0f);
 
-	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE, pixelShaderFunctionName);
+	_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionTexture.glsl", pixelShaderFunctionPath);
 
 	return true;
 }
@@ -233,7 +233,7 @@ bool Sprite2D::init(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 	return true;
 #elif defined(MGRRENDERER_USE_OPENGL)
-	return initCommon("", shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR, texture->getContentSize());
+	return initCommon("", "../MGRRenderer/Resources/shader/FragmentShaderPositionTextureMultiplyColor.glsl", texture->getContentSize());
 #endif
 }
 
@@ -342,16 +342,16 @@ bool Sprite2D::initWithRenderBuffer(GLTexture* texture, RenderBufferType renderB
 	_texture = texture;
 	_renderBufferType = renderBufferType;
 
-	static std::vector<const char*> RenderBufferFSList = {
-		shader::FRAGMENT_SHADER_DEPTH_TEXTURE,
-		shader::FRAGMENT_SHADER_DEPTH_TEXTURE_ORTHOGONAL,
-		shader::FRAGMENT_SHADER_DEPTH_CUBEMAP_TEXTURE,
-		shader::FRAGMENT_SHADER_GBUFFER_COLOR_SPECULAR_INTENSITY,
-		shader::FRAGMENT_SHADER_GBUFFER_NORMAL,
-		shader::FRAGMENT_SHADER_GBUFFER_SPECULAR_POWER,
+	static std::vector<std::string> RenderBufferFSList = {
+		"../MGRRenderer/Resources/shader/FragmentShaderDepthTexture.glsl",
+		"../MGRRenderer/Resources/shader/FragmentShaderDepthTextureOrthogonal.glsl",
+		"../MGRRenderer/Resources/shader/FragmentShaderDepthCubemapTexture.glsl",
+		"../MGRRenderer/Resources/shader/FragmentShaderGBufferColorSpecularIntensity.glsl",
+		"../MGRRenderer/Resources/shader/FragmentShaderGBufferNormal.glsl",
+		"../MGRRenderer/Resources/shader/FragmentShaderGBufferSpecularPower.glsl",
 	};
 
-	const char* fragmentShader = RenderBufferFSList[static_cast<int>(renderBufferType)];
+	const std::string& fragmentShader = RenderBufferFSList[static_cast<int>(renderBufferType)];
 
 	return initCommon("", fragmentShader, texture->getContentSize());
 }

@@ -198,7 +198,7 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
 	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 1.0f);
 
-	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE, shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR);
+	_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionTexture.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionTextureMultiplyColor.glsl");
 	_glProgramForGBuffer.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionTexture.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionTextureMultiplyColorGBuffer.glsl");
 	return true;
 #endif

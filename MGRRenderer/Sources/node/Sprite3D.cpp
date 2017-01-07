@@ -524,6 +524,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_glProgram.initWithShaderString(
 			// vertex shader
 			// ModelDataしか使わない場合
+			"#version 430\n"
 			"attribute vec4 a_position;"
 			"attribute vec4 a_normal;"
 			"attribute vec2 a_texCoord;"
@@ -554,6 +555,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"}"
 			,
 			// fragment shader
+			"#version 430\n"
 			"uniform sampler2D u_texture;"
 			"uniform sampler2DShadow u_shadowTexture;"
 			"uniform vec3 u_multipleColor;"
@@ -623,6 +625,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			//"	v_texCoord.y = 1.0 - v_texCoord.y;"
 			//"}"
 			//// アニメーションを使う場合
+			"#version 430\n"
 			"attribute vec3 a_position;" // これがvec3になっているのに注意 TODO:なぜなのか？
 			"attribute vec3 a_normal;"
 			"attribute vec2 a_texCoord;"
@@ -690,6 +693,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"}"
 			,
 			// fragment shader
+			"#version 430\n"
 			"uniform sampler2D u_texture;"
 			"uniform sampler2DShadow u_shadowTexture;"
 			"uniform vec3 u_multipleColor;"
@@ -770,6 +774,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_glProgramForShadowMap.initWithShaderString(
 			// vertex shader
 			// ModelDataしか使わない場合
+			"#version 430\n"
 			"attribute vec4 a_position;"
 			"uniform mat4 u_modelMatrix;"
 			"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
@@ -780,6 +785,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"}"
 			,
 			// fragment shader
+			"#version 430\n"
 			"void main()"
 			"{" // 何もせずとも深度は自動で書き込まれる 
 			"}"
@@ -799,6 +805,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			//"	gl_Position = u_projectionMatrix * u_lightViewMatrix * u_modelMatrix * getPosition();"
 			//"}"
 			//// アニメーションを使う場合
+			"#version 430\n"
 			"attribute vec3 a_position;" // これがvec3になっているのに注意 TODO:なぜなのか？
 			"attribute vec4 a_blendWeight;"
 			"attribute vec4 a_blendIndex;"
@@ -843,6 +850,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"}"
 			,
 			// fragment shader
+			"#version 430\n"
 			"void main()"
 			"{" // 何もせずとも深度は自動で書き込まれる 
 			"}"
@@ -872,7 +880,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			//"	v_texCoord.y = 1.0 - v_texCoord.y;"
 			//"}"
 			//// アニメーションを使う場合
-			"#version 400\n"
+			"#version 430\n"
 			""
 			"in vec3 a_position;" // これがvec3になっているのに注意 TODO:なぜなのか？
 			"in vec3 a_normal;"
@@ -926,7 +934,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			"}"
 			,
 			// fragment shader
-			"#version 400\n"
+			"#version 430\n"
 			""
 			"float SPECULAR_POWER_RANGE_X = 10.0;"
 			"float SPECULAR_POWER_RANGE_Y = 250.0;"

@@ -46,9 +46,6 @@
     <None Include="Resources\shader\FragmentShaderDeferredLighting.glsl">
       <Filter>Resource Files\shader</Filter>
     </None>
-    <None Include="Resources\shader\FragmentShaderGBuffer.glsl">
-      <Filter>Resource Files\shader</Filter>
-    </None>
     <None Include="Resources\shader\FragmentShaderPositionMultiplyColor.glsl">
       <Filter>Resource Files\shader</Filter>
     </None>
@@ -80,6 +77,24 @@
       <Filter>Resource Files\shader</Filter>
     </None>
     <None Include="Resources\shader\VertexShaderPositionTextureMacro.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderDepthCubemapTexture.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderDepthTexture.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderDepthTextureOrthogonal.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderGBufferColorSpecularIntensity.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderGBufferNormal.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderGBufferSpecularPower.glsl">
       <Filter>Resource Files\shader</Filter>
     </None>
   </ItemGroup>

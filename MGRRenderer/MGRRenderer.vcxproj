@@ -25,7 +25,12 @@
     <None Include="Resources\orc_jump.c3t" />
     <None Include="Resources\plane.c3t" />
     <None Include="Resources\shader\FragmentShaderDeferredLighting.glsl" />
-    <None Include="Resources\shader\FragmentShaderGBuffer.glsl" />
+    <None Include="Resources\shader\FragmentShaderDepthCubemapTexture.glsl" />
+    <None Include="Resources\shader\FragmentShaderDepthTexture.glsl" />
+    <None Include="Resources\shader\FragmentShaderDepthTextureOrthogonal.glsl" />
+    <None Include="Resources\shader\FragmentShaderGBufferColorSpecularIntensity.glsl" />
+    <None Include="Resources\shader\FragmentShaderGBufferNormal.glsl" />
+    <None Include="Resources\shader\FragmentShaderGBufferSpecularPower.glsl" />
     <None Include="Resources\shader\FragmentShaderPositionMultiplyColor.glsl" />
     <None Include="Resources\shader\FragmentShaderPositionNormalMultiplyColorGBuffer.glsl" />
     <None Include="Resources\shader\FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl" />

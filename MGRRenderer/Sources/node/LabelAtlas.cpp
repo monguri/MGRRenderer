@@ -35,7 +35,7 @@ bool LabelAtlas::init(const std::string& string, const GLTexture* texture, float
 
 	setString(string);
 
-	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION_TEXTURE, shader::FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR);
+	_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionTexture.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionTextureMultiplyColor.glsl");
 
 	return true;
 }

@@ -1,7 +1,5 @@
-//const char* VERTEX_SHADER_POSITION_TEXTURE = STRINGIFY(
-// ディファードレンダリングに使うので、マルチレンダーターゲットのためにGLSL4.0.0で書く
-// 現状マクロで読み込んでるので#を使えない
-#version 400
+// ディファードレンダリングに使うので、マルチレンダーターゲットのためにGLSL4.3.0で書く
+#version 430
 
 in vec4 a_position;
 in vec2 a_texCoord;
@@ -14,4 +12,3 @@ void main()
 	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;
 	v_texCoord = a_texCoord;
 }
-//);

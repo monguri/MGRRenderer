@@ -8,23 +8,9 @@ namespace mgrrenderer
 
 namespace shader
 {
-
-extern const char* VERTEX_SHADER_POSITION;
-extern const char* FRAGMENT_SHADER_POSITION_MULTIPLY_COLOR;
-extern const char* VERTEX_SHADER_POSITION_TEXTURE;
-extern const char* FRAGMENT_SHADER_POSITION_TEXTURE_MULTIPLY_COLOR;
-// コメントアウトしているものは#version読み込みのためにファイル読み込みする形に
-//extern const char* VERTEX_SHADER_POSITION_NORMAL_MULTIPLY_COLOR;
-//extern const char* FRAGMENT_SHADER_POSITION_NORMAL_MULTIPLY_COLOR_GBUFFER;
-//extern const char* FRAGMENT_SHADER_POSITION_NORMAL_TEXTURE_MULTIPLY_COLOR_GBUFFER;
-extern const char* FRAGMENT_SHADER_DEPTH_TEXTURE;
-extern const char* FRAGMENT_SHADER_DEPTH_TEXTURE_ORTHOGONAL;
-extern const char* FRAGMENT_SHADER_DEPTH_CUBEMAP_TEXTURE;
-extern const char* FRAGMENT_SHADER_GBUFFER_COLOR_SPECULAR_INTENSITY;
-extern const char* FRAGMENT_SHADER_GBUFFER_NORMAL;
-extern const char* FRAGMENT_SHADER_GBUFFER_SPECULAR_POWER;
-extern const char* VERTEX_SHADER_DEFERRED_LIGHTING;
-extern const char* FRAGMENT_SHADER_DEFERRED_LIGHTING;
+	// glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);をしたため、#versionを書いてないとコンパイルエラーに
+	// なるようになったので、STRINGIFYは使わなくなった
+	// ファイルは一応残しておく
 } // namespace shader
 
 } // namespace mgrrenderer

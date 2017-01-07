@@ -143,6 +143,7 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 #elif defined(MGRRENDERER_USE_OPENGL)
 	_glProgram.initWithShaderString(
 		// vertex shader
+		"#version 430\n"
 		"attribute vec4 a_position;"
 		"attribute float a_point_size;"
 		"uniform mat4 u_modelMatrix;"
@@ -155,6 +156,7 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 		"}"
 		,
 		// fragment shader
+		"#version 430\n"
 		"uniform vec3 u_multipleColor;"
 		"void main()"
 		"{"

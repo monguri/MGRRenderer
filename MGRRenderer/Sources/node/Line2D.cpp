@@ -147,7 +147,7 @@ bool Line2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
 	}
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 #elif defined(MGRRENDERER_USE_OPENGL)
-	_glProgram.initWithShaderString(shader::VERTEX_SHADER_POSITION, shader::FRAGMENT_SHADER_POSITION_MULTIPLY_COLOR);
+	_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPosition.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionMultiplyColor.glsl");
 #endif
 
 	return true;

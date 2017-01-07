@@ -1,4 +1,4 @@
-const char* FRAGMENT_SHADER_DEFERRED_LIGHTING = STRINGIFY(
+#version 430
 
 float SPECULAR_POWER_RANGE_X = 10.0;
 float SPECULAR_POWER_RANGE_Y = 250.0;
@@ -184,4 +184,3 @@ void main()
 
 	gl_FragColor = vec4((color * (shadowAttenuation * diffuseSpecularLightColor + u_ambientLightColor)), 1.0);
 }
-); 

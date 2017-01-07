@@ -318,6 +318,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	// TODO:objのシェーダとほぼ同じ。共通化したい。
 	_glProgram.initWithShaderString(
 		// vertex shader
+		"#version 430\n"
 		"attribute vec4 a_position;"
 		"attribute vec4 a_normal;"
 		"varying vec4 v_normal;"
@@ -344,6 +345,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		"}"
 		,
 		// fragment shader
+		"#version 430\n"
 		"uniform sampler2DShadow u_shadowTexture;"
 		"uniform vec3 u_multipleColor;"
 		"uniform vec3 u_ambientLightColor;"
@@ -395,6 +397,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	_glProgramForShadowMap.initWithShaderString(
 		// vertex shader
 		// ModelDataしか使わない場合
+		"#version 430\n"
 		"attribute vec4 a_position;"
 		"uniform mat4 u_modelMatrix;"
 		"uniform mat4 u_lightViewMatrix;" // 影付けに使うライトをカメラに見立てたビュー行列
@@ -405,6 +408,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		"}"
 		,
 		// fragment shader
+		"#version 430\n"
 		"void main()"
 		"{" // 何もせずとも深度は自動で書き込まれる 
 		"}"

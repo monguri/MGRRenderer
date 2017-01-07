@@ -297,6 +297,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE); 
 
 	GLFWwindow *const window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "MGRRendererSampleApplication", NULL, NULL);
 	if (window == nullptr)

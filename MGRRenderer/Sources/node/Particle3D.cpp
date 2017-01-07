@@ -90,6 +90,7 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 	// とりあえず設定量のパーティクルをふきだしたらそれで終わりにする
 	_glProgram.initWithShaderString(
 		// vertex shader
+		"#version 430\n"
 		"attribute vec4 a_position;"
 		"attribute vec3 a_initVelocity;"
 		"attribute float a_elapsedTime;"
@@ -110,6 +111,7 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 		"}"
 		,
 		// fragment shader
+		"#version 430\n"
 		"uniform sampler2D u_texture;"
 		"varying float v_opacity;"
 		"void main()"

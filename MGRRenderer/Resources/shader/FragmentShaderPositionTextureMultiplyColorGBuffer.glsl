@@ -1,7 +1,5 @@
-//const char* FRAGMENT_SHADER_POSITION_NORMAL_MULTIPLY_COLOR_GBUFFER = STRINGIFY(
-// ディファードレンダリングに使うので、マルチレンダーターゲットのためにGLSL4.0.0で書く
-// 現状マクロで読み込んでるので#を使えない
-#version 400
+// ディファードレンダリングに使うので、マルチレンダーターゲットのためにGLSL4.3.0で書く
+#version 430
 
 float SPECULAR_POWER_RANGE_X = 10.0;
 float SPECULAR_POWER_RANGE_Y = 250.0;
@@ -34,4 +32,3 @@ void main()
 
 	SpecularPower = vec4(specularPowerNorm, 0.0, 0.0, 0.0);
 }
-//);

@@ -1,4 +1,4 @@
-const char* VERTEX_SHADER_POSITION_TEXTURE = STRINGIFY(
+#version 430
 
 attribute vec4 a_position;
 attribute vec2 a_texCoord;
@@ -11,4 +11,3 @@ void main()
 	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;
 	v_texCoord = a_texCoord;
 }
-);

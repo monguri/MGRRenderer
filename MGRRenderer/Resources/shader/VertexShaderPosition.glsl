@@ -1,4 +1,4 @@
-const char* VERTEX_SHADER_POSITION = STRINGIFY(
+#version 430
 attribute vec4 a_position;
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewMatrix;
@@ -7,4 +7,3 @@ void main()
 {
 	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * a_position;
 }
-); 

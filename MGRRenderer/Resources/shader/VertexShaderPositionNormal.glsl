@@ -1,7 +1,5 @@
-//const char* VERTEX_SHADER_POSITION_NORMAL = STRINGIFY(
-// ディファードレンダリングに使うので、マルチレンダーターゲットのためにGLSL4.0.0で書く
-// 現状マクロで読み込んでるので#を使えない
-#version 400
+// ディファードレンダリングに使うので、マルチレンダーターゲットのためにGLSL4.3.0で書く
+#version 430
 
 in vec4 a_position;
 in vec4 a_normal;
@@ -20,4 +18,3 @@ void main()
 	v_normal = vec4(normalize((u_normalMatrix * a_normal).xyz), 1.0);
 	gl_Position = v_position;
 }
-//);

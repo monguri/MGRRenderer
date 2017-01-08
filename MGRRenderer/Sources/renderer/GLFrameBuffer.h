@@ -3,6 +3,7 @@
 #include "Config.h"
 #include <vector>
 #if defined(MGRRENDERER_USE_OPENGL)
+#define GLEW_STATIC
 #include <gles/include/glew.h>
 #include "BasicDataTypes.h"
 

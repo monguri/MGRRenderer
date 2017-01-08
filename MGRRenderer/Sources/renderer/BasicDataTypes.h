@@ -3,6 +3,7 @@
 #include "Config.h"
 
 #if defined(MGRRENDERER_USE_OPENGL)
+#define GLEW_STATIC
 #include <gles/include/glew.h>
 #endif
 #include <math.h> // fabs‚âfmod‚ðŽg‚¤‚½‚ß

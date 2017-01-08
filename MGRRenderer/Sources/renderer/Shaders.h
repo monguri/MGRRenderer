@@ -1,6 +1,7 @@
 #pragma once
 #include "Config.h"
 #if defined(MGRRENDERER_USE_OPENGL)
+#define GLEW_STATIC
 #include <gles/include/glew.h>
 
 namespace mgrrenderer

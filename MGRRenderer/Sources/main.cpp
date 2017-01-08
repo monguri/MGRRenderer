@@ -7,10 +7,10 @@
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "dxgi.lib")
 #elif defined(MGRRENDERER_USE_OPENGL)
+#define GLEW_STATIC
 #include <gles/include/glew.h>
 #include <glfw3/include/glfw3.h>
 #endif
-
 
 // 既にSTRICTは定義されているようだ
 //#define STRICT					// 型チェックを厳密に行なう
@@ -34,7 +34,7 @@ LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowPara
 #elif defined(MGRRENDERER_USE_OPENGL)
 static void fwErrorHandler(int error, const char* description);
 static void fwKeyInputHandler(GLFWwindow* window, int key, int scancode, int action, int mods);
-static void debugMessageHandler(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam);
+void APIENTRY debugMessageHandler(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam);
 #endif
 static void initialize();
 static void render();
@@ -299,6 +299,16 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE); 
 
+	GLint flags;
+	glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+	if ((flags & GL_CONTEXT_FLAG_DEBUG_BIT) != 0)
+	{
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glDebugMessageCallback(debugMessageHandler, nullptr);
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, true);
+	}
+
 	GLFWwindow *const window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "MGRRendererSampleApplication", NULL, NULL);
 	if (window == nullptr)
 	{
@@ -318,7 +328,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		exit(EXIT_FAILURE);
 	}
 
-	glDebugMessageCallbackARB((GLDEBUGPROCARB)debugMessageHandler, nullptr);
 #endif
 
 	// 描画の初期化
@@ -424,7 +433,7 @@ void fwKeyInputHandler(GLFWwindow* window, int key, int scancode, int action, in
 	}
 }
 
-void debugMessageHandler(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
+void APIENTRY debugMessageHandler(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
 {
 	(void)source;
 	(void)type;

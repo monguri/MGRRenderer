@@ -8,7 +8,7 @@
 #pragma comment(lib, "dxgi.lib")
 #elif defined(MGRRENDERER_USE_OPENGL)
 #define GLEW_STATIC
-#include <gles/include/glew.h>
+#include <glew/include/glew.h>
 #include <glfw3/include/glfw3.h>
 #endif
 

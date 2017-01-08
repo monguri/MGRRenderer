@@ -258,7 +258,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)\MGRRenderer\external;$(SolutionDir)\MGRRenderer\Sources;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\directxtex\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\glew\lib;$(SolutionDir)\MGRRenderer\external\directxtex\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
@@ -272,7 +272,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)\MGRRenderer\external;$(SolutionDir)\MGRRenderer\Sources;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\directxtex\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\MGRRenderer\external\png\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(SolutionDir)\MGRRenderer\external\glfw3\lib;$(SolutionDir)\MGRRenderer\external\glew\lib;$(SolutionDir)\MGRRenderer\external\directxtex\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(SolutionDir)\MGRRenderer\external\gles\lib;$(SolutionDir)\MGRRenderer\external\zlib\lib;$(ExecutablePath)</ExecutablePath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>

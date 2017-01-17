@@ -1,7 +1,9 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <array>
 #include "Node.h"
+#include "Light.h"
 #include "renderer/CustomRenderCommand.h"
 #include "loader/C3bLoader.h"
 #if defined(MGRRENDERER_USE_DIRECT3D)
@@ -12,7 +14,6 @@
 
 namespace mgrrenderer
 {
-
 #if defined(MGRRENDERER_USE_DIRECT3D)
 class D3DTexture;
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -50,8 +51,11 @@ private:
 	GLTexture* _texture;
 #endif
 	CustomRenderCommand _renderGBufferCommand;
-	CustomRenderCommand _renderShadowMapCommand[(size_t)CubeMapFace::NUM_CUBEMAP_FACE]; //TODO:openglでポイントライトの1パス未対応なので
+	CustomRenderCommand _renderDirectionalLightShadowMapCommand;
+	std::array<std::array<CustomRenderCommand, (size_t)CubeMapFace::NUM_CUBEMAP_FACE>, PointLight::MAX_NUM> _renderPointLightShadowMapCommandList;
+	std::array<CustomRenderCommand, SpotLight::MAX_NUM> _renderSpotLightShadowMapCommandList;
 	CustomRenderCommand _renderCommand;
+
 	//TODO: Textureは今のところモデルファイルで指定できない。一枚のみに対応
 	Color3F _ambient;
 	Color3F _diffuse;
@@ -79,7 +83,9 @@ private:
 	void update(float dt) override;
 	C3bLoader::NodeData* findJointByName(const std::string& jointName, const std::vector<C3bLoader::NodeData*> children);
 	void renderGBuffer() override;
-	void renderShadowMap(CubeMapFace face) override;
+	void renderDirectionalLightShadowMap(const DirectionalLight* light) override;
+	void renderPointLightShadowMap(size_t index, const PointLight* light, CubeMapFace face = CubeMapFace::X_POSITIVE) override;
+	void renderSpotLightShadowMap(size_t index, const SpotLight* light) override;
 	void renderForward() override;
 };
 

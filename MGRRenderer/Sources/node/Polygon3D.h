@@ -1,8 +1,10 @@
 #pragma once
 #include "Node.h"
+#include "Light.h"
 #include "renderer/BasicDataTypes.h"
 #include "renderer/CustomRenderCommand.h"
 #include <vector>
+#include <array>
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include "renderer/D3DProgram.h"
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -34,11 +36,15 @@ private:
 	std::vector<Vec3> _normalArray;
 
 	CustomRenderCommand _renderGBufferCommand;
-	CustomRenderCommand _renderShadowMapCommand[(size_t)CubeMapFace::NUM_CUBEMAP_FACE]; //TODO:openglでポイントライトの1パス未対応なので
+	CustomRenderCommand _renderDirectionalLightShadowMapCommand;
+	std::array<std::array<CustomRenderCommand, (size_t)CubeMapFace::NUM_CUBEMAP_FACE>, PointLight::MAX_NUM> _renderPointLightShadowMapCommandList;
+	std::array<CustomRenderCommand, SpotLight::MAX_NUM> _renderSpotLightShadowMapCommandList;
 	CustomRenderCommand _renderCommand;
 
 	void renderGBuffer() override;
-	void renderShadowMap(CubeMapFace face) override;
+	void renderDirectionalLightShadowMap(const DirectionalLight* light) override;
+	void renderPointLightShadowMap(size_t index, const PointLight* light, CubeMapFace face = CubeMapFace::X_POSITIVE) override;
+	void renderSpotLightShadowMap(size_t index, const SpotLight* light) override;
 	void renderForward() override;
 };
 

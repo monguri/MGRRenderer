@@ -5,6 +5,10 @@
 namespace mgrrenderer
 {
 
+class DirectionalLight;
+class PointLight;
+class SpotLight;
+
 class Node
 {
 public:
@@ -12,7 +16,9 @@ public:
 	virtual void update(float dt);
 	virtual void prepareRendering();
 	virtual void renderGBuffer();
-	virtual void renderShadowMap(CubeMapFace face = CubeMapFace::X_POSITIVE);
+	virtual void renderDirectionalLightShadowMap(const DirectionalLight* light);
+	virtual void renderPointLightShadowMap(size_t index, const PointLight* light, CubeMapFace face = CubeMapFace::X_POSITIVE);
+	virtual void renderSpotLightShadowMap(size_t index, const SpotLight* light);
 	virtual void renderForward();
 	const Vec3& getPosition() const { return _position; }
 	virtual void setPosition(const Vec3& position) { _position = position; };

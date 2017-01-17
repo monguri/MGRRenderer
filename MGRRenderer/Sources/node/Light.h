@@ -112,7 +112,7 @@ public:
 	struct ConstantBufferData
 	{
 		Vec3 direction;
-		bool hasShadowMap; // ConstantBufferのパッキングのためにfloatにしているが、0.0fか1.0fを入れてboolの代わりに使う
+		float hasShadowMap; // ConstantBufferのパッキングのためにfloatにしているが、0.0fか1.0fを入れてboolの代わりに使う
 		Color4F color;
 	};
 #endif
@@ -151,6 +151,9 @@ class PointLight :
 	public Light
 {
 public:
+	// シーンへの最大配置数
+	static const size_t MAX_NUM = 4;
+
 	struct ShadowMapData
 	{
 		// 順番は、x正方向、x負方向、y正方向、y負方向、z正方向、z負方向
@@ -187,9 +190,11 @@ public:
 		Mat4 projectionMatrix;
 		Mat4 depthBiasMatrix;
 		Color3F color;
-		bool hasShadowMap;
+		float hasShadowMap;
 		Vec3 position;
 		float rangeInverse;
+		float isValid; // シェーダで定数バッファが初期化状態かどうかを判定するためのフラグ
+		Vec3 padding;
 	};
 #endif
 
@@ -233,6 +238,9 @@ class SpotLight :
 	public Light
 {
 public:
+	// シーンへの最大配置数
+	static const size_t MAX_NUM = 4;
+
 	struct ShadowMapData
 	{
 		Mat4 viewMatrix;
@@ -269,8 +277,9 @@ public:
 		float innerAngleCos;
 		Vec3 direction;
 		float outerAngleCos;
-		bool hasShadowMap;
-		Vec3 padding;
+		float hasShadowMap;
+		float isValid; // シェーダで定数バッファが初期化状態かどうかを判定するためのフラグ
+		Vec2 padding;
 	};
 #endif
 

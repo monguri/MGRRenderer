@@ -93,7 +93,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		nullptr,
 		hInstance,
 		nullptr
-		);
+	);
 	if (handleWindow == nullptr)
 	{
 		std::cerr << "Error:" << GetLastError() << " CreateWindow failed." << std::endl;
@@ -294,10 +294,10 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 	// OpenGL3.2のサンプルでは使用していたが、APIが変わったのかこれを書いているとglCreateShader(GL_VERTEX_SHADER)でGL_INVALID_ENUMエラーが返る
 	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE); 
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
 	GLint flags;
 	glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -494,7 +494,7 @@ void initialize()
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 
-	std::vector<Point3DData> positionAndPointSize3D {
+	std::vector<Point3DData> positionAndPointSize3D{
 		Point3DData(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, -WINDOW_HEIGHT / 2.0f, 15.0f),
 		Point3DData(80.0f, 80.0f, WINDOW_HEIGHT / 2.0f, 15.0f),
 	};
@@ -502,7 +502,7 @@ void initialize()
 	point3DNode->setColor(Color3B::RED);
 	point3DNode->initWithPointArray(positionAndPointSize3D);
 
-	std::vector<Vec3> lineVertices3D {
+	std::vector<Vec3> lineVertices3D{
 		Vec3(0.0f, WINDOW_HEIGHT / 2.0f, -360.0f), Vec3((float)WINDOW_WIDTH, WINDOW_HEIGHT / 2.0f, 360.0f),
 		Vec3(WINDOW_WIDTH / 2.0f, (float)WINDOW_HEIGHT, 360.0f), Vec3(WINDOW_WIDTH / 2.0f, 0.0f, -360.0f),
 	};
@@ -511,7 +511,7 @@ void initialize()
 	isSucceeded = line3DNode->initWithVertexArray(lineVertices3D);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
-	std::vector<Vec3> polygonVertices3D {
+	std::vector<Vec3> polygonVertices3D{
 		Vec3(80.0f, 420.0f, 120.0f), Vec3(80.0f, 300.0f, -120.0f), Vec3(240.0f, 420.0f, 120.0f),
 	};
 	Polygon3D* polygon3DNode = new Polygon3D();
@@ -530,7 +530,7 @@ void initialize()
 	// 1.0fずつ境界線をずらすことで境界線を見えるようにしている
 	// (WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f = 0, 0, -WINDOW_WIDTH / 3.0f)が3つのついたての中心となる
 	// y軸に垂直な平面
-	std::vector<Vec3> planeVertices3D1 {
+	std::vector<Vec3> planeVertices3D1{
 		Vec3(WINDOW_WIDTH / 3.0f + WINDOW_WIDTH / 3.0f, -1.0f, WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f + WINDOW_WIDTH / 3.0f, -1.0f, -WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, -1.0f, WINDOW_WIDTH / 3.0f),
 		Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, -1.0f, -WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, -1.0f, WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f + WINDOW_WIDTH / 3.0f, -1.0f, -WINDOW_WIDTH / 3.0f),
 	};
@@ -539,7 +539,7 @@ void initialize()
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 	// x軸に垂直な平面
-	std::vector<Vec3> planeVertices3D2 {
+	std::vector<Vec3> planeVertices3D2{
 		Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, 1.0f, WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, 1.0f, -WINDOW_WIDTH / 3.0f + 1.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, WINDOW_WIDTH / 3.0f, WINDOW_WIDTH / 3.0f),
 		Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, WINDOW_WIDTH / 3.0f, -WINDOW_WIDTH / 3.0f + 1.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, WINDOW_WIDTH / 3.0f, WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f, 1.0f, -WINDOW_WIDTH / 3.0f + 1.0f),
 	};
@@ -548,7 +548,7 @@ void initialize()
 	Logger::logAssert(plane3DNode2 != nullptr, "ノードの初期化失敗");
 
 	// z軸に垂直な平面
-	std::vector<Vec3> planeVertices3D3 {
+	std::vector<Vec3> planeVertices3D3{
 		Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f + 1.0f, 1.0f, -WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f + WINDOW_WIDTH / 3.0f, 1.0f, -WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f + 1.0f, WINDOW_WIDTH / 3.0f, -WINDOW_WIDTH / 3.0f),
 		Vec3(WINDOW_WIDTH / 3.0f + WINDOW_WIDTH / 3.0f, WINDOW_WIDTH / 3.0f, -WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f - WINDOW_WIDTH / 3.0f + 1.0f, WINDOW_WIDTH / 3.0f, -WINDOW_WIDTH / 3.0f), Vec3(WINDOW_WIDTH / 3.0f + WINDOW_WIDTH / 3.0f, 1.0f, -WINDOW_WIDTH / 3.0f),
 	};
@@ -588,57 +588,95 @@ void initialize()
 
 	Scene* scene = new Scene();
 	scene->init();
-	Light* defaultLight = scene->getDefaultLight();
-	defaultLight->setIntensity(0.3f);
-	defaultLight->setColor(Color3B::WHITE);
+	AmbientLight* ambientLight = scene->getAmbientLight();
+	if (ambientLight != nullptr)
+	{
+		ambientLight->setIntensity(0.3f);
+		ambientLight->setColor(Color3B::WHITE);
+	}
 
 	Sprite2D* depthTextureSprite = nullptr;
 
-	//DirectionalLight* light = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
-	//light->setIntensity(0.7f);
-	//light->initShadowMap(
-	//	// Polygon3Dのついたての中心をターゲットにし、シーン全体が入るように、カメラのWINDOW_HEIGHT / 1.1566fに比べると遠目に
-	//	Vec3(0.0f, 0.0f, -WINDOW_WIDTH / 3.0f) - Vec3(-1.0f, -1.0f, -1.0f) * (WINDOW_HEIGHT / 1.1566f),
-	//	NEAR_CLIP,
-	//	FAR_CLIP,
-	//	Size(WINDOW_WIDTH, WINDOW_HEIGHT));
-	//scene->addLight(light);
+	DirectionalLight* dirLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
+	dirLight->setIntensity(0.7f);
+	dirLight->setColor(Color3B(0, 255, 0));
+	dirLight->initShadowMap(
+		// Polygon3Dのついたての中心をターゲットにし、シーン全体が入るように、カメラのWINDOW_HEIGHT / 1.1566fに比べると遠目に
+		Vec3(0.0f, 0.0f, -WINDOW_WIDTH / 3.0f) - Vec3(-1.0f, -1.0f, -1.0f) * (WINDOW_HEIGHT / 1.1566f),
+		NEAR_CLIP,
+		FAR_CLIP,
+		Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+	scene->setDirectionalLight(dirLight);
+
+	if (dirLight->hasShadowMap())
+	{
+		depthTextureSprite = new Sprite2D();
+		const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
+		depthTextureSprite->initWithDepthStencilTexture(dirLight->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL, dirLight->getNearClip(), dirLight->getFarClip(), dirLight->getShadowMapData().projectionMatrix);
+		depthTextureSprite->setScale(1 / 5.0f);
+		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
+	}
+
+	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
+	PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Color3B::WHITE, 3000.0f);
+	light->setIntensity(0.7f);
+	light->setColor(Color3B(255, 0, 0));
+	light->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
+	scene->addPointLight(light);
 
 	//if (light->hasShadowMap())
 	//{
 	//	depthTextureSprite = new Sprite2D();
 	//	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
-	//	depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL, light->getNearClip(), light->getFarClip(), light->getShadowMapData().projectionMatrix);
 	//	depthTextureSprite->setScale(1 / 5.0f);
+	//	depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_CUBEMAP_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix, CubeMapFace::Z_NEGATIVE);
 	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	//}
 
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
-	PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Color3B::WHITE, 3000.0f);
-	light->setIntensity(0.7f);
-	light->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
-	scene->addLight(light);
+	//PointLight* light2 = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Color3B::WHITE, 3000.0f);
+	//light2->setIntensity(0.7f);
+	//light2->setColor(Color3B(0, 0, 255));
+	//light2->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
+	//scene->addPointLight(light2);
 
-	if (light->hasShadowMap())
-	{
-		depthTextureSprite = new Sprite2D();
-		const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
-		depthTextureSprite->setScale(1 / 5.0f);
-		depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_CUBEMAP_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix, CubeMapFace::Z_NEGATIVE);
-		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
-	}
+	//if (light2->hasShadowMap())
+	//{
+	//	depthTextureSprite = new Sprite2D();
+	//	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
+	//	depthTextureSprite->setScale(1 / 5.0f);
+	//	depthTextureSprite->initWithDepthStencilTexture(light2->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_CUBEMAP_TEXTURE, light2->getNearClip(), light2->getRange(), light2->getShadowMapData().projectionMatrix, CubeMapFace::Y_NEGATIVE);
+	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
+	//}
 
-	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(-1,-1,-1)方向の光が降り注ぐようにしている
-	//SpotLight* light = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, (float)WINDOW_WIDTH), Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
+	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,0,-1)方向の光が降り注ぐようにしている
+	//SpotLight* light = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Vec3(0.0f, 0.0f, -1.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
 	//light->setIntensity(0.7f);
+	//light->setColor(Color3B(255, 0, 0));
 	//light->initShadowMap(NEAR_CLIP, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
-	//scene->addLight(light);
+	//scene->addSpotLight(light);
 
 	//if (light->hasShadowMap())
 	//{
 	//	depthTextureSprite = new Sprite2D();
 	//	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
 	//	depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix);
+	//	depthTextureSprite->setScale(1 / 5.0f);
+	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
+	//}
+
+	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(-1,0,0)方向の光が降り注ぐようにしている
+	//SpotLight* light2 = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH, WINDOW_HEIGHT / 2.0f, 0.0f), Vec3(-1.0f, 0.0f, 0.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
+	//light2->setIntensity(0.7f);
+	//light2->setColor(Color3B(0, 0, 255));
+	//light2->initShadowMap(NEAR_CLIP, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+	//scene->addSpotLight(light2);
+
+	//if (light2->hasShadowMap())
+	//{
+	//	depthTextureSprite = new Sprite2D();
+	//	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
+	//	depthTextureSprite->initWithDepthStencilTexture(light2->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE, light2->getNearClip(), light2->getRange(), light2->getShadowMapData().projectionMatrix);
 	//	depthTextureSprite->setScale(1 / 5.0f);
 	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	//}
@@ -661,6 +699,10 @@ void initialize()
 	{
 		scene->pushNode2D(depthTextureSprite);
 	}
+	//if (light2->hasShadowMap())
+	//{
+	//	scene->pushNode2D(depthTextureSprite);
+	//}
 
 	Director::getInstance()->setScene(*scene);
 }

@@ -24,10 +24,25 @@ void Node::renderGBuffer()
 	// ‰½‚à‚µ‚È‚¢
 }
 
-void Node::renderShadowMap(CubeMapFace face)
+void Node::renderDirectionalLightShadowMap(const DirectionalLight* light)
 {
-	(void)face;
 	// ‰½‚à‚µ‚È‚¢
+	(void)light;
+}
+
+void Node::renderPointLightShadowMap(size_t index, const PointLight* light, CubeMapFace face)
+{
+	// ‰½‚à‚µ‚È‚¢
+	(void)index;
+	(void)light;
+	(void)face;
+}
+
+void Node::renderSpotLightShadowMap(size_t index, const SpotLight* light)
+{
+	// ‰½‚à‚µ‚È‚¢
+	(void)index;
+	(void)light;
 }
 
 void Node::renderForward()

@@ -5,9 +5,33 @@
 namespace mgrrenderer
 {
 
+Scene::Scene() :
+_ambientLight(nullptr),
+_directionalLight(nullptr),
+_numPointLight(0),
+_numSpotLight(0)
+{}
+
 Scene::~Scene()
 {
-	for (Light* light : _light)
+	if (_ambientLight != nullptr)
+	{
+		delete _ambientLight;
+		_ambientLight = nullptr;
+	}
+
+	if (_directionalLight != nullptr)
+	{
+		delete _directionalLight;
+		_directionalLight = nullptr;
+	}
+
+	for (const PointLight* light : _pointLightList)
+	{
+		delete light;
+	}
+
+	for (const SpotLight* light : _spotLightList)
 	{
 		delete light;
 	}
@@ -28,14 +52,18 @@ void Scene::init()
 	_camera.initAsDefault3D();
 	_cameraFor2D.initAsDefault2D();
 
-	// デフォルトでアンビエントライトを持たせる
-	AmbientLight* defaultLight = new (std::nothrow) AmbientLight(Color3B::WHITE);
-	addLight(defaultLight);
-}
+	for (size_t i = 0; i < PointLight::MAX_NUM; i++)
+	{
+		_pointLightList[i] = nullptr;
+	}
 
-void Scene::addLight(Light* light)
-{
-	_light.push_back(light);
+	for (size_t i = 0; i < SpotLight::MAX_NUM; i++)
+	{
+		_spotLightList[i] = nullptr;
+	}
+
+	// デフォルトでアンビエントライトを持たせる
+	_ambientLight = new (std::nothrow) AmbientLight(Color3B::WHITE);
 }
 
 void Scene::pushNode(Node* node)
@@ -95,71 +123,57 @@ void Scene::update(float dt)
 	//
 	// シャドウマップの描画
 	//
-	for (Light* light : getLight())
+	if (_directionalLight != nullptr && _directionalLight->hasShadowMap())
 	{
-		switch (light->getLightType()) {
-		case LightType::AMBIENT:
-			// 何もしない
-			break;
-		case LightType::DIRECTION:
-		{
-			DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
-			if (dirLight->hasShadowMap())
-			{
-				dirLight->prepareShadowMapRendering();
-			}
+		_directionalLight->prepareShadowMapRendering();
 
-			for (Node* child : _children)
-			{
-				child->renderShadowMap();
-			}
-		}
-			break;
-		case LightType::POINT:
+		for (Node* child : _children)
 		{
-			PointLight* pointLight = static_cast<PointLight*>(light);
+			child->renderDirectionalLightShadowMap(_directionalLight);
+		}
+	}
+
+	for (size_t i = 0; i < PointLight::MAX_NUM; i++)
+	{
+		PointLight* pointLight = _pointLightList[i];
+		if (pointLight == nullptr || !pointLight->hasShadowMap())
+		{
+			continue;
+		}
+
 #if defined(MGRRENDERER_USE_DIRECT3D)
-			if (pointLight->hasShadowMap())
-			{
-				pointLight->prepareShadowMapRendering();
-			}
+		pointLight->prepareShadowMapRendering();
 
-			for (Node* child : _children)
-			{
-				child->renderShadowMap();
-			}
-#elif defined(MGRRENDERER_USE_OPENGL)
-			if (pointLight->hasShadowMap())
-			{
-				for (int i = (int)CubeMapFace::X_POSITIVE; i < (int)CubeMapFace::NUM_CUBEMAP_FACE; i++)
-				{
-					pointLight->prepareShadowMapRendering((CubeMapFace)i);
-
-					for (Node* child : _children)
-					{
-						child->renderShadowMap((CubeMapFace)i);
-					}
-				}
-			}
-#endif
-		}
-			break;
-		case LightType::SPOT:
+		for (Node* child : _children)
 		{
-			SpotLight* spotLight = static_cast<SpotLight*>(light);
-			if (spotLight->hasShadowMap())
-			{
-				spotLight->prepareShadowMapRendering();
-			}
+			child->renderPointLightShadowMap(i, pointLight);
+		}
+#elif defined(MGRRENDERER_USE_OPENGL)
+		for (int i = (int)CubeMapFace::X_POSITIVE; i < (int)CubeMapFace::NUM_CUBEMAP_FACE; i++)
+		{
+			pointLight->prepareShadowMapRendering((CubeMapFace)i);
 
 			for (Node* child : _children)
 			{
-				child->renderShadowMap();
+				child->renderPointLightShadowMap(pointLight, (CubeMapFace)i);
 			}
 		}
-			break;
-		default:
-			break;
+#endif
+	}
+
+	for (size_t i = 0; i < SpotLight::MAX_NUM; i++)
+	{
+		SpotLight* spotLight = _spotLightList[i];
+		if (spotLight == nullptr || !spotLight->hasShadowMap())
+		{
+			continue;
+		}
+
+		spotLight->prepareShadowMapRendering();
+
+		for (Node* child : _children)
+		{
+			child->renderSpotLightShadowMap(i, spotLight);
 		}
 	}
 

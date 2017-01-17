@@ -46,7 +46,6 @@ public:
 	static Renderer& getRenderer();
 	static Camera& getCamera();
 	static const Camera& getCameraFor2D();
-	static const std::vector<Light*>& getLight();
 
 	void setDisplayStats(bool displayStats) { _displayStats = displayStats; }
 	void setDisplayGBuffer(bool displayGBuffer) { _displayGBuffer = displayGBuffer; }

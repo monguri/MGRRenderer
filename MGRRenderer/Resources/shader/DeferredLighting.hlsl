@@ -35,99 +35,69 @@ cbuffer DirectionalLightDepthBiasMatrix : register(b5)
 cbuffer DirectionalLightParameter : register(b6)
 {
 	float3 _directionalLightDirection;
-	bool _directionalLightHasShadowMap;
+	float _directionalLightHasShadowMap;
 	float4 _directionalLightColor;
 };
 
-static const int NUM_FACE_CUBEMAP_TEXTURE = 6;
+static const unsigned int NUM_FACE_CUBEMAP_TEXTURE = 6;
+static const unsigned int MAX_NUM_POINT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 
 cbuffer PointLightParameter : register(b7)
 {
-	matrix _pointLightView[NUM_FACE_CUBEMAP_TEXTURE];
-	matrix _pointLightProjection;
-	matrix _pointLightDepthBias;
-	float3 _pointLightColor;
-	bool _pointLightHasShadowMap;
-	float3 _pointLightPosition;
-	float _pointLightRangeInverse;
+	struct {
+		matrix _pointLightView[NUM_FACE_CUBEMAP_TEXTURE];
+		matrix _pointLightProjection;
+		matrix _pointLightDepthBias;
+		float3 _pointLightColor;
+		float _pointLightHasShadowMap;
+		float3 _pointLightPosition;
+		float _pointLightRangeInverse;
+		float _pointLightIsValid;
+		float3 _pointLightPadding;
+	} _pointLightParameter[MAX_NUM_POINT_LIGHT];
 };
+
+static const unsigned int MAX_NUM_SPOT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 
 cbuffer SpotLightViewMatrix : register(b8)
 {
-	matrix _spotLightView;
+	matrix _spotLightView[MAX_NUM_SPOT_LIGHT];
 };
 
 cbuffer SpotLightProjectionMatrix : register(b9)
 {
-	matrix _spotLightProjection;
+	matrix _spotLightProjection[MAX_NUM_SPOT_LIGHT];
 };
 
 cbuffer SpotLightDepthBiasMatrix : register(b10)
 {
-	matrix _spotLightDepthBias;
+	matrix _spotLightDepthBias[MAX_NUM_SPOT_LIGHT];
 };
 
 cbuffer SpotLightParameter : register(b11)
 {
-	float3 _spotLightPosition;
-	float _spotLightRangeInverse;
-	float3 _spotLightColor;
-	float _spotLightInnerAngleCos;
-	float3 _spotLightDirection;
-	float _spotLightOuterAngleCos;
-	bool _spotLightHasShadowMap;
-	float3 _padding;
+	struct {
+		float3 _spotLightPosition;
+		float _spotLightRangeInverse;
+		float3 _spotLightColor;
+		float _spotLightInnerAngleCos;
+		float3 _spotLightDirection;
+		float _spotLightOuterAngleCos;
+		float _spotLightHasShadowMap;
+		float _spotLightIsValid;
+		float2 _spotLightPadding;
+	} _spotLightParameter[MAX_NUM_SPOT_LIGHT];
 };
-
-//static const int MAX_EACH_LIGHT = 10; // CPU側のソースと最大値定数を一致させること
-//
-//struct DirectionalLightParam
-//{
-//	matrix _directionalLightView;
-//	matrix _directionalLightProjection;
-//	float3 _directionalLightDirection;
-//	float _directionalLightHasShadowMap;
-//	float4 _directionalLightColor;
-//};
-
-//cbuffer DirectionalLightParameter : register(b3)
-//{
-//	DirectionalLightParam _directionalLightParam[MAX_EACH_LIGHT];
-//};
-
-//struct PointLightParam
-//{
-//	float4 _pointLightColor;
-//	float3 _pointLightPosition;
-//	float _pointLightRangeInverse;
-//};
-//
-//cbuffer PointLightParameter : register(b3)
-//{
-//	PointLightParam _pointLightParam[MAX_EACH_LIGHT];
-//};
-//
-//struct SpotLightParam
-//{
-//	float3 _spotLightPosition;
-//	float _spotLightRangeInverse;
-//	float3 _spotLightColor;
-//	float _spotLightInnerAngleCos;
-//	float3 _spotLightDirection;
-//	float _spotLightOuterAngleCos;
-//};
-//
-//cbuffer SpotLightParameter : register(b4)
-//{
-//	SpotLightParam _spotLightParam[MAX_EACH_LIGHT];
-//};
 
 Texture2D<float4> _gBufferDepthStencil : register(t0); // デプステクスチャはTexture2D<float>で十分だが、Texture2D<float4>でも読み込める
 Texture2D<float4> _gBufferColorSpecularIntensity : register(t1);
 Texture2D<float4> _gBufferNormal : register(t2);
 Texture2D<float4> _gBufferSpecularPower : register(t3);
-Texture2D<float4> _shadowMap : register(t4);
-TextureCube<float> _shadowCubeMap : register(t5);
+
+Texture2D<float> _directionalLightShadowMap : register(t4);
+TextureCube<float> _pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
+Texture2D<float> _spotLightShadowMap[MAX_NUM_SPOT_LIGHT];
+
 SamplerState _pointSampler : register(s0);
 SamplerComparisonState _pcfSampler : register(s1);
 // まだシャドウマップは考慮してない
@@ -198,21 +168,7 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	float specularPower = SPECULAR_POWER_RANGE.x + SPECULAR_POWER_RANGE.y * normalizedSpecularPower;
 
 	// 後はここで得たpositionと、normalとcolorを利用して、ライティングをして色を決める
-	float3 diffuseSpecularLightColor = computeLightedColor(normal, -_directionalLightDirection.xyz, _directionalLightColor.rgb, 1.0);
-
-	float3 vertexToPointLightDirection = _pointLightPosition - worldPosition.xyz;
-	float3 dir = vertexToPointLightDirection * _pointLightRangeInverse;
-	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
-	diffuseSpecularLightColor += computeLightedColor(normal, normalize(vertexToPointLightDirection), _pointLightColor, attenuation);
-
-	float3 vertexToSpotLightDirection = _spotLightPosition - worldPosition.xyz;
-	dir = vertexToSpotLightDirection * _spotLightRangeInverse;
-	attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
-	vertexToSpotLightDirection = normalize(vertexToSpotLightDirection);
-	float spotLightCurrentAngleCos = dot(_spotLightDirection, -vertexToSpotLightDirection);
-	attenuation *= smoothstep(_spotLightOuterAngleCos, _spotLightInnerAngleCos, spotLightCurrentAngleCos);
-	attenuation = clamp(attenuation, 0.0, 1.0);
-	diffuseSpecularLightColor += computeLightedColor(normal, vertexToSpotLightDirection, _spotLightColor, attenuation);
+	float3 diffuseSpecularLightColor = 0.0f;
 
 	float shadowAttenuation = 1.0;
 	if (_directionalLightHasShadowMap > 0.0)
@@ -224,54 +180,161 @@ float4 PS(PS_INPUT input) : SV_TARGET
 		// zファイティングを避けるための微調整
 		lightPosition.z -= 0.001;
 
-		shadowAttenuation = _shadowMap.SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
+		shadowAttenuation = _directionalLightShadowMap.SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
 	}
 
-	if (_pointLightHasShadowMap > 0.0)
+	diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, -_directionalLightDirection.xyz, _directionalLightColor.rgb, 1.0);
+
+	unsigned int i = 0; // hlslにはfor文の初期化式のブロックスコープがない
+	for (i = 0; i < MAX_NUM_POINT_LIGHT; i++)
 	{
-		//TODO:とりあえず行列計算でなくhlsl本のとおりに書いておく
-		// キューブマップのどの面か調べるため、3軸で一番座標が大きい値を探す
-		float3 pointLightToVertexDirection = -vertexToPointLightDirection;
-		float3 absPosition = abs(pointLightToVertexDirection);
-		float maxCoordinateVal = max(absPosition.x, max(absPosition.y, absPosition.z));
-		float pointLightDepth = (-_pointLightProjection._m22 * maxCoordinateVal + _pointLightProjection._m32) / maxCoordinateVal;
-
-		pointLightDepth -= 0.0001;
-
-		// 符号変換は表示してみて決めた
-		// TODO:POSITIVE側の向きはテストしてない
-		if (maxCoordinateVal == absPosition.x)
+		if (!_pointLightParameter[i]._pointLightIsValid > 0.0)
 		{
-			shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, float3(pointLightToVertexDirection.x, pointLightToVertexDirection.y, -pointLightToVertexDirection.z), pointLightDepth);
+			continue;
 		}
-		else if (maxCoordinateVal == absPosition.y)
+
+		float3 vertexToPointLightDirection = _pointLightParameter[i]._pointLightPosition - worldPosition.xyz;
+		float3 dir = vertexToPointLightDirection * _pointLightParameter[i]._pointLightRangeInverse;
+		float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
+
+		shadowAttenuation = 1.0;
+		if (_pointLightParameter[i]._pointLightHasShadowMap > 0.0)
 		{
-			if (pointLightToVertexDirection.y > 0)
+			//TODO:とりあえず行列計算でなくhlsl本のとおりに書いておく
+			// キューブマップのどの面か調べるため、3軸で一番座標が大きい値を探す
+			float3 pointLightToVertexDirection = -vertexToPointLightDirection;
+			float3 absPosition = abs(pointLightToVertexDirection);
+			float maxCoordinateVal = max(absPosition.x, max(absPosition.y, absPosition.z));
+			float pointLightDepth = (-_pointLightParameter[i]._pointLightProjection._m22 * maxCoordinateVal + _pointLightParameter[i]._pointLightProjection._m32) / maxCoordinateVal;
+
+			pointLightDepth -= 0.0001;
+
+			// 符号変換は表示してみて決めた
+			// TODO:POSITIVE側の向きはテストしてない
+			if (maxCoordinateVal == absPosition.x)
 			{
-				shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, float3(-pointLightToVertexDirection.x, pointLightToVertexDirection.y, pointLightToVertexDirection.z), pointLightDepth);
+				switch (i)
+				{
+				case 0:
+					shadowAttenuation = _pointLightShadowCubeMap[0].SampleCmpLevelZero(_pcfSampler, float3(pointLightToVertexDirection.x, pointLightToVertexDirection.y, -pointLightToVertexDirection.z), pointLightDepth);
+					break;
+				case 1:
+					shadowAttenuation = _pointLightShadowCubeMap[1].SampleCmpLevelZero(_pcfSampler, float3(pointLightToVertexDirection.x, pointLightToVertexDirection.y, -pointLightToVertexDirection.z), pointLightDepth);
+					break;
+				case 2:
+					shadowAttenuation = _pointLightShadowCubeMap[2].SampleCmpLevelZero(_pcfSampler, float3(pointLightToVertexDirection.x, pointLightToVertexDirection.y, -pointLightToVertexDirection.z), pointLightDepth);
+					break;
+				case 3:
+					shadowAttenuation = _pointLightShadowCubeMap[3].SampleCmpLevelZero(_pcfSampler, float3(pointLightToVertexDirection.x, pointLightToVertexDirection.y, -pointLightToVertexDirection.z), pointLightDepth);
+					break;
+				}
 			}
-			else
+			else if (maxCoordinateVal == absPosition.y)
 			{
-				shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, float3(pointLightToVertexDirection.x, pointLightToVertexDirection.y, -pointLightToVertexDirection.z), pointLightDepth);
+				if (pointLightToVertexDirection.y > 0)
+				{
+					switch (i)
+					{
+					case 0:
+						shadowAttenuation = _pointLightShadowCubeMap[0].SampleCmpLevelZero(_pcfSampler, float3(-pointLightToVertexDirection.x, pointLightToVertexDirection.y, pointLightToVertexDirection.z), pointLightDepth);
+						break;
+					case 1:
+						shadowAttenuation = _pointLightShadowCubeMap[1].SampleCmpLevelZero(_pcfSampler, float3(-pointLightToVertexDirection.x, pointLightToVertexDirection.y, pointLightToVertexDirection.z), pointLightDepth);
+						break;
+					case 2:
+						shadowAttenuation = _pointLightShadowCubeMap[2].SampleCmpLevelZero(_pcfSampler, float3(-pointLightToVertexDirection.x, pointLightToVertexDirection.y, pointLightToVertexDirection.z), pointLightDepth);
+						break;
+					case 3:
+						shadowAttenuation = _pointLightShadowCubeMap[3].SampleCmpLevelZero(_pcfSampler, float3(-pointLightToVertexDirection.x, pointLightToVertexDirection.y, pointLightToVertexDirection.z), pointLightDepth);
+						break;
+					}
+				}
+				else
+				{
+					switch (i)
+					{
+					case 0:
+						shadowAttenuation = _pointLightShadowCubeMap[0].SampleCmpLevelZero(_pcfSampler, float3(pointLightToVertexDirection.x, pointLightToVertexDirection.y, -pointLightToVertexDirection.z), pointLightDepth);
+						break;
+					case 1:
+						shadowAttenuation = _pointLightShadowCubeMap[1].SampleCmpLevelZero(_pcfSampler, float3(pointLightToVertexDirection.x, pointLightToVertexDirection.y, -pointLightToVertexDirection.z), pointLightDepth);
+						break;
+					case 2:
+						shadowAttenuation = _pointLightShadowCubeMap[2].SampleCmpLevelZero(_pcfSampler, float3(pointLightToVertexDirection.x, pointLightToVertexDirection.y, -pointLightToVertexDirection.z), pointLightDepth);
+						break;
+					case 3:
+						shadowAttenuation = _pointLightShadowCubeMap[3].SampleCmpLevelZero(_pcfSampler, float3(pointLightToVertexDirection.x, pointLightToVertexDirection.y, -pointLightToVertexDirection.z), pointLightDepth);
+						break;
+					}
+				}
 			}
+			else // if (maxCoordinateVal == absPosition.z)
+			{
+				switch (i)
+				{
+				case 0:
+					shadowAttenuation = _pointLightShadowCubeMap[0].SampleCmpLevelZero(_pcfSampler, float3(-pointLightToVertexDirection.x, pointLightToVertexDirection.y, pointLightToVertexDirection.z), pointLightDepth);
+					break;
+				case 1:
+					shadowAttenuation = _pointLightShadowCubeMap[1].SampleCmpLevelZero(_pcfSampler, float3(-pointLightToVertexDirection.x, pointLightToVertexDirection.y, pointLightToVertexDirection.z), pointLightDepth);
+					break;
+				case 2:
+					shadowAttenuation = _pointLightShadowCubeMap[2].SampleCmpLevelZero(_pcfSampler, float3(-pointLightToVertexDirection.x, pointLightToVertexDirection.y, pointLightToVertexDirection.z), pointLightDepth);
+					break;
+				case 3:
+					shadowAttenuation = _pointLightShadowCubeMap[3].SampleCmpLevelZero(_pcfSampler, float3(-pointLightToVertexDirection.x, pointLightToVertexDirection.y, pointLightToVertexDirection.z), pointLightDepth);
+					break;
+				}
+			}
+		}
 
-		}
-		else // if (maxCoordinateVal == absPosition.z)
-		{
-			shadowAttenuation = _shadowCubeMap.SampleCmpLevelZero(_pcfSampler, float3(-pointLightToVertexDirection.x, pointLightToVertexDirection.y, pointLightToVertexDirection.z), pointLightDepth);
-		}
+		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, normalize(vertexToPointLightDirection), _pointLightParameter[i]._pointLightColor, attenuation);
 	}
 
-	if (_spotLightHasShadowMap > 0.0)
+	for (i = 0; i < MAX_NUM_SPOT_LIGHT; i++)
 	{
-		float4 lightPosition = mul(worldPosition, _spotLightView);
-		lightPosition = mul(lightPosition, _spotLightProjection);
-		lightPosition = mul(lightPosition, _spotLightDepthBias);
-		lightPosition.xyz /= lightPosition.w;
-		// zファイティングを避けるための微調整
-		lightPosition.z -= 0.00001;
+		if (!_spotLightParameter[i]._spotLightIsValid > 0.0)
+		{
+			continue;
+		}
 
-		shadowAttenuation = _shadowMap.SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
+		float3 vertexToSpotLightDirection = _spotLightParameter[i]._spotLightPosition - worldPosition.xyz;
+		float3 dir = vertexToSpotLightDirection * _spotLightParameter[i]._spotLightRangeInverse;
+		float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
+		vertexToSpotLightDirection = normalize(vertexToSpotLightDirection);
+		float spotLightCurrentAngleCos = dot(_spotLightParameter[i]._spotLightDirection, -vertexToSpotLightDirection);
+		attenuation *= smoothstep(_spotLightParameter[i]._spotLightOuterAngleCos, _spotLightParameter[i]._spotLightInnerAngleCos, spotLightCurrentAngleCos);
+		attenuation = clamp(attenuation, 0.0, 1.0);
+
+		shadowAttenuation = 1.0;
+		if (_spotLightParameter[i]._spotLightHasShadowMap > 0.0)
+		{
+			float4 lightPosition = mul(worldPosition, _spotLightView[i]);
+			lightPosition = mul(lightPosition, _spotLightProjection[i]);
+			lightPosition = mul(lightPosition, _spotLightDepthBias[i]);
+			lightPosition.xyz /= lightPosition.w;
+			// zファイティングを避けるための微調整
+			lightPosition.z -= 0.00001;
+
+			//TODO: サンプラにはリテラルでしかアクセスできないのでとりあえずの対応
+			switch (i)
+			{
+			case 0:
+				shadowAttenuation = _spotLightShadowMap[0].SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
+				break;
+			case 1:
+				shadowAttenuation = _spotLightShadowMap[1].SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
+				break;
+			case 2:
+				shadowAttenuation = _spotLightShadowMap[2].SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
+				break;
+			case 3:
+				shadowAttenuation = _spotLightShadowMap[3].SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
+				break;
+			}
+		}
+
+		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, vertexToSpotLightDirection, _spotLightParameter[i]._spotLightColor, attenuation);
 	}
 
 	return float4((color * (shadowAttenuation * diffuseSpecularLightColor + _ambientLightColor.rgb)), 1.0);

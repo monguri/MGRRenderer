@@ -49,7 +49,7 @@ _direction(direction)
 	directionVec.normalize();
 	_constantBufferData.direction = directionVec;
 	_constantBufferData.color = Color4F(color) * getIntensity();
-	_constantBufferData.hasShadowMap = false;
+	_constantBufferData.hasShadowMap = 0.0f;
 #endif
 }
 
@@ -101,7 +101,7 @@ void DirectionalLight::initShadowMap(const Vec3& cameraPosition, float nearClip,
 
 	// デプステクスチャ作成
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	_constantBufferData.hasShadowMap = true;
+	_constantBufferData.hasShadowMap = 1.0f;
 
 	_shadowMapData.depthTexture = new D3DTexture();
 	_shadowMapData.depthTexture->initDepthStencilTexture(size);
@@ -120,7 +120,7 @@ void DirectionalLight::initShadowMap(const Vec3& cameraPosition, float nearClip,
 bool DirectionalLight::hasShadowMap() const
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	return _constantBufferData.hasShadowMap;
+	return _constantBufferData.hasShadowMap > 0.0f;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	return _hasShadowMap;
 #endif
@@ -181,6 +181,8 @@ _range(range)
 	_constantBufferData.color = Color3F(color) * getIntensity();
 	_constantBufferData.position = position;
 	_constantBufferData.rangeInverse = 1.0f / range;
+	_constantBufferData.hasShadowMap = 0.0f;
+	_constantBufferData.isValid = 1.0f;
 #endif
 }
 
@@ -256,7 +258,7 @@ void PointLight::initShadowMap(float nearClip, float size)
 
 	// デプステクスチャ作成
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	_constantBufferData.hasShadowMap = true;
+	_constantBufferData.hasShadowMap = 1.0f;
 
 	_constantBufferData.projectionMatrix = (Mat4::CHIRARITY_CONVERTER * _shadowMapData.projectionMatrix).transpose(); // 左手系変換行列はプロジェクション行列に最初からかけておく
 
@@ -284,7 +286,7 @@ void PointLight::initShadowMap(float nearClip, float size)
 
 bool PointLight::hasShadowMap() const {
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	return _constantBufferData.hasShadowMap;
+	return _constantBufferData.hasShadowMap > 0.0f;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	return _hasShadowMap;
 #endif
@@ -366,7 +368,8 @@ _outerAngleCos(cosf(outerAngle))
 	_constantBufferData.innerAngleCos = cosf(innerAngle);
 	_constantBufferData.direction = directionVec;
 	_constantBufferData.outerAngleCos = cosf(outerAngle);
-	_constantBufferData.hasShadowMap = false;
+	_constantBufferData.hasShadowMap = 0.0f;
+	_constantBufferData.isValid = 1.0f;
 #endif
 }
 
@@ -405,7 +408,7 @@ void SpotLight::initShadowMap(float nearClip, const Size& size)
 
 	// デプステクスチャ作成
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	_constantBufferData.hasShadowMap = true;
+	_constantBufferData.hasShadowMap = 1.0f;
 
 	_shadowMapData.depthTexture = new D3DTexture();
 	_shadowMapData.depthTexture->initDepthStencilTexture(size);
@@ -424,7 +427,7 @@ void SpotLight::initShadowMap(float nearClip, const Size& size)
 bool SpotLight::hasShadowMap() const
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	return _constantBufferData.hasShadowMap;
+	return _constantBufferData.hasShadowMap > 0.0f;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	return _hasShadowMap;
 #endif

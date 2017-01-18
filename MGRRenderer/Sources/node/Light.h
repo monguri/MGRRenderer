@@ -151,7 +151,7 @@ class PointLight :
 	public Light
 {
 public:
-	// シーンへの最大配置数
+	// シーンへの最大配置数　シェーダにも同じ定数を持っていて同値にしておく必要がある
 	static const size_t MAX_NUM = 4;
 
 	struct ShadowMapData
@@ -238,7 +238,7 @@ class SpotLight :
 	public Light
 {
 public:
-	// シーンへの最大配置数
+	// シーンへの最大配置数　シェーダにも同じ定数を持っていて同値にしておく必要がある
 	static const size_t MAX_NUM = 4;
 
 	struct ShadowMapData

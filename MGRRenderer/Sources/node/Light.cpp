@@ -393,10 +393,21 @@ void SpotLight::initShadowMap(float nearClip, const Size& size)
 {
 	_nearClip = nearClip;
 
+	const Vec3& dir = getDirection();
+	Vec3 cameraUp;
+	if (abs(dir.y) > abs(dir.x) && abs(dir.y) > abs(dir.z))
+	{
+		cameraUp = Vec3(0.0f, 0.0f, 1.0f); // ‚Æ‚è‚ ‚¦‚¸z•ûŒü‚ğã‚É‚µ‚ÄŒÅ’è
+	}
+	else
+	{
+		cameraUp = Vec3(0.0f, 1.0f, 0.0f); // ‚Æ‚è‚ ‚¦‚¸y•ûŒü‚ğã‚É‚µ‚ÄŒÅ’è
+	}
+
 	_shadowMapData.viewMatrix = Mat4::createLookAtWithDirection(
 		getPosition(),
 		getDirection(),
-		Vec3(0.0f, 1.0f, 0.0f) // ‚Æ‚è‚ ‚¦‚¸y•ûŒü‚ğã‚É‚µ‚ÄŒÅ’è
+		cameraUp
 	);
 
 	_shadowMapData.projectionMatrix = Mat4::createPerspective(

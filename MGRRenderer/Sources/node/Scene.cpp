@@ -106,6 +106,7 @@ void Scene::update(float dt)
 		child->prepareRendering();
 	}
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	//_camera.renderGBuffer();
 
 	// 不透過モデルはディファードレンダリング
@@ -119,6 +120,7 @@ void Scene::update(float dt)
 	{
 		child->renderGBuffer();
 	}
+#endif
 
 	//
 	// シャドウマップの描画
@@ -177,6 +179,7 @@ void Scene::update(float dt)
 		}
 	}
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	//
 	// Gバッファとシャドウマップを使った描画
 	//
@@ -191,6 +194,7 @@ void Scene::update(float dt)
 		Director::getRenderer().renderDeferred();
 	});
 	Director::getRenderer().addCommand(&_renderDeferredCommand);
+#endif
 
 	// 非透過モデルはディファードレンダリング
 	// 透過モデルはフォワードレンダリング
@@ -203,10 +207,12 @@ void Scene::update(float dt)
 
 	_camera.renderForward();
 
-	//for (Node* child : _children)
-	//{
-	//	child->renderForward();
-	//}
+#if defined(MGRRENDERER_FOWARD_RENDERING)
+	for (Node* child : _children)
+	{
+		child->renderForward();
+	}
+#endif
 
 	// 2Dノードは深度の扱いが違うので一つ準備処理をはさむ
 	_prepareFowardRendering2DCommand.init([=]

@@ -89,7 +89,7 @@ void LabelAtlas::setString(const std::string& string)
 }
 #endif
 
-#if defined(MGRRENDERER_DEFFERED_RENDERING)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 void LabelAtlas::renderGBuffer()
 {
 	Node::renderGBuffer();

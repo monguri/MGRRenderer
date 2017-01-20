@@ -35,7 +35,7 @@ private:
 	std::vector<Vec3> _vertexArray;
 	std::vector<Vec3> _normalArray;
 
-#if defined(MGRRENDERER_DEFFERED_RENDERING)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	CustomRenderCommand _renderGBufferCommand;
 #endif
 	CustomRenderCommand _renderDirectionalLightShadowMapCommand;
@@ -43,7 +43,7 @@ private:
 	std::array<CustomRenderCommand, SpotLight::MAX_NUM> _renderSpotLightShadowMapCommandList;
 	CustomRenderCommand _renderCommand;
 
-#if defined(MGRRENDERER_DEFFERED_RENDERING)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	void renderGBuffer() override;
 #endif
 	void renderDirectionalLightShadowMap(const DirectionalLight* light) override;

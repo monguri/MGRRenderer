@@ -19,7 +19,7 @@ void Node::prepareRendering()
 	_modelMatrix = Mat4::createTransform(_position, _rotation, _scale);
 }
 
-#if defined(MGRRENDERER_DEFFERED_RENDERING)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 void Node::renderGBuffer()
 {
 	// ‰½‚à‚µ‚È‚¢

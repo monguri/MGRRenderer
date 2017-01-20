@@ -42,9 +42,9 @@ private:
 	D3DProgram _d3dProgram;
 	D3DProgram _d3dProgramForShadowMap;
 	D3DProgram _d3dProgramForPointLightShadowMap;
-#if defined(MGRRENDERER_DEFFERED_RENDERING)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	D3DProgram _d3dProgramForGBuffer;
-#endif // defined(MGRRENDERER_DEFFERED_RENDERING)
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 	D3DTexture* _texture;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgramForGBuffer;
@@ -84,7 +84,7 @@ private:
 	~Sprite3D();
 	void update(float dt) override;
 	C3bLoader::NodeData* findJointByName(const std::string& jointName, const std::vector<C3bLoader::NodeData*> children);
-#if defined(MGRRENDERER_DEFFERED_RENDERING)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	void renderGBuffer() override;
 #endif
 	void renderDirectionalLightShadowMap(const DirectionalLight* light) override;

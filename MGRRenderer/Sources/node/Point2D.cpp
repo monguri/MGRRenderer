@@ -166,7 +166,7 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 #endif
 }
 
-#if defined(MGRRENDERER_DEFFERED_RENDERING)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 void Point2D::renderGBuffer()
 {
 	Node::renderGBuffer();

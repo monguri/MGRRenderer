@@ -15,7 +15,7 @@ public:
 	// TODO:本来はdtはスケジューラに渡せばいいのだが、今は各ノードでupdateメソッドでアニメーションをやってるのでdtをvisitとupdateに渡している
 	virtual void update(float dt);
 	virtual void prepareRendering();
-#if defined(MGRRENDERER_DEFFERED_RENDERING)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	virtual void renderGBuffer();
 #endif
 	virtual void renderDirectionalLightShadowMap(const DirectionalLight* light);

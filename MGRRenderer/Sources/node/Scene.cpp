@@ -106,7 +106,7 @@ void Scene::update(float dt)
 		child->prepareRendering();
 	}
 
-#if defined(MGRRENDERER_DEFFERED_RENDERING)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	//_camera.renderGBuffer();
 
 	// 不透過モデルはディファードレンダリング
@@ -179,7 +179,7 @@ void Scene::update(float dt)
 		}
 	}
 
-#if defined(MGRRENDERER_DEFFERED_RENDERING)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	//
 	// Gバッファとシャドウマップを使った描画
 	//

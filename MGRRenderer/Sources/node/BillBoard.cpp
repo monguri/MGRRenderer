@@ -258,7 +258,7 @@ void BillBoard::prepareRendering()
 	setModelMatrix(billBoardTransform);
 }
 
-#if defined(MGRRENDERER_DEFFERED_RENDERING)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 void BillBoard::renderGBuffer()
 {
 	// 現状、事前にSprite2Dとは異なるモデル行列をセットするのに使っているだけ
@@ -369,7 +369,7 @@ void BillBoard::renderGBuffer()
 
 	Director::getRenderer().addCommand(&_renderGBufferCommand);
 }
-#endif // defined(MGRRENDERER_DEFFERED_RENDERING)
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 
 // Sprite2Dとの違いは深度テストONにしてることだけ
 void BillBoard::renderForward()

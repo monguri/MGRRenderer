@@ -35,7 +35,7 @@ private:
 
 	std::vector<Point2DData> _pointArray;
 
-#if defined(MGRRENDERER_DEFFERED_RENDERING)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	void renderGBuffer() override;
 #endif
 	void renderForward() override;

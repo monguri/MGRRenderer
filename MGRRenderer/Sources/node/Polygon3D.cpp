@@ -430,6 +430,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	return true;
 }
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 void Polygon3D::renderGBuffer()
 {
 	_renderGBufferCommand.init([=]
@@ -552,6 +553,7 @@ void Polygon3D::renderGBuffer()
 
 	Director::getRenderer().addCommand(&_renderGBufferCommand);
 }
+#endif // defined(MGRRENDERER_DEFFERED_RENDERING)
 
 void Polygon3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 {

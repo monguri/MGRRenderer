@@ -179,10 +179,12 @@ void Particle3D::update(float dt)
 	}
 }
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 void Particle3D::renderGBuffer()
 {
 	Node::renderGBuffer();
 }
+#endif
 
 void Particle3D::renderForward()
 {

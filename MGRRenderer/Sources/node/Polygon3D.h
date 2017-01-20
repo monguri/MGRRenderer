@@ -35,13 +35,17 @@ private:
 	std::vector<Vec3> _vertexArray;
 	std::vector<Vec3> _normalArray;
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	CustomRenderCommand _renderGBufferCommand;
+#endif
 	CustomRenderCommand _renderDirectionalLightShadowMapCommand;
 	std::array<std::array<CustomRenderCommand, (size_t)CubeMapFace::NUM_CUBEMAP_FACE>, PointLight::MAX_NUM> _renderPointLightShadowMapCommandList;
 	std::array<CustomRenderCommand, SpotLight::MAX_NUM> _renderSpotLightShadowMapCommandList;
 	CustomRenderCommand _renderCommand;
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	void renderGBuffer() override;
+#endif
 	void renderDirectionalLightShadowMap(const DirectionalLight* light) override;
 	void renderPointLightShadowMap(size_t index, const PointLight* light, CubeMapFace face = CubeMapFace::X_POSITIVE) override;
 	void renderSpotLightShadowMap(size_t index, const SpotLight* light) override;

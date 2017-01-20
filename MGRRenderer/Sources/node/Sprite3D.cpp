@@ -175,7 +175,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_d3dProgram.addVertexBuffer(vertexBuffer);
 		_d3dProgramForShadowMap.addVertexBuffer(vertexBuffer);
 		_d3dProgramForPointLightShadowMap.addVertexBuffer(vertexBuffer);
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 		_d3dProgramForGBuffer.addVertexBuffer(vertexBuffer);
+#endif
 
 		// インデックスバッファの定義
 		D3D11_BUFFER_DESC indexBufferDesc;
@@ -203,13 +205,17 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_d3dProgram.setIndexBuffer(indexBuffer);
 		_d3dProgramForShadowMap.setIndexBuffer(indexBuffer);
 		_d3dProgramForPointLightShadowMap.setIndexBuffer(indexBuffer);
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 		_d3dProgramForGBuffer.setIndexBuffer(indexBuffer);
+#endif
 
 		bool depthEnable = true;
 		_d3dProgram.initWithShaderFile("Resources/shader/Obj.hlsl", depthEnable, "VS", "", "PS");
 		_d3dProgramForShadowMap.initWithShaderFile("Resources/shader/Obj.hlsl", depthEnable, "VS_SM", "", "");
 		_d3dProgramForPointLightShadowMap.initWithShaderFile("Resources/shader/Obj.hlsl", depthEnable, "VS_SM_POINT_LIGHT", "GS_SM_POINT_LIGHT", "");
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 		_d3dProgramForGBuffer.initWithShaderFile("Resources/shader/Obj.hlsl", depthEnable, "VS_GBUFFER", "", "PS_GBUFFER");
+#endif
 
 		// 入力レイアウトオブジェクトの作成
 		D3D11_INPUT_ELEMENT_DESC layout[] = {
@@ -233,7 +239,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_d3dProgram.setInputLayout(inputLayout);
 		_d3dProgramForShadowMap.setInputLayout(inputLayout);
 		_d3dProgramForPointLightShadowMap.setInputLayout(inputLayout);
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 		_d3dProgramForGBuffer.setInputLayout(inputLayout);
+#endif
 	}
 	else if (_isC3b)
 	{
@@ -265,7 +273,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_d3dProgram.addVertexBuffer(vertexBuffer);
 		_d3dProgramForShadowMap.addVertexBuffer(vertexBuffer);
 		_d3dProgramForPointLightShadowMap.addVertexBuffer(vertexBuffer);
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 		_d3dProgramForGBuffer.addVertexBuffer(vertexBuffer);
+#endif
 
 		// インデックスバッファの定義
 		D3D11_BUFFER_DESC indexBufferDesc;
@@ -293,13 +303,17 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_d3dProgram.setIndexBuffer(indexBuffer);
 		_d3dProgramForShadowMap.setIndexBuffer(indexBuffer);
 		_d3dProgramForPointLightShadowMap.setIndexBuffer(indexBuffer);
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 		_d3dProgramForGBuffer.setIndexBuffer(indexBuffer);
+#endif
 
 		bool depthEnable = true;
 		_d3dProgram.initWithShaderFile("Resources/shader/C3bC3t.hlsl", depthEnable, "VS", "", "PS");
 		_d3dProgramForShadowMap.initWithShaderFile("Resources/shader/C3bC3t.hlsl", depthEnable, "VS_SM", "", "");
 		_d3dProgramForPointLightShadowMap.initWithShaderFile("Resources/shader/C3bC3t.hlsl", depthEnable, "VS_SM_POINT_LIGHT", "GS_SM_POINT_LIGHT", "");
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 		_d3dProgramForGBuffer.initWithShaderFile("Resources/shader/C3bC3t.hlsl", depthEnable, "VS_GBUFFER", "", "PS_GBUFFER");
+#endif
 
 		// 入力レイアウトオブジェクトの作成
 		std::vector<D3D11_INPUT_ELEMENT_DESC> layouts(meshData->numAttribute);
@@ -327,7 +341,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_d3dProgram.setInputLayout(inputLayout);
 		_d3dProgramForShadowMap.setInputLayout(inputLayout);
 		_d3dProgramForPointLightShadowMap.setInputLayout(inputLayout);
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 		_d3dProgramForGBuffer.setInputLayout(inputLayout);
+#endif
 	}
 
 	// 定数バッファの作成
@@ -350,7 +366,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
+#endif
 
 	// View行列用
 	constantBuffer = nullptr;
@@ -363,7 +381,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
+#endif
 
 	// Projection行列用
 	constantBuffer = nullptr;
@@ -376,7 +396,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
+#endif
 
 	// Normal行列用
 	constantBuffer = nullptr;
@@ -389,7 +411,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_NORMAL_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_NORMAL_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_NORMAL_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_NORMAL_MATRIX, constantBuffer);
+#endif
 
 	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
 	// 乗算色
@@ -403,7 +427,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#endif
 
 	// アンビエントライトカラー
 	constantBufferDesc.ByteWidth = sizeof(AmbientLight::ConstantBufferData);
@@ -417,7 +443,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#endif
 
 	// ディレクショナルトライトView行列用
 	constantBufferDesc.ByteWidth = sizeof(Mat4);
@@ -431,7 +459,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#endif
 
 	// ディレクショナルトライトProjection行列用
 	constantBuffer = nullptr;
@@ -444,7 +474,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#endif
 
 	// ディレクショナルトライトデプスバイアス行列用
 	constantBuffer = nullptr;
@@ -457,7 +489,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#endif
 
 	// ディレクショナルトライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(DirectionalLight::ConstantBufferData);
@@ -471,7 +505,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#endif
 
 	// ポイントライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(PointLight::ConstantBufferData);
@@ -485,7 +521,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#endif
 
 	// スポットライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(SpotLight::ConstantBufferData);
@@ -499,7 +537,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#endif
 
 	if (_isC3b)
 	{
@@ -515,7 +555,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer);
 		_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer);
 		_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer);
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 		_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer);
+#endif
 	}
 
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -1114,6 +1156,7 @@ void Sprite3D::update(float dt)
 	}
 }
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 void Sprite3D::renderGBuffer()
 {
 	_renderGBufferCommand.init([=]
@@ -1305,6 +1348,7 @@ void Sprite3D::renderGBuffer()
 
 	Director::getRenderer().addCommand(&_renderGBufferCommand);
 }
+#endif // defined(MGRRENDERER_DEFFERED_RENDERING)
 
 void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 {

@@ -83,7 +83,9 @@ private:
 	Mat4 _projectionMatrix;
 	CubeMapFace _cubeMapFace;
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	void renderGBuffer() override;
+#endif
 	void renderForward() override;
 };
 

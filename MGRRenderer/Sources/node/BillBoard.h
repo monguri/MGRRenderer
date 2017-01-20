@@ -22,7 +22,9 @@ public:
 	BillBoard();
 	bool init(const std::string& filePath, Mode mode);
 	void prepareRendering() override;
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	void renderGBuffer() override;
+#endif
 	void renderForward() override;
 
 private:

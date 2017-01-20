@@ -44,7 +44,9 @@ private:
 
 	// TODO:Ç∆ÇËÇ†Ç¶Ç∏Ç‹ÇæÇ±ÇÍÇÃâeê∂ê¨ÇÕÇµÇ»Ç¢
 	void update(float dt) override;
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	void renderGBuffer() override;
+#endif
 	void renderForward() override;
 };
 

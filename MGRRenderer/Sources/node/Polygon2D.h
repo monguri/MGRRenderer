@@ -28,7 +28,9 @@ private:
 	CustomRenderCommand _renderCommand;
 	std::vector<Vec2> _vertexArray;
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	void renderGBuffer() override;
+#endif
 	void renderForward() override;
 };
 

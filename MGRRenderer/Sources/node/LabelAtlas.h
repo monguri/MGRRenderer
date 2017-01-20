@@ -34,7 +34,9 @@ private:
 	float _itemWidth;
 	float _itemHeight;
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 	void renderGBuffer() override;
+#endif
 	void renderForward() override;
 };
 

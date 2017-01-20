@@ -369,10 +369,12 @@ bool Sprite2D::initWithDepthStencilTexture(GLTexture* texture, RenderBufferType 
 }
 #endif
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 void Sprite2D::renderGBuffer()
 {
 	Node::renderGBuffer();
 }
+#endif
 
 void Sprite2D::renderForward()
 {

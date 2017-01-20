@@ -154,10 +154,12 @@ bool Line3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	return true;
 }
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 void Line3D::renderGBuffer()
 {
 	Node::renderGBuffer();
 }
+#endif
 
 void Line3D::renderForward()
 {

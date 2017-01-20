@@ -19,10 +19,12 @@ void Node::prepareRendering()
 	_modelMatrix = Mat4::createTransform(_position, _rotation, _scale);
 }
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 void Node::renderGBuffer()
 {
 	// ‰½‚à‚µ‚È‚¢
 }
+#endif
 
 void Node::renderDirectionalLightShadowMap(const DirectionalLight* light)
 {

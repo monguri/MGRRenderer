@@ -153,10 +153,12 @@ bool Line2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
 	return true;
 }
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 void Line2D::renderGBuffer()
 {
 	Node::renderGBuffer();
 }
+#endif
 
 void Line2D::renderForward()
 {

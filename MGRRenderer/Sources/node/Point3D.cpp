@@ -166,10 +166,12 @@ void Point3D::initWithPointArray(const std::vector<Point3DData>& pointArray)
 #endif
 }
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 void Point3D::renderGBuffer()
 {
 	Node::renderGBuffer();
 }
+#endif
 
 void Point3D::renderForward()
 {

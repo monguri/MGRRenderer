@@ -152,10 +152,12 @@ bool Polygon2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
 	return true;
 }
 
+#if defined(MGRRENDERER_DEFFERED_RENDERING)
 void Polygon2D::renderGBuffer()
 {
 	Node::renderGBuffer();
 }
+#endif
 
 void Polygon2D::renderForward()
 {

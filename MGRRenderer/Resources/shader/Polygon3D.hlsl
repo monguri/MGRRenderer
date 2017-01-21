@@ -17,7 +17,7 @@ cbuffer ProjectionMatrix : register(b2)
 
 cbuffer DepthBiasMatrix : register(b3)
 {
-	matrix _DepthBias;
+	matrix _depthBias;
 };
 
 cbuffer NormalMatrix : register(b4)

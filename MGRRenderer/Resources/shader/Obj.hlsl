@@ -15,34 +15,34 @@ cbuffer ProjectionMatrix : register(b2)
 	matrix _projection;
 };
 
-cbuffer NormalMatrix : register(b3)
+cbuffer DepthBiasMatrix : register(b3)
+{
+	matrix _depthBias;
+};
+
+cbuffer NormalMatrix : register(b4)
 {
 	matrix _normal;
 };
 
-cbuffer MultiplyColor : register(b4)
+cbuffer MultiplyColor : register(b5)
 {
 	float4 _multiplyColor;
 };
 
-cbuffer AmbientLightParameter : register(b5)
+cbuffer AmbientLightParameter : register(b6)
 {
 	float4 _ambientLightColor;
 };
 
-cbuffer DirectionalLightViewMatrix : register(b6)
+cbuffer DirectionalLightViewMatrix : register(b7)
 {
 	matrix _lightView;
 };
 
-cbuffer DirectionalLightProjectionMatrix : register(b7)
+cbuffer DirectionalLightProjectionMatrix : register(b8)
 {
 	matrix _lightProjection;
-};
-
-cbuffer DirectionalLightDepthBiasMatrix : register(b8)
-{
-	matrix _lightDepthBias;
 };
 
 cbuffer DirectionalLightParameter : register(b9)
@@ -58,7 +58,6 @@ cbuffer PointLightParameter : register(b10)
 {
 	matrix _pointLightViewMatrices[NUM_FACE_CUBEMAP_TEXTURE];
 	matrix _pointLightProjectionMatrix;
-	matrix _pointLightDepthBiasMatrix;
 	float3 _pointLightColor;
 	float _pointLightHasShadowMap;
 	float3 _pointLightPosition;
@@ -132,7 +131,7 @@ PS_INPUT VS(VS_INPUT input)
 
 	float4 lightPosition = mul(worldPosition, _lightView);
 	lightPosition = mul(lightPosition, _lightProjection);
-	output.lightPosition = mul(lightPosition, _lightDepthBias);
+	output.lightPosition = mul(lightPosition, _depthBias);
 	output.lightPosition.xyz /= output.lightPosition.w;
 
 	float4 normal = float4(input.normal, 1.0);

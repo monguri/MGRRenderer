@@ -400,6 +400,21 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 #endif
 
+	// デプスバイアス行列用
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX, constantBuffer);
+	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX, constantBuffer);
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX, constantBuffer);
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX, constantBuffer);
+#endif
+
 	// Normal行列用
 	constantBuffer = nullptr;
 	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
@@ -476,21 +491,6 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
-#endif
-
-	// ディレクショナルトライトデプスバイアス行列用
-	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
-	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
-	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
-#if defined(MGRRENDERER_DEFERRED_RENDERING)
-	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 #endif
 
 	// ディレクショナルトライトパラメーター
@@ -1872,6 +1872,18 @@ void Sprite3D::renderForward()
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
+		result = direct3dContext->Map(
+			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 depthBiasMatrix = (Mat4::TEXTURE_COORDINATE_CONVERTER * Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, -1.0f, 0.0f))).transpose(); //TODO: Mat4を参照型にすると値がおかしくなってしまう
+		CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
+		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX), 0);
+
 		// ノーマル行列のマップ
 		result = direct3dContext->Map(
 			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_NORMAL_MATRIX),
@@ -1952,18 +1964,6 @@ void Sprite3D::renderForward()
 				lightProjectionMatrix.transpose();
 				CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
 				direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX), 0);
-
-				result = direct3dContext->Map(
-					_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX),
-					0,
-					D3D11_MAP_WRITE_DISCARD,
-					0,
-					&mappedResource
-				);
-				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				Mat4 depthBiasMatrix = (Mat4::TEXTURE_COORDINATE_CONVERTER * Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, -1.0f, 0.0f))).transpose(); //TODO: Mat4を参照型にすると値がおかしくなってしまう
-				CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
-				direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX), 0);
 
 				depthTextureResourceView = directionalLight->getShadowMapData().depthTexture->getShaderResourceView();
 			}

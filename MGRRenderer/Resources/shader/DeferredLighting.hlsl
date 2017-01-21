@@ -12,24 +12,24 @@ cbuffer DepthTextureProjectionMatrix : register(b1)
 	matrix _depthTextureProjection;
 };
 
-cbuffer AmbientLightParameter : register(b2)
+cbuffer DepthBiasMatrix : register(b2)
+{
+	matrix _depthBias;
+};
+
+cbuffer AmbientLightParameter : register(b3)
 {
 	float4 _ambientLightColor;
 };
 
-cbuffer DirectionalLightViewMatrix : register(b3)
+cbuffer DirectionalLightViewMatrix : register(b4)
 {
 	matrix _directionalLightView;
 };
 
-cbuffer DirectionalLightProjectionMatrix : register(b4)
+cbuffer DirectionalLightProjectionMatrix : register(b5)
 {
 	matrix _directionalLightProjection;
-};
-
-cbuffer DirectionalLightDepthBiasMatrix : register(b5)
-{
-	matrix _directionalLightDepthBias;
 };
 
 cbuffer DirectionalLightParameter : register(b6)
@@ -47,7 +47,6 @@ cbuffer PointLightParameter : register(b7)
 	struct {
 		matrix _pointLightView[NUM_FACE_CUBEMAP_TEXTURE];
 		matrix _pointLightProjection;
-		matrix _pointLightDepthBias;
 		float3 _pointLightColor;
 		float _pointLightHasShadowMap;
 		float3 _pointLightPosition;
@@ -69,12 +68,7 @@ cbuffer SpotLightProjectionMatrix : register(b9)
 	matrix _spotLightProjection[MAX_NUM_SPOT_LIGHT];
 };
 
-cbuffer SpotLightDepthBiasMatrix : register(b10)
-{
-	matrix _spotLightDepthBias[MAX_NUM_SPOT_LIGHT];
-};
-
-cbuffer SpotLightParameter : register(b11)
+cbuffer SpotLightParameter : register(b10)
 {
 	struct {
 		float3 _spotLightPosition;
@@ -175,7 +169,7 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	{
 		float4 lightPosition = mul(worldPosition, _directionalLightView);
 		lightPosition = mul(lightPosition, _directionalLightProjection);
-		lightPosition = mul(lightPosition, _directionalLightDepthBias);
+		lightPosition = mul(lightPosition, _depthBias);
 		lightPosition.xyz /= lightPosition.w;
 		// zファイティングを避けるための微調整
 		lightPosition.z -= 0.001;
@@ -311,7 +305,7 @@ float4 PS(PS_INPUT input) : SV_TARGET
 		{
 			float4 lightPosition = mul(worldPosition, _spotLightView[i]);
 			lightPosition = mul(lightPosition, _spotLightProjection[i]);
-			lightPosition = mul(lightPosition, _spotLightDepthBias[i]);
+			lightPosition = mul(lightPosition, _depthBias);
 			lightPosition.xyz /= lightPosition.w;
 			// zファイティングを避けるための微調整
 			lightPosition.z -= 0.00001;

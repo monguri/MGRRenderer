@@ -272,6 +272,16 @@ void Renderer::initView(const Size& windowSize)
 	}
 	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 
+	// デプスバイアス行列用
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return;
+	}
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX, constantBuffer);
+
 	// アンビエントライトカラー
 	constantBufferDesc.ByteWidth = sizeof(AmbientLight::ConstantBufferData);
 	constantBuffer = nullptr;
@@ -303,16 +313,6 @@ void Renderer::initView(const Size& windowSize)
 		return;
 	}
 	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer);
-
-	// ディレクショナルトライトデプスバイアス行列用
-	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return;
-	}
-	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
 
 	// ディレクショナルトライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(DirectionalLight::ConstantBufferData);
@@ -356,16 +356,6 @@ void Renderer::initView(const Size& windowSize)
 		return;
 	}
 	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX, constantBuffer);
-
-	// スポットライトデプスバイアス行列用
-	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return;
-	}
-	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
 
 	// スポットライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(SpotLight::ConstantBufferData) * SpotLight::MAX_NUM;
@@ -612,6 +602,18 @@ void Renderer::renderDeferred()
 	CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
+	result = direct3dContext->Map(
+		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX),
+		0,
+		D3D11_MAP_WRITE_DISCARD,
+		0,
+		&mappedResource
+	);
+	Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+	Mat4 depthBiasMatrix = (Mat4::TEXTURE_COORDINATE_CONVERTER * Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, -1.0f, 0.0f))).transpose(); //TODO: Mat4を参照型にすると値がおかしくなってしまう
+	CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
+	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX), 0);
+
 	// TODO:こういう風に一個ではなくなる
 	const Scene& scene = Director::getInstance()->getScene();
 
@@ -659,18 +661,6 @@ void Renderer::renderDeferred()
 			Mat4 lightProjectionMatrix = (Mat4::CHIRARITY_CONVERTER * directionalLight->getShadowMapData().projectionMatrix).transpose(); // 左手系変換行列はプロジェクション行列に最初からかけておく
 			CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
 			direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX), 0);
-
-			result = direct3dContext->Map(
-				_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX),
-				0,
-				D3D11_MAP_WRITE_DISCARD,
-				0,
-				&mappedResource
-			);
-			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-			Mat4 depthBiasMatrix = (Mat4::TEXTURE_COORDINATE_CONVERTER * Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, -1.0f, 0.0f))).transpose(); //TODO: Mat4を参照型にすると値がおかしくなってしまう
-			CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
-			direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX), 0);
 
 			dirLightShadowMapResourceView = directionalLight->getShadowMapData().depthTexture->getShaderResourceView();
 		}
@@ -787,30 +777,6 @@ void Renderer::renderDeferred()
 	}
 
 	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX), 0);
-
-	result = direct3dContext->Map(
-		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_DEPTH_BIAS_MATRIX),
-		0,
-		D3D11_MAP_WRITE_DISCARD,
-		0,
-		&mappedResource
-	);
-	Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-
-	Mat4* spotLightLightDepthBiasMatrix = static_cast<Mat4*>(mappedResource.pData);
-	ZeroMemory(spotLightLightDepthBiasMatrix, sizeof(Mat4) * SpotLight::MAX_NUM);
-
-	for (size_t i = 0; i < numSpotLight; i++)
-	{
-		const SpotLight* spotLight = scene.getSpotLight(i);
-		if (spotLight != nullptr && spotLight->hasShadowMap())
-		{
-			Mat4 depthBiasMatrix = (Mat4::TEXTURE_COORDINATE_CONVERTER * Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, -1.0f, 0.0f))).transpose(); //TODO: Mat4を参照型にすると値がおかしくなってしまう
-			CopyMemory(&spotLightLightDepthBiasMatrix[i], &depthBiasMatrix.m, sizeof(depthBiasMatrix));
-		}
-	}
-
-	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_DEPTH_BIAS_MATRIX), 0);
 
 	result = direct3dContext->Map(
 		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER),

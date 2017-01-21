@@ -513,6 +513,32 @@ void Renderer::render()
 	_queueGroup[DEFAULT_RENDER_QUEUE_GROUP_INDEX].clear();
 }
 
+void Renderer::prepareDefaultRenderTarget()
+{
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+	direct3dContext->ClearState();
+
+	float clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+	direct3dContext->ClearRenderTargetView(Director::getInstance()->getDirect3dRenderTarget(), clearColor);
+	direct3dContext->ClearDepthStencilView(Director::getInstance()->getDirect3dDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
+	ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
+	direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
+
+	direct3dContext->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencilView());
+	direct3dContext->OMSetDepthStencilState(Director::getInstance()->getDirect3dDepthStencilState(), 1);
+#elif defined(MGRRENDERER_USE_OPENGL)
+	//glDisable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glViewport(0, 0, static_cast<GLsizei>(Director::getInstance()->getWindowSize().width), static_cast<GLsizei>(Director::getInstance()->getWindowSize().height));
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
+}
+
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 void Renderer::prepareGBufferRendering()
 {
@@ -549,28 +575,7 @@ void Renderer::prepareGBufferRendering()
 
 void Renderer::prepareDeferredRendering()
 {
-#if defined(MGRRENDERER_USE_DIRECT3D)
-	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
-	direct3dContext->ClearState();
-
-	float clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	direct3dContext->ClearRenderTargetView(Director::getInstance()->getDirect3dRenderTarget(), clearColor);
-	direct3dContext->ClearDepthStencilView(Director::getInstance()->getDirect3dDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0);
-
-	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
-	ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
-	direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
-
-	direct3dContext->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencilView());
-	direct3dContext->OMSetDepthStencilState(Director::getInstance()->getDirect3dDepthStencilState(), 1);
-#elif defined(MGRRENDERER_USE_OPENGL)
-	//glDisable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glViewport(0, 0, static_cast<GLsizei>(Director::getInstance()->getWindowSize().width), static_cast<GLsizei>(Director::getInstance()->getWindowSize().height));
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#endif
+	prepareDefaultRenderTarget();
 }
 
 void Renderer::renderDeferred()
@@ -1075,7 +1080,7 @@ void Renderer::renderDeferred()
 
 void Renderer::prepareFowardRendering()
 {
-	// 現状特にすることがない。ここだけprepareがないと対称でないため定義した
+	prepareDefaultRenderTarget();
 }
 
 void Renderer::prepareFowardRendering2D()

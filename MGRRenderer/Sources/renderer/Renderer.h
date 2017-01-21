@@ -83,6 +83,7 @@ private:
 #endif
 #endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 
+	static void prepareDefaultRenderTarget();
 	void visitRenderQueue(const std::vector<RenderCommand*> queue);
 	void executeRenderCommand(RenderCommand* command);
 };

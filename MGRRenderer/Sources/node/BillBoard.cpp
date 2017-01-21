@@ -107,7 +107,7 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 	_d3dProgram.setIndexBuffer(indexBuffer);
 	_d3dProgramForGBuffer.setIndexBuffer(indexBuffer);
 
-	_d3dProgram.initWithShaderFile("Resources/shader/PositionTextureMultiplyColor.hlsl", true, "VS", "", "PS_GBUFFER");
+	_d3dProgram.initWithShaderFile("Resources/shader/PositionTextureMultiplyColor.hlsl", true, "VS", "", "PS");
 	_d3dProgramForGBuffer.initWithShaderFile("Resources/shader/PositionTextureMultiplyColor.hlsl", true, "VS", "", "PS_GBUFFER");
 
 	// 入力レイアウトオブジェクトの作成

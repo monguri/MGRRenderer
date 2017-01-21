@@ -1004,8 +1004,6 @@ void Polygon3D::renderForward()
 				CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
 				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX), 0);
 
-				ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getPCFSamplerState() };
-				direct3dContext->PSSetSamplers(0, 1, samplerState);
 				ID3D11ShaderResourceView* shaderResouceView[1] = { directionalLight->getShadowMapData().depthTexture->getShaderResourceView() };
 				direct3dContext->PSSetShaderResources(0, 1, shaderResouceView);
 			}
@@ -1021,7 +1019,6 @@ void Polygon3D::renderForward()
 			CopyMemory(mappedResource.pData, directionalLight->getConstantBufferDataPointer(), sizeof(DirectionalLight::ConstantBufferData));
 			direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER), 0);
 		}
-
 
 		// TODO:ポイントライトの影付けも書かねば
 		result = direct3dContext->Map(
@@ -1085,6 +1082,9 @@ void Polygon3D::renderForward()
 
 		_d3dProgram.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgram.setConstantBuffersToDirect3DContext(direct3dContext);
+
+		ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getPCFSamplerState() };
+		direct3dContext->PSSetSamplers(0, 1, samplerState);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);

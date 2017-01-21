@@ -2066,18 +2066,15 @@ void Sprite3D::renderForward()
 		{
 			ID3D11ShaderResourceView* resourceView[1] = { _texture->getShaderResourceView() };
 			direct3dContext->PSSetShaderResources(0, 1, resourceView);
-
-			ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getLinearSamplerState() };
-			direct3dContext->PSSetSamplers(0, 1, samplerState);
 		}
 		else // シャドウマップを作ったとき
 		{
 			ID3D11ShaderResourceView* resourceViews[2] = {_texture->getShaderResourceView(), depthTextureResourceView};
 			direct3dContext->PSSetShaderResources(0, 2, resourceViews);
-
-			ID3D11SamplerState* samplerState[2] = { Director::getRenderer().getLinearSamplerState(), Director::getRenderer().getPCFSamplerState() };
-			direct3dContext->PSSetSamplers(0, 2, samplerState);
 		}
+
+		ID3D11SamplerState* samplerState[2] = { Director::getRenderer().getLinearSamplerState(), Director::getRenderer().getPCFSamplerState() };
+		direct3dContext->PSSetSamplers(0, 2, samplerState);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);

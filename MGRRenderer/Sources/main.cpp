@@ -595,27 +595,27 @@ void initialize()
 		ambientLight->setColor(Color3B::WHITE);
 	}
 
-	//Sprite2D* depthTextureSprite = nullptr;
+	Sprite2D* depthTextureSprite = nullptr;
 
-	//DirectionalLight* dirLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
-	//dirLight->setIntensity(0.7f);
-	//dirLight->setColor(Color3B(0, 255, 0));
-	//dirLight->initShadowMap(
-	//	// Polygon3Dのついたての中心をターゲットにし、シーン全体が入るように、カメラのWINDOW_HEIGHT / 1.1566fに比べると遠目に
-	//	Vec3(0.0f, 0.0f, -WINDOW_WIDTH / 3.0f) - Vec3(-1.0f, -1.0f, -1.0f) * (WINDOW_HEIGHT / 1.1566f),
-	//	NEAR_CLIP,
-	//	FAR_CLIP,
-	//	Size(WINDOW_WIDTH, WINDOW_HEIGHT));
-	//scene->setDirectionalLight(dirLight);
+	DirectionalLight* dirLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
+	dirLight->setIntensity(0.7f);
+	dirLight->setColor(Color3B(0, 255, 0));
+	dirLight->initShadowMap(
+		// Polygon3Dのついたての中心をターゲットにし、シーン全体が入るように、カメラのWINDOW_HEIGHT / 1.1566fに比べると遠目に
+		Vec3(0.0f, 0.0f, -WINDOW_WIDTH / 3.0f) - Vec3(-1.0f, -1.0f, -1.0f) * (WINDOW_HEIGHT / 1.1566f),
+		NEAR_CLIP,
+		FAR_CLIP,
+		Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+	scene->setDirectionalLight(dirLight);
 
-	//if (dirLight->hasShadowMap())
-	//{
-	//	depthTextureSprite = new Sprite2D();
-	//	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
-	//	depthTextureSprite->initWithDepthStencilTexture(dirLight->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL, dirLight->getNearClip(), dirLight->getFarClip(), dirLight->getShadowMapData().projectionMatrix);
-	//	depthTextureSprite->setScale(1 / 5.0f);
-	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
-	//}
+	if (dirLight->hasShadowMap())
+	{
+		depthTextureSprite = new Sprite2D();
+		const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
+		depthTextureSprite->initWithDepthStencilTexture(dirLight->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL, dirLight->getNearClip(), dirLight->getFarClip(), dirLight->getShadowMapData().projectionMatrix);
+		depthTextureSprite->setScale(1 / 5.0f);
+		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
+	}
 
 	//// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
 	//PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Color3B::WHITE, 3000.0f);
@@ -695,10 +695,10 @@ void initialize()
 	scene->pushNode2D(polygonNode);
 	//scene->pushNode2D(spriteNode);
 	scene->pushNode(spriteNode);
-	//if (dirLight->hasShadowMap())
-	//{
-	//	scene->pushNode2D(depthTextureSprite);
-	//}
+	if (dirLight->hasShadowMap())
+	{
+		scene->pushNode2D(depthTextureSprite);
+	}
 	//if (light->hasShadowMap())
 	//{
 	//	scene->pushNode2D(depthTextureSprite);

@@ -228,6 +228,8 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	float shadowAttenuation = 1.0;
 	if (_directionalLightHasShadowMap > 0.0)
 	{
+		// zファイティングを避けるための微調整
+		input.lightPosition.z -= 0.001;
 		shadowAttenuation = _shadowMapTex.SampleCmpLevelZero(_pcfSampler, input.lightPosition.xy, input.lightPosition.z);
 	}
 

@@ -219,6 +219,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX, constantBuffer);
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX, constantBuffer);
+	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_NORMAL_MATRIX, constantBuffer);
 
 	// NormalçsóÒóp
 	constantBuffer = nullptr;

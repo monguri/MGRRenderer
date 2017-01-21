@@ -30,6 +30,10 @@ public:
 	ID3D11RasterizerState* getRasterizeStateCullFaceNormal() const { return _rasterizeStateNormal; }
 	ID3D11RasterizerState* getRasterizeStateCullFaceFront() const { return _rasterizeStateCullFaceFront; }
 	ID3D11RasterizerState* getRasterizeStateCullFaceBack() const { return _rasterizeStateCullFaceBack; }
+#endif
+
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	D3DTexture* getGBufferDepthStencil() const { return _gBufferDepthStencil; }
 	D3DTexture* getGBufferColorSpecularIntensity() const { return _gBufferColorSpecularIntensity; }
 	D3DTexture* getGBufferNormal() const { return _gBufferNormal; }
@@ -37,13 +41,16 @@ public:
 #elif defined(MGRRENDERER_USE_OPENGL)
 	const std::vector<GLTexture*>& getGBuffers() const { return _gBufferFrameBuffer->getTextures(); }
 #endif
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 
 	// TODO:moveコンストラクタ使う？
 	void addCommand(RenderCommand* command);
 	void render();
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	void prepareGBufferRendering();
 	static void prepareDeferredRendering();
 	void renderDeferred();
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 	static void prepareFowardRendering();
 	static void prepareFowardRendering2D();
 
@@ -61,6 +68,10 @@ private:
 	ID3D11RasterizerState* _rasterizeStateNormal;
 	ID3D11RasterizerState* _rasterizeStateCullFaceFront;
 	ID3D11RasterizerState* _rasterizeStateCullFaceBack;
+#endif
+
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	D3DTexture* _gBufferDepthStencil;
 	D3DTexture* _gBufferColorSpecularIntensity;
 	D3DTexture* _gBufferNormal;
@@ -70,6 +81,7 @@ private:
 	GLFrameBuffer* _gBufferFrameBuffer;
 	GLProgram _glProgram;
 #endif
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 
 	void visitRenderQueue(const std::vector<RenderCommand*> queue);
 	void executeRenderCommand(RenderCommand* command);

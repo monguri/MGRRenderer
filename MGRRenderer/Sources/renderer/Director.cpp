@@ -21,12 +21,14 @@ _direct3dRenderTarget(nullptr),
 _direct3dDepthStencilView(nullptr),
 _direct3dDepthStencilState(nullptr),
 _direct3dDepthStencilState2D(nullptr),
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 _displayGBuffer(false),
 _gBufferDepthStencil(nullptr),
 _gBufferColorSpecularIntensitySprite(nullptr),
 _gBufferNormal(nullptr),
 _gBufferSpecularPower(nullptr),
-#endif
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
+#endif // defined(MGRRENDERER_USE_DIRECT3D)
 _displayStats(false),
 _accumulatedDeltaTime(0.0f),
 _FPSLabel(nullptr),
@@ -37,7 +39,9 @@ _farClip(0.0f)
 
 Director::~Director()
 {
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	clearGBufferSprite();
+#endif
 
 	if (_FPSLabel != nullptr)
 	{
@@ -98,8 +102,10 @@ void Director::setScene(const Scene& scene)
 {
 	// Sceneはサイズの大きなstd::vectorを含むのでコピーコンストラクトさせたくないのでmoveする。
 	_scene = std::move(scene);
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	// Gバッファのデプスのプロジェクション行列はシーンに設定したカメラの設定に依存するのでここでGバッファを初期化する
 	initGBufferSprite();
+#endif
 }
 
 void Director::update()
@@ -114,10 +120,12 @@ void Director::update()
 		updateStats(dt);
 	}
 
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	if (_displayGBuffer)
 	{
 		renderGBufferSprite();
 	}
+#endif
 
 	_renderer.render();
 }
@@ -180,33 +188,7 @@ void Director::createStatsLabel()
 #endif
 }
 
-void Director::clearGBufferSprite()
-{
-	if (_gBufferSpecularPower != nullptr)
-	{
-		delete _gBufferSpecularPower;
-		_gBufferSpecularPower = nullptr;
-	}
-
-	if (_gBufferNormal != nullptr)
-	{
-		delete _gBufferNormal;
-		_gBufferNormal = nullptr;
-	}
-
-	if (_gBufferColorSpecularIntensitySprite != nullptr)
-	{
-		delete _gBufferColorSpecularIntensitySprite;
-		_gBufferColorSpecularIntensitySprite = nullptr;
-	}
-
-	if (_gBufferDepthStencil != nullptr)
-	{
-		delete _gBufferDepthStencil;
-		_gBufferDepthStencil = nullptr;
-	}
-}
-
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 void Director::initGBufferSprite()
 {
 	clearGBufferSprite();
@@ -255,6 +237,33 @@ void Director::initGBufferSprite()
 	_gBufferSpecularPower->setPosition(Vec3(_windowSize.width / 5.0f * 3, 0.0f, 0.0f));
 }
 
+void Director::clearGBufferSprite()
+{
+	if (_gBufferSpecularPower != nullptr)
+	{
+		delete _gBufferSpecularPower;
+		_gBufferSpecularPower = nullptr;
+	}
+
+	if (_gBufferNormal != nullptr)
+	{
+		delete _gBufferNormal;
+		_gBufferNormal = nullptr;
+	}
+
+	if (_gBufferColorSpecularIntensitySprite != nullptr)
+	{
+		delete _gBufferColorSpecularIntensitySprite;
+		_gBufferColorSpecularIntensitySprite = nullptr;
+	}
+
+	if (_gBufferDepthStencil != nullptr)
+	{
+		delete _gBufferDepthStencil;
+		_gBufferDepthStencil = nullptr;
+	}
+}
+
 void Director::renderGBufferSprite()
 {
 	// addChildしてないので直接描画する
@@ -274,6 +283,7 @@ void Director::renderGBufferSprite()
 	_gBufferNormal->renderForward();
 	_gBufferSpecularPower->renderForward();
 }
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 
 void Director::updateStats(float dt)
 {

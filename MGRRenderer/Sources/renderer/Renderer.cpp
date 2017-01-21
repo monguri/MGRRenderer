@@ -19,19 +19,23 @@ static const size_t DEFAULT_RENDER_QUEUE_GROUP_INDEX = 0;
 
 Renderer::Renderer() :
 #if defined(MGRRENDERER_USE_DIRECT3D)
-_pointSampler(nullptr),
-_linearSampler(nullptr),
-_pcfSampler(nullptr),
-_rasterizeStateNormal(nullptr),
-_rasterizeStateCullFaceFront(nullptr),
-_rasterizeStateCullFaceBack(nullptr),
-_gBufferDepthStencil(nullptr),
-_gBufferColorSpecularIntensity(nullptr),
-_gBufferNormal(nullptr),
-_gBufferSpecularPower(nullptr)
+_pointSampler(nullptr)
+,_linearSampler(nullptr)
+,_pcfSampler(nullptr)
+,_rasterizeStateNormal(nullptr)
+,_rasterizeStateCullFaceFront(nullptr)
+,_rasterizeStateCullFaceBack(nullptr)
+#endif
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+,_gBufferDepthStencil(nullptr)
+,_gBufferColorSpecularIntensity(nullptr)
+,_gBufferNormal(nullptr)
+,_gBufferSpecularPower(nullptr)
 #elif defined(MGRRENDERER_USE_OPENGL)
 _gBufferFrameBuffer(nullptr)
 #endif
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 {
 	_groupIndexStack.push(DEFAULT_RENDER_QUEUE_GROUP_INDEX);
 
@@ -41,6 +45,7 @@ _gBufferFrameBuffer(nullptr)
 
 Renderer::~Renderer()
 {
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	if (_gBufferSpecularPower != nullptr)
 	{
@@ -71,7 +76,16 @@ Renderer::~Renderer()
 		delete _gBufferDepthStencil;
 		_gBufferDepthStencil = nullptr;
 	}
+#elif defined(MGRRENDERER_USE_OPENGL)
+	if (_gBufferFrameBuffer != nullptr)
+	{
+		delete _gBufferFrameBuffer;
+		_gBufferFrameBuffer = nullptr;
+	}
+#endif
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	if (_rasterizeStateCullFaceBack != nullptr)
 	{
 		_rasterizeStateCullFaceBack->Release();
@@ -107,17 +121,13 @@ Renderer::~Renderer()
 		_pointSampler->Release();
 		_pointSampler = nullptr;
 	}
-#elif defined(MGRRENDERER_USE_OPENGL)
-	if (_gBufferFrameBuffer != nullptr)
-	{
-		delete _gBufferFrameBuffer;
-		_gBufferFrameBuffer = nullptr;
-	}
 #endif
 }
 
 void Renderer::initView(const Size& windowSize)
 {
+	(void)windowSize;
+
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	// ビューポートの準備
 	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
@@ -199,7 +209,19 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
 		return;
 	}
+#elif defined(MGRRENDERER_USE_OPENGL)
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearDepth(1.0f); // デフォルト値は一番奥にしておく
+	// TODO:ブレンドが必要ない時もブレンドをONにしている
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// OpenGL側でやるビューポート変換のためのパラメータを渡す
+	glViewport(0, 0, static_cast<GLsizei>(windowSize.width), static_cast<GLsizei>(windowSize.height));
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファ
+#endif
 
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	// Gバッファの準備
 	_gBufferDepthStencil = new D3DTexture();
 	_gBufferDepthStencil->initDepthStencilTexture(windowSize);
@@ -410,15 +432,6 @@ void Renderer::initView(const Size& windowSize)
 	}
 	_d3dProgram.setInputLayout(inputLayout);
 #elif defined(MGRRENDERER_USE_OPENGL)
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClearDepth(1.0f); // デフォルト値は一番奥にしておく
-	// TODO:ブレンドが必要ない時もブレンドをONにしている
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	// OpenGL側でやるビューポート変換のためのパラメータを渡す
-	glViewport(0, 0, static_cast<GLsizei>(windowSize.width), static_cast<GLsizei>(windowSize.height));
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトのフレームバッファ
-
 	// Gバッファの準備
 	_gBufferFrameBuffer = new GLFrameBuffer();
 	std::vector<GLenum> drawBuffers;
@@ -448,6 +461,7 @@ void Renderer::initView(const Size& windowSize)
 	_quadrangle.topRight.position = Vec2(1.0, 1.0);
 	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 1.0f);
 #endif
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 }
 
 void Renderer::addCommand(RenderCommand* command)
@@ -499,6 +513,7 @@ void Renderer::render()
 	_queueGroup[DEFAULT_RENDER_QUEUE_GROUP_INDEX].clear();
 }
 
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 void Renderer::prepareGBufferRendering()
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
@@ -1056,6 +1071,7 @@ void Renderer::renderDeferred()
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 #endif
 }
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 
 void Renderer::prepareFowardRendering()
 {

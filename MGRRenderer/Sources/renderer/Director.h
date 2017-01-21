@@ -48,7 +48,9 @@ public:
 	static const Camera& getCameraFor2D();
 
 	void setDisplayStats(bool displayStats) { _displayStats = displayStats; }
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	void setDisplayGBuffer(bool displayGBuffer) { _displayGBuffer = displayGBuffer; }
+#endif
 
 private:
 	static Director* _instance;
@@ -70,12 +72,14 @@ private:
 	bool _displayStats;
 	float _accumulatedDeltaTime;
 	LabelAtlas* _FPSLabel;
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	// Gバッファのデバッグ描画
 	bool _displayGBuffer;
 	Sprite2D* _gBufferDepthStencil;
 	Sprite2D* _gBufferColorSpecularIntensitySprite;
 	Sprite2D* _gBufferNormal;
 	Sprite2D* _gBufferSpecularPower;
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 
 	Director();
 	~Director();
@@ -83,9 +87,11 @@ private:
 	float calculateDeltaTime();
 	void updateStats(float dt);
 	void createStatsLabel();
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	void initGBufferSprite();
 	void clearGBufferSprite();
 	void renderGBufferSprite();
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 };
 
 } // namespace mgrrenderer

@@ -20,29 +20,29 @@ cbuffer NormalMatrix : register(b3)
 	matrix _normal;
 };
 
-cbuffer MultiplyColor : register(b4)
+cbuffer DepthBiasMatrix : register(b4)
+{
+	matrix _DepthBias;
+};
+
+cbuffer MultiplyColor : register(b5)
 {
 	float4 _multiplyColor;
 };
 
-cbuffer AmbientLightParameter : register(b5)
+cbuffer AmbientLightParameter : register(b6)
 {
 	float4 _ambientLightColor;
 };
 
-cbuffer DirectionalLightViewMatrix : register(b6)
+cbuffer DirectionalLightViewMatrix : register(b7)
 {
-	matrix _lightView;
+	matrix _directionalLightView;
 };
 
-cbuffer DirectionalLightProjectionMatrix : register(b7)
+cbuffer DirectionalLightProjectionMatrix : register(b8)
 {
-	matrix _lightProjection;
-};
-
-cbuffer DirectionalLightDepthBiasMatrix : register(b8)
-{
-	matrix _lightDepthBias;
+	matrix _directionalLightProjection;
 };
 
 cbuffer DirectionalLightParameter : register(b9)
@@ -52,20 +52,35 @@ cbuffer DirectionalLightParameter : register(b9)
 	float4 _directionalLightColor;
 };
 
-static const int NUM_FACE_CUBEMAP_TEXTURE = 6;
+static const unsigned int NUM_FACE_CUBEMAP_TEXTURE = 6;
+static const unsigned int MAX_NUM_POINT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 
 cbuffer PointLightParameter : register(b10)
 {
-	matrix _pointLightViewMatrices[NUM_FACE_CUBEMAP_TEXTURE];
-	matrix _pointLightProjectionMatrix;
-	matrix _pointLightDepthBiasMatrix;
+	matrix _pointLightView[NUM_FACE_CUBEMAP_TEXTURE];
+	matrix _pointLightProjection;
+	matrix _pointLightDepthBias;
 	float3 _pointLightColor;
 	float _pointLightHasShadowMap;
 	float3 _pointLightPosition;
 	float _pointLightRangeInverse;
+	float _pointLightIsValid;
+	float3 _pointLightPadding;
 };
 
-cbuffer SpotLightParameter : register(b11)
+static const unsigned int MAX_NUM_SPOT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
+
+cbuffer SpotLightViewMatrix : register(b11)
+{
+	matrix _spotLightView[MAX_NUM_SPOT_LIGHT];
+};
+
+cbuffer SpotLightProjectionMatrix : register(b12)
+{
+	matrix _spotLightProjection[MAX_NUM_SPOT_LIGHT];
+};
+
+cbuffer SpotLightParameter : register(b13)
 {
 	float3 _spotLightPosition;
 	float _spotLightRangeInverse;
@@ -73,24 +88,15 @@ cbuffer SpotLightParameter : register(b11)
 	float _spotLightInnerAngleCos;
 	float3 _spotLightDirection;
 	float _spotLightOuterAngleCos;
+	float _spotLightHasShadowMap;
+	float _spotLightIsValid;
+	float2 _spotLightPadding;
 };
-
-Texture2D _shadowMapTex : register(t0);
-SamplerComparisonState _pcfSampler : register(s0);
 
 struct VS_INPUT
 {
 	float3 position : POSITION;
 	float3 normal : NORMAL;
-};
-
-struct PS_INPUT
-{
-	float4 position : SV_POSITION;
-	float4 lightPosition : POSITION;
-	float3 normal : NORMAL;
-	float3 vertexToPointLightDirection : POINT_LIGHT_DIRECTION;
-	float3 vertexToSpotLightDirection : SPOT_LIGHT_DIRECTION;
 };
 
 struct GS_SM_POINT_LIGHT_INPUT
@@ -115,29 +121,6 @@ struct PS_GBUFFER_INPUT
 	float3 normal : NORMAL;
 };
 
-PS_INPUT VS(VS_INPUT input)
-{
-	PS_INPUT output;
-
-	float4 position = float4(input.position, 1.0);
-	float4 worldPosition = mul(position, _model);
-
-	position = mul(worldPosition, _view);
-	output.position = mul(position, _projection);
-
-	float4 lightPosition = mul(worldPosition, _lightView);
-	lightPosition = mul(lightPosition, _lightProjection);
-	output.lightPosition = mul(lightPosition, _lightDepthBias);
-	output.lightPosition.xyz /= output.lightPosition.w;
-
-	float4 normal = float4(input.normal, 1.0);
-	output.normal = mul(normal, _normal).xyz;
-	output.vertexToPointLightDirection = _pointLightPosition - worldPosition.xyz;
-	output.vertexToSpotLightDirection = _spotLightPosition - worldPosition.xyz;
-
-	return output;
-}
-
 PS_SM_INPUT VS_SM(VS_INPUT input)
 {
 	PS_SM_INPUT output;
@@ -161,15 +144,15 @@ GS_SM_POINT_LIGHT_INPUT VS_SM_POINT_LIGHT(VS_INPUT input)
 [maxvertexcount(18)]
 void GS_SM_POINT_LIGHT(triangle GS_SM_POINT_LIGHT_INPUT input[3], inout TriangleStream<PS_SM_POINT_LIGHT_INPUT> triangleStream)
 {
-	for (int i = 0; i < NUM_FACE_CUBEMAP_TEXTURE; i++)
+	for (unsigned int i = 0; i < NUM_FACE_CUBEMAP_TEXTURE; i++)
 	{
 		PS_SM_POINT_LIGHT_INPUT output;
 
 		output.cubeMapFaceIndex = i;
 		for (int j = 0; j < 3; j++)
 		{
-			float4 position = mul(input[j].position, _pointLightViewMatrices[i]);
-			output.lightPosition = mul(position, _pointLightProjectionMatrix);
+			float4 position = mul(input[j].position, _pointLightView[i]);
+			output.lightPosition = mul(position, _pointLightProjection);
 			triangleStream.Append(output);
 		}
 		triangleStream.RestartStrip();
@@ -191,42 +174,6 @@ PS_GBUFFER_INPUT VS_GBUFFER(VS_INPUT input)
 	return output;
 }
 
-
-float3 computeLightedColor(float3 normalVector, float3 lightDirection, float3 lightColor, float attenuation)
-{
-	float diffuse = max(dot(normalVector, lightDirection), 0.0);
-	float3 diffuseColor = lightColor * diffuse * attenuation;
-	return diffuseColor;
-}
-
-float4 PS(PS_INPUT input) : SV_TARGET
-{
-	float3 normal = normalize(input.normal); // データ形式の時点でnormalizeされてない法線がある模様
-
-	float3 diffuseSpecularLightColor = computeLightedColor(normal, -_directionalLightDirection.xyz, _directionalLightColor.rgb, 1.0);
-
-	float3 dir = input.vertexToPointLightDirection * _pointLightRangeInverse;
-	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
-	diffuseSpecularLightColor += computeLightedColor(normal, normalize(input.vertexToPointLightDirection), _pointLightColor.rgb, attenuation);
-
-	dir = input.vertexToSpotLightDirection * _spotLightRangeInverse;
-	attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
-	float3 vertexToSpotLightDirection = normalize(input.vertexToSpotLightDirection);
-	float spotLightCurrentAngleCos = dot(_spotLightDirection, -vertexToSpotLightDirection);
-	attenuation *= smoothstep(_spotLightOuterAngleCos, _spotLightInnerAngleCos, spotLightCurrentAngleCos);
-	attenuation = clamp(attenuation, 0.0, 1.0);
-	diffuseSpecularLightColor += computeLightedColor(normal, vertexToSpotLightDirection, _spotLightColor, attenuation);
-
-	float shadowAttenuation = 1.0;
-	if (_directionalLightHasShadowMap > 0.0)
-	{
-		// zファイティングを避けるための微調整
-		input.lightPosition.z -= 0.001;
-		shadowAttenuation = _shadowMapTex.SampleCmpLevelZero(_pcfSampler, input.lightPosition.xy, input.lightPosition.z);
-	}
-
-	return _multiplyColor * float4(shadowAttenuation * diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
-}
 
 // 使っていないのでコメントアウト
 //float4 PS_SM(PS_SM_INPUT input) : SV_TARGET

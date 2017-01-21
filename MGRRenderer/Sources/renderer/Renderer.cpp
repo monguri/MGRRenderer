@@ -687,6 +687,8 @@ void Renderer::renderDeferred()
 		direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER), 0);
 	}
 
+
+	// ポイントライト
 	std::array<ID3D11ShaderResourceView*, PointLight::MAX_NUM> pointLightShadowCubeMapResourceView;
 	for (size_t i = 0; i < PointLight::MAX_NUM; i++)
 	{

@@ -133,7 +133,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	_d3dProgramForGBuffer.setIndexBuffer(indexBuffer);
 
 	bool depthEnable = true;
-	_d3dProgramForForwardRendering.initWithShaderFile("Resources/shader/Polygon3D.hlsl", depthEnable, "VS", "", "PS");
+	_d3dProgramForForwardRendering.initWithShaderFile("Resources/shader/Polygon3DForward.hlsl", depthEnable, "VS", "", "PS");
 	_d3dProgramForShadowMap.initWithShaderFile("Resources/shader/Polygon3D.hlsl", depthEnable, "VS_SM", "", "");
 	_d3dProgramForPointLightShadowMap.initWithShaderFile("Resources/shader/Polygon3D.hlsl", depthEnable, "VS_SM_POINT_LIGHT", "GS_SM_POINT_LIGHT", "");
 	_d3dProgramForGBuffer.initWithShaderFile("Resources/shader/Polygon3D.hlsl", depthEnable, "VS_GBUFFER", "", "PS_GBUFFER");
@@ -209,6 +209,17 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 
+	// デプスバイアス行列用
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX, constantBuffer);
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX, constantBuffer);
+
 	// Normal行列用
 	constantBuffer = nullptr;
 	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
@@ -269,17 +280,6 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer);
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer);
 
-	// ディレクショナルトライトデプスバイアス行列用
-	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return false;
-	}
-	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
-	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
-
 	// ディレクショナルトライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(DirectionalLight::ConstantBufferData);
 	constantBuffer = nullptr;
@@ -312,6 +312,27 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		return false;
 	}
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer);
+
+	// スポットライトView行列用
+	constantBufferDesc.ByteWidth = sizeof(Mat4) * SpotLight::MAX_NUM;
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX, constantBuffer);
+
+	// スポットライトProjection行列用
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX, constantBuffer);
 
 	// スポットライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(SpotLight::ConstantBufferData) * SpotLight::MAX_NUM;
@@ -912,6 +933,18 @@ void Polygon3D::renderForward()
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
+		result = direct3dContext->Map(
+			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Mat4 depthBiasMatrix = (Mat4::TEXTURE_COORDINATE_CONVERTER * Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, -1.0f, 0.0f))).transpose(); //TODO: Mat4を参照型にすると値がおかしくなってしまう
+		CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
+		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX), 0);
+
 		// ノーマル行列のマップ
 		result = direct3dContext->Map(
 			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_NORMAL_MATRIX),
@@ -958,6 +991,8 @@ void Polygon3D::renderForward()
 		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER), 0);
 
 
+		// ディレクショナルライト
+		ID3D11ShaderResourceView* dirLightShadowMapResourceView = nullptr;
 		const DirectionalLight* directionalLight = scene.getDirectionalLight();
 		// TODO:とりあえず影つけはDirectionalLightのみを想定
 		// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
@@ -992,18 +1027,6 @@ void Polygon3D::renderForward()
 				CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
 				direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX), 0);
 
-				result = direct3dContext->Map(
-					_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX),
-					0,
-					D3D11_MAP_WRITE_DISCARD,
-					0,
-					&mappedResource
-				);
-				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-				Mat4 depthBiasMatrix = (Mat4::TEXTURE_COORDINATE_CONVERTER * Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, -1.0f, 0.0f))).transpose(); //TODO: Mat4を参照型にすると値がおかしくなってしまう
-				CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
-				direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX), 0);
-
 				ID3D11ShaderResourceView* shaderResouceView[1] = { directionalLight->getShadowMapData().depthTexture->getShaderResourceView() };
 				direct3dContext->PSSetShaderResources(0, 1, shaderResouceView);
 			}
@@ -1018,9 +1041,24 @@ void Polygon3D::renderForward()
 			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 			CopyMemory(mappedResource.pData, directionalLight->getConstantBufferDataPointer(), sizeof(DirectionalLight::ConstantBufferData));
 			direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER), 0);
+
+			dirLightShadowMapResourceView = directionalLight->getShadowMapData().depthTexture->getShaderResourceView();
 		}
 
-		// TODO:ポイントライトの影付けも書かねば
+
+		// ポイントライト
+		std::array<ID3D11ShaderResourceView*, PointLight::MAX_NUM> pointLightShadowCubeMapResourceView;
+		for (size_t i = 0; i < PointLight::MAX_NUM; i++)
+		{
+			pointLightShadowCubeMapResourceView[i] = nullptr;
+
+			const PointLight* pointLight = scene.getPointLight(i);
+			if (pointLight != nullptr && pointLight->hasShadowMap())
+			{
+				pointLightShadowCubeMapResourceView[i] = pointLight->getShadowMapData().depthTexture->getShaderResourceView();
+			}
+		}
+
 		result = direct3dContext->Map(
 			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER),
 			0,
@@ -1046,8 +1084,68 @@ void Polygon3D::renderForward()
 		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER), 0);
 
 
-		// TODO:スポットライトの影付けも書かねば
 		// スポットライトの位置＆レンジの逆数のマップ
+		std::array<ID3D11ShaderResourceView*, SpotLight::MAX_NUM> spotLightShadowMapResourceView;
+		for (size_t i = 0; i < SpotLight::MAX_NUM; i++)
+		{
+			spotLightShadowMapResourceView[i] = nullptr;
+
+			const SpotLight* spotLight = scene.getSpotLight(i);
+			if (spotLight != nullptr && spotLight->hasShadowMap())
+			{
+				spotLightShadowMapResourceView[i] = spotLight->getShadowMapData().depthTexture->getShaderResourceView();
+			}
+		}
+
+		result = direct3dContext->Map(
+			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+
+		Mat4* spotLightLightViewMatrix = static_cast<Mat4*>(mappedResource.pData);
+		ZeroMemory(spotLightLightViewMatrix, sizeof(Mat4) * SpotLight::MAX_NUM);
+
+		size_t numSpotLight = scene.getNumSpotLight();
+		for (size_t i = 0; i < numSpotLight; i++)
+		{
+			const SpotLight* spotLight = scene.getSpotLight(i);
+			if (spotLight != nullptr && spotLight->hasShadowMap())
+			{
+				Mat4 lightViewMatrix = spotLight->getShadowMapData().viewMatrix.createTranspose();
+				CopyMemory(&spotLightLightViewMatrix[i], &lightViewMatrix.m, sizeof(lightViewMatrix));
+			}
+		}
+
+		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX), 0);
+
+		result = direct3dContext->Map(
+			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+
+		Mat4* spotLightLightProjectionMatrix = static_cast<Mat4*>(mappedResource.pData);
+		ZeroMemory(spotLightLightProjectionMatrix, sizeof(Mat4) * SpotLight::MAX_NUM);
+
+		for (size_t i = 0; i < numSpotLight; i++)
+		{
+			const SpotLight* spotLight = scene.getSpotLight(i);
+			if (spotLight != nullptr && spotLight->hasShadowMap())
+			{
+				Mat4 lightProjectionMatrix = (Mat4::CHIRARITY_CONVERTER * spotLight->getShadowMapData().projectionMatrix).transpose(); // 左手系変換行列はプロジェクション行列に最初からかけておく
+				CopyMemory(&spotLightLightProjectionMatrix[i], &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
+			}
+		}
+
+		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX), 0);
+
 		result = direct3dContext->Map(
 			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER),
 			0,
@@ -1060,7 +1158,6 @@ void Polygon3D::renderForward()
 		SpotLight::ConstantBufferData* spotLightConstBufData = static_cast<SpotLight::ConstantBufferData*>(mappedResource.pData);
 		ZeroMemory(spotLightConstBufData, sizeof(SpotLight::ConstantBufferData) * SpotLight::MAX_NUM);
 
-		size_t numSpotLight = scene.getNumSpotLight();
 		for (size_t i = 0; i < numSpotLight; i++)
 		{
 			const SpotLight* spotLight = scene.getSpotLight(i);
@@ -1082,6 +1179,15 @@ void Polygon3D::renderForward()
 
 		_d3dProgramForForwardRendering.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForForwardRendering.setConstantBuffersToDirect3DContext(direct3dContext);
+
+		ID3D11ShaderResourceView* shaderResourceViews[1] = {
+			dirLightShadowMapResourceView,
+		};
+		direct3dContext->PSSetShaderResources(0, 1, shaderResourceViews);
+
+		direct3dContext->PSSetShaderResources(1, pointLightShadowCubeMapResourceView.size(), pointLightShadowCubeMapResourceView.data());
+
+		direct3dContext->PSSetShaderResources(1 + pointLightShadowCubeMapResourceView.size(), spotLightShadowMapResourceView.size(), spotLightShadowMapResourceView.data());
 
 		ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getPCFSamplerState() };
 		direct3dContext->PSSetSamplers(0, 1, samplerState);

@@ -386,5 +386,8 @@
     <FxCompile Include="Resources\shader\PositionTextureMultiplyColor.hlsl">
       <Filter>Resource Files\shader</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\shader\Polygon3DForward.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

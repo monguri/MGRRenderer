@@ -98,7 +98,7 @@ void LabelAtlas::renderGBuffer()
 
 void LabelAtlas::renderForward()
 {
-	_renderCommand.init([=]
+	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_OPENGL)
 		if (_indices.size() == 0)
@@ -135,7 +135,7 @@ void LabelAtlas::renderForward()
 #endif
 	});
 
-	Director::getRenderer().addCommand(&_renderCommand);
+	Director::getRenderer().addCommand(&_renderForwardCommand);
 }
 
 } // namespace mgrrenderer

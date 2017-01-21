@@ -188,7 +188,7 @@ void Particle3D::renderGBuffer()
 
 void Particle3D::renderForward()
 {
-	_renderCommand.init([=]
+	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgram.getShaderProgram());
@@ -229,7 +229,7 @@ void Particle3D::renderForward()
 #endif
 	});
 
-	Director::getRenderer().addCommand(&_renderCommand);
+	Director::getRenderer().addCommand(&_renderForwardCommand);
 }
 
 } // namespace mgrrenderer

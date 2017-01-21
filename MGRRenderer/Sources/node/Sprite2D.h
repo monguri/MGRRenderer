@@ -64,7 +64,7 @@ protected:
 	GLProgram _glProgram;
 	GLTexture* _texture;
 #endif
-	CustomRenderCommand _renderCommand;
+	CustomRenderCommand _renderForwardCommand;
 	Quadrangle2D _quadrangle;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	bool initCommon(const std::string& path, const std::string& vertexShaderFunctionName, const std::string& geometryShaderFunctionName, const std::string& pixelShaderFunctionName, const Size& contentSize);

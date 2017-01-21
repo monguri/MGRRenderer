@@ -56,7 +56,7 @@ private:
 	CustomRenderCommand _renderDirectionalLightShadowMapCommand;
 	std::array<std::array<CustomRenderCommand, (size_t)CubeMapFace::NUM_CUBEMAP_FACE>, PointLight::MAX_NUM> _renderPointLightShadowMapCommandList;
 	std::array<CustomRenderCommand, SpotLight::MAX_NUM> _renderSpotLightShadowMapCommandList;
-	CustomRenderCommand _renderCommand;
+	CustomRenderCommand _renderForwardCommand;
 
 	//TODO: Textureは今のところモデルファイルで指定できない。一枚のみに対応
 	Color3F _ambient;

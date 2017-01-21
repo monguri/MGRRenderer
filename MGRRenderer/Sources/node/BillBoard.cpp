@@ -374,7 +374,7 @@ void BillBoard::renderGBuffer()
 // Sprite2Dとの違いは深度テストONにしてることだけ
 void BillBoard::renderForward()
 {
-	_renderCommand.init([=]
+	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
@@ -480,7 +480,7 @@ void BillBoard::renderForward()
 #endif
 	});
 
-	Director::getRenderer().addCommand(&_renderCommand);
+	Director::getRenderer().addCommand(&_renderForwardCommand);
 }
 
 } // namespace mgrrenderer

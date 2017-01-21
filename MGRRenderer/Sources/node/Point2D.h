@@ -31,7 +31,7 @@ private:
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
 #endif
-	CustomRenderCommand _renderCommand;
+	CustomRenderCommand _renderForwardCommand;
 
 	std::vector<Point2DData> _pointArray;
 

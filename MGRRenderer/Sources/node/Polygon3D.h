@@ -41,7 +41,7 @@ private:
 	CustomRenderCommand _renderDirectionalLightShadowMapCommand;
 	std::array<std::array<CustomRenderCommand, (size_t)CubeMapFace::NUM_CUBEMAP_FACE>, PointLight::MAX_NUM> _renderPointLightShadowMapCommandList;
 	std::array<CustomRenderCommand, SpotLight::MAX_NUM> _renderSpotLightShadowMapCommandList;
-	CustomRenderCommand _renderCommand;
+	CustomRenderCommand _renderForwardCommand;
 
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 	void renderGBuffer() override;

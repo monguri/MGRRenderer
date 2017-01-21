@@ -378,7 +378,7 @@ void Sprite2D::renderGBuffer()
 
 void Sprite2D::renderForward()
 {
-	_renderCommand.init([=]
+	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
@@ -571,7 +571,7 @@ void Sprite2D::renderForward()
 #endif
 	});
 
-	Director::getRenderer().addCommand(&_renderCommand);
+	Director::getRenderer().addCommand(&_renderForwardCommand);
 }
 
 } // namespace mgrrenderer

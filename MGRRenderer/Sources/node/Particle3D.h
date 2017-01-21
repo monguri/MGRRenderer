@@ -33,7 +33,7 @@ private:
 	GLProgram _glProgram;
 	GLTexture* _texture;
 #endif
-	CustomRenderCommand _renderCommand;
+	CustomRenderCommand _renderForwardCommand;
 	Parameter _parameter;
 	std::vector<Vec3> _vertexArray;
 	std::vector<Vec3> _initVelocityArray;

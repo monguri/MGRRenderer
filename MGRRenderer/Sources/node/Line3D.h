@@ -24,7 +24,7 @@ private:
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;
 #endif
-	CustomRenderCommand _renderCommand;
+	CustomRenderCommand _renderForwardCommand;
 	std::vector<Vec3> _vertexArray;
 
 #if defined(MGRRENDERER_DEFERRED_RENDERING)

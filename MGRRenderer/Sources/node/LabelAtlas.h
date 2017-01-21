@@ -26,7 +26,7 @@ private:
 	GLProgram _glProgram;
 	const GLTexture* _texture;
 #endif
-	CustomRenderCommand _renderCommand;
+	CustomRenderCommand _renderForwardCommand;
 	char _mapStartCharacter;
 	std::string _string;
 	std::vector<Position2DTextureCoordinates> _vertices;

@@ -15,14 +15,14 @@ cbuffer ProjectionMatrix : register(b2)
 	matrix _projection;
 };
 
-cbuffer NormalMatrix : register(b3)
-{
-	matrix _normal;
-};
-
-cbuffer DepthBiasMatrix : register(b4)
+cbuffer DepthBiasMatrix : register(b3)
 {
 	matrix _DepthBias;
+};
+
+cbuffer NormalMatrix : register(b4)
+{
+	matrix _normal;
 };
 
 cbuffer MultiplyColor : register(b5)

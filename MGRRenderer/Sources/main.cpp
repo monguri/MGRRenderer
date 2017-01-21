@@ -454,7 +454,7 @@ void initialize()
 
 	Director::getInstance()->init(Size(WINDOW_WIDTH, WINDOW_HEIGHT), NEAR_CLIP, FAR_CLIP);
 	Director::getInstance()->setDisplayStats(true);
-	//Director::getInstance()->setDisplayGBuffer(true);
+	Director::getInstance()->setDisplayGBuffer(true);
 
 	// 各ノードの作成はDirector::initの後に呼ぶ。Director::initのもっているウィンドウサイズを使用する場合があるので。
 
@@ -634,11 +634,11 @@ void initialize()
 	//}
 
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
-	PointLight* light2 = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Color3B::WHITE, 3000.0f);
-	light2->setIntensity(0.7f);
-	light2->setColor(Color3B(0, 0, 255));
-	light2->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
-	scene->addPointLight(light2);
+	//PointLight* light2 = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Color3B::WHITE, 3000.0f);
+	//light2->setIntensity(0.7f);
+	//light2->setColor(Color3B(0, 0, 255));
+	//light2->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
+	//scene->addPointLight(light2);
 
 	//if (light2->hasShadowMap())
 	//{

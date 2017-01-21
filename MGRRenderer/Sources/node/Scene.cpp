@@ -196,6 +196,8 @@ void Scene::update(float dt)
 	Director::getRenderer().addCommand(&_renderDeferredCommand);
 #endif
 
+
+#if defined(MGRRENDERER_FOWARD_RENDERING)
 	// 非透過モデルはディファードレンダリング
 	// 透過モデルはフォワードレンダリング
 	// TODO:透過モデルのみフォワードレンダリングするパスを入れる
@@ -206,8 +208,6 @@ void Scene::update(float dt)
 	Director::getRenderer().addCommand(&_prepareFowardRenderingCommand);
 
 	_camera.renderForward();
-
-#if defined(MGRRENDERER_FOWARD_RENDERING)
 	for (Node* child : _children)
 	{
 		child->renderForward();

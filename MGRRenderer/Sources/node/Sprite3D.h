@@ -39,7 +39,7 @@ private:
 	bool _isC3b;
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	D3DProgram _d3dProgram;
+	D3DProgram _d3dProgramForForwardRendering;
 	D3DProgram _d3dProgramForShadowMap;
 	D3DProgram _d3dProgramForPointLightShadowMap;
 #if defined(MGRRENDERER_DEFERRED_RENDERING)

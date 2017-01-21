@@ -76,7 +76,7 @@ private:
 	D3DTexture* _gBufferColorSpecularIntensity;
 	D3DTexture* _gBufferNormal;
 	D3DTexture* _gBufferSpecularPower;
-	D3DProgram _d3dProgram;
+	D3DProgram _d3dProgramForDeferredRendering;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLFrameBuffer* _gBufferFrameBuffer;
 	GLProgram _glProgram;

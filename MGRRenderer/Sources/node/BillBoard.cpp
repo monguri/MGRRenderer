@@ -70,7 +70,7 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addVertexBuffer(vertexBuffer);
+	_d3dProgramForForwardRendering.addVertexBuffer(vertexBuffer);
 	_d3dProgramForGBuffer.addVertexBuffer(vertexBuffer);
 
 	// インデックスバッファ用の配列の用意。素直に昇順に番号付けする
@@ -104,10 +104,10 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.setIndexBuffer(indexBuffer);
+	_d3dProgramForForwardRendering.setIndexBuffer(indexBuffer);
 	_d3dProgramForGBuffer.setIndexBuffer(indexBuffer);
 
-	_d3dProgram.initWithShaderFile("Resources/shader/PositionTextureMultiplyColor.hlsl", true, "VS", "", "PS");
+	_d3dProgramForForwardRendering.initWithShaderFile("Resources/shader/PositionTextureMultiplyColor.hlsl", true, "VS", "", "PS");
 	_d3dProgramForGBuffer.initWithShaderFile("Resources/shader/PositionTextureMultiplyColor.hlsl", true, "VS", "", "PS_GBUFFER");
 
 	// 入力レイアウトオブジェクトの作成
@@ -119,8 +119,8 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 	result = direct3dDevice->CreateInputLayout(
 		layout,
 		_countof(layout), 
-		_d3dProgram.getVertexShaderBlob()->GetBufferPointer(),
-		_d3dProgram.getVertexShaderBlob()->GetBufferSize(),
+		_d3dProgramForForwardRendering.getVertexShaderBlob()->GetBufferPointer(),
+		_d3dProgramForForwardRendering.getVertexShaderBlob()->GetBufferSize(),
 		&inputLayout
 	);
 	if (FAILED(result))
@@ -128,7 +128,7 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 		Logger::logAssert(false, "CreateInputLayout failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.setInputLayout(inputLayout);
+	_d3dProgramForForwardRendering.setInputLayout(inputLayout);
 	_d3dProgramForGBuffer.setInputLayout(inputLayout);
 
 	// 定数バッファの作成
@@ -148,7 +148,7 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
 
 	// View行列用
@@ -159,7 +159,7 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 
 	// Projection行列用
@@ -170,7 +170,7 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 
 	// 乗算色
@@ -182,7 +182,7 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 
 	return true;
@@ -384,7 +384,7 @@ void BillBoard::renderForward()
 
 		// モデル行列のマップ
 		HRESULT result = direct3dContext->Map(
-			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX),
+			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -393,11 +393,11 @@ void BillBoard::renderForward()
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 		Mat4 modelMatrix = getModelMatrix().createTranspose();
 		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
-		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
+		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
 
 		// ビュー行列のマップ
 		result = direct3dContext->Map(
-			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX),
+			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -406,11 +406,11 @@ void BillBoard::renderForward()
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 		Mat4 viewMatrix = Director::getCamera().getViewMatrix().createTranspose();
 		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
-		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
+		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
 
 		// プロジェクション行列のマップ
 		result = direct3dContext->Map(
-			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX),
+			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -419,11 +419,11 @@ void BillBoard::renderForward()
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 		Mat4 projectionMatrix = (Mat4::CHIRARITY_CONVERTER * Director::getCamera().getProjectionMatrix()).transpose();
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
-		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
+		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
 		// 乗算色のマップ
 		result = direct3dContext->Map(
-			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR),
+			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -432,17 +432,17 @@ void BillBoard::renderForward()
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 		const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
-		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
+		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
 
 		UINT strides[1] = {sizeof(_quadrangle.topLeft)};
 		UINT offsets[1] = {0};
-		direct3dContext->IASetVertexBuffers(0, _d3dProgram.getVertexBuffers().size(), _d3dProgram.getVertexBuffers().data(), strides, offsets);
-		direct3dContext->IASetIndexBuffer(_d3dProgram.getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
-		direct3dContext->IASetInputLayout(_d3dProgram.getInputLayout());
+		direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers().size(), _d3dProgramForForwardRendering.getVertexBuffers().data(), strides, offsets);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetInputLayout(_d3dProgramForForwardRendering.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-		_d3dProgram.setShadersToDirect3DContext(direct3dContext);
-		_d3dProgram.setConstantBuffersToDirect3DContext(direct3dContext);
+		_d3dProgramForForwardRendering.setShadersToDirect3DContext(direct3dContext);
+		_d3dProgramForForwardRendering.setConstantBuffersToDirect3DContext(direct3dContext);
 
 		ID3D11ShaderResourceView* resourceView[1] = { _texture->getShaderResourceView() };
 		direct3dContext->PSSetShaderResources(0, 1, resourceView);
@@ -450,7 +450,7 @@ void BillBoard::renderForward()
 		direct3dContext->PSSetSamplers(0, 1, samplerState);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);
+		direct3dContext->OMSetBlendState(_d3dProgramForForwardRendering.getBlendState(), blendFactor, 0xffffffff);
 
 		direct3dContext->DrawIndexed(4, 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)

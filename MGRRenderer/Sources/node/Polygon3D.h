@@ -25,7 +25,7 @@ private:
 	D3DProgram _d3dProgramForGBuffer;
 	D3DProgram _d3dProgramForShadowMap;
 	D3DProgram _d3dProgramForPointLightShadowMap;
-	D3DProgram _d3dProgram;
+	D3DProgram _d3dProgramForForwardRendering;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgramForGBuffer;
 	GLProgram _glProgram;

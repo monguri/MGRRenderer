@@ -58,7 +58,7 @@ public:
 protected:
 	RenderBufferType _renderBufferType;
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	D3DProgram _d3dProgram;
+	D3DProgram _d3dProgramForForwardRendering;
 	D3DTexture* _texture;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgram;

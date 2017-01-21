@@ -239,7 +239,7 @@ void Renderer::initView(const Size& windowSize)
 	// ディファードレンダリングの準備
 	//
 
-	_d3dProgram.initWithShaderFile("Resources/shader/DeferredLighting.hlsl", true, "VS", "", "PS");
+	_d3dProgramForDeferredRendering.initWithShaderFile("Resources/shader/DeferredLighting.hlsl", true, "VS", "", "PS");
 
 	// 定数バッファの作成
 	D3D11_BUFFER_DESC constantBufferDesc;
@@ -260,7 +260,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 
 	// Projection行列用
 	constantBuffer = nullptr;
@@ -270,7 +270,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 
 	// アンビエントライトカラー
 	constantBufferDesc.ByteWidth = sizeof(AmbientLight::ConstantBufferData);
@@ -281,7 +281,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer);
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer);
 
 	// ディレクショナルトライトView行列用
 	constantBufferDesc.ByteWidth = sizeof(Mat4);
@@ -292,7 +292,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX, constantBuffer);
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX, constantBuffer);
 
 	// ディレクショナルトライトProjection行列用
 	constantBuffer = nullptr;
@@ -302,7 +302,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer);
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX, constantBuffer);
 
 	// ディレクショナルトライトデプスバイアス行列用
 	constantBuffer = nullptr;
@@ -312,7 +312,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
 
 	// ディレクショナルトライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(DirectionalLight::ConstantBufferData);
@@ -323,7 +323,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer);
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer);
 
 	// ポイントライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(PointLight::ConstantBufferData) * PointLight::MAX_NUM;
@@ -334,7 +334,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer);
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer);
 
 	// スポットライトView行列用
 	constantBufferDesc.ByteWidth = sizeof(Mat4) * SpotLight::MAX_NUM;
@@ -345,7 +345,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX, constantBuffer);
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX, constantBuffer);
 
 	// スポットライトProjection行列用
 	constantBuffer = nullptr;
@@ -355,7 +355,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX, constantBuffer);
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX, constantBuffer);
 
 	// スポットライトデプスバイアス行列用
 	constantBuffer = nullptr;
@@ -365,7 +365,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_DEPTH_BIAS_MATRIX, constantBuffer);
 
 	// スポットライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(SpotLight::ConstantBufferData) * SpotLight::MAX_NUM;
@@ -376,7 +376,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer);
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer);
 
 	_quadrangle.bottomLeft.position = Vec2(-1.0f, -1.0f);
 	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
@@ -410,7 +410,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.addVertexBuffer(vertexBuffer);
+	_d3dProgramForDeferredRendering.addVertexBuffer(vertexBuffer);
 
 	// 入力レイアウトオブジェクトの作成
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
@@ -421,8 +421,8 @@ void Renderer::initView(const Size& windowSize)
 	result = direct3dDevice->CreateInputLayout(
 		layout,
 		_countof(layout), 
-		_d3dProgram.getVertexShaderBlob()->GetBufferPointer(),
-		_d3dProgram.getVertexShaderBlob()->GetBufferSize(),
+		_d3dProgramForDeferredRendering.getVertexShaderBlob()->GetBufferPointer(),
+		_d3dProgramForDeferredRendering.getVertexShaderBlob()->GetBufferSize(),
 		&inputLayout
 	);
 	if (FAILED(result))
@@ -430,7 +430,7 @@ void Renderer::initView(const Size& windowSize)
 		Logger::logAssert(false, "CreateInputLayout failed. result=%d", result);
 		return;
 	}
-	_d3dProgram.setInputLayout(inputLayout);
+	_d3dProgramForDeferredRendering.setInputLayout(inputLayout);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	// Gバッファの準備
 	_gBufferFrameBuffer = new GLFrameBuffer();
@@ -588,7 +588,7 @@ void Renderer::renderDeferred()
 
 	// ビュー行列の逆行列のマップ
 	HRESULT result = direct3dContext->Map(
-		_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX),
+		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX),
 		0,
 		D3D11_MAP_WRITE_DISCARD,
 		0,
@@ -597,11 +597,11 @@ void Renderer::renderDeferred()
 	Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 	Mat4 viewMatrix = Director::getCamera().getViewMatrix().createInverse().transpose();
 	CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
-	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
+	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
 
 	// プロジェクション行列の逆行列のマップ
 	result = direct3dContext->Map(
-		_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX),
+		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX),
 		0,
 		D3D11_MAP_WRITE_DISCARD,
 		0,
@@ -610,7 +610,7 @@ void Renderer::renderDeferred()
 	Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 	Mat4 projectionMatrix = (Mat4::CHIRARITY_CONVERTER * Director::getCamera().getProjectionMatrix()).transpose();
 	CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
-	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
+	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
 	// TODO:こういう風に一個ではなくなる
 	const Scene& scene = Director::getInstance()->getScene();
@@ -620,7 +620,7 @@ void Renderer::renderDeferred()
 
 	// アンビエントライトカラーのマップ
 	result = direct3dContext->Map(
-		_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER),
+		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER),
 		0,
 		D3D11_MAP_WRITE_DISCARD,
 		0,
@@ -628,7 +628,7 @@ void Renderer::renderDeferred()
 	);
 	Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 	CopyMemory(mappedResource.pData, ambientLight->getConstantBufferDataPointer(), sizeof(AmbientLight::ConstantBufferData));
-	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER), 0);
+	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER), 0);
 
 	ID3D11ShaderResourceView* dirLightShadowMapResourceView = nullptr;
 	const DirectionalLight* directionalLight = scene.getDirectionalLight();
@@ -637,7 +637,7 @@ void Renderer::renderDeferred()
 		if (directionalLight->hasShadowMap())
 		{
 			result = direct3dContext->Map(
-				_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX),
+				_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX),
 				0,
 				D3D11_MAP_WRITE_DISCARD,
 				0,
@@ -646,10 +646,10 @@ void Renderer::renderDeferred()
 			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 			Mat4 lightViewMatrix = directionalLight->getShadowMapData().viewMatrix.createTranspose();
 			CopyMemory(mappedResource.pData, &lightViewMatrix.m, sizeof(lightViewMatrix));
-			direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX), 0);
+			direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_VIEW_MATRIX), 0);
 
 			result = direct3dContext->Map(
-				_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX),
+				_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX),
 				0,
 				D3D11_MAP_WRITE_DISCARD,
 				0,
@@ -658,10 +658,10 @@ void Renderer::renderDeferred()
 			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 			Mat4 lightProjectionMatrix = (Mat4::CHIRARITY_CONVERTER * directionalLight->getShadowMapData().projectionMatrix).transpose(); // 左手系変換行列はプロジェクション行列に最初からかけておく
 			CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
-			direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX), 0);
+			direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX), 0);
 
 			result = direct3dContext->Map(
-				_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX),
+				_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX),
 				0,
 				D3D11_MAP_WRITE_DISCARD,
 				0,
@@ -670,13 +670,13 @@ void Renderer::renderDeferred()
 			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 			Mat4 depthBiasMatrix = (Mat4::TEXTURE_COORDINATE_CONVERTER * Mat4::createScale(Vec3(0.5f, 0.5f, 1.0f)) * Mat4::createTranslation(Vec3(1.0f, -1.0f, 0.0f))).transpose(); //TODO: Mat4を参照型にすると値がおかしくなってしまう
 			CopyMemory(mappedResource.pData, &depthBiasMatrix.m, sizeof(depthBiasMatrix));
-			direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX), 0);
+			direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_DEPTH_BIAS_MATRIX), 0);
 
 			dirLightShadowMapResourceView = directionalLight->getShadowMapData().depthTexture->getShaderResourceView();
 		}
 
 		result = direct3dContext->Map(
-			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER),
+			_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -684,7 +684,7 @@ void Renderer::renderDeferred()
 		);
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 		CopyMemory(mappedResource.pData, directionalLight->getConstantBufferDataPointer(), sizeof(DirectionalLight::ConstantBufferData));
-		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER), 0);
+		direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER), 0);
 	}
 
 	std::array<ID3D11ShaderResourceView*, PointLight::MAX_NUM> pointLightShadowCubeMapResourceView;
@@ -700,7 +700,7 @@ void Renderer::renderDeferred()
 	}
 
 	result = direct3dContext->Map(
-		_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER),
+		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER),
 		0,
 		D3D11_MAP_WRITE_DISCARD,
 		0,
@@ -721,7 +721,7 @@ void Renderer::renderDeferred()
 		}
 	}
 
-	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER), 0);
+	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER), 0);
 
 
 	// スポットライトの位置＆レンジの逆数のマップ
@@ -738,7 +738,7 @@ void Renderer::renderDeferred()
 	}
 
 	result = direct3dContext->Map(
-		_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX),
+		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX),
 		0,
 		D3D11_MAP_WRITE_DISCARD,
 		0,
@@ -760,10 +760,10 @@ void Renderer::renderDeferred()
 		}
 	}
 
-	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX), 0);
+	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX), 0);
 
 	result = direct3dContext->Map(
-		_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX),
+		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX),
 		0,
 		D3D11_MAP_WRITE_DISCARD,
 		0,
@@ -784,10 +784,10 @@ void Renderer::renderDeferred()
 		}
 	}
 
-	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX), 0);
+	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX), 0);
 
 	result = direct3dContext->Map(
-		_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_DEPTH_BIAS_MATRIX),
+		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_DEPTH_BIAS_MATRIX),
 		0,
 		D3D11_MAP_WRITE_DISCARD,
 		0,
@@ -808,10 +808,10 @@ void Renderer::renderDeferred()
 		}
 	}
 
-	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_DEPTH_BIAS_MATRIX), 0);
+	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_DEPTH_BIAS_MATRIX), 0);
 
 	result = direct3dContext->Map(
-		_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER),
+		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER),
 		0,
 		D3D11_MAP_WRITE_DISCARD,
 		0,
@@ -831,18 +831,18 @@ void Renderer::renderDeferred()
 		}
 	}
 
-	direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER), 0);
+	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER), 0);
 
 
 	UINT strides[1] = {sizeof(_quadrangle.topLeft)};
 	UINT offsets[1] = {0};
-	direct3dContext->IASetVertexBuffers(0, _d3dProgram.getVertexBuffers().size(), _d3dProgram.getVertexBuffers().data(), strides, offsets);
-	direct3dContext->IASetInputLayout(_d3dProgram.getInputLayout());
+	direct3dContext->IASetVertexBuffers(0, _d3dProgramForDeferredRendering.getVertexBuffers().size(), _d3dProgramForDeferredRendering.getVertexBuffers().data(), strides, offsets);
+	direct3dContext->IASetInputLayout(_d3dProgramForDeferredRendering.getInputLayout());
 	//direct3dContext->IASetInputLayout(nullptr);
 	direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	_d3dProgram.setShadersToDirect3DContext(direct3dContext);
-	_d3dProgram.setConstantBuffersToDirect3DContext(direct3dContext);
+	_d3dProgramForDeferredRendering.setShadersToDirect3DContext(direct3dContext);
+	_d3dProgramForDeferredRendering.setConstantBuffersToDirect3DContext(direct3dContext);
 
 	ID3D11ShaderResourceView* gBufferShaderResourceViews[4] = {
 		getGBufferDepthStencil()->getShaderResourceView(),
@@ -866,7 +866,7 @@ void Renderer::renderDeferred()
 	direct3dContext->PSSetSamplers(0, 2, samplerStates);
 
 	FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);
+	direct3dContext->OMSetBlendState(_d3dProgramForDeferredRendering.getBlendState(), blendFactor, 0xffffffff);
 
 	direct3dContext->Draw(4, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)

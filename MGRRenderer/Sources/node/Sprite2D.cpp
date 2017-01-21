@@ -71,7 +71,7 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addVertexBuffer(vertexBuffer);
+	_d3dProgramForForwardRendering.addVertexBuffer(vertexBuffer);
 
 	// インデックスバッファ用の配列の用意。素直に昇順に番号付けする
 	std::vector<unsigned int> indexArray;
@@ -104,10 +104,10 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.setIndexBuffer(indexBuffer);
+	_d3dProgramForForwardRendering.setIndexBuffer(indexBuffer);
 
 	bool depthEnable = false;
-	_d3dProgram.initWithShaderFile(path, depthEnable, vertexShaderFunctionName, geometryShaderFunctionName, pixelShaderFunctionName);
+	_d3dProgramForForwardRendering.initWithShaderFile(path, depthEnable, vertexShaderFunctionName, geometryShaderFunctionName, pixelShaderFunctionName);
 
 	// 入力レイアウトオブジェクトの作成
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
@@ -118,8 +118,8 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 	result = direct3dDevice->CreateInputLayout(
 		layout,
 		_countof(layout), 
-		_d3dProgram.getVertexShaderBlob()->GetBufferPointer(),
-		_d3dProgram.getVertexShaderBlob()->GetBufferSize(),
+		_d3dProgramForForwardRendering.getVertexShaderBlob()->GetBufferPointer(),
+		_d3dProgramForForwardRendering.getVertexShaderBlob()->GetBufferSize(),
 		&inputLayout
 	);
 	if (FAILED(result))
@@ -127,7 +127,7 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 		Logger::logAssert(false, "CreateInputLayout failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.setInputLayout(inputLayout);
+	_d3dProgramForForwardRendering.setInputLayout(inputLayout);
 
 	// 定数バッファの作成
 	D3D11_BUFFER_DESC constantBufferDesc;
@@ -146,7 +146,7 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX, constantBuffer);
 
 	// View行列用
 	constantBuffer = nullptr;
@@ -156,7 +156,7 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX, constantBuffer);
 
 	// Projection行列用
 	constantBuffer = nullptr;
@@ -166,7 +166,7 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX, constantBuffer);
 	return true;
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -230,7 +230,7 @@ bool Sprite2D::init(const std::string& filePath)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 	return true;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	return initCommon("", "../MGRRenderer/Resources/shader/FragmentShaderPositionTextureMultiplyColor.glsl", texture->getContentSize());
@@ -262,7 +262,7 @@ bool Sprite2D::initWithTexture(D3DTexture* texture)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 
 	return true;
 }
@@ -323,7 +323,7 @@ bool Sprite2D::initWithDepthStencilTexture(D3DTexture* texture, RenderBufferType
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PARAMETER, constantBuffer);
+	_d3dProgramForForwardRendering.addConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PARAMETER, constantBuffer);
 
 	constantBufferDesc.ByteWidth = sizeof(Mat4);
 	result = Director::getInstance()->getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
@@ -332,7 +332,7 @@ bool Sprite2D::initWithDepthStencilTexture(D3DTexture* texture, RenderBufferType
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgram.addConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX, constantBuffer);
+	_d3dProgramForForwardRendering.addConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX, constantBuffer);
 
 	return true;
 }
@@ -388,7 +388,7 @@ void Sprite2D::renderForward()
 
 		// モデル行列のマップ
 		HRESULT result = direct3dContext->Map(
-			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX),
+			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -397,11 +397,11 @@ void Sprite2D::renderForward()
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 		Mat4 modelMatrix = getModelMatrix().createTranspose();
 		CopyMemory(mappedResource.pData, &modelMatrix.m, sizeof(modelMatrix));
-		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
+		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX), 0);
 
 		// ビュー行列のマップ
 		result = direct3dContext->Map(
-			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX),
+			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -410,11 +410,11 @@ void Sprite2D::renderForward()
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 		Mat4 viewMatrix = Director::getCameraFor2D().getViewMatrix().createTranspose();
 		CopyMemory(mappedResource.pData, &viewMatrix.m, sizeof(viewMatrix));
-		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
+		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX), 0);
 
 		// プロジェクション行列のマップ
 		result = direct3dContext->Map(
-			_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX),
+			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
@@ -423,7 +423,7 @@ void Sprite2D::renderForward()
 		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 		Mat4 projectionMatrix = (Mat4::CHIRARITY_CONVERTER * Director::getCameraFor2D().getProjectionMatrix()).transpose();
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
-		direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
+		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
 		// デプステクスチャ描画時のプロジェクション行列の情報のマップ
 		switch (_renderBufferType) {
@@ -432,7 +432,7 @@ void Sprite2D::renderForward()
 			case RenderBufferType::DEPTH_CUBEMAP_TEXTURE:
 			{
 				result = direct3dContext->Map(
-					_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PARAMETER),
+					_d3dProgramForForwardRendering.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PARAMETER),
 					0,
 					D3D11_MAP_WRITE_DISCARD,
 					0,
@@ -448,10 +448,10 @@ void Sprite2D::renderForward()
 					float padding;
 				} parameter = {-_nearClip, -_farClip, (unsigned int)_cubeMapFace, 0.0f};
 				CopyMemory(mappedResource.pData, &parameter, sizeof(parameter));
-				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PARAMETER), 0);
+				direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PARAMETER), 0);
 
 				result = direct3dContext->Map(
-					_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX),
+					_d3dProgramForForwardRendering.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX),
 					0,
 					D3D11_MAP_WRITE_DISCARD,
 					0,
@@ -460,7 +460,7 @@ void Sprite2D::renderForward()
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 				Mat4 depthProjectionMatrix = (Mat4::CHIRARITY_CONVERTER * _projectionMatrix).transpose();
 				CopyMemory(mappedResource.pData, &depthProjectionMatrix.m, sizeof(depthProjectionMatrix));
-				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX), 0);
+				direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PROJECTION_MATRIX), 0);
 			}
 				break;
 			case RenderBufferType::GBUFFER_COLOR_SPECULAR_INTENSITY:
@@ -471,7 +471,7 @@ void Sprite2D::renderForward()
 			{
 				// 乗算色のマップ
 				result = direct3dContext->Map(
-					_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR),
+					_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR),
 					0,
 					D3D11_MAP_WRITE_DISCARD,
 					0,
@@ -480,20 +480,20 @@ void Sprite2D::renderForward()
 				Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 				const Color4F& multiplyColor = Color4F(Color4B(getColor().r, getColor().g, getColor().b, 255));
 				CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
-				direct3dContext->Unmap(_d3dProgram.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
+				direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
 				break;
 			}
 		}
 		
 		UINT strides[1] = {sizeof(_quadrangle.topLeft)};
 		UINT offsets[1] = {0};
-		direct3dContext->IASetVertexBuffers(0, _d3dProgram.getVertexBuffers().size(), _d3dProgram.getVertexBuffers().data(), strides, offsets);
-		direct3dContext->IASetIndexBuffer(_d3dProgram.getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
-		direct3dContext->IASetInputLayout(_d3dProgram.getInputLayout());
+		direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers().size(), _d3dProgramForForwardRendering.getVertexBuffers().data(), strides, offsets);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetInputLayout(_d3dProgramForForwardRendering.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-		_d3dProgram.setShadersToDirect3DContext(direct3dContext);
-		_d3dProgram.setConstantBuffersToDirect3DContext(direct3dContext);
+		_d3dProgramForForwardRendering.setShadersToDirect3DContext(direct3dContext);
+		_d3dProgramForForwardRendering.setConstantBuffersToDirect3DContext(direct3dContext);
 
 		UINT startSlot = 0;
 		// キューブマップテクスチャは別のスロットを使う
@@ -508,7 +508,7 @@ void Sprite2D::renderForward()
 		direct3dContext->PSSetSamplers(0, 1, samplerState);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(_d3dProgram.getBlendState(), blendFactor, 0xffffffff);
+		direct3dContext->OMSetBlendState(_d3dProgramForForwardRendering.getBlendState(), blendFactor, 0xffffffff);
 
 		direct3dContext->DrawIndexed(4, 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)

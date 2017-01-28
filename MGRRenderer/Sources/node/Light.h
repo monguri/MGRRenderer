@@ -111,6 +111,8 @@ public:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	struct ConstantBufferData
 	{
+		Mat4 viewMatrix;
+		Mat4 projectionMatrix;
 		Vec3 direction;
 		float hasShadowMap; // ConstantBufferのパッキングのためにfloatにしているが、0.0fか1.0fを入れてboolの代わりに使う
 		Color3F color;

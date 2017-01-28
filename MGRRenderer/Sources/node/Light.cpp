@@ -104,6 +104,9 @@ void DirectionalLight::initShadowMap(const Vec3& cameraPosition, float nearClip,
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	_constantBufferData.hasShadowMap = 1.0f;
 
+	_constantBufferData.viewMatrix = _shadowMapData.viewMatrix.createTranspose();
+	_constantBufferData.projectionMatrix = (Mat4::CHIRARITY_CONVERTER * _shadowMapData.projectionMatrix).transpose(); // 左手系変換行列はプロジェクション行列に最初からかけておく
+
 	_shadowMapData.depthTexture = new D3DTexture();
 	_shadowMapData.depthTexture->initDepthStencilTexture(size);
 #elif defined(MGRRENDERER_USE_OPENGL)

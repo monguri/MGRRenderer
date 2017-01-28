@@ -22,18 +22,10 @@ cbuffer AmbientLightParameter : register(b3)
 	float4 _ambientLightColor;
 };
 
-cbuffer DirectionalLightViewMatrix : register(b4)
+cbuffer DirectionalLightParameter : register(b4)
 {
 	matrix _directionalLightView;
-};
-
-cbuffer DirectionalLightProjectionMatrix : register(b5)
-{
 	matrix _directionalLightProjection;
-};
-
-cbuffer DirectionalLightParameter : register(b6)
-{
 	float3 _directionalLightDirection;
 	float _directionalLightHasShadowMap;
 	float3 _directionalLightColor;
@@ -43,7 +35,7 @@ cbuffer DirectionalLightParameter : register(b6)
 static const unsigned int NUM_FACE_CUBEMAP_TEXTURE = 6;
 static const unsigned int MAX_NUM_POINT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 
-cbuffer PointLightParameter : register(b7)
+cbuffer PointLightParameter : register(b5)
 {
 	struct {
 		matrix _pointLightView[NUM_FACE_CUBEMAP_TEXTURE];
@@ -59,7 +51,7 @@ cbuffer PointLightParameter : register(b7)
 
 static const unsigned int MAX_NUM_SPOT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 
-cbuffer SpotLightParameter : register(b8)
+cbuffer SpotLightParameter : register(b6)
 {
 	struct {
 		matrix _spotLightView;

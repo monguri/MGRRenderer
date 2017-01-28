@@ -636,11 +636,11 @@ void initialize()
 	//}
 
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
-	PointLight* light2 = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Color3B::WHITE, 3000.0f);
-	light2->setIntensity(0.7f);
-	light2->setColor(Color3B(0, 0, 255));
-	light2->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
-	scene->addPointLight(light2);
+	//PointLight* light2 = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Color3B::WHITE, 3000.0f);
+	//light2->setIntensity(0.7f);
+	//light2->setColor(Color3B(0, 0, 255));
+	//light2->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
+	//scene->addPointLight(light2);
 
 	//if (light2->hasShadowMap())
 	//{
@@ -668,11 +668,11 @@ void initialize()
 	//}
 
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(-1,0,0)方向の光が降り注ぐようにしている
-	//SpotLight* light2 = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
-	//light2->setIntensity(0.7f);
-	//light2->setColor(Color3B(0, 0, 255));
-	//light2->initShadowMap(NEAR_CLIP, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
-	//scene->addSpotLight(light2);
+	SpotLight* light2 = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
+	light2->setIntensity(0.7f);
+	light2->setColor(Color3B(0, 0, 255));
+	light2->initShadowMap(NEAR_CLIP, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+	scene->addSpotLight(light2);
 
 	//if (light2->hasShadowMap())
 	//{

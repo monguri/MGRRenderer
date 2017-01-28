@@ -113,7 +113,8 @@ public:
 	{
 		Vec3 direction;
 		float hasShadowMap; // ConstantBufferのパッキングのためにfloatにしているが、0.0fか1.0fを入れてboolの代わりに使う
-		Color4F color;
+		Color3F color;
+		float isValid; // シェーダで定数バッファが初期化状態かどうかを判定するためのフラグ
 	};
 #endif
 

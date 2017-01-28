@@ -48,8 +48,9 @@ _direction(direction)
 	Vec3 directionVec = direction;
 	directionVec.normalize();
 	_constantBufferData.direction = directionVec;
-	_constantBufferData.color = Color4F(color) * getIntensity();
+	_constantBufferData.color = Color3F(color) * getIntensity();
 	_constantBufferData.hasShadowMap = 0.0f;
+	_constantBufferData.isValid = 1.0f;
 #endif
 }
 
@@ -74,7 +75,7 @@ void DirectionalLight::setColor(const Color3B& color)
 {
 	Light::setColor(color);
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	_constantBufferData.color = Color4F(color) * getIntensity();
+	_constantBufferData.color = Color3F(color) * getIntensity();
 #endif
 }
 
@@ -82,7 +83,7 @@ void DirectionalLight::setIntensity(float intensity)
 {
 	Light::setIntensity(intensity);
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	_constantBufferData.color = Color4F(getColor()) * intensity;
+	_constantBufferData.color = Color3F(getColor()) * intensity;
 #endif
 }
 

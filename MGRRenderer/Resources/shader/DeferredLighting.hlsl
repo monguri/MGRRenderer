@@ -36,7 +36,8 @@ cbuffer DirectionalLightParameter : register(b6)
 {
 	float3 _directionalLightDirection;
 	float _directionalLightHasShadowMap;
-	float4 _directionalLightColor;
+	float3 _directionalLightColor;
+	float _directionalLightIsValid;
 };
 
 static const unsigned int NUM_FACE_CUBEMAP_TEXTURE = 6;
@@ -157,19 +158,22 @@ float4 PS(PS_INPUT input) : SV_TARGET
 	float3 diffuseSpecularLightColor = 0.0f;
 
 	float shadowAttenuation = 1.0;
-	if (_directionalLightHasShadowMap > 0.0)
+	if (_directionalLightIsValid > 0.0f)
 	{
-		float4 lightPosition = mul(worldPosition, _directionalLightView);
-		lightPosition = mul(lightPosition, _directionalLightProjection);
-		lightPosition = mul(lightPosition, _depthBias);
-		lightPosition.xyz /= lightPosition.w;
-		// zファイティングを避けるための微調整
-		lightPosition.z -= 0.001;
+		if (_directionalLightHasShadowMap > 0.0)
+		{
+			float4 lightPosition = mul(worldPosition, _directionalLightView);
+			lightPosition = mul(lightPosition, _directionalLightProjection);
+			lightPosition = mul(lightPosition, _depthBias);
+			lightPosition.xyz /= lightPosition.w;
+			// zファイティングを避けるための微調整
+			lightPosition.z -= 0.001;
 
-		shadowAttenuation = _directionalLightShadowMap.SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
+			shadowAttenuation = _directionalLightShadowMap.SampleCmpLevelZero(_pcfSampler, lightPosition.xy, lightPosition.z);
+		}
+
+		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, -_directionalLightDirection.xyz, _directionalLightColor, 1.0);
 	}
-
-	diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, -_directionalLightDirection.xyz, _directionalLightColor.rgb, 1.0);
 
 	unsigned int i = 0; // hlslにはfor文の初期化式のブロックスコープがない
 	for (i = 0; i < MAX_NUM_POINT_LIGHT; i++)

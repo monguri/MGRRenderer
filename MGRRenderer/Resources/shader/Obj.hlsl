@@ -49,7 +49,8 @@ cbuffer DirectionalLightParameter : register(b9)
 {
 	float3 _directionalLightDirection;
 	float _directionalLightHasShadowMap;
-	float4 _directionalLightColor;
+	float3 _directionalLightColor;
+	float _directionalLightIsValid;
 };
 
 static const int NUM_FACE_CUBEMAP_TEXTURE = 6;

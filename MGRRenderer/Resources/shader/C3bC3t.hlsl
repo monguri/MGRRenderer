@@ -30,12 +30,19 @@ cbuffer MultiplyColor : register(b5)
 	float4 _multiplyColor;
 };
 
-cbuffer AmbientLightParameter : register(b6)
+static const int MAX_SKINNING_JOINT = 60; // CPU側のソースと最大値定数を一致させること
+
+cbuffer MatrixPallete : register(b6)
+{
+	matrix _matrixPalette[MAX_SKINNING_JOINT];
+};
+
+cbuffer AmbientLightParameter : register(b7)
 {
 	float4 _ambientLightColor;
 };
 
-cbuffer DirectionalLightParameter : register(b7)
+cbuffer DirectionalLightParameter : register(b8)
 {
 	matrix _directionalLightView;
 	matrix _directionalLightProjection;
@@ -47,7 +54,7 @@ cbuffer DirectionalLightParameter : register(b7)
 
 static const int NUM_FACE_CUBEMAP_TEXTURE = 6;
 
-cbuffer PointLightParameter : register(b8)
+cbuffer PointLightParameter : register(b9)
 {
 	matrix _pointLightViewMatrices[NUM_FACE_CUBEMAP_TEXTURE];
 	matrix _pointLightProjectionMatrix;
@@ -57,7 +64,7 @@ cbuffer PointLightParameter : register(b8)
 	float _pointLightRangeInverse;
 };
 
-cbuffer SpotLightParameter : register(b9)
+cbuffer SpotLightParameter : register(b10)
 {
 	matrix _spotLightView;
 	matrix _spotLightProjection;
@@ -70,13 +77,6 @@ cbuffer SpotLightParameter : register(b9)
 	float _spotLightHasShadowMap;
 	float _spotLightIsValid;
 	float2 _spotLightPadding;
-};
-
-static const int MAX_SKINNING_JOINT = 60; // CPU側のソースと最大値定数を一致させること
-
-cbuffer MatrixPallete : register(b10)
-{
-	matrix _matrixPalette[MAX_SKINNING_JOINT];
 };
 
 Texture2D<float4> _texture2d : register(t0);

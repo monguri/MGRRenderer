@@ -446,6 +446,25 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 #endif
 
+	// スキニングのマトリックスパレット
+	if (_isC3b)
+	{
+		constantBufferDesc.ByteWidth = sizeof(Mat4) * MAX_SKINNING_JOINT;
+		constantBuffer = nullptr;
+		result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		if (FAILED(result))
+		{
+			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+			return false;
+		}
+		_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer);
+		_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+		_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
+		_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer);
+#endif
+	}
+
 	// アンビエントライトカラー
 	constantBufferDesc.ByteWidth = sizeof(AmbientLight::ConstantBufferData);
 	constantBuffer = nullptr;
@@ -458,9 +477,6 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer);
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
-#if defined(MGRRENDERER_DEFERRED_RENDERING)
-	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
-#endif
 
 	// ディレクショナルトライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(DirectionalLight::ConstantBufferData);
@@ -472,11 +488,8 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		return false;
 	}
 	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer);
-	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer);
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
-#if defined(MGRRENDERER_DEFERRED_RENDERING)
-	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
-#endif
 
 	// ポイントライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(PointLight::ConstantBufferData) * PointLight::MAX_NUM;
@@ -499,9 +512,6 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer);
-#if defined(MGRRENDERER_DEFERRED_RENDERING)
-	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
-#endif
 
 	// スポットライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(SpotLight::ConstantBufferData) * SpotLight::MAX_NUM;
@@ -522,30 +532,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
-	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer);
-#if defined(MGRRENDERER_DEFERRED_RENDERING)
-	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
-#endif
-
-	if (_isC3b)
-	{
-		// スキニングのマトリックスパレット
-		constantBufferDesc.ByteWidth = sizeof(Mat4) * MAX_SKINNING_JOINT;
-		constantBuffer = nullptr;
-		result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-		if (FAILED(result))
-		{
-			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-			return false;
-		}
-		_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer);
-		_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer);
-		_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer);
-#if defined(MGRRENDERER_DEFERRED_RENDERING)
-		_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE, constantBuffer);
-#endif
-	}
+	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer);
 
 #elif defined(MGRRENDERER_USE_OPENGL)
 	if (_isObj)
@@ -1899,8 +1886,24 @@ void Sprite3D::renderForward()
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
 		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
 
-		const Scene& scene = Director::getInstance()->getScene();
 
+		if (_isC3b)
+		{
+			// ジョイントマトリックスパレットのマップ
+			result = direct3dContext->Map(
+				_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE),
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&mappedResource
+			);
+			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+			CopyMemory(mappedResource.pData, _matrixPalette.data(), sizeof(Mat4) * _matrixPalette.size());
+			direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE), 0);
+		}
+
+
+		const Scene& scene = Director::getInstance()->getScene();
 
 		const AmbientLight* ambientLight = scene.getAmbientLight();
 		Logger::logAssert(ambientLight != nullptr, "シーンにアンビエントライトがない。");
@@ -2020,21 +2023,6 @@ void Sprite3D::renderForward()
 
 		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER), 0);
 
-
-		if (_isC3b)
-		{
-			// ジョイントマトリックスパレットのマップ
-			result = direct3dContext->Map(
-				_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE),
-				0,
-				D3D11_MAP_WRITE_DISCARD,
-				0,
-				&mappedResource
-			);
-			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-			CopyMemory(mappedResource.pData, _matrixPalette.data(), sizeof(Mat4) * _matrixPalette.size());
-			direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE), 0);
-		}
 
 		UINT strides[1];
 		if (_isObj)

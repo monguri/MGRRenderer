@@ -58,19 +58,11 @@ cbuffer PointLightParameter : register(b7)
 
 static const unsigned int MAX_NUM_SPOT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 
-cbuffer SpotLightViewMatrix : register(b8)
-{
-	matrix _spotLightView[MAX_NUM_SPOT_LIGHT];
-};
-
-cbuffer SpotLightProjectionMatrix : register(b9)
-{
-	matrix _spotLightProjection[MAX_NUM_SPOT_LIGHT];
-};
-
-cbuffer SpotLightParameter : register(b10)
+cbuffer SpotLightParameter : register(b8)
 {
 	struct {
+		matrix _spotLightView;
+		matrix _spotLightProjection;
 		float3 _spotLightPosition;
 		float _spotLightRangeInverse;
 		float3 _spotLightColor;
@@ -303,8 +295,8 @@ float4 PS(PS_INPUT input) : SV_TARGET
 		shadowAttenuation = 1.0;
 		if (_spotLightParameter[i]._spotLightHasShadowMap > 0.0)
 		{
-			float4 lightPosition = mul(worldPosition, _spotLightView[i]);
-			lightPosition = mul(lightPosition, _spotLightProjection[i]);
+			float4 lightPosition = mul(worldPosition, _spotLightParameter[i]._spotLightView);
+			lightPosition = mul(lightPosition, _spotLightParameter[i]._spotLightProjection);
 			lightPosition = mul(lightPosition, _depthBias);
 			lightPosition.xyz /= lightPosition.w;
 			// zファイティングを避けるための微調整
@@ -331,5 +323,5 @@ float4 PS(PS_INPUT input) : SV_TARGET
 		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, vertexToSpotLightDirection, _spotLightParameter[i]._spotLightColor, attenuation);
 	}
 
-	return float4((color * (shadowAttenuation * diffuseSpecularLightColor + _ambientLightColor.rgb)), 1.0);
+	return float4((color * (diffuseSpecularLightColor + _ambientLightColor.rgb)), 1.0);
 }

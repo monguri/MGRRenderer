@@ -5,7 +5,7 @@ cbuffer ModelMatrix : register(b0)
 	matrix _model;
 };
 
-cbuffer ViewMatrix : register(b1)
+cbuffer ViewMatrix : register(b1) //TODO:ここ、どうやってマッピングしてるんだ？
 {
 	matrix _view;
 };
@@ -88,17 +88,19 @@ cbuffer SpotLightParameter : register(b11)
 	} _spotLightParameter[MAX_NUM_SPOT_LIGHT];
 };
 
-
-Texture2D _directionalLightShadowMap : register(t0);
+Texture2D<float4> _texture2d : register(t0);
+Texture2D _directionalLightShadowMap : register(t1);
 TextureCube<float> _pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
 Texture2D<float> _spotLightShadowMap[MAX_NUM_SPOT_LIGHT];
 
-SamplerComparisonState _pcfSampler : register(s0);
+SamplerState _linearSampler : register(s0);
+SamplerComparisonState _pcfSampler : register(s1);
 
 struct VS_INPUT
 {
 	float3 position : POSITION;
 	float3 normal : NORMAL;
+	float2 texCoord : TEX_COORD;
 };
 
 struct PS_INPUT
@@ -107,9 +109,9 @@ struct PS_INPUT
 	float4 worldPosition : POSITION;
 	float4 directionalLightPosition : DIRECTIONAL_LIGHT_POSITION;
 	float3 normal : NORMAL;
-	float3 vertexToPointLightDirection[MAX_NUM_POINT_LIGHT] : POINT_LIGHT_DIRECTION;
-	float4 spotLightPosition[MAX_NUM_SPOT_LIGHT] : SPOT_LIGHT_POSITION;
-	float3 vertexToSpotLightDirection[MAX_NUM_SPOT_LIGHT] : SPOT_LIGHT_DIRECTION;
+	float2 texCoord : TEX_COORD;
+	float3 vertexToPointLightDirection : POINT_LIGHT_DIRECTION;
+	float3 vertexToSpotLightDirection : SPOT_LIGHT_DIRECTION;
 };
 
 PS_INPUT VS(VS_INPUT input)
@@ -129,6 +131,8 @@ PS_INPUT VS(VS_INPUT input)
 	float4 normal = float4(input.normal, 1.0);
 	output.normal = mul(normal, _normal).xyz;
 
+	output.texCoord = input.texCoord;
+	output.texCoord.y = 1.0 - output.texCoord.y; // objの事情によるもの
 	return output;
 }
 
@@ -310,5 +314,5 @@ float4 PS(PS_INPUT input) : SV_TARGET
 		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, vertexToSpotLightDirection, _spotLightParameter[i]._spotLightColor, attenuation);
 	}
 
-	return _multiplyColor * float4(shadowAttenuation * diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
+	return _texture2d.Sample(_linearSampler, input.texCoord) * _multiplyColor * float4(diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
 }

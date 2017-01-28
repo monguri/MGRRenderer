@@ -336,27 +336,6 @@ void Renderer::initView(const Size& windowSize)
 	}
 	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer);
 
-	// スポットライトView行列用
-	constantBufferDesc.ByteWidth = sizeof(Mat4) * SpotLight::MAX_NUM;
-	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return;
-	}
-	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX, constantBuffer);
-
-	// スポットライトProjection行列用
-	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
-		return;
-	}
-	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX, constantBuffer);
-
 	// スポットライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(SpotLight::ConstantBufferData) * SpotLight::MAX_NUM;
 	constantBuffer = nullptr;
@@ -730,55 +709,6 @@ void Renderer::renderDeferred()
 	}
 
 	result = direct3dContext->Map(
-		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX),
-		0,
-		D3D11_MAP_WRITE_DISCARD,
-		0,
-		&mappedResource
-	);
-	Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-
-	Mat4* spotLightLightViewMatrix = static_cast<Mat4*>(mappedResource.pData);
-	ZeroMemory(spotLightLightViewMatrix, sizeof(Mat4) * SpotLight::MAX_NUM);
-
-	size_t numSpotLight = scene.getNumSpotLight();
-	for (size_t i = 0; i < numSpotLight; i++)
-	{
-		const SpotLight* spotLight = scene.getSpotLight(i);
-		if (spotLight != nullptr && spotLight->hasShadowMap())
-		{
-			Mat4 lightViewMatrix = spotLight->getShadowMapData().viewMatrix.createTranspose();
-			CopyMemory(&spotLightLightViewMatrix[i], &lightViewMatrix.m, sizeof(lightViewMatrix));
-		}
-	}
-
-	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_VIEW_MATRIX), 0);
-
-	result = direct3dContext->Map(
-		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX),
-		0,
-		D3D11_MAP_WRITE_DISCARD,
-		0,
-		&mappedResource
-	);
-	Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
-
-	Mat4* spotLightLightProjectionMatrix = static_cast<Mat4*>(mappedResource.pData);
-	ZeroMemory(spotLightLightProjectionMatrix, sizeof(Mat4) * SpotLight::MAX_NUM);
-
-	for (size_t i = 0; i < numSpotLight; i++)
-	{
-		const SpotLight* spotLight = scene.getSpotLight(i);
-		if (spotLight != nullptr && spotLight->hasShadowMap())
-		{
-			Mat4 lightProjectionMatrix = (Mat4::CHIRARITY_CONVERTER * spotLight->getShadowMapData().projectionMatrix).transpose(); // 左手系変換行列はプロジェクション行列に最初からかけておく
-			CopyMemory(&spotLightLightProjectionMatrix[i], &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
-		}
-	}
-
-	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PROJECTION_MATRIX), 0);
-
-	result = direct3dContext->Map(
 		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER),
 		0,
 		D3D11_MAP_WRITE_DISCARD,
@@ -790,6 +720,7 @@ void Renderer::renderDeferred()
 	SpotLight::ConstantBufferData* spotLightConstBufData = static_cast<SpotLight::ConstantBufferData*>(mappedResource.pData);
 	ZeroMemory(spotLightConstBufData, sizeof(SpotLight::ConstantBufferData) * SpotLight::MAX_NUM);
 
+	size_t numSpotLight = scene.getNumSpotLight();
 	for (size_t i = 0; i < numSpotLight; i++)
 	{
 		const SpotLight* spotLight = scene.getSpotLight(i);

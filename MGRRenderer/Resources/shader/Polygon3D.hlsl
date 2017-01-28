@@ -59,38 +59,12 @@ cbuffer PointLightParameter : register(b10)
 {
 	matrix _pointLightView[NUM_FACE_CUBEMAP_TEXTURE];
 	matrix _pointLightProjection;
-	matrix _pointLightDepthBias;
 	float3 _pointLightColor;
 	float _pointLightHasShadowMap;
 	float3 _pointLightPosition;
 	float _pointLightRangeInverse;
 	float _pointLightIsValid;
 	float3 _pointLightPadding;
-};
-
-static const unsigned int MAX_NUM_SPOT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
-
-cbuffer SpotLightViewMatrix : register(b11)
-{
-	matrix _spotLightView[MAX_NUM_SPOT_LIGHT];
-};
-
-cbuffer SpotLightProjectionMatrix : register(b12)
-{
-	matrix _spotLightProjection[MAX_NUM_SPOT_LIGHT];
-};
-
-cbuffer SpotLightParameter : register(b13)
-{
-	float3 _spotLightPosition;
-	float _spotLightRangeInverse;
-	float3 _spotLightColor;
-	float _spotLightInnerAngleCos;
-	float3 _spotLightDirection;
-	float _spotLightOuterAngleCos;
-	float _spotLightHasShadowMap;
-	float _spotLightIsValid;
-	float2 _spotLightPadding;
 };
 
 struct VS_INPUT

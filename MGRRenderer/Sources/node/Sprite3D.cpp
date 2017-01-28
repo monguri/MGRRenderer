@@ -210,7 +210,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 #endif
 
 		bool depthEnable = true;
-		_d3dProgramForForwardRendering.initWithShaderFile("Resources/shader/Obj.hlsl", depthEnable, "VS", "", "PS");
+		_d3dProgramForForwardRendering.initWithShaderFile("Resources/shader/ObjForward.hlsl", depthEnable, "VS", "", "PS");
 		_d3dProgramForShadowMap.initWithShaderFile("Resources/shader/Obj.hlsl", depthEnable, "VS_SM", "", "");
 		_d3dProgramForPointLightShadowMap.initWithShaderFile("Resources/shader/Obj.hlsl", depthEnable, "VS_SM_POINT_LIGHT", "GS_SM_POINT_LIGHT", "");
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
@@ -308,7 +308,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 #endif
 
 		bool depthEnable = true;
-		_d3dProgramForForwardRendering.initWithShaderFile("Resources/shader/C3bC3t.hlsl", depthEnable, "VS", "", "PS");
+		_d3dProgramForForwardRendering.initWithShaderFile("Resources/shader/C3bC3tForward.hlsl", depthEnable, "VS", "", "PS");
 		_d3dProgramForShadowMap.initWithShaderFile("Resources/shader/C3bC3t.hlsl", depthEnable, "VS_SM", "", "");
 		_d3dProgramForPointLightShadowMap.initWithShaderFile("Resources/shader/C3bC3t.hlsl", depthEnable, "VS_SM_POINT_LIGHT", "GS_SM_POINT_LIGHT", "");
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
@@ -510,7 +510,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 #endif
 
 	// ポイントライトパラメーター
-	constantBufferDesc.ByteWidth = sizeof(PointLight::ConstantBufferData);
+	constantBufferDesc.ByteWidth = sizeof(PointLight::ConstantBufferData) * PointLight::MAX_NUM;
 	constantBuffer = nullptr;
 	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
@@ -519,14 +519,23 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		return false;
 	}
 	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer);
+
+	constantBufferDesc.ByteWidth = sizeof(PointLight::ConstantBufferData);
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
-	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer);
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 #endif
 
 	// スポットライトパラメーター
-	constantBufferDesc.ByteWidth = sizeof(SpotLight::ConstantBufferData);
+	constantBufferDesc.ByteWidth = sizeof(SpotLight::ConstantBufferData) * SpotLight::MAX_NUM;
 	constantBuffer = nullptr;
 	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
@@ -535,8 +544,17 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		return false;
 	}
 	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer);
+
+	constantBufferDesc.ByteWidth = sizeof(SpotLight::ConstantBufferData);
+	constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
 	_d3dProgramForShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
-	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
+	_d3dProgramForPointLightShadowMap.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer);
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 	_d3dProgramForGBuffer.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer); // シェーダでは使わないが、インデックスの数値を共有しているのでずれないようにシャドウマップ用定数バッファにも加える
 #endif
@@ -1872,6 +1890,7 @@ void Sprite3D::renderForward()
 		CopyMemory(mappedResource.pData, &projectionMatrix.m, sizeof(projectionMatrix));
 		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_PROJECTION_MATRIX), 0);
 
+		// デプスバイアス行列のマップ
 		result = direct3dContext->Map(
 			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DEPTH_BIAS_MATRIX),
 			0,
@@ -1929,13 +1948,12 @@ void Sprite3D::renderForward()
 		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_AMBIENT_LIGHT_PARAMETER), 0);
 
 
-		ID3D11ShaderResourceView* depthTextureResourceView = nullptr;
-
+		// ディレクショナルライト
+		ID3D11ShaderResourceView* dirLightShadowMapResourceView = nullptr;
 		const DirectionalLight* directionalLight = scene.getDirectionalLight();
+		// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
 		if (directionalLight != nullptr)
 		{
-			// TODO:とりあえず影つけはDirectionalLightのみを想定
-			// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
 			if (directionalLight->hasShadowMap())
 			{
 				result = direct3dContext->Map(
@@ -1965,7 +1983,8 @@ void Sprite3D::renderForward()
 				CopyMemory(mappedResource.pData, &lightProjectionMatrix.m, sizeof(lightProjectionMatrix));
 				direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PROJECTION_MATRIX), 0);
 
-				depthTextureResourceView = directionalLight->getShadowMapData().depthTexture->getShaderResourceView();
+				ID3D11ShaderResourceView* shaderResouceView[1] = { directionalLight->getShadowMapData().depthTexture->getShaderResourceView() };
+				direct3dContext->PSSetShaderResources(0, 1, shaderResouceView);
 			}
 
 			result = direct3dContext->Map(
@@ -1978,10 +1997,24 @@ void Sprite3D::renderForward()
 			Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 			CopyMemory(mappedResource.pData, directionalLight->getConstantBufferDataPointer(), sizeof(DirectionalLight::ConstantBufferData));
 			direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_DIRECTIONAL_LIGHT_PARAMETER), 0);
+
+			dirLightShadowMapResourceView = directionalLight->getShadowMapData().depthTexture->getShaderResourceView();
 		}
 
 
-		// TODO:ポイントライトの影付けも書かねば
+		// ポイントライト
+		std::array<ID3D11ShaderResourceView*, PointLight::MAX_NUM> pointLightShadowCubeMapResourceView;
+		for (size_t i = 0; i < PointLight::MAX_NUM; i++)
+		{
+			pointLightShadowCubeMapResourceView[i] = nullptr;
+
+			const PointLight* pointLight = scene.getPointLight(i);
+			if (pointLight != nullptr && pointLight->hasShadowMap())
+			{
+				pointLightShadowCubeMapResourceView[i] = pointLight->getShadowMapData().depthTexture->getShaderResourceView();
+			}
+		}
+
 		result = direct3dContext->Map(
 			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER),
 			0,
@@ -1998,15 +2031,29 @@ void Sprite3D::renderForward()
 		for (size_t i = 0; i < numPointLight; i++)
 		{
 			const PointLight* pointLight = scene.getPointLight(i);
-
-			CopyMemory(&pointLightConstBufData[i], pointLight->getConstantBufferDataPointer(), sizeof(PointLight::ConstantBufferData));
+			if (pointLight != nullptr)
+			{
+				CopyMemory(&pointLightConstBufData[i], pointLight->getConstantBufferDataPointer(), sizeof(PointLight::ConstantBufferData));
+			}
 		}
 
 		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_POINT_LIGHT_PARAMETER), 0);
 
 
-		// TODO:スポットライトの影付けも書かねば
 		// スポットライトの位置＆レンジの逆数のマップ
+		std::array<ID3D11ShaderResourceView*, SpotLight::MAX_NUM> spotLightShadowMapResourceView;
+		for (size_t i = 0; i < SpotLight::MAX_NUM; i++)
+		{
+			spotLightShadowMapResourceView[i] = nullptr;
+
+			const SpotLight* spotLight = scene.getSpotLight(i);
+			if (spotLight != nullptr && spotLight->hasShadowMap())
+			{
+				spotLightShadowMapResourceView[i] = spotLight->getShadowMapData().depthTexture->getShaderResourceView();
+			}
+		}
+
+
 		result = direct3dContext->Map(
 			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER),
 			0,
@@ -2014,15 +2061,19 @@ void Sprite3D::renderForward()
 			0,
 			&mappedResource
 		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
 
-		SpotLight::ConstantBufferData* spotLightConstBufData = static_cast<SpotLight::ConstantBufferData*>(mappedResource.pData); ZeroMemory(spotLightConstBufData, sizeof(SpotLight::ConstantBufferData) * SpotLight::MAX_NUM);
+		SpotLight::ConstantBufferData* spotLightConstBufData = static_cast<SpotLight::ConstantBufferData*>(mappedResource.pData);
+		ZeroMemory(spotLightConstBufData, sizeof(SpotLight::ConstantBufferData) * SpotLight::MAX_NUM);
 
 		size_t numSpotLight = scene.getNumSpotLight();
 		for (size_t i = 0; i < numSpotLight; i++)
 		{
 			const SpotLight* spotLight = scene.getSpotLight(i);
-
-			CopyMemory(&spotLightConstBufData[i], spotLight->getConstantBufferDataPointer(), sizeof(SpotLight::ConstantBufferData));
+			if (spotLight != nullptr)
+			{
+				CopyMemory(&spotLightConstBufData[i], spotLight->getConstantBufferDataPointer(), sizeof(SpotLight::ConstantBufferData));
+			}
 		}
 
 		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER), 0);
@@ -2062,16 +2113,15 @@ void Sprite3D::renderForward()
 		_d3dProgramForForwardRendering.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForForwardRendering.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		if (depthTextureResourceView == nullptr) // シャドウマップを作ってないとき
-		{
-			ID3D11ShaderResourceView* resourceView[1] = { _texture->getShaderResourceView() };
-			direct3dContext->PSSetShaderResources(0, 1, resourceView);
-		}
-		else // シャドウマップを作ったとき
-		{
-			ID3D11ShaderResourceView* resourceViews[2] = {_texture->getShaderResourceView(), depthTextureResourceView};
-			direct3dContext->PSSetShaderResources(0, 2, resourceViews);
-		}
+		ID3D11ShaderResourceView* shaderResourceViews[2] = {
+			_texture->getShaderResourceView(),
+			dirLightShadowMapResourceView,
+		};
+		direct3dContext->PSSetShaderResources(0, 2, shaderResourceViews);
+
+		direct3dContext->PSSetShaderResources(2, pointLightShadowCubeMapResourceView.size(), pointLightShadowCubeMapResourceView.data());
+
+		direct3dContext->PSSetShaderResources(2 + pointLightShadowCubeMapResourceView.size(), spotLightShadowMapResourceView.size(), spotLightShadowMapResourceView.data());
 
 		ID3D11SamplerState* samplerState[2] = { Director::getRenderer().getLinearSamplerState(), Director::getRenderer().getPCFSamplerState() };
 		direct3dContext->PSSetSamplers(0, 2, samplerState);

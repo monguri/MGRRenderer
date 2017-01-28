@@ -270,6 +270,8 @@ public:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	struct ConstantBufferData
 	{
+		Mat4 viewMatrix;
+		Mat4 projectionMatrix;
 		Vec3 position;
 		float rangeInverse;
 		Color3F color;

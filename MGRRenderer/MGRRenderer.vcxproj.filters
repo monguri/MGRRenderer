@@ -389,5 +389,11 @@
     <FxCompile Include="Resources\shader\Polygon3DForward.hlsl">
       <Filter>Resource Files\shader</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\shader\C3bC3tForward.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\shader\ObjForward.hlsl">
+      <Filter>Resource Files\shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

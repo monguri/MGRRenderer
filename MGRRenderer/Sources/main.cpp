@@ -454,7 +454,9 @@ void initialize()
 
 	Director::getInstance()->init(Size(WINDOW_WIDTH, WINDOW_HEIGHT), NEAR_CLIP, FAR_CLIP);
 	Director::getInstance()->setDisplayStats(true);
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	Director::getInstance()->setDisplayGBuffer(true);
+#endif
 
 	// 各ノードの作成はDirector::initの後に呼ぶ。Director::initのもっているウィンドウサイズを使用する場合があるので。
 
@@ -618,11 +620,11 @@ void initialize()
 	}
 
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
-	PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Color3B::WHITE, 3000.0f);
-	light->setIntensity(0.7f);
-	light->setColor(Color3B(255, 0, 0));
-	light->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
-	scene->addPointLight(light);
+	//PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Color3B::WHITE, 3000.0f);
+	//light->setIntensity(0.7f);
+	//light->setColor(Color3B(255, 0, 0));
+	//light->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
+	//scene->addPointLight(light);
 
 	//if (light->hasShadowMap())
 	//{
@@ -634,11 +636,11 @@ void initialize()
 	//}
 
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
-	//PointLight* light2 = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Color3B::WHITE, 3000.0f);
-	//light2->setIntensity(0.7f);
-	//light2->setColor(Color3B(0, 0, 255));
-	//light2->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
-	//scene->addPointLight(light2);
+	PointLight* light2 = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Color3B::WHITE, 3000.0f);
+	light2->setIntensity(0.7f);
+	light2->setColor(Color3B(0, 0, 255));
+	light2->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
+	scene->addPointLight(light2);
 
 	//if (light2->hasShadowMap())
 	//{
@@ -649,7 +651,7 @@ void initialize()
 	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	//}
 
-	//// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,0,-1)方向の光が降り注ぐようにしている
+	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,0,-1)方向の光が降り注ぐようにしている
 	//SpotLight* light = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Vec3(0.0f, 0.0f, -1.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
 	//light->setIntensity(0.7f);
 	//light->setColor(Color3B(255, 0, 0));
@@ -665,8 +667,8 @@ void initialize()
 	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	//}
 
-	//// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(-1,0,0)方向の光が降り注ぐようにしている
-	//SpotLight* light2 = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f + WINDOW_WIDTH, WINDOW_HEIGHT / 2.0f, 0.0f), Vec3(-1.0f, 0.0f, 0.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
+	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(-1,0,0)方向の光が降り注ぐようにしている
+	//SpotLight* light2 = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
 	//light2->setIntensity(0.7f);
 	//light2->setColor(Color3B(0, 0, 255));
 	//light2->initShadowMap(NEAR_CLIP, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
@@ -695,18 +697,18 @@ void initialize()
 	scene->pushNode2D(polygonNode);
 	//scene->pushNode2D(spriteNode);
 	scene->pushNode(spriteNode);
-	if (dirLight->hasShadowMap())
-	{
-		scene->pushNode2D(depthTextureSprite);
-	}
+	//if (dirLight->hasShadowMap())
+	//{
+	//	scene->pushNode2D(depthTextureSprite);
+	//}
 	//if (light->hasShadowMap())
 	//{
 	//	scene->pushNode2D(depthTextureSprite);
 	//}
-	//if (light2->hasShadowMap())
-	//{
-	//	scene->pushNode2D(depthTextureSprite);
-	//}
+	if (light2->hasShadowMap())
+	{
+		scene->pushNode2D(depthTextureSprite);
+	}
 
 	Director::getInstance()->setScene(*scene);
 }

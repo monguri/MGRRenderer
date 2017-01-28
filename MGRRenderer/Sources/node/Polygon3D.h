@@ -22,7 +22,9 @@ public:
 
 private:
 #if defined(MGRRENDERER_USE_DIRECT3D)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	D3DProgram _d3dProgramForGBuffer;
+#endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 	D3DProgram _d3dProgramForShadowMap;
 	D3DProgram _d3dProgramForPointLightShadowMap;
 	D3DProgram _d3dProgramForForwardRendering;

@@ -34,7 +34,6 @@ _vertexShader(nullptr),
 _vertexShaderBlob(nullptr),
 _geometryShader(nullptr),
 _pixelShader(nullptr),
-_blendState(nullptr),
 _indexBuffer(nullptr),
 _inputLayout(nullptr)
 {
@@ -62,12 +61,6 @@ D3DProgram::~D3DProgram()
 	for (ID3D11Buffer* vertexBuffer : _vertexBuffers)
 	{
 		vertexBuffer->Release();
-	}
-
-	if (_blendState != nullptr)
-	{
-		_blendState->Release();
-		_blendState = nullptr;
 	}
 
 	if (_pixelShader != nullptr)
@@ -212,20 +205,6 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 			Logger::logAssert(false, "CreatePixelShader failed. result=%d", result);
 			return;
 		}
-	}
-
-	// ブレンドステートオブジェクトの作成
-	D3D11_BLEND_DESC blendDesc;
-	ZeroMemory(&blendDesc, sizeof(blendDesc));
-	blendDesc.AlphaToCoverageEnable = FALSE;
-	blendDesc.IndependentBlendEnable = FALSE;
-	blendDesc.RenderTarget[0].BlendEnable = FALSE;
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	result = direct3dDevice->CreateBlendState(&blendDesc, &_blendState);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateBlendState failed. result=%d", result);
-		return;
 	}
 }
 

@@ -517,7 +517,7 @@ void Polygon3D::renderGBuffer()
 		_d3dProgramForGBuffer.setConstantBuffersToDirect3DContext(direct3dContext);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(_d3dProgramForGBuffer.getBlendState(), blendFactor, 0xffffffff);
+		direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
 
 		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -620,7 +620,7 @@ void Polygon3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 		_d3dProgramForShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(_d3dProgramForShadowMap.getBlendState(), blendFactor, 0xffffffff);
+		direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
 
 		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -711,7 +711,7 @@ void Polygon3D::renderPointLightShadowMap(size_t index, const PointLight* light,
 		_d3dProgramForPointLightShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(_d3dProgramForPointLightShadowMap.getBlendState(), blendFactor, 0xffffffff);
+		direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
 		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForShadowMap.getShaderProgram());
@@ -820,7 +820,7 @@ void Polygon3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 		_d3dProgramForShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(_d3dProgramForShadowMap.getBlendState(), blendFactor, 0xffffffff);
+		direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
 
 		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -1100,7 +1100,7 @@ void Polygon3D::renderForward(bool isTransparent)
 		direct3dContext->PSSetSamplers(0, 1, samplerState);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(_d3dProgramForForwardRendering.getBlendState(), blendFactor, 0xffffffff);
+		direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
 
 		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)

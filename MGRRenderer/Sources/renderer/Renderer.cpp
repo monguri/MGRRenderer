@@ -25,6 +25,7 @@ _pointSampler(nullptr)
 ,_rasterizeStateNormal(nullptr)
 ,_rasterizeStateCullFaceFront(nullptr)
 ,_rasterizeStateCullFaceBack(nullptr)
+,_blendState(nullptr)
 #endif
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 #if defined(MGRRENDERER_USE_DIRECT3D)
@@ -47,6 +48,12 @@ Renderer::~Renderer()
 {
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	if (_blendState != nullptr)
+	{
+		_blendState->Release();
+		_blendState = nullptr;
+	}
+
 	if (_gBufferSpecularPower != nullptr)
 	{
 		delete _gBufferSpecularPower;
@@ -63,12 +70,6 @@ Renderer::~Renderer()
 	{
 		delete _gBufferColorSpecularIntensity;
 		_gBufferColorSpecularIntensity = nullptr;
-	}
-
-	if (_gBufferDepthStencil != nullptr)
-	{
-		delete _gBufferDepthStencil;
-		_gBufferDepthStencil = nullptr;
 	}
 
 	if (_gBufferDepthStencil != nullptr)
@@ -129,6 +130,8 @@ void Renderer::initView(const Size& windowSize)
 	(void)windowSize;
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
+
 	// ビューポートの準備
 	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
 	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
@@ -148,7 +151,7 @@ void Renderer::initView(const Size& windowSize)
 	desc.BorderColor[3] = 0.0f;
 	desc.MinLOD = -FLT_MAX;
 	desc.MaxLOD = FLT_MAX;
-	HRESULT result = Director::getInstance()->getDirect3dDevice()->CreateSamplerState(&desc, &_pointSampler);
+	HRESULT result = direct3dDevice->CreateSamplerState(&desc, &_pointSampler);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateSamplerState failed. result=%d", result);
@@ -156,7 +159,7 @@ void Renderer::initView(const Size& windowSize)
 	}
 
 	desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	result = Director::getInstance()->getDirect3dDevice()->CreateSamplerState(&desc, &_linearSampler);
+	result = direct3dDevice->CreateSamplerState(&desc, &_linearSampler);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateSamplerState failed. result=%d", result);
@@ -168,14 +171,14 @@ void Renderer::initView(const Size& windowSize)
 	desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 	desc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
-	result = Director::getInstance()->getDirect3dDevice()->CreateSamplerState(&desc, &_pcfSampler);
+	result = direct3dDevice->CreateSamplerState(&desc, &_pcfSampler);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateSamplerState failed. result=%d", result);
 		return;
 	}
 
-	// ラスタライズステートオブジェクトの作成　フェイスカリングなし
+	// 汎用ラスタライズステートオブジェクトの作成　フェイスカリングなし
 	D3D11_RASTERIZER_DESC rasterizeDesc;
 	rasterizeDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizeDesc.CullMode = D3D11_CULL_NONE;
@@ -187,7 +190,7 @@ void Renderer::initView(const Size& windowSize)
 	rasterizeDesc.ScissorEnable = FALSE;
 	rasterizeDesc.MultisampleEnable = FALSE;
 	rasterizeDesc.AntialiasedLineEnable = FALSE;
-	result = Director::getInstance()->getDirect3dDevice()->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateNormal);
+	result = direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateNormal);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
@@ -195,7 +198,7 @@ void Renderer::initView(const Size& windowSize)
 	}
 
 	rasterizeDesc.CullMode = D3D11_CULL_FRONT;
-	result = Director::getInstance()->getDirect3dDevice()->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateCullFaceFront);
+	result = direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateCullFaceFront);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
@@ -203,10 +206,24 @@ void Renderer::initView(const Size& windowSize)
 	}
 
 	rasterizeDesc.CullMode = D3D11_CULL_BACK;
-	result = Director::getInstance()->getDirect3dDevice()->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateCullFaceBack);
+	result = direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateCullFaceBack);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
+		return;
+	}
+
+	// 汎用ブレンドステートオブジェクトの作成
+	D3D11_BLEND_DESC blendDesc;
+	ZeroMemory(&blendDesc, sizeof(blendDesc));
+	blendDesc.AlphaToCoverageEnable = FALSE;
+	blendDesc.IndependentBlendEnable = FALSE;
+	blendDesc.RenderTarget[0].BlendEnable = FALSE;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	result = direct3dDevice->CreateBlendState(&blendDesc, &_blendState);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBlendState failed. result=%d", result);
 		return;
 	}
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -251,9 +268,8 @@ void Renderer::initView(const Size& windowSize)
 	constantBufferDesc.ByteWidth = sizeof(Mat4);
 
 	ID3D11Buffer* constantBuffer = nullptr;
-	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
+
 	// View行列用
-	constantBuffer = nullptr;
 	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
@@ -720,7 +736,7 @@ void Renderer::renderDeferred()
 	direct3dContext->PSSetSamplers(0, 2, samplerStates);
 
 	FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	direct3dContext->OMSetBlendState(_d3dProgramForDeferredRendering.getBlendState(), blendFactor, 0xffffffff);
+	direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
 
 	direct3dContext->Draw(4, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)

@@ -338,7 +338,7 @@ void BillBoard::renderGBuffer()
 		direct3dContext->PSSetSamplers(0, 1, samplerState);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(_d3dProgramForGBuffer.getBlendState(), blendFactor, 0xffffffff);
+		direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
 
 		direct3dContext->DrawIndexed(4, 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -452,7 +452,7 @@ void BillBoard::renderForward(bool isTransparent)
 		direct3dContext->PSSetSamplers(0, 1, samplerState);
 
 		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(_d3dProgramForForwardRendering.getBlendState(), blendFactor, 0xffffffff);
+		direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
 
 		direct3dContext->DrawIndexed(4, 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)

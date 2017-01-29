@@ -46,7 +46,6 @@ public:
 	ID3DBlob* getVertexShaderBlob() const { return _vertexShaderBlob; };
 	ID3D11GeometryShader* getGeometryShader() const { return _geometryShader; }
 	ID3D11PixelShader* getPixelShader() const { return _pixelShader; }
-	ID3D11BlendState* getBlendState() const { return _blendState; }
 	const std::vector<ID3D11Buffer*>& getVertexBuffers() const { return _vertexBuffers; }
 	void addVertexBuffer(ID3D11Buffer* vertexBuffer) { _vertexBuffers.push_back(vertexBuffer); }
 	ID3D11Buffer* getIndexBuffer() const { return _indexBuffer; }
@@ -66,7 +65,6 @@ private:
 	ID3DBlob* _vertexShaderBlob;
 	ID3D11GeometryShader* _geometryShader;
 	ID3D11PixelShader* _pixelShader;
-	ID3D11BlendState* _blendState;
 	std::vector<ID3D11Buffer*> _vertexBuffers;
 	ID3D11Buffer* _indexBuffer;
 	ID3D11InputLayout* _inputLayout;

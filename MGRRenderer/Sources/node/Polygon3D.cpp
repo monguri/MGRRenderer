@@ -864,8 +864,10 @@ void Polygon3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 	Director::getRenderer().addCommand(&_renderSpotLightShadowMapCommandList[index]);
 }
 
-void Polygon3D::renderForward()
+void Polygon3D::renderForward(bool isTransparent)
 {
+	(void)isTransparent;
+
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)

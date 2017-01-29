@@ -96,8 +96,10 @@ void LabelAtlas::renderGBuffer()
 }
 #endif
 
-void LabelAtlas::renderForward()
+void LabelAtlas::renderForward(bool isTransparent)
 {
+	(void)isTransparent;
+
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_OPENGL)

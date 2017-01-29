@@ -25,7 +25,7 @@ public:
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 	void renderGBuffer() override;
 #endif
-	void renderForward() override;
+	void renderForward(bool isTransparent) override;
 
 private:
 	Mode _mode;

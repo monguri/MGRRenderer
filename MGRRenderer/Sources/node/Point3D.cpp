@@ -173,8 +173,10 @@ void Point3D::renderGBuffer()
 }
 #endif
 
-void Point3D::renderForward()
+void Point3D::renderForward(bool isTransparent)
 {
+	(void)isTransparent;
+
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)

@@ -131,7 +131,10 @@ void Scene::update(float dt)
 
 		for (Node* child : _children)
 		{
-			child->renderDirectionalLightShadowMap(_directionalLight);
+			if (!child->getIsTransparent())
+			{
+				child->renderDirectionalLightShadowMap(_directionalLight);
+			}
 		}
 	}
 
@@ -148,7 +151,10 @@ void Scene::update(float dt)
 
 		for (Node* child : _children)
 		{
-			child->renderPointLightShadowMap(i, pointLight);
+			if (!child->getIsTransparent())
+			{
+				child->renderPointLightShadowMap(i, pointLight);
+			}
 		}
 #elif defined(MGRRENDERER_USE_OPENGL)
 		for (int i = (int)CubeMapFace::X_POSITIVE; i < (int)CubeMapFace::NUM_CUBEMAP_FACE; i++)
@@ -175,7 +181,10 @@ void Scene::update(float dt)
 
 		for (Node* child : _children)
 		{
-			child->renderSpotLightShadowMap(i, spotLight);
+			if (!child->getIsTransparent())
+			{
+				child->renderSpotLightShadowMap(i, spotLight);
+			}
 		}
 	}
 
@@ -198,21 +207,31 @@ void Scene::update(float dt)
 
 
 #if defined(MGRRENDERER_FOWARD_RENDERING)
-	// 非透過モデルはディファードレンダリング
-	// 透過モデルはフォワードレンダリング
-	// TODO:透過モデルのみフォワードレンダリングするパスを入れる
 	_prepareFowardRenderingCommand.init([=]
 	{
 		Renderer::prepareFowardRendering();
 	});
 	Director::getRenderer().addCommand(&_prepareFowardRenderingCommand);
 
-	_camera.renderForward();
+	_camera.renderForward(false);
 	for (Node* child : _children)
 	{
-		child->renderForward();
+		if (!child->getIsTransparent())
+		{
+			child->renderForward(false);
+		}
 	}
 #endif
+
+	// 透過モデルパス
+	for (Node* child : _children)
+	{
+		// 透過物同士
+		if (child->getIsTransparent())
+		{
+			child->renderForward(true);
+		}
+	}
 
 	// 2Dノードは深度の扱いが違うので一つ準備処理をはさむ
 	_prepareFowardRendering2DCommand.init([=]
@@ -221,11 +240,11 @@ void Scene::update(float dt)
 	});
 	Director::getRenderer().addCommand(&_prepareFowardRendering2DCommand);
 
-	_cameraFor2D.renderForward();
+	_cameraFor2D.renderForward(false);
 
 	for (Node* child : _children2D)
 	{
-		child->renderForward();
+		child->renderForward(false);
 	}
 }
 

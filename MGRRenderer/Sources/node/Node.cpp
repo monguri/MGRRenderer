@@ -4,7 +4,7 @@
 namespace mgrrenderer
 {
 
-Node::Node() : _scale(Vec3(1.0f, 1.0f, 1.0f)), _modelMatrix(Mat4::IDENTITY), _color(Color3B::WHITE)
+Node::Node() : _scale(Vec3(1.0f, 1.0f, 1.0f)), _modelMatrix(Mat4::IDENTITY), _color(Color3B::WHITE), _opacity(0.0f)
 {
 }
 
@@ -47,8 +47,9 @@ void Node::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 	(void)light;
 }
 
-void Node::renderForward()
+void Node::renderForward(bool isTransparent)
 {
+	(void)isTransparent;
 	// ‰½‚à‚µ‚È‚¢
 }
 

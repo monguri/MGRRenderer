@@ -492,7 +492,8 @@ void initialize()
 	//Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 	BillBoard* spriteNode = new BillBoard();
 	isSucceeded = spriteNode->init("../MGRRenderer/Resources/Hello.png", BillBoard::Mode::VIEW_PLANE_ORIENTED);
-	spriteNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f + 80.0f, WINDOW_HEIGHT / 2.0f + 60.0f, 0.0f));
+	spriteNode->setOpacity(0.5f);
+	spriteNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f + 80.0f, WINDOW_HEIGHT / 2.0f + 60.0f, 80.0f));
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 
@@ -601,7 +602,7 @@ void initialize()
 
 	DirectionalLight* dirLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
 	dirLight->setIntensity(0.7f);
-	dirLight->setColor(Color3B(0, 255, 0));
+	//dirLight->setColor(Color3B(0, 255, 0));
 	dirLight->initShadowMap(
 		// Polygon3Dのついたての中心をターゲットにし、シーン全体が入るように、カメラのWINDOW_HEIGHT / 1.1566fに比べると遠目に
 		Vec3(0.0f, 0.0f, -WINDOW_WIDTH / 3.0f) - Vec3(-1.0f, -1.0f, -1.0f) * (WINDOW_HEIGHT / 1.1566f),
@@ -622,7 +623,7 @@ void initialize()
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
 	//PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Color3B::WHITE, 3000.0f);
 	//light->setIntensity(0.7f);
-	//light->setColor(Color3B(255, 0, 0));
+	////light->setColor(Color3B(255, 0, 0));
 	//light->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
 	//scene->addPointLight(light);
 
@@ -638,7 +639,7 @@ void initialize()
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
 	//PointLight* light2 = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Color3B::WHITE, 3000.0f);
 	//light2->setIntensity(0.7f);
-	//light2->setColor(Color3B(0, 0, 255));
+	////light2->setColor(Color3B(0, 0, 255));
 	//light2->initShadowMap(NEAR_CLIP, (float)WINDOW_WIDTH);
 	//scene->addPointLight(light2);
 
@@ -654,7 +655,7 @@ void initialize()
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,0,-1)方向の光が降り注ぐようにしている
 	//SpotLight* light = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Vec3(0.0f, 0.0f, -1.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
 	//light->setIntensity(0.7f);
-	//light->setColor(Color3B(255, 0, 0));
+	////light->setColor(Color3B(255, 0, 0));
 	//light->initShadowMap(NEAR_CLIP, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	//scene->addSpotLight(light);
 
@@ -670,7 +671,7 @@ void initialize()
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(-1,0,0)方向の光が降り注ぐようにしている
 	SpotLight* light2 = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
 	light2->setIntensity(0.7f);
-	light2->setColor(Color3B(0, 0, 255));
+	//light2->setColor(Color3B(0, 0, 255));
 	light2->initShadowMap(NEAR_CLIP, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addSpotLight(light2);
 

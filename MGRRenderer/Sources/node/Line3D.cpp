@@ -161,8 +161,10 @@ void Line3D::renderGBuffer()
 }
 #endif
 
-void Line3D::renderForward()
+void Line3D::renderForward(bool isTransparent)
 {
+	(void)isTransparent;
+
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)

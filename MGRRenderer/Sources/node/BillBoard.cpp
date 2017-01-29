@@ -372,8 +372,10 @@ void BillBoard::renderGBuffer()
 #endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 
 // Sprite2Dとの違いは深度テストONにしてることだけ
-void BillBoard::renderForward()
+void BillBoard::renderForward(bool isTransparent)
 {
+	(void)isTransparent;
+
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)

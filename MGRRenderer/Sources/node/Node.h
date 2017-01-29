@@ -21,7 +21,7 @@ public:
 	virtual void renderDirectionalLightShadowMap(const DirectionalLight* light);
 	virtual void renderPointLightShadowMap(size_t index, const PointLight* light, CubeMapFace face = CubeMapFace::X_POSITIVE);
 	virtual void renderSpotLightShadowMap(size_t index, const SpotLight* light);
-	virtual void renderForward();
+	virtual void renderForward(bool isTransparent);
 	const Vec3& getPosition() const { return _position; }
 	virtual void setPosition(const Vec3& position) { _position = position; };
 	const Quaternion& getRotation() const { return _rotation; }
@@ -35,6 +35,9 @@ public:
 	Mat4 getRotationMatrix() const;
 	const Color3B& getColor() const { return _color; }
 	virtual void setColor(const Color3B& color) { _color = color; }
+	float getOpacity() const { return _opacity; }
+	virtual void setOpacity(float opacity) { _opacity = opacity; }
+	bool getIsTransparent() const { return _opacity > 0.0f; };
 
 protected:
 	Node();
@@ -45,6 +48,7 @@ private:
 	Vec3 _scale;
 	Mat4 _modelMatrix;
 	Color3B _color;
+	float _opacity;
 };
 
 } // namespace mgrrenderer

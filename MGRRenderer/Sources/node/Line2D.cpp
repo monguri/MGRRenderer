@@ -233,9 +233,6 @@ void Line2D::renderForward(bool isTransparent)
 		_d3dProgramForForwardRendering.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForForwardRendering.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
-
 		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgram.getShaderProgram());

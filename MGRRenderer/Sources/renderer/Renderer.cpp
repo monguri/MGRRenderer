@@ -733,6 +733,9 @@ void Renderer::prepareDefaultRenderTarget()
 
 	_direct3dContext->OMSetRenderTargets(1, &_direct3dRenderTarget, _direct3dDepthStencilView);
 	_direct3dContext->OMSetDepthStencilState(_direct3dDepthStencilState, 1);
+
+	FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+	_direct3dContext->OMSetBlendState(_blendState, blendFactor, 0xffffffff);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	//glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -761,6 +764,9 @@ void Renderer::prepareGBufferRendering()
 	ID3D11RenderTargetView* gBuffers[3] = {_gBufferColorSpecularIntensity->getRenderTargetView(), _gBufferNormal->getRenderTargetView(), _gBufferSpecularPower->getRenderTargetView()};
 	_direct3dContext->OMSetRenderTargets(3, gBuffers, _gBufferDepthStencil->getDepthStencilView());
 	_direct3dContext->OMSetDepthStencilState(_direct3dDepthStencilState, 1);
+
+	FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+	_direct3dContext->OMSetBlendState(_blendState, blendFactor, 0xffffffff);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glBindFramebuffer(GL_FRAMEBUFFER, _gBufferFrameBuffer->getFrameBufferId());
 
@@ -973,9 +979,6 @@ void Renderer::renderDeferred()
 	// TODO:サンプラはテクスチャごとに作る必要はない
 	ID3D11SamplerState* samplerStates[2] = {_pointSampler, _pcfSampler};
 	direct3dContext->PSSetSamplers(0, 2, samplerStates);
-
-	FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
 
 	direct3dContext->Draw(4, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)

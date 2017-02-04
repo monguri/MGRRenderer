@@ -38,7 +38,6 @@ public:
 	ID3D11RasterizerState* getRasterizeStateCullFaceNormal() const { return _rasterizeStateNormal; }
 	ID3D11RasterizerState* getRasterizeStateCullFaceFront() const { return _rasterizeStateCullFaceFront; }
 	ID3D11RasterizerState* getRasterizeStateCullFaceBack() const { return _rasterizeStateCullFaceBack; }
-	ID3D11BlendState* getBlendState() const { return _blendState; }
 #endif
 
 #if defined(MGRRENDERER_DEFERRED_RENDERING)

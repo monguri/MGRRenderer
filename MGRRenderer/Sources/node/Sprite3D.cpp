@@ -1246,9 +1246,6 @@ void Sprite3D::renderGBuffer()
 		ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getLinearSamplerState() };
 		direct3dContext->PSSetSamplers(0, 1, samplerState);
 
-		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
-
 		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForGBuffer.getShaderProgram());
@@ -1412,9 +1409,6 @@ void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 		_d3dProgramForShadowMap.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
-
 		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForShadowMap.getShaderProgram());
@@ -1557,9 +1551,6 @@ void Sprite3D::renderPointLightShadowMap(size_t index, const PointLight* light, 
 
 		_d3dProgramForPointLightShadowMap.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForPointLightShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
-
-		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
 
 		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -1721,9 +1712,6 @@ void Sprite3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 
 		_d3dProgramForShadowMap.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
-
-		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
 
 		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -2057,9 +2045,6 @@ void Sprite3D::renderForward(bool isTransparent)
 
 		ID3D11SamplerState* samplerState[2] = { Director::getRenderer().getLinearSamplerState(), Director::getRenderer().getPCFSamplerState() };
 		direct3dContext->PSSetSamplers(0, 2, samplerState);
-
-		FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		direct3dContext->OMSetBlendState(Director::getRenderer().getBlendState(), blendFactor, 0xffffffff);
 
 		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)

@@ -837,6 +837,7 @@ struct Size
 		ret.height = height * a;
 		return ret;
 	}
+
 	const Size operator/(float a) const
 	{
 		Logger::logAssert(a != 0.0, "0‚ÅœZ‚µ‚Ä‚¢‚éB");
@@ -845,6 +846,32 @@ struct Size
 		ret.height = height / a;
 		return ret;
 	} //TODO:CCMathBase‚ÌMATH_TOLELRANCE‚İ‚½‚¢‚Ìl—¶‚µ‚Ä‚È‚¢
+};
+
+struct SizeUint
+{
+	unsigned int width;
+	unsigned int height;
+
+	SizeUint() : width(0), height(0) {}
+	SizeUint(unsigned int width_, unsigned int height_) : width(width_), height(height_) {}
+
+	const SizeUint operator*(unsigned int a) const
+	{
+		SizeUint ret;
+		ret.width = width * a;
+		ret.height = height * a;
+		return ret;
+	}
+
+	const Size operator/(float a) const
+	{
+		Logger::logAssert(a != 0.0, "0‚ÅœZ‚µ‚Ä‚¢‚éB");
+		Size ret;
+		ret.width = width / a;
+		ret.height = height / a;
+		return ret;
+	}
 };
 
 struct Rect

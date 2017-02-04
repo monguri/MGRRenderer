@@ -82,7 +82,7 @@ bool D3DTexture::initWithImage(const Image& image, TextureUtility::PixelFormat f
 		break;
 	}
 
-	result = CreateShaderResourceView(Director::getInstance()->getDirect3dDevice(), scratchImage.GetImages(), scratchImage.GetImageCount(), metaData, &_shaderResourceView); 
+	result = CreateShaderResourceView(Director::getRenderer().getDirect3dDevice(), scratchImage.GetImages(), scratchImage.GetImageCount(), metaData, &_shaderResourceView); 
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "D3DX11CreateShaderResourceViewFromMemory failed. result=%d", result);
@@ -99,21 +99,21 @@ bool D3DTexture::initWithImage(const Image& image, TextureUtility::PixelFormat f
 
 	D3D11_TEXTURE2D_DESC texDesc;
 	static_cast<ID3D11Texture2D*>(resource)->GetDesc(&texDesc);
-	_contentSize = Size(texDesc.Width, texDesc.Height);
+	_contentSize = SizeUint(texDesc.Width, texDesc.Height);
 
 	return true;
 }
 
-bool D3DTexture::initDepthStencilTexture(const Size & size)
+bool D3DTexture::initDepthStencilTexture(const SizeUint& size)
 {
 	_contentSize = size;
 
-	ID3D11Device* device = Director::getInstance()->getDirect3dDevice();
+	ID3D11Device* device = Director::getRenderer().getDirect3dDevice();
 
 	// テクスチャ生成
 	D3D11_TEXTURE2D_DESC texDesc;
-	texDesc.Width = static_cast<UINT>(size.width);
-	texDesc.Height = static_cast<UINT>(size.height);
+	texDesc.Width = size.width;
+	texDesc.Height = size.height;
 	texDesc.MipLevels = 1;
 	texDesc.ArraySize = 1;
 	//texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -191,16 +191,16 @@ bool D3DTexture::initDepthStencilTexture(const Size & size)
 	return true;
 }
 
-bool D3DTexture::initDepthStencilCubeMapTexture(float size)
+bool D3DTexture::initDepthStencilCubeMapTexture(unsigned int size)
 {
-	_contentSize = Size(size, size);
+	_contentSize = SizeUint(size, size);
 
-	ID3D11Device* device = Director::getInstance()->getDirect3dDevice();
+	ID3D11Device* device = Director::getRenderer().getDirect3dDevice();
 
 	// テクスチャ生成
 	D3D11_TEXTURE2D_DESC texDesc;
-	texDesc.Width = static_cast<UINT>(size);
-	texDesc.Height = static_cast<UINT>(size);
+	texDesc.Width = size;
+	texDesc.Height = size;
 	texDesc.MipLevels = 1;
 	texDesc.ArraySize = 6;
 	//texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -280,16 +280,16 @@ bool D3DTexture::initDepthStencilCubeMapTexture(float size)
 	return true;
 }
 
-bool D3DTexture::initRenderTexture(const Size & size, DXGI_FORMAT textureFormat)
+bool D3DTexture::initRenderTexture(const SizeUint& size, DXGI_FORMAT textureFormat)
 {
 	_contentSize = size;
 
-	ID3D11Device* device = Director::getInstance()->getDirect3dDevice();
+	ID3D11Device* device = Director::getRenderer().getDirect3dDevice();
 
 	// テクスチャ生成
 	D3D11_TEXTURE2D_DESC texDesc;
-	texDesc.Width = static_cast<UINT>(size.width);
-	texDesc.Height = static_cast<UINT>(size.height);
+	texDesc.Width = size.width;
+	texDesc.Height = size.height;
 	texDesc.MipLevels = 1;
 	texDesc.ArraySize = 1;
 	texDesc.Format = textureFormat;

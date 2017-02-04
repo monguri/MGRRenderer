@@ -18,7 +18,7 @@ public:
 	GLFrameBuffer();
 	~GLFrameBuffer();
 
-	bool initWithTextureParams(const std::vector<GLenum>& drawBuffers, const std::vector<GLenum>& pixelFormats, bool useRenderBufferForDepthStencil, bool isCubeMap, const Size& size); // キューブマップのときはsize.widthしか使わないので注意
+	bool initWithTextureParams(const std::vector<GLenum>& drawBuffers, const std::vector<GLenum>& pixelFormats, bool useRenderBufferForDepthStencil, bool isCubeMap, const SizeUint& size); // キューブマップのときはsize.widthしか使わないので注意
 	//TODO:とりあえずキューブマップはデプスステンシルにしか使ってないのでデプスステンシルのことのみ考慮している
 	void bindCubeMapFaceDepthStencil(GLenum face, size_t indexOfDrawBuffers);
 

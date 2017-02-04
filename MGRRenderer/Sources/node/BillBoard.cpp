@@ -36,14 +36,14 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 	texture->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	const Size& contentSize = texture->getContentSize();
+	const SizeUint& contentSize = texture->getContentSize();
 	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
 	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
-	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
+	_quadrangle.bottomRight.position = Vec2((float)contentSize.width, 0.0f);
 	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 1.0f);
-	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
+	_quadrangle.topLeft.position = Vec2(0.0f, (float)contentSize.height);
 	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 0.0f);
-	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
+	_quadrangle.topRight.position = Vec2((float)contentSize.width, (float)contentSize.height);
 	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 0.0f);
 
 	// 頂点バッファの定義
@@ -62,7 +62,7 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 	vertexBufferSubData.SysMemSlicePitch = 0;
 
 	// 頂点バッファのサブリソースの作成
-	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
+	ID3D11Device* direct3dDevice = Director::getRenderer().getDirect3dDevice();
 	ID3D11Buffer* vertexBuffer = nullptr;
 	HRESULT result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &vertexBuffer);
 	if (FAILED(result))
@@ -176,7 +176,7 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 	// 乗算色
 	constantBuffer = nullptr;
 	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
-	result = Director::getInstance()->getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	result = Director::getRenderer().getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -188,14 +188,14 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 	return true;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	// TODO:もはやBillboardがSprite2D継承してる意味あるかな？
-	const Size& contentSize = texture->getContentSize();
+	const SizeUint& contentSize = texture->getContentSize();
 	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
 	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 0.0f);
-	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
+	_quadrangle.bottomRight.position = Vec2((float)contentSize.width, 0.0f);
 	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 0.0f);
-	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
+	_quadrangle.topLeft.position = Vec2(0.0f, (float)contentSize.height);
 	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 1.0f);
-	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
+	_quadrangle.topRight.position = Vec2((float)contentSize.width, (float)contentSize.height);
 	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 1.0f);
 
 	_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionTexture.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionTextureMultiplyColor.glsl");
@@ -265,7 +265,7 @@ void BillBoard::renderGBuffer()
 	_renderGBufferCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 
 		// TODO:ここらへん共通化したいな。。
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -379,7 +379,7 @@ void BillBoard::renderForward(bool isTransparent)
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 
 		// TODO:ここらへん共通化したいな。。
 		D3D11_MAPPED_SUBRESOURCE mappedResource;

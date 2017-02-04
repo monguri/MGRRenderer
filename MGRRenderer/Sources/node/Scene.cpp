@@ -157,13 +157,13 @@ void Scene::update(float dt)
 			}
 		}
 #elif defined(MGRRENDERER_USE_OPENGL)
-		for (int i = (int)CubeMapFace::X_POSITIVE; i < (int)CubeMapFace::NUM_CUBEMAP_FACE; i++)
+		for (int face = (int)CubeMapFace::X_POSITIVE; face < (int)CubeMapFace::NUM_CUBEMAP_FACE; face++)
 		{
-			pointLight->prepareShadowMapRendering((CubeMapFace)i);
+			pointLight->prepareShadowMapRendering((CubeMapFace)face);
 
 			for (Node* child : _children)
 			{
-				child->renderPointLightShadowMap(pointLight, (CubeMapFace)i);
+				child->renderPointLightShadowMap(i, pointLight, (CubeMapFace)face);
 			}
 		}
 #endif
@@ -209,7 +209,7 @@ void Scene::update(float dt)
 #if defined(MGRRENDERER_FOWARD_RENDERING)
 	_prepareFowardRenderingCommand.init([=]
 	{
-		Renderer::prepareFowardRendering();
+		Director::getRenderer().prepareFowardRendering();
 	});
 	Director::getRenderer().addCommand(&_prepareFowardRenderingCommand);
 
@@ -236,7 +236,7 @@ void Scene::update(float dt)
 	// 2Dƒm[ƒh‚Í[“x‚Ìˆµ‚¢‚ªˆá‚¤‚Ì‚Åˆê‚Â€”õˆ—‚ğ‚Í‚³‚Ş
 	_prepareFowardRendering2DCommand.init([=]
 	{
-		Renderer::prepareFowardRendering2D();
+		Director::getRenderer().prepareFowardRendering2D();
 	});
 	Director::getRenderer().addCommand(&_prepareFowardRendering2DCommand);
 

@@ -27,7 +27,7 @@ GLFrameBuffer::~GLFrameBuffer()
 	}
 }
 
-bool GLFrameBuffer::initWithTextureParams(const std::vector<GLenum>& drawBuffers, const std::vector<GLenum>& pixelFormats, bool useRenderBufferForDepthStencil, bool isCubeMap, const Size& size)
+bool GLFrameBuffer::initWithTextureParams(const std::vector<GLenum>& drawBuffers, const std::vector<GLenum>& pixelFormats, bool useRenderBufferForDepthStencil, bool isCubeMap, const SizeUint& size)
 {
 	Logger::logAssert(drawBuffers.size() == pixelFormats.size(), "ˆø”‚Ì—v‘f”‚ª•sˆê’vB");
 

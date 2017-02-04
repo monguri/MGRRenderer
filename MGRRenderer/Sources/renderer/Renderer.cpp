@@ -17,9 +17,16 @@ namespace mgrrenderer
 
 static const size_t DEFAULT_RENDER_QUEUE_GROUP_INDEX = 0;
 
-Renderer::Renderer() :
+Renderer::Renderer()
 #if defined(MGRRENDERER_USE_DIRECT3D)
-_pointSampler(nullptr)
+: _direct3dSwapChain(nullptr)
+,_direct3dDevice(nullptr)
+,_direct3dContext(nullptr)
+,_direct3dRenderTarget(nullptr)
+,_direct3dDepthStencilView(nullptr)
+,_direct3dDepthStencilState(nullptr)
+,_direct3dDepthStencilState2D(nullptr)
+,_pointSampler(nullptr)
 ,_linearSampler(nullptr)
 ,_pcfSampler(nullptr)
 ,_rasterizeStateNormal(nullptr)
@@ -34,7 +41,7 @@ _pointSampler(nullptr)
 ,_gBufferNormal(nullptr)
 ,_gBufferSpecularPower(nullptr)
 #elif defined(MGRRENDERER_USE_OPENGL)
-_gBufferFrameBuffer(nullptr)
+: _gBufferFrameBuffer(nullptr)
 #endif
 #endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 {
@@ -76,6 +83,48 @@ Renderer::~Renderer()
 	{
 		delete _gBufferDepthStencil;
 		_gBufferDepthStencil = nullptr;
+	}
+
+	if (_direct3dDepthStencilState2D != nullptr)
+	{
+		_direct3dDepthStencilState2D->Release();
+		_direct3dDepthStencilState2D = nullptr;
+	}
+
+	if (_direct3dDepthStencilState != nullptr)
+	{
+		_direct3dDepthStencilState->Release();
+		_direct3dDepthStencilState = nullptr;
+	}
+
+	if (_direct3dDepthStencilView != nullptr)
+	{
+		_direct3dDepthStencilView->Release();
+		_direct3dDepthStencilView = nullptr;
+	}
+
+	if (_direct3dRenderTarget != nullptr)
+	{
+		_direct3dRenderTarget->Release();
+		_direct3dRenderTarget = nullptr;
+	}
+
+	if (_direct3dContext != nullptr)
+	{
+		_direct3dContext->Release();
+		_direct3dContext = nullptr;
+	}
+
+	if (_direct3dDevice != nullptr)
+	{
+		_direct3dDevice->Release();
+		_direct3dDevice = nullptr;
+	}
+
+	if (_direct3dSwapChain != nullptr)
+	{
+		_direct3dSwapChain->Release();
+		_direct3dSwapChain = nullptr;
 	}
 #elif defined(MGRRENDERER_USE_OPENGL)
 	if (_gBufferFrameBuffer != nullptr)
@@ -125,53 +174,198 @@ Renderer::~Renderer()
 #endif
 }
 
-void Renderer::initView(const Size& windowSize)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+void Renderer::initView(HWND handleWindow, const SizeUint& windowSize)
+#elif defined(MGRRENDERER_USE_OPENGL)
+void Renderer::initView(const SizeUint& windowSize)
+#endif
 {
 	(void)windowSize;
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
+	// デバイスとスワップ チェインの作成
+	DXGI_SWAP_CHAIN_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.BufferCount = 1;
+	desc.BufferDesc.Width = (UINT)windowSize.width;
+	desc.BufferDesc.Height = (UINT)windowSize.height;
+	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.BufferDesc.RefreshRate.Numerator = 60;
+	desc.BufferDesc.RefreshRate.Denominator = 60;
+	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	desc.OutputWindow = handleWindow;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.Windowed = TRUE;
+	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-	// ビューポートの準備
-	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
-	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
+	// ハードウェア・デバイスを作成
+	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
+	D3D_FEATURE_LEVEL featureLevelSupported;
+
+	D3D_DRIVER_TYPE driverTypes[] = { D3D_DRIVER_TYPE_HARDWARE, // ハードウェア・デバイス
+									D3D_DRIVER_TYPE_WARP, // WARPデバイス
+									D3D_DRIVER_TYPE_REFERENCE }; // リファレンス・デバイスを作成
+
+	HRESULT result = 0; //TODO:定数にしたい
+	for (D3D_DRIVER_TYPE driverType : driverTypes)
+	{
+		result = D3D11CreateDeviceAndSwapChain(
+			nullptr,
+			driverType,
+			nullptr,
+			D3D11_CREATE_DEVICE_DEBUG, // デフォルトでデバッグにしておく
+			featureLevels,
+			3,
+			D3D11_SDK_VERSION,
+			&desc,
+			&_direct3dSwapChain,
+			&_direct3dDevice,
+			&featureLevelSupported,
+			&_direct3dContext
+		);
+
+		if (SUCCEEDED(result))
+		{
+			break;
+		}
+	}
+
+	if (FAILED(result))
+	{
+		Logger::log("Error:%s D3D11CreateDeviceAndSwapChain failed.", GetLastError());
+		// TODO:それぞれのエラー処理で解放処理をちゃんと書かないと
+		PostQuitMessage(EXIT_FAILURE);
+	}
+
+	// スワップ・チェインから最初のバック・バッファを取得する
+	ID3D11Texture2D* backBuffer = nullptr;
+	result = _direct3dSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
+	if (FAILED(result))
+	{
+		Logger::log("Error:%s GetBuffer failed.", GetLastError());
+		PostQuitMessage(EXIT_FAILURE);
+	}
+
+	// バック・バッファの描画ターゲット・ビューを作る
+	result = _direct3dDevice->CreateRenderTargetView(backBuffer, nullptr, &_direct3dRenderTarget);
+	if (FAILED(result))
+	{
+		Logger::log("Error:%s CreateRenderTargetView failed.", GetLastError());
+		PostQuitMessage(EXIT_FAILURE);
+	}
+
+	// バック・バッファの情報
+	D3D11_TEXTURE2D_DESC descBackBuffer;
+	backBuffer->GetDesc(&descBackBuffer);
+
+	// 深度/ステンシル・テクスチャの作成
+	D3D11_TEXTURE2D_DESC descDepthStencilTexture = descBackBuffer;
+	descDepthStencilTexture.MipLevels = 1;
+	descDepthStencilTexture.ArraySize = 1;
+	descDepthStencilTexture.Format = DXGI_FORMAT_D32_FLOAT;
+	descDepthStencilTexture.Usage = D3D11_USAGE_DEFAULT;
+	descDepthStencilTexture.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	descDepthStencilTexture.CPUAccessFlags = 0;
+	descDepthStencilTexture.MiscFlags = 0;
+
+	ID3D11Texture2D* depthStencilTexture = nullptr;
+	result = _direct3dDevice->CreateTexture2D(&descDepthStencilTexture, nullptr, &depthStencilTexture);
+	if (FAILED(result))
+	{
+		Logger::log("Error:%s CreateTexture2D failed.", GetLastError());
+		PostQuitMessage(EXIT_FAILURE);
+	}
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDepthStencilView;
+	descDepthStencilView.Format = descDepthStencilTexture.Format;
+	descDepthStencilView.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDepthStencilView.Flags = 0;
+	descDepthStencilView.Texture2D.MipSlice = 0;
+
+	result = _direct3dDevice->CreateDepthStencilView(depthStencilTexture, &descDepthStencilView, &_direct3dDepthStencilView);
+	if (FAILED(result))
+	{
+		Logger::log("Error:%s CreateDepthStencilView failed.", GetLastError());
+		PostQuitMessage(EXIT_FAILURE);
+	}
+
+	// 深度、ステンシルステートオブジェクトの作成
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+	depthStencilDesc.DepthEnable = TRUE;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthStencilDesc.StencilEnable = FALSE;
+	depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+	depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_NEVER;
+	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_NEVER;
+	result = _direct3dDevice->CreateDepthStencilState(&depthStencilDesc, &_direct3dDepthStencilState);
+	if (FAILED(result))
+	{
+		Logger::log("Error:%s CreateDepthStencilState failed.", GetLastError());
+		PostQuitMessage(EXIT_FAILURE);
+	}
+
+	depthStencilDesc.DepthEnable = FALSE;
+	result = _direct3dDevice->CreateDepthStencilState(&depthStencilDesc, &_direct3dDepthStencilState2D);
+	if (FAILED(result))
+	{
+		Logger::log("Error:%s CreateDepthStencilState failed.", GetLastError());
+		PostQuitMessage(EXIT_FAILURE);
+	}
+
+	// ビューポートの設定
+	_direct3dViewport[0].TopLeftX = 0.0f;
+	_direct3dViewport[0].TopLeftY = 0.0f;
+	_direct3dViewport[0].Width = static_cast<FLOAT>(windowSize.width);
+	_direct3dViewport[0].Height = static_cast<FLOAT>(windowSize.height);
+	_direct3dViewport[0].MinDepth = 0.0f;
+	_direct3dViewport[0].MaxDepth = 1.0f;
+	_direct3dContext->RSSetViewports(1, _direct3dViewport);
 
 	// 汎用サンプラの用意
-	D3D11_SAMPLER_DESC desc;
-	desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	desc.MipLODBias = 0.0f;
-	desc.MaxAnisotropy = 1;
-	desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	desc.BorderColor[0] = 0.0f;
-	desc.BorderColor[1] = 0.0f;
-	desc.BorderColor[2] = 0.0f;
-	desc.BorderColor[3] = 0.0f;
-	desc.MinLOD = -FLT_MAX;
-	desc.MaxLOD = FLT_MAX;
-	HRESULT result = direct3dDevice->CreateSamplerState(&desc, &_pointSampler);
+	D3D11_SAMPLER_DESC samplerDesc;
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.MipLODBias = 0.0f;
+	samplerDesc.MaxAnisotropy = 1;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	samplerDesc.BorderColor[0] = 0.0f;
+	samplerDesc.BorderColor[1] = 0.0f;
+	samplerDesc.BorderColor[2] = 0.0f;
+	samplerDesc.BorderColor[3] = 0.0f;
+	samplerDesc.MinLOD = -FLT_MAX;
+	samplerDesc.MaxLOD = FLT_MAX;
+	result = _direct3dDevice->CreateSamplerState(&samplerDesc, &_pointSampler);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateSamplerState failed. result=%d", result);
 		return;
 	}
 
-	desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	result = direct3dDevice->CreateSamplerState(&desc, &_linearSampler);
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	result = _direct3dDevice->CreateSamplerState(&samplerDesc, &_linearSampler);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateSamplerState failed. result=%d", result);
 		return;
 	}
 
-	desc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-	desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-	desc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
-	result = direct3dDevice->CreateSamplerState(&desc, &_pcfSampler);
+	samplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+	result = _direct3dDevice->CreateSamplerState(&samplerDesc, &_pcfSampler);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateSamplerState failed. result=%d", result);
@@ -190,7 +384,7 @@ void Renderer::initView(const Size& windowSize)
 	rasterizeDesc.ScissorEnable = FALSE;
 	rasterizeDesc.MultisampleEnable = FALSE;
 	rasterizeDesc.AntialiasedLineEnable = FALSE;
-	result = direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateNormal);
+	result = _direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateNormal);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
@@ -198,7 +392,7 @@ void Renderer::initView(const Size& windowSize)
 	}
 
 	rasterizeDesc.CullMode = D3D11_CULL_FRONT;
-	result = direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateCullFaceFront);
+	result = _direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateCullFaceFront);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
@@ -206,7 +400,7 @@ void Renderer::initView(const Size& windowSize)
 	}
 
 	rasterizeDesc.CullMode = D3D11_CULL_BACK;
-	result = direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateCullFaceBack);
+	result = _direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateCullFaceBack);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
@@ -220,7 +414,7 @@ void Renderer::initView(const Size& windowSize)
 	blendDesc.IndependentBlendEnable = FALSE;
 	blendDesc.RenderTarget[0].BlendEnable = FALSE;
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	result = direct3dDevice->CreateBlendState(&blendDesc, &_blendState);
+	result = _direct3dDevice->CreateBlendState(&blendDesc, &_blendState);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBlendState failed. result=%d", result);
@@ -270,7 +464,7 @@ void Renderer::initView(const Size& windowSize)
 	ID3D11Buffer* constantBuffer = nullptr;
 
 	// View行列用
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	result = _direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -280,7 +474,7 @@ void Renderer::initView(const Size& windowSize)
 
 	// Projection行列用
 	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	result = _direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -290,7 +484,7 @@ void Renderer::initView(const Size& windowSize)
 
 	// デプスバイアス行列用
 	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	result = _direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -301,7 +495,7 @@ void Renderer::initView(const Size& windowSize)
 	// アンビエントライトカラー
 	constantBufferDesc.ByteWidth = sizeof(AmbientLight::ConstantBufferData);
 	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	result = _direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -312,7 +506,7 @@ void Renderer::initView(const Size& windowSize)
 	// ディレクショナルトライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(DirectionalLight::ConstantBufferData);
 	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	result = _direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -323,7 +517,7 @@ void Renderer::initView(const Size& windowSize)
 	// ポイントライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(PointLight::ConstantBufferData) * PointLight::MAX_NUM;
 	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	result = _direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -334,7 +528,7 @@ void Renderer::initView(const Size& windowSize)
 	// スポットライトパラメーター
 	constantBufferDesc.ByteWidth = sizeof(SpotLight::ConstantBufferData) * SpotLight::MAX_NUM;
 	constantBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	result = _direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -368,7 +562,7 @@ void Renderer::initView(const Size& windowSize)
 
 	// 頂点バッファのサブリソースの作成
 	ID3D11Buffer* vertexBuffer = nullptr;
-	result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &vertexBuffer);
+	result = _direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &vertexBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -382,7 +576,7 @@ void Renderer::initView(const Size& windowSize)
 		{D3DProgram::SEMANTIC_TEXTURE_COORDINATE.c_str(), 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(Vec2), D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 	ID3D11InputLayout* inputLayout = nullptr;
-	result = direct3dDevice->CreateInputLayout(
+	result = _direct3dDevice->CreateInputLayout(
 		layout,
 		_countof(layout), 
 		_d3dProgramForDeferredRendering.getVertexShaderBlob()->GetBufferPointer(),
@@ -480,19 +674,17 @@ void Renderer::render()
 void Renderer::prepareDefaultRenderTarget()
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
-	direct3dContext->ClearState();
+	_direct3dContext->ClearState();
 
 	float clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	direct3dContext->ClearRenderTargetView(Director::getInstance()->getDirect3dRenderTarget(), clearColor);
-	direct3dContext->ClearDepthStencilView(Director::getInstance()->getDirect3dDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	_direct3dContext->ClearRenderTargetView(_direct3dRenderTarget, clearColor);
+	_direct3dContext->ClearDepthStencilView(_direct3dDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
-	ID3D11RenderTargetView* renderTarget = Director::getInstance()->getDirect3dRenderTarget(); //TODO: 一度変数に入れないとコンパイルエラーが出てしまった
-	direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
+	_direct3dContext->RSSetViewports(1, _direct3dViewport);
+	_direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
 
-	direct3dContext->OMSetRenderTargets(1, &renderTarget, Director::getInstance()->getDirect3dDepthStencilView());
-	direct3dContext->OMSetDepthStencilState(Director::getInstance()->getDirect3dDepthStencilState(), 1);
+	_direct3dContext->OMSetRenderTargets(1, &_direct3dRenderTarget, _direct3dDepthStencilView);
+	_direct3dContext->OMSetDepthStencilState(_direct3dDepthStencilState, 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	//glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -507,21 +699,20 @@ void Renderer::prepareDefaultRenderTarget()
 void Renderer::prepareGBufferRendering()
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
-	direct3dContext->ClearState();
+	_direct3dContext->ClearState();
 
 	float clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	direct3dContext->ClearRenderTargetView(_gBufferColorSpecularIntensity->getRenderTargetView(), clearColor);
-	direct3dContext->ClearRenderTargetView(_gBufferNormal->getRenderTargetView(), clearColor);
-	direct3dContext->ClearRenderTargetView(_gBufferSpecularPower->getRenderTargetView(), clearColor);
-	direct3dContext->ClearDepthStencilView(_gBufferDepthStencil->getDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	_direct3dContext->ClearRenderTargetView(_gBufferColorSpecularIntensity->getRenderTargetView(), clearColor);
+	_direct3dContext->ClearRenderTargetView(_gBufferNormal->getRenderTargetView(), clearColor);
+	_direct3dContext->ClearRenderTargetView(_gBufferSpecularPower->getRenderTargetView(), clearColor);
+	_direct3dContext->ClearDepthStencilView(_gBufferDepthStencil->getDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	direct3dContext->RSSetViewports(1, Director::getInstance()->getDirect3dViewport());
-	direct3dContext->RSSetState(getRasterizeStateCullFaceNormal());
+	_direct3dContext->RSSetViewports(1, &_direct3dViewport[0]);
+	_direct3dContext->RSSetState(getRasterizeStateCullFaceNormal());
 
 	ID3D11RenderTargetView* gBuffers[3] = {_gBufferColorSpecularIntensity->getRenderTargetView(), _gBufferNormal->getRenderTargetView(), _gBufferSpecularPower->getRenderTargetView()};
-	direct3dContext->OMSetRenderTargets(3, gBuffers, _gBufferDepthStencil->getDepthStencilView());
-	direct3dContext->OMSetDepthStencilState(_gBufferDepthStencil->getDepthStencilState(), 1);
+	_direct3dContext->OMSetRenderTargets(3, gBuffers, _gBufferDepthStencil->getDepthStencilView());
+	_direct3dContext->OMSetDepthStencilState(_gBufferDepthStencil->getDepthStencilState(), 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glBindFramebuffer(GL_FRAMEBUFFER, _gBufferFrameBuffer->getFrameBufferId());
 
@@ -545,7 +736,7 @@ void Renderer::prepareDeferredRendering()
 void Renderer::renderDeferred()
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+	ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 
 	// TODO:ここらへん共通化したいな。。
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -956,7 +1147,7 @@ void Renderer::prepareFowardRendering()
 void Renderer::prepareFowardRendering2D()
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	Director::getInstance()->getDirect3dContext()->OMSetDepthStencilState(Director::getInstance()->getDirect3dDepthStencilState2D(), 1);
+	_direct3dContext->OMSetDepthStencilState(_direct3dDepthStencilState2D, 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glDisable(GL_DEPTH_TEST);
 #endif

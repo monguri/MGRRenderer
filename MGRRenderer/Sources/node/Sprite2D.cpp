@@ -36,15 +36,15 @@ Sprite2D::~Sprite2D()
 }
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShaderFunctionName, const std::string& geometryShaderFunctionName, const std::string& pixelShaderFunctionName, const Size& contentSize)
+bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShaderFunctionName, const std::string& geometryShaderFunctionName, const std::string& pixelShaderFunctionName, const SizeUint& contentSize)
 {
 	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
 	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 1.0f);
-	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
+	_quadrangle.bottomRight.position = Vec2((float)contentSize.width, 0.0f);
 	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 1.0f);
-	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
+	_quadrangle.topLeft.position = Vec2(0.0f, (float)contentSize.height);
 	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 0.0f);
-	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
+	_quadrangle.topRight.position = Vec2((float)contentSize.width, (float)contentSize.height);
 	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 0.0f);
 
 	// 頂点バッファの定義
@@ -63,7 +63,7 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 	vertexBufferSubData.SysMemSlicePitch = 0;
 
 	// 頂点バッファのサブリソースの作成
-	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
+	ID3D11Device* direct3dDevice = Director::getRenderer().getDirect3dDevice();
 	ID3D11Buffer* vertexBuffer = nullptr;
 	HRESULT result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &vertexBuffer);
 	if (FAILED(result))
@@ -170,18 +170,18 @@ bool Sprite2D::initCommon(const std::string& path, const std::string& vertexShad
 	return true;
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
-bool Sprite2D::initCommon(const std::string& geometryShaderFunctionPath, const std::string& pixelShaderFunctionPath, const Size& contentSize)
+bool Sprite2D::initCommon(const std::string& geometryShaderFunctionPath, const std::string& pixelShaderFunctionPath, const SizeUint& contentSize)
 {
 	// 現状未使用
 	(void)geometryShaderFunctionPath;
 
 	_quadrangle.bottomLeft.position = Vec2(0.0f, 0.0f);
 	_quadrangle.bottomLeft.textureCoordinate = Vec2(0.0f, 0.0f);
-	_quadrangle.bottomRight.position = Vec2(contentSize.width, 0.0f);
+	_quadrangle.bottomRight.position = Vec2((float)contentSize.width, 0.0f);
 	_quadrangle.bottomRight.textureCoordinate = Vec2(1.0f, 0.0f);
-	_quadrangle.topLeft.position = Vec2(0.0f, contentSize.height);
+	_quadrangle.topLeft.position = Vec2(0.0f, (float)contentSize.height);
 	_quadrangle.topLeft.textureCoordinate = Vec2(0.0f, 1.0f);
-	_quadrangle.topRight.position = Vec2(contentSize.width, contentSize.height);
+	_quadrangle.topRight.position = Vec2((float)contentSize.width, (float)contentSize.height);
 	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 1.0f);
 
 	_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionTexture.glsl", pixelShaderFunctionPath);
@@ -224,7 +224,7 @@ bool Sprite2D::init(const std::string& filePath)
 	constantBufferDesc.StructureByteStride = 0;
 	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
 	ID3D11Buffer* constantBuffer = nullptr;
-	HRESULT result = Director::getInstance()->getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	HRESULT result = Director::getRenderer().getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -256,7 +256,7 @@ bool Sprite2D::initWithTexture(D3DTexture* texture)
 	constantBufferDesc.StructureByteStride = 0;
 	constantBufferDesc.ByteWidth = sizeof(Color4F); // getColor()のColor3Bにすると12バイト境界なので16バイト境界のためにパディングデータを作らねばならない
 	ID3D11Buffer* constantBuffer = nullptr;
-	HRESULT result = Director::getInstance()->getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	HRESULT result = Director::getRenderer().getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -317,7 +317,7 @@ bool Sprite2D::initWithDepthStencilTexture(D3DTexture* texture, RenderBufferType
 	constantBufferDesc.MiscFlags = 0;
 	constantBufferDesc.StructureByteStride = 0;
 	constantBufferDesc.ByteWidth = sizeof(Vec4); // float一個しか必要ないが、16バイトアラインメントなので
-	HRESULT result = Director::getInstance()->getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	HRESULT result = Director::getRenderer().getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -326,7 +326,7 @@ bool Sprite2D::initWithDepthStencilTexture(D3DTexture* texture, RenderBufferType
 	_d3dProgramForForwardRendering.addConstantBuffer(CONSTANT_BUFFER_DEPTH_TEXTURE_PARAMETER, constantBuffer);
 
 	constantBufferDesc.ByteWidth = sizeof(Mat4);
-	result = Director::getInstance()->getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	result = Director::getRenderer().getDirect3dDevice()->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
@@ -383,7 +383,7 @@ void Sprite2D::renderForward(bool isTransparent)
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 
 		// TODO:ここらへん共通化したいな。。
 		D3D11_MAPPED_SUBRESOURCE mappedResource;

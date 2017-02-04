@@ -21,12 +21,12 @@ public:
 	virtual ~Texture() {}
 	bool initWithImage(const Image& image);
 	virtual bool initWithImage(const Image& image, TextureUtility::PixelFormat format) = 0;
-	const Size& getContentSize() const { return _contentSize; }
+	const SizeUint& getContentSize() const { return _contentSize; }
 	static TextureUtility::PixelFormat getDefaultPixelFormat();
 	static void setDefaultPixelFormat(TextureUtility::PixelFormat format);
 
 protected:
-	Size _contentSize;
+	SizeUint _contentSize;
 };
 
 } // namespace mgrrenderer

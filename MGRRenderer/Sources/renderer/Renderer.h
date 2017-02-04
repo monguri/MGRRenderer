@@ -21,9 +21,16 @@ class Renderer final
 public:
 	Renderer();
 	~Renderer();
-	void initView(const Size& windowSize);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	void initView(HWND handleWindow, const SizeUint& windowSize);
+#elif defined(MGRRENDERER_USE_OPENGL)
+	void initView(const SizeUint& windowSize);
+#endif
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	IDXGISwapChain* getDirect3dSwapChain() const { return _direct3dSwapChain; }
+	ID3D11Device* getDirect3dDevice() const { return _direct3dDevice; }
+	ID3D11DeviceContext* getDirect3dContext() const { return _direct3dContext; }
 	ID3D11SamplerState* getPointSamplerState() const { return _pointSampler; }
 	ID3D11SamplerState* getLinearSamplerState() const { return _linearSampler; }
 	ID3D11SamplerState* getPCFSamplerState() const { return _pcfSampler; }
@@ -49,11 +56,11 @@ public:
 	void render();
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 	void prepareGBufferRendering();
-	static void prepareDeferredRendering();
+	void prepareDeferredRendering();
 	void renderDeferred();
 #endif // defined(MGRRENDERER_DEFERRED_RENDERING)
-	static void prepareFowardRendering();
-	static void prepareFowardRendering2D();
+	void prepareFowardRendering();
+	void prepareFowardRendering2D();
 
 private:
 	// stdにはtreeがないのでtreeのようなトラバース方法をstackとvectorで実現している
@@ -63,6 +70,14 @@ private:
 	std::vector<std::vector<RenderCommand*>> _queueGroup;
 	Quadrangle2D _quadrangle;
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	IDXGISwapChain* _direct3dSwapChain;
+	ID3D11Device* _direct3dDevice;
+	ID3D11DeviceContext* _direct3dContext;
+	ID3D11RenderTargetView* _direct3dRenderTarget;
+	ID3D11DepthStencilView* _direct3dDepthStencilView;
+	ID3D11DepthStencilState* _direct3dDepthStencilState;
+	ID3D11DepthStencilState* _direct3dDepthStencilState2D;
+	D3D11_VIEWPORT _direct3dViewport[1];
 	ID3D11SamplerState* _pointSampler;
 	ID3D11SamplerState* _linearSampler;
 	ID3D11SamplerState* _pcfSampler;
@@ -85,7 +100,7 @@ private:
 #endif
 #endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 
-	static void prepareDefaultRenderTarget();
+	void prepareDefaultRenderTarget();
 	void visitRenderQueue(const std::vector<RenderCommand*> queue);
 	void executeRenderCommand(RenderCommand* command);
 };

@@ -14,13 +14,6 @@ namespace mgrrenderer
 Director* Director::_instance = nullptr;
 
 Director::Director() :
-#if defined(MGRRENDERER_USE_DIRECT3D)
-_direct3dDevice(nullptr),
-_direct3dContext(nullptr),
-_direct3dRenderTarget(nullptr),
-_direct3dDepthStencilView(nullptr),
-_direct3dDepthStencilState(nullptr),
-_direct3dDepthStencilState2D(nullptr),
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 _displayGBuffer(false),
 _gBufferDepthStencil(nullptr),
@@ -28,7 +21,6 @@ _gBufferColorSpecularIntensitySprite(nullptr),
 _gBufferNormal(nullptr),
 _gBufferSpecularPower(nullptr),
 #endif // defined(MGRRENDERER_DEFERRED_RENDERING)
-#endif // defined(MGRRENDERER_USE_DIRECT3D)
 _displayStats(false),
 _accumulatedDeltaTime(0.0f),
 _FPSLabel(nullptr),
@@ -67,7 +59,11 @@ void Director::destroy()
 	delete _instance;
 }
 
-void Director::init(const Size& windowSize, float nearClip, float farClip)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+void Director::init(HWND handleWindow, const SizeUint& windowSize, float nearClip, float farClip)
+#elif defined(MGRRENDERER_USE_OPENGL)
+void Director::init(const SizeUint& windowSize, float nearClip, float farClip)
+#endif
 {
 	calculateDeltaTime();
 
@@ -75,8 +71,11 @@ void Director::init(const Size& windowSize, float nearClip, float farClip)
 	_nearClip = nearClip;
 	_farClip = farClip;
 
-	// TODO:å„Ç≈ï`âÊä÷åWÇÃèâä˙âªèàóùÇÕÇ±ÇÃíÜÇ…Ç‹Ç∆ÇﬂÇÈ
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	_renderer.initView(handleWindow, windowSize);
+#elif defined(MGRRENDERER_USE_OPENGL)
 	_renderer.initView(windowSize);
+#endif
 
 #if defined(MGRRENDERER_USE_OPENGL)
 	Logger::log("GPU vendor: %s\nGPU:%s\nOpenGL version:%s\nGLSLversion:%s", glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));

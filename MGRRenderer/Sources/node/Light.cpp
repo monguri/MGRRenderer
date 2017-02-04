@@ -87,7 +87,7 @@ void DirectionalLight::setIntensity(float intensity)
 #endif
 }
 
-void DirectionalLight::initShadowMap(const Vec3& cameraPosition, float nearClip, float farClip, const Size& size)
+void DirectionalLight::initShadowMap(const Vec3& cameraPosition, float nearClip, float farClip, const SizeUint& size)
 {
 	_nearClip = nearClip;
 	_farClip = farClip;
@@ -98,7 +98,7 @@ void DirectionalLight::initShadowMap(const Vec3& cameraPosition, float nearClip,
 		Vec3(0.0f, 1.0f, 0.0f) // とりあえずy方向を上にして固定
 	);
 
-	_shadowMapData.projectionMatrix = Mat4::createOrthographicAtCenter(size.width, size.height, nearClip, farClip);
+	_shadowMapData.projectionMatrix = Mat4::createOrthographicAtCenter((float)size.width, (float)size.height, nearClip, farClip);
 
 	// デプステクスチャ作成
 #if defined(MGRRENDERER_USE_DIRECT3D)
@@ -137,15 +137,15 @@ void DirectionalLight::prepareShadowMapRendering()
 	_prepareShadowMapRenderingCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 		direct3dContext->ClearState();
 		direct3dContext->ClearDepthStencilView(_shadowMapData.depthTexture->getDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 		D3D11_VIEWPORT viewport[1];
 		viewport[0].TopLeftX = 0.0f;
 		viewport[0].TopLeftY = 0.0f;
-		viewport[0].Width = Director::getInstance()->getWindowSize().width;
-		viewport[0].Height = Director::getInstance()->getWindowSize().height;
+		viewport[0].Width = (FLOAT)Director::getInstance()->getWindowSize().width;
+		viewport[0].Height = (FLOAT)Director::getInstance()->getWindowSize().height;
 		viewport[0].MinDepth = 0.0f;
 		viewport[0].MaxDepth = 1.0f;
 		direct3dContext->RSSetViewports(1, viewport);
@@ -206,7 +206,7 @@ void PointLight::setIntensity(float intensity)
 #endif
 }
 
-void PointLight::initShadowMap(float nearClip, float size)
+void PointLight::initShadowMap(float nearClip, unsigned int size)
 {
 	_nearClip = nearClip;
 
@@ -281,7 +281,7 @@ void PointLight::initShadowMap(float nearClip, float size)
 	drawBuffer.push_back(GL_NONE);
 	std::vector<GLenum> pixelFormats;
 	pixelFormats.push_back(GL_DEPTH_COMPONENT);
-	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, false, true, Size(size, size));
+	_shadowMapData.depthFrameBuffer->initWithTextureParams(drawBuffer, pixelFormats, false, true, SizeUint(size, size));
 #endif
 }
 
@@ -299,15 +299,15 @@ void PointLight::prepareShadowMapRendering() {
 
 	_prepareShadowMapRenderingCommand.init([=]
 	{
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 		direct3dContext->ClearState();
 		direct3dContext->ClearDepthStencilView(_shadowMapData.depthTexture->getDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 		D3D11_VIEWPORT viewport[1];
 		viewport[0].TopLeftX = 0.0f;
 		viewport[0].TopLeftY = 0.0f;
-		viewport[0].Width = Director::getInstance()->getWindowSize().width;
-		viewport[0].Height = Director::getInstance()->getWindowSize().width; // ポイントライトのシャドウマップは正方形
+		viewport[0].Width = (FLOAT)Director::getInstance()->getWindowSize().width;
+		viewport[0].Height = (FLOAT)Director::getInstance()->getWindowSize().width; // ポイントライトのシャドウマップは正方形
 		viewport[0].MinDepth = 0.0f;
 		viewport[0].MaxDepth = 1.0f;
 		direct3dContext->RSSetViewports(1, viewport);
@@ -390,7 +390,7 @@ void SpotLight::setIntensity(float intensity)
 #endif
 }
 
-void SpotLight::initShadowMap(float nearClip, const Size& size)
+void SpotLight::initShadowMap(float nearClip, const SizeUint& size)
 {
 	_nearClip = nearClip;
 
@@ -413,7 +413,7 @@ void SpotLight::initShadowMap(float nearClip, const Size& size)
 
 	_shadowMapData.projectionMatrix = Mat4::createPerspective(
 		_outerAngle, // field of view
-		size.width / size.height, // aspectratio
+		(float)size.width / size.height, // aspectratio
 		nearClip, // near clip
 		_range // far clip
 	);
@@ -454,15 +454,15 @@ void SpotLight::prepareShadowMapRendering() {
 	_prepareShadowMapRenderingCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 		direct3dContext->ClearState();
 		direct3dContext->ClearDepthStencilView(_shadowMapData.depthTexture->getDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 		D3D11_VIEWPORT viewport[1];
 		viewport[0].TopLeftX = 0.0f;
 		viewport[0].TopLeftY = 0.0f;
-		viewport[0].Width = Director::getInstance()->getWindowSize().width;
-		viewport[0].Height = Director::getInstance()->getWindowSize().height;
+		viewport[0].Width = (FLOAT)Director::getInstance()->getWindowSize().width;
+		viewport[0].Height = (FLOAT)Director::getInstance()->getWindowSize().height;
 		viewport[0].MinDepth = 0.0f;
 		viewport[0].MaxDepth = 1.0f;
 		direct3dContext->RSSetViewports(1, viewport);

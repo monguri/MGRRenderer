@@ -31,12 +31,13 @@ using namespace mgrrenderer;
 // 宣言
 #if defined(MGRRENDERER_USE_DIRECT3D)
 LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowParam, LONG param);
+static void initialize(HWND handleWindow);
 #elif defined(MGRRENDERER_USE_OPENGL)
 static void fwErrorHandler(int error, const char* description);
 static void fwKeyInputHandler(GLFWwindow* window, int key, int scancode, int action, int mods);
 void APIENTRY debugMessageHandler(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam);
-#endif
 static void initialize();
+#endif
 static void render();
 static void finalize();
 
@@ -104,170 +105,9 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	ShowWindow(handleWindow, SW_SHOWNORMAL);
 	UpdateWindow(handleWindow);
 
-	// デバイスとスワップ チェインの作成
-	DXGI_SWAP_CHAIN_DESC desc;
-	ZeroMemory(&desc, sizeof(desc));
-	desc.BufferCount = 1;
-	desc.BufferDesc.Width = WINDOW_WIDTH;
-	desc.BufferDesc.Height = WINDOW_HEIGHT;
-	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.BufferDesc.RefreshRate.Numerator = 60;
-	desc.BufferDesc.RefreshRate.Denominator = 60;
-	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	desc.OutputWindow = handleWindow;
-	desc.SampleDesc.Count = 1;
-	desc.SampleDesc.Quality = 0;
-	desc.Windowed = TRUE;
-	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-
-	// ハードウェア・デバイスを作成
-	IDXGISwapChain* swapChain = nullptr;
-	ID3D11Device* device = nullptr;
-	ID3D11DeviceContext* context = nullptr;
-	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
-	D3D_FEATURE_LEVEL featureLevelSupported;
-
-	D3D_DRIVER_TYPE driverTypes[] = { D3D_DRIVER_TYPE_HARDWARE, // ハードウェア・デバイス
-									D3D_DRIVER_TYPE_WARP, // WARPデバイス
-									D3D_DRIVER_TYPE_REFERENCE }; // リファレンス・デバイスを作成
-
-	HRESULT result = 0; //TODO:定数にしたい
-	for (D3D_DRIVER_TYPE driverType : driverTypes)
-	{
-		result = D3D11CreateDeviceAndSwapChain(
-			nullptr,
-			driverType,
-			nullptr,
-			D3D11_CREATE_DEVICE_DEBUG, // デフォルトでデバッグにしておく
-			featureLevels,
-			3,
-			D3D11_SDK_VERSION,
-			&desc,
-			&swapChain,
-			&device,
-			&featureLevelSupported,
-			&context
-		);
-
-		if (SUCCEEDED(result))
-		{
-			break;
-		}
-	}
-
-	if (FAILED(result))
-	{
-		std::cerr << "Error:" << GetLastError() << " D3D11CreateDeviceAndSwapChain failed." << std::endl;
-		// TODO:それぞれのエラー処理で解放処理をちゃんと書かないと
-		PostQuitMessage(EXIT_FAILURE);
-	}
-
-	Director::getInstance()->setDirect3dDevice(device);
-	Director::getInstance()->setDirect3dContext(context);
-
-	// スワップ・チェインから最初のバック・バッファを取得する
-	ID3D11Texture2D* backBuffer = nullptr;
-	result = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
-	if (FAILED(result))
-	{
-		std::cerr << "Error:" << GetLastError() << " GetBuffer failed." << std::endl;
-		PostQuitMessage(EXIT_FAILURE);
-	}
-
-	// バック・バッファの描画ターゲット・ビューを作る
-	ID3D11RenderTargetView* renderTargetView = nullptr;
-	result = device->CreateRenderTargetView(backBuffer, nullptr, &renderTargetView);
-	if (FAILED(result))
-	{
-		std::cerr << "Error:" << GetLastError() << " CreateRenderTargetView failed." << std::endl;
-		PostQuitMessage(EXIT_FAILURE);
-	}
-	Director::getInstance()->setDirect3dRenderTarget(renderTargetView);
-
-	// バック・バッファの情報
-	D3D11_TEXTURE2D_DESC descBackBuffer;
-	backBuffer->GetDesc(&descBackBuffer);
-
-	// 深度/ステンシル・テクスチャの作成
-	D3D11_TEXTURE2D_DESC descDepthStencilTexture = descBackBuffer;
-	descDepthStencilTexture.MipLevels = 1;
-	descDepthStencilTexture.ArraySize = 1;
-	descDepthStencilTexture.Format = DXGI_FORMAT_D32_FLOAT;
-	descDepthStencilTexture.Usage = D3D11_USAGE_DEFAULT;
-	descDepthStencilTexture.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	descDepthStencilTexture.CPUAccessFlags = 0;
-	descDepthStencilTexture.MiscFlags = 0;
-
-	ID3D11Texture2D* depthStencilTexture = nullptr;
-	result = device->CreateTexture2D(&descDepthStencilTexture, nullptr, &depthStencilTexture);
-	if (FAILED(result))
-	{
-		std::cerr << "Error:" << GetLastError() << " CreateTexture2D failed." << std::endl;
-		PostQuitMessage(EXIT_FAILURE);
-	}
-
-	D3D11_DEPTH_STENCIL_VIEW_DESC descDepthStencilView;
-	descDepthStencilView.Format = descDepthStencilTexture.Format;
-	descDepthStencilView.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	descDepthStencilView.Flags = 0;
-	descDepthStencilView.Texture2D.MipSlice = 0;
-
-	ID3D11DepthStencilView* depthStencilView = nullptr;
-	result = device->CreateDepthStencilView(depthStencilTexture, &descDepthStencilView, &depthStencilView);
-	if (FAILED(result))
-	{
-		std::cerr << "Error:" << GetLastError() << " CreateDepthStencilView failed." << std::endl;
-		PostQuitMessage(EXIT_FAILURE);
-	}
-	Director::getInstance()->setDirect3dDepthStencilView(depthStencilView);
-
-	// 深度、ステンシルステートオブジェクトの作成
-	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-	depthStencilDesc.DepthEnable = TRUE;
-	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-	depthStencilDesc.StencilEnable = FALSE;
-	depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-	depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_NEVER;
-	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_NEVER;
-	ID3D11DepthStencilState* depthStencilState = nullptr;
-	result = device->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
-	if (FAILED(result))
-	{
-		std::cerr << "Error:" << GetLastError() << " CreateDepthStencilState failed." << std::endl;
-		PostQuitMessage(EXIT_FAILURE);
-	}
-	Director::getInstance()->setDirect3dDepthStencilState(depthStencilState);
-
-	depthStencilDesc.DepthEnable = FALSE;
-	result = device->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
-	if (FAILED(result))
-	{
-		std::cerr << "Error:" << GetLastError() << " CreateDepthStencilState failed." << std::endl;
-		PostQuitMessage(EXIT_FAILURE);
-	}
-	Director::getInstance()->setDirect3dDepthStencilState2D(depthStencilState);
-
-	// ビューポートの設定
-	D3D11_VIEWPORT viewport[1];
-	viewport[0].TopLeftX = 0.0f;
-	viewport[0].TopLeftY = 0.0f;
-	viewport[0].Width = WINDOW_WIDTH;
-	viewport[0].Height = WINDOW_HEIGHT;
-	viewport[0].MinDepth = 0.0f;
-	viewport[0].MaxDepth = 1.0f;
-	Director::getInstance()->setDirect3dViewport(viewport);
-
 	// IDXGIFactoryインターフェイスの取得
 	IDXGIFactory* dxgiFactory = nullptr;
-	result = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory);
+	HRESULT result = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory);
 	if (FAILED(result))
 	{
 		std::cerr << "Error:" << GetLastError() << " CreateDXGIFactory failed." << std::endl;
@@ -330,11 +170,11 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 #endif
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
 	// 描画の初期化
-	initialize();
+	initialize(handleWindow);
 
 	// メインループ
-#if defined(MGRRENDERER_USE_DIRECT3D)
 	MSG msg;
 
 	// TODO:60FPSで回す処理を書いてない
@@ -351,10 +191,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 			// 描画のメインループ
 			render();
 
-			swapChain->Present(0, 0);
+			Director::getRenderer().getDirect3dSwapChain()->Present(0, 0);
 		}
 	} while (msg.message != WM_QUIT);
 #elif defined(MGRRENDERER_USE_OPENGL)
+	// 描画の初期化
+	initialize();
+
 	// FPSから1ループの長さの計算
 	LARGE_INTEGER nFreq;
 	QueryPerformanceFrequency(&nFreq);
@@ -445,14 +288,22 @@ void APIENTRY debugMessageHandler(GLenum source, GLenum type, GLuint id, GLenum 
 }
 #endif
 
+#if defined(MGRRENDERER_USE_DIRECT3D)
+void initialize(HWND handleWindow)
+#elif defined(MGRRENDERER_USE_OPENGL)
 void initialize()
+#endif
 {
 	//
 	// 描画するシーンをMGRRendererに登録している
 	//
 	bool isSucceeded = false;
 
-	Director::getInstance()->init(Size(WINDOW_WIDTH, WINDOW_HEIGHT), NEAR_CLIP, FAR_CLIP);
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	Director::getInstance()->init(handleWindow, SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT), NEAR_CLIP, FAR_CLIP);
+#elif defined(MGRRENDERER_USE_OPENGL)
+	Director::getInstance()->init(SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT), NEAR_CLIP, FAR_CLIP);
+#endif
 	Director::getInstance()->setDisplayStats(true);
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 	//Director::getInstance()->setDisplayGBuffer(true);
@@ -608,7 +459,7 @@ void initialize()
 		Vec3(0.0f, 0.0f, -WINDOW_WIDTH / 3.0f) - Vec3(-1.0f, -1.0f, -1.0f) * (WINDOW_HEIGHT / 1.1566f),
 		NEAR_CLIP,
 		FAR_CLIP,
-		Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+		SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->setDirectionalLight(dirLight);
 
 	if (dirLight->hasShadowMap())
@@ -672,7 +523,7 @@ void initialize()
 	SpotLight* light2 = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
 	light2->setIntensity(0.7f);
 	//light2->setColor(Color3B(0, 0, 255));
-	light2->initShadowMap(NEAR_CLIP, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+	light2->initShadowMap(NEAR_CLIP, SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addSpotLight(light2);
 
 	//if (light2->hasShadowMap())

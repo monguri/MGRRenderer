@@ -137,7 +137,7 @@ bool GLTexture::initWithImage(const Image& image, TextureUtility::PixelFormat fo
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Image‚©‚çƒf[ƒ^‚ð‚à‚ç‚¤
-	_contentSize = Size(imageWidth, imageHeight);
+	_contentSize = SizeUint(imageWidth, imageHeight);
 	return true;
 
 ERR:
@@ -148,14 +148,14 @@ ERR:
 	return false;
 }
 
-bool GLTexture::initDepthTexture(GLenum textureUnit, const Size& contentSize)
+bool GLTexture::initDepthTexture(GLenum textureUnit, const SizeUint& contentSize)
 {
 	_contentSize = contentSize;
 
 	GLint maxTextureSize = 0;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 
-	if (contentSize.width > maxTextureSize || contentSize.height > maxTextureSize)
+	if ((GLint)contentSize.width > maxTextureSize || (GLint)contentSize.height > maxTextureSize)
 	{	
 		return false;
 	}
@@ -199,14 +199,14 @@ bool GLTexture::initDepthTexture(GLenum textureUnit, const Size& contentSize)
 	return true;
 }
 
-bool GLTexture::initDepthCubeMapTexture(GLenum textureUnit, float size)
+bool GLTexture::initDepthCubeMapTexture(GLenum textureUnit, unsigned int size)
 {
-	_contentSize = Size(size, size);
+	_contentSize = SizeUint(size, size);
 
 	GLint maxTextureSize = 0;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 
-	if (size > maxTextureSize)
+	if ((GLint)size > maxTextureSize)
 	{	
 		return false;
 	}
@@ -255,13 +255,13 @@ bool GLTexture::initDepthCubeMapTexture(GLenum textureUnit, float size)
 	return true;
 }
 
-bool GLTexture::initRenderTexture(GLenum pixelFormat, const Size& contentSize)
+bool GLTexture::initRenderTexture(GLenum pixelFormat, const SizeUint& contentSize)
 {
 	_contentSize = contentSize;
 	GLint maxTextureSize = 0;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 
-	if (contentSize.width > maxTextureSize || contentSize.height > maxTextureSize)
+	if ((GLint)contentSize.width > maxTextureSize || (GLint)contentSize.height > maxTextureSize)
 	{	
 		return false;
 	}

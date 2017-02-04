@@ -6,7 +6,7 @@ namespace mgrrenderer
 
 static TextureUtility::PixelFormat _defaultPixelFormat = TextureUtility::PixelFormat::DEFAULT;
 
-Texture::Texture() : _contentSize(Size(0, 0))
+Texture::Texture() : _contentSize(SizeUint(0, 0))
 {
 }
 

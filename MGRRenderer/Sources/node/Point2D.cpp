@@ -27,7 +27,7 @@ void Point2D::initWithPointArray(const std::vector<Point2DData>& pointArray)
 	vertexBufferSubData.SysMemSlicePitch = 0;
 
 	// 頂点バッファのサブリソースの作成
-	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
+	ID3D11Device* direct3dDevice = Director::getRenderer().getDirect3dDevice();
 	ID3D11Buffer* vertexBuffer = nullptr;
 	HRESULT result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &vertexBuffer);
 	if (FAILED(result))
@@ -180,7 +180,7 @@ void Point2D::renderForward(bool isTransparent)
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 

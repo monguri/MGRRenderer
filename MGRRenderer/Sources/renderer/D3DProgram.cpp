@@ -97,7 +97,7 @@ void D3DProgram::initWithShaderFile(const std::string & path, bool depthTestEnab
 
 	ID3DBlob* errMsg = nullptr;
 	HRESULT result = E_FAIL;
-	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice(); // TODO:‚±‚±‚ÅDirectorˆË‘¶«‚ª¶‚Ü‚ê‚é‚ÌŒ™‚¾‚È[
+	ID3D11Device* direct3dDevice = Director::getRenderer().getDirect3dDevice(); // TODO:‚±‚±‚ÅDirectorˆË‘¶«‚ª¶‚Ü‚ê‚é‚ÌŒ™‚¾‚È[
 
 	if (!vertexShaderFunctionName.empty())
 	{

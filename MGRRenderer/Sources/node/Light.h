@@ -130,7 +130,7 @@ public:
 #endif
 	void setColor(const Color3B& color) override;
 	void setIntensity(float intensity) override;
-	void initShadowMap(const Vec3& cameraPosition, float nearClip, float farClip, const Size& size);
+	void initShadowMap(const Vec3& cameraPosition, float nearClip, float farClip, const SizeUint& size);
 	bool hasShadowMap() const override;
 	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 	void prepareShadowMapRendering();
@@ -209,7 +209,7 @@ public:
 #endif
 	void setColor(const Color3B& color) override;
 	void setIntensity(float intensity) override;
-	void initShadowMap(float nearClip, float size);
+	void initShadowMap(float nearClip, unsigned int size);
 	bool hasShadowMap() const override;
 	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 #if defined(MGRRENDERER_USE_DIRECT3D)
@@ -299,7 +299,7 @@ public:
 #endif
 	void setColor(const Color3B& color) override;
 	void setIntensity(float intensity) override;
-	void initShadowMap(float nearClip, const Size& size);
+	void initShadowMap(float nearClip, const SizeUint& size);
 	bool hasShadowMap() const override;
 	const ShadowMapData& getShadowMapData() const { return _shadowMapData; }
 	void prepareShadowMapRendering();

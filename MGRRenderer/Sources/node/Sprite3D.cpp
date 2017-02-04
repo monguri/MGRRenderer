@@ -144,7 +144,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	}
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
+	ID3D11Device* direct3dDevice = Director::getRenderer().getDirect3dDevice();
 	HRESULT result = E_FAIL;
 
 	if (_isObj)
@@ -1136,7 +1136,7 @@ void Sprite3D::renderGBuffer()
 	_renderGBufferCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 
 		// TODO:ここらへん共通化したいな。。
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -1335,7 +1335,7 @@ void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 		Mat4 lightProjectionMatrix = light->getShadowMapData().projectionMatrix;
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 		// モデル行列のマップ
@@ -1496,7 +1496,7 @@ void Sprite3D::renderPointLightShadowMap(size_t index, const PointLight* light, 
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		(void)face;
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 		// モデル行列のマップ
@@ -1645,7 +1645,7 @@ void Sprite3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 		Mat4 lightProjectionMatrix = light->getShadowMapData().projectionMatrix;
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 		// モデル行列のマップ
@@ -1804,7 +1804,7 @@ void Sprite3D::renderForward(bool isTransparent)
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 
 		// TODO:ここらへん共通化したいな。。
 		D3D11_MAPPED_SUBRESOURCE mappedResource;

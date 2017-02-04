@@ -69,7 +69,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	vertexBufferSubData.SysMemSlicePitch = 0;
 
 	// 頂点バッファのサブリソースの作成
-	ID3D11Device* direct3dDevice = Director::getInstance()->getDirect3dDevice();
+	ID3D11Device* direct3dDevice = Director::getRenderer().getDirect3dDevice();
 	ID3D11Buffer* vertexBuffer = nullptr;
 	HRESULT result = direct3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferSubData, &vertexBuffer);
 	if (FAILED(result))
@@ -436,7 +436,7 @@ void Polygon3D::renderGBuffer()
 	_renderGBufferCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 
@@ -566,7 +566,7 @@ void Polygon3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 		Mat4 lightProjectionMatrix = light->getShadowMapData().projectionMatrix;
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 		// モデル行列のマップ
@@ -672,7 +672,7 @@ void Polygon3D::renderPointLightShadowMap(size_t index, const PointLight* light,
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		(void)face;
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 		// モデル行列のマップ
@@ -719,7 +719,7 @@ void Polygon3D::renderPointLightShadowMap(size_t index, const PointLight* light,
 
 		glUniformMatrix4fv(_glProgramForShadowMap.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
 
-		lightViewMatrix = static_cast<PointLight*>(light)->getShadowMapData().viewMatrices[(int)face];
+		Mat4 lightViewMatrix = light->getShadowMapData().viewMatrices[(int)face];
 		glUniformMatrix4fv(
 			_glProgramForShadowMap.getUniformLocation("u_lightViewMatrix"),
 			1,
@@ -728,6 +728,7 @@ void Polygon3D::renderPointLightShadowMap(size_t index, const PointLight* light,
 		);
 		GLProgram::checkGLError();
 
+		Mat4 lightProjectionMatrix = light->getShadowMapData().projectionMatrix;
 		glUniformMatrix4fv(
 			_glProgramForShadowMap.getUniformLocation("u_lightProjectionMatrix"),
 			1,
@@ -766,7 +767,7 @@ void Polygon3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		//TODO:DirectionalLightと全く同じ処理内容。共通化したい
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 		
 		// モデル行列のマップ
@@ -871,7 +872,7 @@ void Polygon3D::renderForward(bool isTransparent)
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)
-		ID3D11DeviceContext* direct3dContext = Director::getInstance()->getDirect3dContext();
+		ID3D11DeviceContext* direct3dContext = Director::getRenderer().getDirect3dContext();
 
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 

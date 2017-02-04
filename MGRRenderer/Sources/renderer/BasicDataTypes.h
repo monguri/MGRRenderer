@@ -820,28 +820,28 @@ struct Mat4
 	}
 };
 
-struct Size
+struct SizeFloat
 {
 	float width;
 	float height;
 
-	Size() : width(0.0f), height(0.0f) {}
-	Size(float width, float height) : width(width), height(height) { Logger::logAssert(width >= 0.0f && height >= 0.0f, "Sizeの引数に負の値が入力された"); }
-	Size(unsigned int width, unsigned int height) : width(static_cast<float>(width)), height(static_cast<float>(height)) {}
-	Size(int width, int height) : width(static_cast<float>(width)), height(static_cast<float>(height)) { Logger::logAssert(width >= 0 && height >= 0, "Sizeの引数に負の値が入力された"); }
+	SizeFloat() : width(0.0f), height(0.0f) {}
+	SizeFloat(float width, float height) : width(width), height(height) { Logger::logAssert(width >= 0.0f && height >= 0.0f, "Sizeの引数に負の値が入力された"); }
+	SizeFloat(unsigned int width, unsigned int height) : width(static_cast<float>(width)), height(static_cast<float>(height)) {}
+	SizeFloat(int width, int height) : width(static_cast<float>(width)), height(static_cast<float>(height)) { Logger::logAssert(width >= 0 && height >= 0, "Sizeの引数に負の値が入力された"); }
 
-	const Size operator*(float a) const
+	const SizeFloat operator*(float a) const
 	{
-		Size ret;
+		SizeFloat ret;
 		ret.width = width * a;
 		ret.height = height * a;
 		return ret;
 	}
 
-	const Size operator/(float a) const
+	const SizeFloat operator/(float a) const
 	{
 		Logger::logAssert(a != 0.0, "0で除算している。");
-		Size ret;
+		SizeFloat ret;
 		ret.width = width / a;
 		ret.height = height / a;
 		return ret;
@@ -864,10 +864,10 @@ struct SizeUint
 		return ret;
 	}
 
-	const Size operator/(float a) const
+	const SizeFloat operator/(float a) const
 	{
 		Logger::logAssert(a != 0.0, "0で除算している。");
-		Size ret;
+		SizeFloat ret;
 		ret.width = width / a;
 		ret.height = height / a;
 		return ret;
@@ -877,10 +877,10 @@ struct SizeUint
 struct Rect
 {
 	Vec2 origin;
-	Size size;
+	SizeFloat size;
 
-	Rect() : origin(Vec2()), size(Size()) {}
-	Rect(float x, float y, float w, float h) : origin(Vec2(x, y)), size(Size(w, h)) {}
+	Rect() : origin(Vec2()), size(SizeFloat()) {}
+	Rect(float x, float y, float w, float h) : origin(Vec2(x, y)), size(SizeFloat(w, h)) {}
 };
 
 struct AnimationCurve

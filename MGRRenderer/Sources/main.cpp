@@ -465,7 +465,7 @@ void initialize()
 	if (dirLight->hasShadowMap())
 	{
 		depthTextureSprite = new Sprite2D();
-		const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
+		const SizeFloat& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
 		depthTextureSprite->initWithDepthStencilTexture(dirLight->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL, dirLight->getNearClip(), dirLight->getFarClip(), dirLight->getShadowMapData().projectionMatrix);
 		depthTextureSprite->setScale(1 / 5.0f);
 		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
@@ -481,7 +481,7 @@ void initialize()
 	//if (light->hasShadowMap())
 	//{
 	//	depthTextureSprite = new Sprite2D();
-	//	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
+	//	const SizeFloat& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
 	//	depthTextureSprite->setScale(1 / 5.0f);
 	//	depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_CUBEMAP_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix, CubeMapFace::Z_NEGATIVE);
 	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
@@ -497,7 +497,7 @@ void initialize()
 	//if (light2->hasShadowMap())
 	//{
 	//	depthTextureSprite = new Sprite2D();
-	//	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
+	//	const SizeFloat& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
 	//	depthTextureSprite->setScale(1 / 5.0f);
 	//	depthTextureSprite->initWithDepthStencilTexture(light2->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_CUBEMAP_TEXTURE, light2->getNearClip(), light2->getRange(), light2->getShadowMapData().projectionMatrix, CubeMapFace::Y_NEGATIVE);
 	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
@@ -507,13 +507,13 @@ void initialize()
 	//SpotLight* light = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Vec3(0.0f, 0.0f, -1.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
 	//light->setIntensity(0.7f);
 	////light->setColor(Color3B(255, 0, 0));
-	//light->initShadowMap(NEAR_CLIP, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+	//light->initShadowMap(NEAR_CLIP, SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT));
 	//scene->addSpotLight(light);
 
 	//if (light->hasShadowMap())
 	//{
 	//	depthTextureSprite = new Sprite2D();
-	//	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
+	//	const SizeFloat& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
 	//	depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix);
 	//	depthTextureSprite->setScale(1 / 5.0f);
 	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
@@ -529,7 +529,7 @@ void initialize()
 	//if (light2->hasShadowMap())
 	//{
 	//	depthTextureSprite = new Sprite2D();
-	//	const Size& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
+	//	const SizeFloat& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
 	//	depthTextureSprite->initWithDepthStencilTexture(light2->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE, light2->getNearClip(), light2->getRange(), light2->getShadowMapData().projectionMatrix);
 	//	depthTextureSprite->setScale(1 / 5.0f);
 	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));

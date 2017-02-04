@@ -25,6 +25,7 @@ Renderer::Renderer()
 ,_direct3dRenderTarget(nullptr)
 ,_direct3dDepthStencilView(nullptr)
 ,_direct3dDepthStencilState(nullptr)
+,_direct3dDepthStencilStateTransparent(nullptr)
 ,_direct3dDepthStencilState2D(nullptr)
 ,_pointSampler(nullptr)
 ,_linearSampler(nullptr)
@@ -33,6 +34,7 @@ Renderer::Renderer()
 ,_rasterizeStateCullFaceFront(nullptr)
 ,_rasterizeStateCullFaceBack(nullptr)
 ,_blendState(nullptr)
+,_blendStateTransparent(nullptr)
 #endif
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 #if defined(MGRRENDERER_USE_DIRECT3D)
@@ -55,6 +57,12 @@ Renderer::~Renderer()
 {
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	if (_blendStateTransparent != nullptr)
+	{
+		_blendStateTransparent->Release();
+		_blendStateTransparent = nullptr;
+	}
+
 	if (_blendState != nullptr)
 	{
 		_blendState->Release();
@@ -89,6 +97,12 @@ Renderer::~Renderer()
 	{
 		_direct3dDepthStencilState2D->Release();
 		_direct3dDepthStencilState2D = nullptr;
+	}
+
+	if (_direct3dDepthStencilStateTransparent != nullptr)
+	{
+		_direct3dDepthStencilStateTransparent ->Release();
+		_direct3dDepthStencilStateTransparent  = nullptr;
 	}
 
 	if (_direct3dDepthStencilState != nullptr)
@@ -233,9 +247,9 @@ void Renderer::initView(const SizeUint& windowSize)
 
 	if (FAILED(result))
 	{
-		Logger::log("Error:%s D3D11CreateDeviceAndSwapChain failed.", GetLastError());
+		Logger::logAssert(false, "Error:%s D3D11CreateDeviceAndSwapChain failed.", GetLastError());
 		// TODO:それぞれのエラー処理で解放処理をちゃんと書かないと
-		PostQuitMessage(EXIT_FAILURE);
+		return;
 	}
 
 	// スワップ・チェインから最初のバック・バッファを取得する
@@ -243,16 +257,16 @@ void Renderer::initView(const SizeUint& windowSize)
 	result = _direct3dSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
 	if (FAILED(result))
 	{
-		Logger::log("Error:%s GetBuffer failed.", GetLastError());
-		PostQuitMessage(EXIT_FAILURE);
+		Logger::logAssert(false, "Error:%s GetBuffer failed.", GetLastError());
+		return;
 	}
 
 	// バック・バッファの描画ターゲット・ビューを作る
 	result = _direct3dDevice->CreateRenderTargetView(backBuffer, nullptr, &_direct3dRenderTarget);
 	if (FAILED(result))
 	{
-		Logger::log("Error:%s CreateRenderTargetView failed.", GetLastError());
-		PostQuitMessage(EXIT_FAILURE);
+		Logger::logAssert(false, "Error:%s CreateRenderTargetView failed.", GetLastError());
+		return;
 	}
 
 	// バック・バッファの情報
@@ -273,8 +287,8 @@ void Renderer::initView(const SizeUint& windowSize)
 	result = _direct3dDevice->CreateTexture2D(&descDepthStencilTexture, nullptr, &depthStencilTexture);
 	if (FAILED(result))
 	{
-		Logger::log("Error:%s CreateTexture2D failed.", GetLastError());
-		PostQuitMessage(EXIT_FAILURE);
+		Logger::logAssert(false, "Error:%s CreateTexture2D failed.", GetLastError());
+		return;
 	}
 
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDepthStencilView;
@@ -286,11 +300,15 @@ void Renderer::initView(const SizeUint& windowSize)
 	result = _direct3dDevice->CreateDepthStencilView(depthStencilTexture, &descDepthStencilView, &_direct3dDepthStencilView);
 	if (FAILED(result))
 	{
-		Logger::log("Error:%s CreateDepthStencilView failed.", GetLastError());
-		PostQuitMessage(EXIT_FAILURE);
+		Logger::logAssert(false, "Error:%s CreateDepthStencilView failed.", GetLastError());
+		return;
 	}
 
+	//
 	// 深度、ステンシルステートオブジェクトの作成
+	//
+
+	// 通常のデプステスト用
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 	depthStencilDesc.DepthEnable = TRUE;
 	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
@@ -309,16 +327,26 @@ void Renderer::initView(const SizeUint& windowSize)
 	result = _direct3dDevice->CreateDepthStencilState(&depthStencilDesc, &_direct3dDepthStencilState);
 	if (FAILED(result))
 	{
-		Logger::log("Error:%s CreateDepthStencilState failed.", GetLastError());
-		PostQuitMessage(EXIT_FAILURE);
+		Logger::logAssert(false, "Error:%s CreateDepthStencilState failed.", GetLastError());
+		return;
 	}
 
+	// デプステストはするがデプスバッファには書き込まない透過オブジェクトパス用
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	result = _direct3dDevice->CreateDepthStencilState(&depthStencilDesc, &_direct3dDepthStencilStateTransparent);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "Error:%s CreateDepthStencilState failed.", GetLastError());
+		return;
+	}
+
+	// デプステストをしない2D用
 	depthStencilDesc.DepthEnable = FALSE;
 	result = _direct3dDevice->CreateDepthStencilState(&depthStencilDesc, &_direct3dDepthStencilState2D);
 	if (FAILED(result))
 	{
-		Logger::log("Error:%s CreateDepthStencilState failed.", GetLastError());
-		PostQuitMessage(EXIT_FAILURE);
+		Logger::logAssert(false, "Error:%s CreateDepthStencilState failed.", GetLastError());
+		return;
 	}
 
 	// ビューポートの設定
@@ -407,7 +435,11 @@ void Renderer::initView(const SizeUint& windowSize)
 		return;
 	}
 
+	//
 	// 汎用ブレンドステートオブジェクトの作成
+	//
+
+	// 不透過パス用。ブレンドしない
 	D3D11_BLEND_DESC blendDesc;
 	ZeroMemory(&blendDesc, sizeof(blendDesc));
 	blendDesc.AlphaToCoverageEnable = FALSE;
@@ -415,6 +447,22 @@ void Renderer::initView(const SizeUint& windowSize)
 	blendDesc.RenderTarget[0].BlendEnable = FALSE;
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 	result = _direct3dDevice->CreateBlendState(&blendDesc, &_blendState);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBlendState failed. result=%d", result);
+		return;
+	}
+
+	// 透過パス用。ブレンドする
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	result = _direct3dDevice->CreateBlendState(&blendDesc, &_blendStateTransparent);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateBlendState failed. result=%d", result);

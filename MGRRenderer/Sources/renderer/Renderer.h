@@ -77,6 +77,7 @@ private:
 	ID3D11RenderTargetView* _direct3dRenderTarget;
 	ID3D11DepthStencilView* _direct3dDepthStencilView;
 	ID3D11DepthStencilState* _direct3dDepthStencilState;
+	ID3D11DepthStencilState* _direct3dDepthStencilStateTransparent;
 	ID3D11DepthStencilState* _direct3dDepthStencilState2D;
 	D3D11_VIEWPORT _direct3dViewport[1];
 	ID3D11SamplerState* _pointSampler;
@@ -86,6 +87,7 @@ private:
 	ID3D11RasterizerState* _rasterizeStateCullFaceFront;
 	ID3D11RasterizerState* _rasterizeStateCullFaceBack;
 	ID3D11BlendState* _blendState;
+	ID3D11BlendState* _blendStateTransparent;
 #endif
 
 #if defined(MGRRENDERER_DEFERRED_RENDERING)

@@ -31,6 +31,7 @@ public:
 	IDXGISwapChain* getDirect3dSwapChain() const { return _direct3dSwapChain; }
 	ID3D11Device* getDirect3dDevice() const { return _direct3dDevice; }
 	ID3D11DeviceContext* getDirect3dContext() const { return _direct3dContext; }
+	ID3D11DepthStencilState* getDirect3dDepthStencilState() const { return _direct3dDepthStencilState; };
 	ID3D11SamplerState* getPointSamplerState() const { return _pointSampler; }
 	ID3D11SamplerState* getLinearSamplerState() const { return _linearSampler; }
 	ID3D11SamplerState* getPCFSamplerState() const { return _pcfSampler; }

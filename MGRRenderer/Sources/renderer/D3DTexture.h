@@ -20,7 +20,6 @@ public:
 
 	// デプステクスチャやレンダーターゲットなど描画により書き込みするときにのみ使う
 	ID3D11DepthStencilView* getDepthStencilView() const { return _depthStencilView; }
-	ID3D11DepthStencilState* getDepthStencilState() const { return _depthStencilState; }
 	ID3D11RenderTargetView* getRenderTargetView() const { return _renderTargetView; }
 
 	// 参照するときに使う
@@ -28,7 +27,6 @@ public:
 
 private:
 	ID3D11DepthStencilView* _depthStencilView;
-	ID3D11DepthStencilState* _depthStencilState;
 	ID3D11RenderTargetView* _renderTargetView;
 	ID3D11ShaderResourceView* _shaderResourceView;
 };

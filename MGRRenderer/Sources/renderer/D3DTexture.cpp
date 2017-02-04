@@ -11,7 +11,6 @@ namespace mgrrenderer
 
 D3DTexture::D3DTexture() :
 _depthStencilView(nullptr),
-_depthStencilState(nullptr),
 _renderTargetView(nullptr),
 _shaderResourceView(nullptr)
 {
@@ -29,12 +28,6 @@ D3DTexture::~D3DTexture()
 	{
 		_renderTargetView->Release();
 		_renderTargetView= nullptr;
-	}
-
-	if (_depthStencilState != nullptr)
-	{
-		_depthStencilState->Release();
-		_depthStencilState = nullptr;
 	}
 
 	if (_depthStencilView != nullptr)
@@ -165,29 +158,6 @@ bool D3DTexture::initDepthStencilTexture(const SizeUint& size)
 		return false;
 	}
 
-	// 深度、ステンシルステートオブジェクトの作成
-	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-	depthStencilDesc.DepthEnable = TRUE;
-	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-	depthStencilDesc.StencilEnable = TRUE;
-	depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-	depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_REPLACE;
-	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_REPLACE;
-	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
-	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_REPLACE;
-	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_REPLACE;
-	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
-	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	result = device->CreateDepthStencilState(&depthStencilDesc, &_depthStencilState);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateDepthStencilState failed. result=%d", result);
-		return false;
-	}
-
 	return true;
 }
 
@@ -251,29 +221,6 @@ bool D3DTexture::initDepthStencilCubeMapTexture(unsigned int size)
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateShaderResourceView failed. result=%d", result);
-		return false;
-	}
-
-	// 深度、ステンシルステートオブジェクトの作成
-	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-	depthStencilDesc.DepthEnable = TRUE;
-	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-	depthStencilDesc.StencilEnable = TRUE;
-	depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-	depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_REPLACE;
-	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_REPLACE;
-	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
-	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_REPLACE;
-	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_REPLACE;
-	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
-	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	result = device->CreateDepthStencilState(&depthStencilDesc, &_depthStencilState);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateDepthStencilState failed. result=%d", result);
 		return false;
 	}
 

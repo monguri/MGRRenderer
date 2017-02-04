@@ -154,7 +154,7 @@ void DirectionalLight::prepareShadowMapRendering()
 		
 		ID3D11RenderTargetView* renderTarget[1] = {nullptr}; // シャドウマップ描画はDepthStencilViewはあるがRenderTargetはないのでnullでいい
 		direct3dContext->OMSetRenderTargets(1, renderTarget, _shadowMapData.depthTexture->getDepthStencilView());
-		direct3dContext->OMSetDepthStencilState(_shadowMapData.depthTexture->getDepthStencilState(), 1);
+		direct3dContext->OMSetDepthStencilState(Director::getRenderer().getDirect3dDepthStencilState(), 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().depthFrameBuffer->getFrameBufferId());
 
@@ -316,7 +316,7 @@ void PointLight::prepareShadowMapRendering() {
 		
 		ID3D11RenderTargetView* renderTarget[1] = {nullptr}; // シャドウマップ描画はDepthStencilViewはあるがRenderTargetはないのでnullでいい
 		direct3dContext->OMSetRenderTargets(1, renderTarget, _shadowMapData.depthTexture->getDepthStencilView());
-		direct3dContext->OMSetDepthStencilState(_shadowMapData.depthTexture->getDepthStencilState(), 1);
+		direct3dContext->OMSetDepthStencilState(Director::getRenderer().getDirect3dDepthStencilState(), 1);
 	});
 
 	Director::getRenderer().addCommand(&_prepareShadowMapRenderingCommand);
@@ -471,7 +471,7 @@ void SpotLight::prepareShadowMapRendering() {
 		
 		ID3D11RenderTargetView* renderTarget[1] = {nullptr}; // シャドウマップ描画はDepthStencilViewはあるがRenderTargetはないのでnullでいい
 		direct3dContext->OMSetRenderTargets(1, renderTarget, _shadowMapData.depthTexture->getDepthStencilView());
-		direct3dContext->OMSetDepthStencilState(_shadowMapData.depthTexture->getDepthStencilState(), 1);
+		direct3dContext->OMSetDepthStencilState(Director::getRenderer().getDirect3dDepthStencilState(), 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glBindFramebuffer(GL_FRAMEBUFFER, getShadowMapData().depthFrameBuffer->getFrameBufferId());
 

@@ -712,7 +712,7 @@ void Renderer::prepareGBufferRendering()
 
 	ID3D11RenderTargetView* gBuffers[3] = {_gBufferColorSpecularIntensity->getRenderTargetView(), _gBufferNormal->getRenderTargetView(), _gBufferSpecularPower->getRenderTargetView()};
 	_direct3dContext->OMSetRenderTargets(3, gBuffers, _gBufferDepthStencil->getDepthStencilView());
-	_direct3dContext->OMSetDepthStencilState(_gBufferDepthStencil->getDepthStencilState(), 1);
+	_direct3dContext->OMSetDepthStencilState(_direct3dDepthStencilState, 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glBindFramebuffer(GL_FRAMEBUFFER, _gBufferFrameBuffer->getFrameBufferId());
 

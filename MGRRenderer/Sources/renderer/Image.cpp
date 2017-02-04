@@ -472,7 +472,7 @@ void Image::premultiplyAlpha()
 #endif
 
 	unsigned int* fourBytes = (unsigned int*)_rawData;
-	for (int i = 0; i < _width * _height; i++)
+	for (unsigned int i = 0; i < _width * _height; i++)
 	{
 		unsigned char* p = _rawData + i * 4;
 		// TODO:‚±‚ê‚­‚ç‚¢‚Ì‚±‚Æ‚ÍGPU‚Å‚â‚Á‚Ä‚à‚¢‚¢‚ñ‚¶‚á‚È‚¢‚©‚È‚ B‚Ü‚ A‚í‚´‚í‚´“]‘—‚·‚é‚Ì‚à‚È‚ñ‚¾‚¯‚ÇB

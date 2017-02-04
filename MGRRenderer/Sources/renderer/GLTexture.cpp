@@ -67,8 +67,8 @@ bool GLTexture::initWithImage(const Image& image, TextureUtility::PixelFormat fo
 	GLint maxTextureSize = 0;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 
-	int imageWidth = image.getWidth();
-	int imageHeight = image.getHeight();
+	unsigned int imageWidth = image.getWidth();
+	unsigned int imageHeight = image.getHeight();
 	if (imageWidth > maxTextureSize || imageHeight > maxTextureSize)
 	{	
 		return false;

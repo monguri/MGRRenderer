@@ -29,8 +29,8 @@ public:
 	size_t getDataLength() const { return _dataLen; };
 	unsigned char* getRawData() const { return _rawData; };
 	size_t getRawDataLength() const { return _rawDataLen; };
-	int getWidth() const { return _width; }
-	int getHeight() const { return _height; }
+	unsigned int getWidth() const { return _width; }
+	unsigned int getHeight() const { return _height; }
 	bool getHasPremultipliedAlpha() const { return _hasPremultipliedAlpha; }
 	TextureUtility::PixelFormat getPixelFormat() const { return _pixelFormat; }
 	FileFormat getFileFormat() const { return _fileFormat; }
@@ -42,8 +42,8 @@ private:
 	// ヘッダ情報や圧縮のない生の画像データ
 	unsigned char* _rawData;
 	size_t _rawDataLen;
-	int _width;
-	int _height;
+	unsigned int _width;
+	unsigned int _height;
 	TextureUtility::PixelFormat _pixelFormat;
 	bool _hasPremultipliedAlpha;
 	FileFormat _fileFormat;

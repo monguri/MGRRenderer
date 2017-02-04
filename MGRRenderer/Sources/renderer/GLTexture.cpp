@@ -69,7 +69,7 @@ bool GLTexture::initWithImage(const Image& image, TextureUtility::PixelFormat fo
 
 	unsigned int imageWidth = image.getWidth();
 	unsigned int imageHeight = image.getHeight();
-	if (imageWidth > maxTextureSize || imageHeight > maxTextureSize)
+	if ((GLint)imageWidth > maxTextureSize || (GLint)imageHeight > maxTextureSize)
 	{	
 		return false;
 	}

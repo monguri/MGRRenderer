@@ -11,13 +11,6 @@
 #include <vector>
 #include "utility/Logger.h"
 
-// TODO:ssize_tを使うためだが、もっとましな方法はないかな。。
-#include <ShlObj.h>
-#ifndef __SSIZE_T
-#define __SSIZE_T
-typedef SSIZE_T ssize_t;
-#endif // __SSIZE_T
-
 namespace mgrrenderer
 {
 

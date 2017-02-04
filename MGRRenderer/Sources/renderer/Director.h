@@ -5,6 +5,7 @@
 #if defined(MGRRENDERER_USE_DIRECT3D)
 #include <d3d11.h>
 #endif
+#include <ShlObj.h> // timeval‚Ì‚½‚ß
 
 namespace mgrrenderer
 {

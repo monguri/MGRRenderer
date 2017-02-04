@@ -75,7 +75,7 @@ bool GLTexture::initWithImage(const Image& image, TextureUtility::PixelFormat fo
 	}
 
 	unsigned char* convertedData = nullptr;
-	ssize_t convertedDataLen = 0;
+	size_t convertedDataLen = 0;
 	TextureUtility::PixelFormat pixelFormat = (format == TextureUtility::PixelFormat::NONE || format == TextureUtility::PixelFormat::AUTO) ? image.getPixelFormat() : format;
 	TextureUtility::PixelFormat toFormat = convertDataToFormat(image.getRawData(), image.getRawDataLength(), image.getPixelFormat(), pixelFormat, &convertedData, &convertedDataLen);
 	if (toFormat != pixelFormat)

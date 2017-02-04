@@ -1,12 +1,5 @@
 #pragma once
 
-// TODO:ssize_tを使うためだが、もっとましな方法はないかな。。
-#include <ShlObj.h>
-#ifndef __SSIZE_T
-#define __SSIZE_T
-typedef SSIZE_T ssize_t;
-#endif // __SSIZE_T
-
 namespace mgrrenderer
 {
 
@@ -64,27 +57,27 @@ namespace TextureUtility
 		NUM_PIXEL_FORMATS,
 	};
 
-	PixelFormat convertDataToFormat(const unsigned char* data, ssize_t dataLen, PixelFormat fromFormat, PixelFormat toFormat, unsigned char** outData, ssize_t* outDataLen);
-	PixelFormat convertI8ToFormat(const unsigned char* data, ssize_t dataLen, PixelFormat toFormat, unsigned char** outData, ssize_t* outDataLen);
-	PixelFormat convertAI88ToFormat(const unsigned char* data, ssize_t dataLen, PixelFormat toFormat, unsigned char** outData, ssize_t* outDataLen);
-	PixelFormat convertRGB888ToFormat(const unsigned char* data, ssize_t dataLen, PixelFormat toFormat, unsigned char** outData, ssize_t* outDataLen);
-	PixelFormat convertRGBA8888ToFormat(const unsigned char* data, ssize_t dataLen, PixelFormat toFormat, unsigned char** outData, ssize_t* outDataLen);
-	void convertI8ToRGBA8888(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertI8ToRGB888(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertI8ToAI88(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertI8ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertAI88ToRGBA8888(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertAI88ToRGB888(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertAI88ToI8(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertAI88ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertRGB888ToRGBA8888(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertRGB888ToI8(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertRGB888ToAI88(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertRGB888ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertRGBA8888ToRGB888(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertRGBA8888ToI8(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertRGBA8888ToAI88(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
-	void convertRGBA8888ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData);
+	PixelFormat convertDataToFormat(const unsigned char* data, size_t dataLen, PixelFormat fromFormat, PixelFormat toFormat, unsigned char** outData, size_t* outDataLen);
+	PixelFormat convertI8ToFormat(const unsigned char* data, size_t dataLen, PixelFormat toFormat, unsigned char** outData, size_t* outDataLen);
+	PixelFormat convertAI88ToFormat(const unsigned char* data, size_t dataLen, PixelFormat toFormat, unsigned char** outData, size_t* outDataLen);
+	PixelFormat convertRGB888ToFormat(const unsigned char* data, size_t dataLen, PixelFormat toFormat, unsigned char** outData, size_t* outDataLen);
+	PixelFormat convertRGBA8888ToFormat(const unsigned char* data, size_t dataLen, PixelFormat toFormat, unsigned char** outData, size_t* outDataLen);
+	void convertI8ToRGBA8888(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertI8ToRGB888(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertI8ToAI88(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertI8ToRGBA4444(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertAI88ToRGBA8888(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertAI88ToRGB888(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertAI88ToI8(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertAI88ToRGBA4444(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertRGB888ToRGBA8888(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertRGB888ToI8(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertRGB888ToAI88(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertRGB888ToRGBA4444(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertRGBA8888ToRGB888(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertRGBA8888ToI8(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertRGBA8888ToAI88(const unsigned char* data, size_t dataLen, unsigned char* outData);
+	void convertRGBA8888ToRGBA4444(const unsigned char* data, size_t dataLen, unsigned char* outData);
 } // namespace TextureUtility
 
 } // namespace mgrrenderer

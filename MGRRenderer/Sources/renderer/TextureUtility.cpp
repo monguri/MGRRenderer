@@ -1,5 +1,6 @@
 #include "TextureUtility.h"
 #include "utility/Logger.h"
+#include <ShlObj.h> // mallocのため
 
 namespace mgrrenderer
 {
@@ -7,7 +8,7 @@ namespace mgrrenderer
 namespace TextureUtility
 {
 
-PixelFormat convertDataToFormat(const unsigned char* data, ssize_t dataLen, PixelFormat fromFormat, PixelFormat toFormat, unsigned char** outData, ssize_t* outDataLen)
+PixelFormat convertDataToFormat(const unsigned char* data, size_t dataLen, PixelFormat fromFormat, PixelFormat toFormat, unsigned char** outData, size_t* outDataLen)
 {
 	if (fromFormat == toFormat || fromFormat == PixelFormat::AUTO)
 	{
@@ -34,7 +35,7 @@ PixelFormat convertDataToFormat(const unsigned char* data, ssize_t dataLen, Pixe
 	}
 }
 
-PixelFormat convertI8ToFormat(const unsigned char* data, ssize_t dataLen, PixelFormat toFormat, unsigned char** outData, ssize_t* outDataLen)
+PixelFormat convertI8ToFormat(const unsigned char* data, size_t dataLen, PixelFormat toFormat, unsigned char** outData, size_t* outDataLen)
 {
 	switch (toFormat)
 	{
@@ -71,7 +72,7 @@ PixelFormat convertI8ToFormat(const unsigned char* data, ssize_t dataLen, PixelF
 	return toFormat;
 }
 
-PixelFormat convertAI88ToFormat(const unsigned char* data, ssize_t dataLen, PixelFormat toFormat, unsigned char** outData, ssize_t* outDataLen)
+PixelFormat convertAI88ToFormat(const unsigned char* data, size_t dataLen, PixelFormat toFormat, unsigned char** outData, size_t* outDataLen)
 {
 	switch (toFormat)
 	{
@@ -108,7 +109,7 @@ PixelFormat convertAI88ToFormat(const unsigned char* data, ssize_t dataLen, Pixe
 	return toFormat;
 }
 
-PixelFormat convertRGB888ToFormat(const unsigned char* data, ssize_t dataLen, PixelFormat toFormat, unsigned char** outData, ssize_t* outDataLen)
+PixelFormat convertRGB888ToFormat(const unsigned char* data, size_t dataLen, PixelFormat toFormat, unsigned char** outData, size_t* outDataLen)
 {
 	switch (toFormat)
 	{
@@ -145,7 +146,7 @@ PixelFormat convertRGB888ToFormat(const unsigned char* data, ssize_t dataLen, Pi
 	return toFormat;
 }
 
-PixelFormat convertRGBA8888ToFormat(const unsigned char* data, ssize_t dataLen, PixelFormat toFormat, unsigned char** outData, ssize_t* outDataLen)
+PixelFormat convertRGBA8888ToFormat(const unsigned char* data, size_t dataLen, PixelFormat toFormat, unsigned char** outData, size_t* outDataLen)
 {
 	switch (toFormat)
 	{
@@ -182,9 +183,9 @@ PixelFormat convertRGBA8888ToFormat(const unsigned char* data, ssize_t dataLen, 
 	return toFormat;
 }
 
-void convertI8ToRGBA8888(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertI8ToRGBA8888(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
-	for (ssize_t i = 0; i < dataLen; ++i)
+	for (size_t i = 0; i < dataLen; ++i)
 	{
 		*outData++ = data[i]; // R
 		*outData++ = data[i]; // G
@@ -193,9 +194,9 @@ void convertI8ToRGBA8888(const unsigned char* data, ssize_t dataLen, unsigned ch
 	}
 }
 
-void convertI8ToRGB888(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertI8ToRGB888(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
-	for (ssize_t i = 0; i < dataLen; ++i)
+	for (size_t i = 0; i < dataLen; ++i)
 	{
 		*outData++ = data[i]; // R
 		*outData++ = data[i]; // G
@@ -203,20 +204,20 @@ void convertI8ToRGB888(const unsigned char* data, ssize_t dataLen, unsigned char
 	}
 }
 
-void convertI8ToAI88(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertI8ToAI88(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
 	unsigned short* outData16 = (unsigned short*)outData;
-	for (ssize_t i = 0; i < dataLen; ++i)
+	for (size_t i = 0; i < dataLen; ++i)
 	{
 		*outData16++ = 0xFF00 // A
 			| data[i]; // I
 	}
 }
 
-void convertI8ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertI8ToRGBA4444(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
 	unsigned short* out16 = (unsigned short*)outData;
-	for (ssize_t i = 0; i < dataLen; ++i)
+	for (size_t i = 0; i < dataLen; ++i)
 	{
 		// 下位4ビットはカット
 		*out16++ = (data[i] & 0x00F0) << 8 // R
@@ -226,9 +227,9 @@ void convertI8ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned ch
 	}
 }
 
-void convertAI88ToRGBA8888(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertAI88ToRGBA8888(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
-	for (ssize_t i = 0, l = dataLen - 1; i < l; i += 2)
+	for (size_t i = 0, l = dataLen - 1; i < l; i += 2)
 	{
 		*outData++ = data[i]; // R
 		*outData++ = data[i]; // G
@@ -237,9 +238,9 @@ void convertAI88ToRGBA8888(const unsigned char* data, ssize_t dataLen, unsigned 
 	}
 }
 
-void convertAI88ToRGB888(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertAI88ToRGB888(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
-	for (ssize_t i = 0, l = dataLen - 1; i < l; i += 2)
+	for (size_t i = 0, l = dataLen - 1; i < l; i += 2)
 	{
 		*outData++ = data[i]; // R
 		*outData++ = data[i]; // G
@@ -247,18 +248,18 @@ void convertAI88ToRGB888(const unsigned char* data, ssize_t dataLen, unsigned ch
 	}
 }
 
-void convertAI88ToI8(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertAI88ToI8(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
-	for (ssize_t i = 0, l = dataLen - 1; i < l; i += 2)
+	for (size_t i = 0, l = dataLen - 1; i < l; i += 2)
 	{
 		*outData++ = data[i]; // R
 	}
 }
 
-void convertAI88ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertAI88ToRGBA4444(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
 	unsigned short* out16 = (unsigned short*)outData;
-	for (ssize_t i = 0; i < dataLen - 1; i += 2)
+	for (size_t i = 0; i < dataLen - 1; i += 2)
 	{
 		// 下位4ビットはカット
 		*out16++ = (data[i] & 0x00F0) << 8 // R
@@ -268,9 +269,9 @@ void convertAI88ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned 
 	}
 }
 
-void convertRGB888ToRGBA8888(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertRGB888ToRGBA8888(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
-	for (ssize_t i = 0, l = dataLen - 2; i < l; i += 3)
+	for (size_t i = 0, l = dataLen - 2; i < l; i += 3)
 	{
 		*outData++ = data[i]; // R
 		*outData++ = data[i + 1]; // G
@@ -279,27 +280,27 @@ void convertRGB888ToRGBA8888(const unsigned char* data, ssize_t dataLen, unsigne
 	}
 }
 
-void convertRGB888ToI8(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertRGB888ToI8(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
-	for (ssize_t i = 0, l = dataLen - 2; i < l; i += 3)
+	for (size_t i = 0, l = dataLen - 2; i < l; i += 3)
 	{
 		*outData++ = (unsigned char)((data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114 + 500) / 1000); // I = (R * 299 + G * 587 + B * 114 + 500) / 1000 // TODO:どういう数式やろかこれ。。
 	}
 }
 
-void convertRGB888ToAI88(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertRGB888ToAI88(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
-	for (ssize_t i = 0, l = dataLen - 2; i < l; i += 3)
+	for (size_t i = 0, l = dataLen - 2; i < l; i += 3)
 	{
 		*outData++ = (unsigned char)((data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114 + 500) / 1000); // I = (R * 299 + G * 587 + B * 114 + 500) / 1000 // TODO:どういう数式やろかこれ。。
 		*outData++ = 0xFF;
 	}
 }
 
-void convertRGB888ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertRGB888ToRGBA4444(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
 	unsigned short* out16 = (unsigned short*)outData;
-	for (ssize_t i = 0; i < dataLen - 2; i += 3)
+	for (size_t i = 0; i < dataLen - 2; i += 3)
 	{
 		// 下位4ビットはカット
 		*out16++ = (data[i] & 0x00F0) << 8 // R
@@ -309,9 +310,9 @@ void convertRGB888ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigne
 	}
 }
 
-void convertRGBA8888ToRGB888(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertRGBA8888ToRGB888(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
-	for (ssize_t i = 0, l = dataLen - 3; i < l; i += 4)
+	for (size_t i = 0, l = dataLen - 3; i < l; i += 4)
 	{
 		*outData++ = data[i]; // R
 		*outData++ = data[i + 1]; // G
@@ -319,27 +320,27 @@ void convertRGBA8888ToRGB888(const unsigned char* data, ssize_t dataLen, unsigne
 	}
 }
 
-void convertRGBA8888ToI8(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertRGBA8888ToI8(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
-	for (ssize_t i = 0, l = dataLen - 3; i < l; i += 4)
+	for (size_t i = 0, l = dataLen - 3; i < l; i += 4)
 	{
 		*outData++ = (unsigned char)((data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114 + 500) / 1000); // I = (R * 299 + G * 587 + B * 114 + 500) / 1000 // TODO:どういう数式やろかこれ。。
 	}
 }
 
-void convertRGBA8888ToAI88(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertRGBA8888ToAI88(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
-	for (ssize_t i = 0, l = dataLen - 3; i < l; i += 4)
+	for (size_t i = 0, l = dataLen - 3; i < l; i += 4)
 	{
 		*outData++ = (unsigned char)((data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114 + 500) / 1000); // I = (R * 299 + G * 587 + B * 114 + 500) / 1000 // TODO:どういう数式やろかこれ。。
 		*outData++ = data[i + 3];
 	}
 }
 
-void convertRGBA8888ToRGBA4444(const unsigned char* data, ssize_t dataLen, unsigned char* outData)
+void convertRGBA8888ToRGBA4444(const unsigned char* data, size_t dataLen, unsigned char* outData)
 {
 	unsigned short* out16 = (unsigned short*)outData;
-	for (ssize_t i = 0; i < dataLen - 3; i += 4)
+	for (size_t i = 0; i < dataLen - 3; i += 4)
 	{
 		// 下位4ビットはカット
 		*out16++ = (data[i] & 0x00F0) << 8 // R

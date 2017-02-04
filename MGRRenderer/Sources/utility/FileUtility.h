@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
-//TODO:ssize_t‚Ì‚½‚ß
-#include "renderer/BasicDataTypes.h"
+#include <ShlObj.h> // WCHAR‚Ì‚½‚ß
 
 namespace mgrrenderer
 {

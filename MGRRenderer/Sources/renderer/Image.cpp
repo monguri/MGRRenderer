@@ -1,5 +1,6 @@
 #include "Image.h"
 #include "utility/FileUtility.h"
+#include "utility/Logger.h"
 #include "TextureUtility.h"
 
 extern "C"
@@ -415,7 +416,7 @@ bool Image::initWithTgaData(const unsigned char* data, size_t dataLen)
 		// mode=3(or4)‚ÍRGA(A)‚¾‚ªATGA‚ÍBGR(A)Œ`Ž®‚È‚Ì‚ÅR‚ÆB‚ð“ü‚ê‘Ö‚¦‚Ä‚¨‚­
 		if (mode >= 3)
 		{
-			for (int i = 0; i < _rawDataLen; i += mode)
+			for (size_t i = 0; i < _rawDataLen; i += mode)
 			{
 				unsigned char b = _rawData[i];
 				_rawData[i] = _rawData[i + 2];

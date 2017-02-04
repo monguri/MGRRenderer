@@ -1,4 +1,5 @@
 #include "FileUtility.h"
+#include "Logger.h"
 #include <Shlobj.h>
 #include <cstdlib>
 
@@ -34,7 +35,7 @@ FileUtility::FileUtility()
 std::string FileUtility::convertPathFormatToUnixStyle(const std::string& path)
 {
 	std::string ret = path;
-	ssize_t len = ret.length();
+	size_t len = ret.length();
 	for (int i = 0; i < (int)len; ++i)
 	{
 		if (ret[i] == '\\')

@@ -1815,7 +1815,7 @@ namespace C3bLoader
 			loadMeshDatasFromJson(jsonReader, outMeshDatas);
 		}
 
-		ssize_t lastSlashIndex = fileName.find_last_of('/');
+		size_t lastSlashIndex = fileName.find_last_of('/');
 		const std::string& dirPath = fileName.substr(0, lastSlashIndex + 1);
 		
 		// materialデータロード
@@ -1981,7 +1981,7 @@ namespace C3bLoader
 			loadMeshDatasFromBinary(binaryReader, seekPointTable, outMeshDatas);
 		}
 
-		ssize_t lastSlashIndex = fileName.find_last_of('/');
+		size_t lastSlashIndex = fileName.find_last_of('/');
 		const std::string& dirPath = fileName.substr(0, lastSlashIndex + 1);
 		
 		// materialデータロード

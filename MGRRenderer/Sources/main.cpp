@@ -306,7 +306,7 @@ void initialize()
 #endif
 	Director::getInstance()->setDisplayStats(true);
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
-	//Director::getInstance()->setDisplayGBuffer(true);
+	Director::getInstance()->setDisplayGBuffer(true);
 #endif
 
 	// 各ノードの作成はDirector::initの後に呼ぶ。Director::initのもっているウィンドウサイズを使用する場合があるので。

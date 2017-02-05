@@ -118,7 +118,10 @@ void Scene::update(float dt)
 
 	for (Node* child : _children)
 	{
-		child->renderGBuffer();
+		if (!child->getIsTransparent())
+		{
+			child->renderGBuffer();
+		}
 	}
 #endif
 
@@ -203,10 +206,7 @@ void Scene::update(float dt)
 		Director::getRenderer().renderDeferred();
 	});
 	Director::getRenderer().addCommand(&_renderDeferredCommand);
-#endif
-
-
-#if defined(MGRRENDERER_FOWARD_RENDERING)
+#elif defined(MGRRENDERER_FOWARD_RENDERING)
 	_prepareFowardRenderingCommand.init([=]
 	{
 		Director::getRenderer().prepareFowardRendering();
@@ -222,6 +222,11 @@ void Scene::update(float dt)
 		}
 	}
 #endif
+	_prepareTransparentRenderingCommand.init([=]
+	{
+		Director::getRenderer().prepareTransparentRendering();
+	});
+	Director::getRenderer().addCommand(&_prepareTransparentRenderingCommand);
 
 	// “§‰ßƒ‚ƒfƒ‹ƒpƒX
 	for (Node* child : _children)

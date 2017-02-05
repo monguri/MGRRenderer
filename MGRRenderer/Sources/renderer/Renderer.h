@@ -60,6 +60,7 @@ public:
 	void renderDeferred();
 #endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 	void prepareFowardRendering();
+	void prepareTransparentRendering();
 	void prepareFowardRendering2D();
 
 private:

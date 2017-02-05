@@ -56,9 +56,13 @@ private:
 	std::array<SpotLight*, SpotLight::MAX_NUM> _spotLightList;
 	size_t _numSpotLight;
 
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	CustomRenderCommand _prepareGBufferRenderingCommand;
 	CustomRenderCommand _prepareDeferredRenderingCommand; // Gバッファの描画も含めてディファードレンダリングだが、命名をわかりやすくするためにGバッファを使った最終描画をこう呼んでいる
+#elif defined(MGRRENDERER_FOWARD_RENDERING)
 	CustomRenderCommand _prepareFowardRenderingCommand;
+#endif
+	CustomRenderCommand _prepareTransparentRenderingCommand;
 	CustomRenderCommand _prepareFowardRendering2DCommand;
 	CustomRenderCommand _renderDeferredCommand;
 };

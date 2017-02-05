@@ -758,7 +758,7 @@ void Renderer::prepareGBufferRendering()
 	_direct3dContext->ClearRenderTargetView(_gBufferSpecularPower->getRenderTargetView(), clearColor);
 	_direct3dContext->ClearDepthStencilView(_gBufferDepthStencil->getDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	_direct3dContext->RSSetViewports(1, &_direct3dViewport[0]);
+	_direct3dContext->RSSetViewports(1, _direct3dViewport);
 	_direct3dContext->RSSetState(getRasterizeStateCullFaceNormal());
 
 	ID3D11RenderTargetView* gBuffers[3] = {_gBufferColorSpecularIntensity->getRenderTargetView(), _gBufferNormal->getRenderTargetView(), _gBufferSpecularPower->getRenderTargetView()};
@@ -1195,9 +1195,33 @@ void Renderer::prepareFowardRendering()
 	prepareDefaultRenderTarget();
 }
 
+void Renderer::prepareTransparentRendering()
+{
+#if defined(MGRRENDERER_USE_DIRECT3D)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
+	// デプスバッファがディファードレンダリング時にResourceViewに設定されているのでRenderTargetに設定するために解放
+	ID3D11ShaderResourceView* resourceView[1] = { nullptr };
+	_direct3dContext->PSSetShaderResources(0, 1, resourceView);
+
+	// レンダーターゲットはカラーは通常描画と同じ。デプスはGバッファを参照する。ブレンドする。
+	_direct3dContext->OMSetRenderTargets(1, &_direct3dRenderTarget, _gBufferDepthStencil->getDepthStencilView());
+	_direct3dContext->OMSetDepthStencilState(_direct3dDepthStencilStateTransparent, 1);
+
+	//FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+	FLOAT blendFactor[4] = {0.5f, 0.5f, 0.5f, 0.0f};
+	_direct3dContext->OMSetBlendState(_blendStateTransparent, blendFactor, 0xffffffff);
+#elif defined(MGRRENDERER_FORWARD_RENDERING)
+#endif
+#elif defined(MGRRENDERER_USE_OPENGL)
+	// TODO:未実装
+#endif
+}
+
 void Renderer::prepareFowardRendering2D()
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	// レンダーターゲットはカラーバッファは通常描画と同じだがデプステストをしないのでデプスバッファを外す。ブレンドは透過物パスと同様にブレンドを行う。
+	_direct3dContext->OMSetRenderTargets(1, &_direct3dRenderTarget, nullptr);
 	_direct3dContext->OMSetDepthStencilState(_direct3dDepthStencilState2D, 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	glDisable(GL_DEPTH_TEST);

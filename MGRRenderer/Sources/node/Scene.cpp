@@ -229,6 +229,7 @@ void Scene::update(float dt)
 	Director::getRenderer().addCommand(&_prepareTransparentRenderingCommand);
 
 	// 透過モデルパス
+	// TODO:本来は深度でソートしておかねばならない
 	for (Node* child : _children)
 	{
 		// 透過物同士

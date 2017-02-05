@@ -1207,8 +1207,7 @@ void Renderer::prepareTransparentRendering()
 	_direct3dContext->OMSetRenderTargets(1, &_direct3dRenderTarget, _gBufferDepthStencil->getDepthStencilView());
 	_direct3dContext->OMSetDepthStencilState(_direct3dDepthStencilStateTransparent, 1);
 
-	//FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	FLOAT blendFactor[4] = {0.5f, 0.5f, 0.5f, 0.0f};
+	FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	_direct3dContext->OMSetBlendState(_blendStateTransparent, blendFactor, 0xffffffff);
 #elif defined(MGRRENDERER_FORWARD_RENDERING)
 #endif

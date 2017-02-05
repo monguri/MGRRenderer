@@ -296,6 +296,10 @@ struct Color4F
 	{
 	}
 
+	Color4F(const Color3B& color3B, float opacity) : color(color3B.r / 255.0f, color3B.g / 255.0f, color3B.b / 255.0f, opacity)
+	{
+	}
+
 	Color4F operator*(float a)
 	{
 		color *= a;

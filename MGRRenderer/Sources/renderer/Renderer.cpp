@@ -1198,19 +1198,23 @@ void Renderer::prepareFowardRendering()
 void Renderer::prepareTransparentRendering()
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
-#if defined(MGRRENDERER_DEFERRED_RENDERING)
 	// デプスバッファがディファードレンダリング時にResourceViewに設定されているのでRenderTargetに設定するために解放
 	ID3D11ShaderResourceView* resourceView[1] = { nullptr };
 	_direct3dContext->PSSetShaderResources(0, 1, resourceView);
 
-	// レンダーターゲットはカラーは通常描画と同じ。デプスはGバッファを参照する。ブレンドする。
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
+	// レンダーターゲットはカラーは通常描画と同じ。デプスはGバッファを参照する。
 	_direct3dContext->OMSetRenderTargets(1, &_direct3dRenderTarget, _gBufferDepthStencil->getDepthStencilView());
+#elif defined(MGRRENDERER_FORWARD_RENDERING)
+	// レンダーターゲットは通常描画と同じ。
+	_direct3dContext->OMSetRenderTargets(1, &_direct3dRenderTarget, _direct3dDepthStencilView);
+#endif
+	// デプステストはするがデプスは書き込まない
 	_direct3dContext->OMSetDepthStencilState(_direct3dDepthStencilStateTransparent, 1);
 
+	// ブレンドする
 	FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	_direct3dContext->OMSetBlendState(_blendStateTransparent, blendFactor, 0xffffffff);
-#elif defined(MGRRENDERER_FORWARD_RENDERING)
-#endif
 #elif defined(MGRRENDERER_USE_OPENGL)
 	// TODO:未実装
 #endif

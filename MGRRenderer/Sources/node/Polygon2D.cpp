@@ -159,10 +159,8 @@ void Polygon2D::renderGBuffer()
 }
 #endif
 
-void Polygon2D::renderForward(bool isTransparent)
+void Polygon2D::renderForward()
 {
-	(void)isTransparent;
-
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)

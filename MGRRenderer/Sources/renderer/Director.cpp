@@ -276,11 +276,11 @@ void Director::renderGBufferSprite()
 
 	if (_gBufferDepthStencil != nullptr)
 	{
-		_gBufferDepthStencil->renderForward(false);
+		_gBufferDepthStencil->renderForward();
 	}
-	_gBufferColorSpecularIntensitySprite->renderForward(false);
-	_gBufferNormal->renderForward(false);
-	_gBufferSpecularPower->renderForward(false);
+	_gBufferColorSpecularIntensitySprite->renderForward();
+	_gBufferNormal->renderForward();
+	_gBufferSpecularPower->renderForward();
 }
 #endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 
@@ -319,7 +319,7 @@ void Director::updateStats(float dt)
 		// ‰e‚ÍŠÖŒW‚È‚¢‚Ì‚Åˆê‹C‚É‘SƒpƒX•`‰æ‚µ‚Ä‚µ‚Ü‚¤
 		_FPSLabel->update(dt);
 		_FPSLabel->prepareRendering();
-		_FPSLabel->renderForward(false);
+		_FPSLabel->renderForward();
 	}
 }
 

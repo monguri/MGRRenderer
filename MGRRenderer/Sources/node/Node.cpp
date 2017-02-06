@@ -47,9 +47,8 @@ void Node::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 	(void)light;
 }
 
-void Node::renderForward(bool isTransparent)
+void Node::renderForward()
 {
-	(void)isTransparent;
 	// ‰½‚à‚µ‚È‚¢
 }
 

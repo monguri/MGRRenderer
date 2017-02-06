@@ -186,10 +186,8 @@ void Particle3D::renderGBuffer()
 }
 #endif
 
-void Particle3D::renderForward(bool isTransparent)
+void Particle3D::renderForward()
 {
-	(void)isTransparent;
-
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_OPENGL)

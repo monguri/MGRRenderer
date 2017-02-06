@@ -235,7 +235,7 @@ void Scene::update(float dt)
 		// “§‰ß•¨“¯Žm
 		if (child->getIsTransparent())
 		{
-			child->renderForward(true);
+			child->renderForward();
 		}
 	}
 
@@ -246,11 +246,11 @@ void Scene::update(float dt)
 	});
 	Director::getRenderer().addCommand(&_prepareFowardRendering2DCommand);
 
-	_cameraFor2D.renderForward(false);
+	_cameraFor2D.renderForward();
 
 	for (Node* child : _children2D)
 	{
-		child->renderForward(false);
+		child->renderForward();
 	}
 }
 

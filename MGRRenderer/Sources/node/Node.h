@@ -21,7 +21,7 @@ public:
 	virtual void renderDirectionalLightShadowMap(const DirectionalLight* light);
 	virtual void renderPointLightShadowMap(size_t index, const PointLight* light, CubeMapFace face = CubeMapFace::X_POSITIVE);
 	virtual void renderSpotLightShadowMap(size_t index, const SpotLight* light);
-	virtual void renderForward(bool isTransparent);
+	virtual void renderForward();
 	const Vec3& getPosition() const { return _position; }
 	virtual void setPosition(const Vec3& position) { _position = position; };
 	const Quaternion& getRotation() const { return _rotation; }

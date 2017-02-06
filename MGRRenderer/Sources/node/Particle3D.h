@@ -47,7 +47,7 @@ private:
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 	void renderGBuffer() override;
 #endif
-	void renderForward(bool isTransparent) override;
+	void renderForward() override;
 };
 
 } // namespace mgrrenderer

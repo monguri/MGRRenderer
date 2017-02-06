@@ -376,10 +376,8 @@ void Sprite2D::renderGBuffer()
 }
 #endif
 
-void Sprite2D::renderForward(bool isTransparent)
+void Sprite2D::renderForward()
 {
-	(void)isTransparent;
-
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_DIRECT3D)

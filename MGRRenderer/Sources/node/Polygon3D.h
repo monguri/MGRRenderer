@@ -51,7 +51,7 @@ private:
 	void renderDirectionalLightShadowMap(const DirectionalLight* light) override;
 	void renderPointLightShadowMap(size_t index, const PointLight* light, CubeMapFace face = CubeMapFace::X_POSITIVE) override;
 	void renderSpotLightShadowMap(size_t index, const SpotLight* light) override;
-	void renderForward(bool isTransparent) override;
+	void renderForward() override;
 };
 
 } // namespace mgrrenderer

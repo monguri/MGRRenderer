@@ -1,4 +1,5 @@
 #include "Image.h"
+#include "../Config.h"
 #include "utility/FileUtility.h"
 #include "utility/Logger.h"
 #include "TextureUtility.h"

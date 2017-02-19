@@ -3,32 +3,43 @@
 float SPECULAR_POWER_RANGE_X = 10.0;
 float SPECULAR_POWER_RANGE_Y = 250.0;
 
+const int MAX_NUM_POINT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
+const int NUM_FACE_CUBEMAP_TEXTURE = 6;
+const int MAX_NUM_SPOT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
+
 uniform sampler2D u_gBufferDepthStencil;
 uniform sampler2D u_gBufferColorSpecularIntensity;
 uniform sampler2D u_gBufferNormal;
 //uniform sampler2D u_gBufferSpecularPower;
-uniform sampler2DShadow u_shadowTexture;
-uniform samplerCubeShadow u_shadowCubeMapTexture;
+uniform sampler2DShadow u_directionalLightShadowMap;
+uniform samplerCubeShadow u_pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
+uniform sampler2DShadow u_spotLightShadowMap[MAX_NUM_SPOT_LIGHT];
 uniform vec3 u_ambientLightColor;
+uniform bool u_directionalLightIsValid;
+uniform bool u_directionalLightHasShadowMap;
+uniform mat4 u_directionalLightViewMatrix;
+uniform mat4 u_directionalLightProjectionMatrix;
 uniform vec3 u_directionalLightColor;
 uniform vec3 u_directionalLightDirection;
-uniform vec3 u_pointLightPosition; //TODO:追加
-uniform vec3 u_pointLightColor;
-uniform float u_pointLightRangeInverse;
-uniform vec3 u_spotLightPosition;
-uniform vec3 u_spotLightColor;
-uniform vec3 u_spotLightDirection;
-uniform float u_spotLightRangeInverse;
-uniform float u_spotLightInnerAngleCos;
-uniform float u_spotLightOuterAngleCos;
+uniform bool u_pointLightHasShadowMap[MAX_NUM_POINT_LIGHT];
+uniform bool u_pointLightIsValid[MAX_NUM_POINT_LIGHT];
+uniform mat4 u_pointLightViewMatrices[NUM_FACE_CUBEMAP_TEXTURE][MAX_NUM_POINT_LIGHT];
+uniform mat4 u_pointLightProjectionMatrix;
+uniform vec3 u_pointLightPosition[MAX_NUM_POINT_LIGHT];
+uniform vec3 u_pointLightColor[MAX_NUM_POINT_LIGHT];
+uniform float u_pointLightRangeInverse[MAX_NUM_POINT_LIGHT];
+uniform bool u_spotLightHasShadowMap[MAX_NUM_SPOT_LIGHT];
+uniform bool u_spotLightIsValid[MAX_NUM_SPOT_LIGHT];
+uniform mat4 u_spotLightViewMatrix[MAX_NUM_SPOT_LIGHT];
+uniform mat4 u_spotLightProjectionMatrix[MAX_NUM_SPOT_LIGHT];
+uniform vec3 u_spotLightPosition[MAX_NUM_SPOT_LIGHT];
+uniform vec3 u_spotLightColor[MAX_NUM_SPOT_LIGHT];
+uniform vec3 u_spotLightDirection[MAX_NUM_SPOT_LIGHT];
+uniform float u_spotLightRangeInverse[MAX_NUM_SPOT_LIGHT];
+uniform float u_spotLightInnerAngleCos[MAX_NUM_SPOT_LIGHT];
+uniform float u_spotLightOuterAngleCos[MAX_NUM_SPOT_LIGHT];
 uniform mat4 u_depthTextureProjection;
 uniform mat4 u_viewInverse;
-uniform bool u_directionalLightHasShadowMap;
-uniform bool u_pointLightHasShadowMap;
-uniform bool u_spotLightHasShadowMap;
-uniform mat4 u_lightViewMatrix;
-uniform mat4 u_lightViewMatrices[6];
-uniform mat4 u_lightProjectionMatrix;
 uniform mat4 u_depthBiasMatrix;
 
 varying vec2 v_texCoord;
@@ -74,113 +85,139 @@ void main()
 	//float normalizedSpecularPower = texture2D(u_gBufferSpecularPower, v_texCoord).x;
 	//float specularPower = SPECULAR_POWER_RANGE_X + SPECULAR_POWER_RANGE_Y * normalizedSpecularPower;
 
-	vec3 diffuseSpecularLightColor = computeLightedColor(normal, -u_directionalLightDirection.xyz, u_directionalLightColor.rgb, 1.0);
-
-	vec3 vertexToPointLightDirection = u_pointLightPosition - worldPosition.xyz;
-	vec3 dir = vertexToPointLightDirection * u_pointLightRangeInverse;
-	float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
-	diffuseSpecularLightColor += computeLightedColor(normal, normalize(vertexToPointLightDirection), u_pointLightColor, attenuation);
-
-	vec3 vertexToSpotLightDirection = u_spotLightPosition - worldPosition.xyz;
-	dir = vertexToSpotLightDirection * u_spotLightRangeInverse;
-	attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
-	vertexToSpotLightDirection = normalize(vertexToSpotLightDirection);
-	float spotLightCurrentAngleCos = dot(u_spotLightDirection, -vertexToSpotLightDirection);
-	attenuation *= smoothstep(u_spotLightOuterAngleCos, u_spotLightInnerAngleCos, spotLightCurrentAngleCos);
-	attenuation = clamp(attenuation, 0.0, 1.0);
-	diffuseSpecularLightColor += computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor, attenuation);
+	// 後はここで得たpositionと、normalとcolorを利用して、ライティングをして色を決める
+	vec3 diffuseSpecularLightColor = vec3(0.0, 0.0, 0.0);
 
 	float shadowAttenuation = 1.0;
-	if (u_directionalLightHasShadowMap) {
-		vec4 lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * worldPosition;
-		//// zファイティングを避けるための微調整
-		lightPosition.z -= 0.005;
+	if (u_directionalLightIsValid) {
+		if (u_directionalLightHasShadowMap) {
+			vec4 lightPosition = u_depthBiasMatrix * u_directionalLightProjectionMatrix * u_directionalLightViewMatrix * worldPosition;
+			//// zファイティングを避けるための微調整
+			lightPosition.z -= 0.005;
 
-		// PCF
-		shadowAttenuation = 0.0;
-		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(-1, -1));
-		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(-1, 1));
-		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(1, 1));
-		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(1, -1));
-		shadowAttenuation *= 0.25;
+			// PCF
+			shadowAttenuation = 0.0;
+			shadowAttenuation += textureProjOffset(u_directionalLightShadowMap, lightPosition, ivec2(-1, -1));
+			shadowAttenuation += textureProjOffset(u_directionalLightShadowMap, lightPosition, ivec2(-1, 1));
+			shadowAttenuation += textureProjOffset(u_directionalLightShadowMap, lightPosition, ivec2(1, 1));
+			shadowAttenuation += textureProjOffset(u_directionalLightShadowMap, lightPosition, ivec2(1, -1));
+			shadowAttenuation *= 0.25;
 
-		//shadowAttenuation = textureProj(u_shadowTexture, lightPosition);
+			//shadowAttenuation = textureProj(u_shadowTexture, lightPosition);
+		}
+
+		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, -u_directionalLightDirection.xyz, u_directionalLightColor, 1.0);
 	}
 
-	if (u_pointLightHasShadowMap)
+	for (uint i = 0; i < MAX_NUM_POINT_LIGHT; i++)
 	{
-		// キューブマップのどの面か調べるため、3軸で一番座標が大きい値を探す
-		vec3 pointLightToVertexDirection = -vertexToPointLightDirection;
-		vec3 absPosition = abs(pointLightToVertexDirection);
-		float maxCoordinateVal = max(absPosition.x, max(absPosition.y, absPosition.z));
-
-		// 符号変換は表示してみて決めた
-		// TODO:POSITIVE側の向きはテストしてない
-		vec4 lightPosition;
-		mat4 lightViewMatrix;
-
-		if (maxCoordinateVal == absPosition.x)
+		if (!u_pointLightIsValid[i])
 		{
-			if (pointLightToVertexDirection.x > 0)
-			{
-				lightViewMatrix = u_lightViewMatrices[CUBEMAP_FACE_X_POSITIVE];
-			}
-			else
-			{
-				lightViewMatrix = u_lightViewMatrices[CUBEMAP_FACE_X_NEGATIVE];
-			}
-		}
-		else if (maxCoordinateVal == absPosition.y)
-		{
-			if (pointLightToVertexDirection.y > 0)
-			{
-				lightViewMatrix = u_lightViewMatrices[CUBEMAP_FACE_Y_POSITIVE];
-			}
-			else
-			{
-				lightViewMatrix = u_lightViewMatrices[CUBEMAP_FACE_Y_NEGATIVE];
-			}
-		}
-		else // if (maxCoordinateVal == absPosition.z)
-		{
-			if (pointLightToVertexDirection.z > 0)
-			{
-				lightViewMatrix = u_lightViewMatrices[CUBEMAP_FACE_Z_POSITIVE];
-			}
-			else
-			{
-				lightViewMatrix = u_lightViewMatrices[CUBEMAP_FACE_Z_NEGATIVE];
-			}
+			continue;
 		}
 
-		lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * lightViewMatrix * worldPosition;
-		// zファイティングを避けるための微調整
-		lightPosition.z -= 0.05;
+		vec3 vertexToPointLightDirection = u_pointLightPosition[i] - worldPosition.xyz;
+		vec3 dir = vertexToPointLightDirection * u_pointLightRangeInverse[i];
+		float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
 
-		//float pointLightDepth = -(u_lightProjectionMatrix[2][2] * maxCoordinateVal + u_lightProjectionMatrix[3][2]) / maxCoordinateVal;
-		// zファイティングを避けるための微調整
-		//pointLightDepth -= 0.05;
+		shadowAttenuation = 1.0;
+		if (u_pointLightHasShadowMap[i])
+		{
+			// キューブマップのどの面か調べるため、3軸で一番座標が大きい値を探す
+			vec3 pointLightToVertexDirection = -vertexToPointLightDirection;
+			vec3 absPosition = abs(pointLightToVertexDirection);
+			float maxCoordinateVal = max(absPosition.x, max(absPosition.y, absPosition.z));
 
-		// PCFはsamplerCubeMapShadowにはない
-		//shadowAttenuation = shadowCube(u_shadowCubeMapTexture, vec4(lightPosition, pointLightDepth));
-		shadowAttenuation = texture(u_shadowCubeMapTexture, lightPosition);
+			// 符号変換は表示してみて決めた
+			// TODO:POSITIVE側の向きはテストしてない
+			vec4 lightPosition;
+			mat4 lightViewMatrix;
+
+			if (maxCoordinateVal == absPosition.x)
+			{
+				if (pointLightToVertexDirection.x > 0)
+				{
+					lightViewMatrix = u_pointLightViewMatrices[CUBEMAP_FACE_X_POSITIVE][i];
+				}
+				else
+				{
+					lightViewMatrix = u_pointLightViewMatrices[CUBEMAP_FACE_X_NEGATIVE][i];
+				}
+			}
+			else if (maxCoordinateVal == absPosition.y)
+			{
+				if (pointLightToVertexDirection.y > 0)
+				{
+					lightViewMatrix = u_pointLightViewMatrices[CUBEMAP_FACE_Y_POSITIVE][i];
+				}
+				else
+				{
+					lightViewMatrix = u_pointLightViewMatrices[CUBEMAP_FACE_Y_NEGATIVE][i];
+				}
+			}
+			else // if (maxCoordinateVal == absPosition.z)
+			{
+				if (pointLightToVertexDirection.z > 0)
+				{
+					lightViewMatrix = u_pointLightViewMatrices[CUBEMAP_FACE_Z_POSITIVE][i];
+				}
+				else
+				{
+					lightViewMatrix = u_pointLightViewMatrices[CUBEMAP_FACE_Z_NEGATIVE][i];
+				}
+			}
+
+			lightPosition = u_depthBiasMatrix * u_pointLightProjectionMatrix * lightViewMatrix * worldPosition;
+			// zファイティングを避けるための微調整
+			lightPosition.z -= 0.05;
+
+			//float pointLightDepth = -(u_lightProjectionMatrix[2][2] * maxCoordinateVal + u_lightProjectionMatrix[3][2]) / maxCoordinateVal;
+			// zファイティングを避けるための微調整
+			//pointLightDepth -= 0.05;
+
+			// PCFはsamplerCubeMapShadowにはない
+			//shadowAttenuation = shadowCube(u_pointLightShadowCubeMap, vec4(lightPosition, pointLightDepth));
+			shadowAttenuation = texture(u_pointLightShadowCubeMap[i], lightPosition);
+		}
+
+		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, normalize(vertexToPointLightDirection), u_pointLightColor[i], attenuation);
 	}
 
-	if (u_spotLightHasShadowMap) {
-		vec4 lightPosition = u_depthBiasMatrix * u_lightProjectionMatrix * u_lightViewMatrix * worldPosition;
-		//// zファイティングを避けるための微調整
-		lightPosition.z -= 0.05;
+	for (uint i = 0; i < MAX_NUM_SPOT_LIGHT; i++)
+	{
+		if (!u_spotLightIsValid[i])
+		{
+			continue;
+		}
 
-		// PCF
-		shadowAttenuation = 0.0;
-		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(-1, -1));
-		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(-1, 1));
-		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(1, 1));
-		shadowAttenuation += textureProjOffset(u_shadowTexture, lightPosition, ivec2(1, -1));
-		shadowAttenuation *= 0.25;
+		vec3 vertexToSpotLightDirection = u_spotLightPosition[i] - worldPosition.xyz;
+		vec3 dir = vertexToSpotLightDirection * u_spotLightRangeInverse[i];
+		float attenuation = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
+		vertexToSpotLightDirection = normalize(vertexToSpotLightDirection);
+		float spotLightCurrentAngleCos = dot(u_spotLightDirection[i], -vertexToSpotLightDirection);
+		attenuation *= smoothstep(u_spotLightOuterAngleCos[i], u_spotLightInnerAngleCos[i], spotLightCurrentAngleCos);
+		attenuation = clamp(attenuation, 0.0, 1.0);
 
-		shadowAttenuation = textureProj(u_shadowTexture, lightPosition);
+		shadowAttenuation = 1.0;
+
+		if (u_spotLightHasShadowMap[i]) {
+			vec4 lightPosition = u_depthBiasMatrix * u_spotLightProjectionMatrix[i] * u_spotLightViewMatrix[i] * worldPosition;
+			//// zファイティングを避けるための微調整
+			lightPosition.z -= 0.05;
+
+			// PCF
+			shadowAttenuation = 0.0;
+			shadowAttenuation += textureProjOffset(u_spotLightShadowMap[i], lightPosition, ivec2(-1, -1));
+			shadowAttenuation += textureProjOffset(u_spotLightShadowMap[i], lightPosition, ivec2(-1, 1));
+			shadowAttenuation += textureProjOffset(u_spotLightShadowMap[i], lightPosition, ivec2(1, 1));
+			shadowAttenuation += textureProjOffset(u_spotLightShadowMap[i], lightPosition, ivec2(1, -1));
+			shadowAttenuation *= 0.25;
+
+			//shadowAttenuation = textureProj(u_spotLightShadowMap, lightPosition);
+		}
+
+		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor[i], attenuation);
 	}
 
-	gl_FragColor = vec4((color * (shadowAttenuation * diffuseSpecularLightColor + u_ambientLightColor)), 1.0);
+	gl_FragColor = vec4((color * (diffuseSpecularLightColor + u_ambientLightColor.rgb)), 1.0);
 }

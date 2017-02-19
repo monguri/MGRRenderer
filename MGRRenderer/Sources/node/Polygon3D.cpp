@@ -711,7 +711,7 @@ void Polygon3D::renderPointLightShadowMap(size_t index, const PointLight* light,
 
 		glUniformMatrix4fv(_glProgramForShadowMap.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
 
-		Mat4 lightViewMatrix = light->getShadowMapData().viewMatrices[(int)face];
+		const Mat4& lightViewMatrix = light->getShadowMapData().viewMatrices[(int)face];
 		glUniformMatrix4fv(
 			_glProgramForShadowMap.getUniformLocation("u_lightViewMatrix"),
 			1,
@@ -720,7 +720,7 @@ void Polygon3D::renderPointLightShadowMap(size_t index, const PointLight* light,
 		);
 		GLProgram::checkGLError();
 
-		Mat4 lightProjectionMatrix = light->getShadowMapData().projectionMatrix;
+		const Mat4& lightProjectionMatrix = light->getShadowMapData().projectionMatrix;
 		glUniformMatrix4fv(
 			_glProgramForShadowMap.getUniformLocation("u_lightProjectionMatrix"),
 			1,
@@ -1103,104 +1103,160 @@ void Polygon3D::renderForward()
 		Mat4 normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
 		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_NORMAL_MATRIX), 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
 
-		// ライトの設定
-		// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
-		for (Light* light : Director::getLight())
+		// アンビエントライト
+		const Scene& scene = Director::getInstance()->getScene();
+		const AmbientLight* ambientLight = scene.getAmbientLight();
+		Logger::logAssert(ambientLight != nullptr, "シーンにアンビエントライトがない。");
+		const Color3B& ambientLightColor = ambientLight->getColor();
+		float ambientIntensity = ambientLight->getIntensity();
+		glUniform3f(_glProgram.getUniformLocation("u_ambientLightColor"), ambientLightColor.r / 255.0f * ambientIntensity, ambientLightColor.g / 255.0f * ambientIntensity, ambientLightColor.b / 255.0f * ambientIntensity);
+		GLProgram::checkGLError();
+
+
+		// ディレクショナルライト
+		const DirectionalLight* directionalLight = scene.getDirectionalLight();
+		// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
+		if (directionalLight != nullptr)
 		{
-			const Color3B& lightColor = light->getColor();
-			float intensity = light->getIntensity();
-
-			switch (light->getLightType())
+			if (directionalLight->hasShadowMap())
 			{
-			case LightType::AMBIENT:
-				glUniform3f(_glProgram.getUniformLocation("u_ambientLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
-				GLProgram::checkGLError();
-				break;
-			case LightType::DIRECTION: {
-				glUniform3f(_glProgram.getUniformLocation("u_directionalLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
-				GLProgram::checkGLError();
-
-				DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
-				Vec3 direction = dirLight->getDirection();
-				direction.normalize();
-				glUniform3fv(_glProgram.getUniformLocation("u_directionalLightDirection"), 1, (GLfloat*)&direction);
-				GLProgram::checkGLError();
-
-				// TODO:とりあえず影つけはDirectionalLightのみを想定
-				// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
-				if (dirLight->hasShadowMap())
-				{
-					glUniformMatrix4fv(
-						_glProgram.getUniformLocation("u_lightViewMatrix"),
-						1,
-						GL_FALSE,
-						(GLfloat*)dirLight->getShadowMapData().viewMatrix.m
-					);
-
-					glUniformMatrix4fv(
-						_glProgram.getUniformLocation("u_lightProjectionMatrix"),
-						1,
-						GL_FALSE,
-						(GLfloat*)dirLight->getShadowMapData().projectionMatrix.m
-					);
-
-					static Mat4 depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 0.5f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 1.0f));
-
-					glUniformMatrix4fv(
-						_glProgram.getUniformLocation("u_depthBiasMatrix"),
-						1,
-						GL_FALSE,
-						(GLfloat*)depthBiasMatrix.m
-					);
-					// TODO:Vec3やMat4に頭につける-演算子作らないと
-
-					glActiveTexture(GL_TEXTURE1);
-					glBindTexture(GL_TEXTURE_2D, dirLight->getShadowMapData().getDepthTexture()->getTextureId());
-					glUniform1i(_glProgram.getUniformLocation("u_shadowTexture"), 1);
-					glActiveTexture(GL_TEXTURE0);
-				}
-			}
-				break;
-			case LightType::POINT: {
-				glUniform3f(_glProgram.getUniformLocation("u_pointLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
-
-				GLProgram::checkGLError();
-
-				glUniform3fv(_glProgram.getUniformLocation("u_pointLightPosition"), 1, (GLfloat*)&light->getPosition()); // ライトについてはローカル座標でなくワールド座標である前提
-				GLProgram::checkGLError();
-
-				PointLight* pointLight = static_cast<PointLight*>(light);
-				glUniform1f(_glProgram.getUniformLocation("u_pointLightRangeInverse"), 1.0f / pointLight->getRange());
-				GLProgram::checkGLError();
-			}
-				break;
-			case LightType::SPOT: {
-				glUniform3f(_glProgram.getUniformLocation("u_spotLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
-				GLProgram::checkGLError();
-
-				glUniform3fv(_glProgram.getUniformLocation("u_spotLightPosition"), 1, (GLfloat*)&light->getPosition());
-				GLProgram::checkGLError();
-
-				SpotLight* spotLight = static_cast<SpotLight*>(light);
-				Vec3 direction = spotLight->getDirection();
-				direction.normalize();
-				glUniform3fv(_glProgram.getUniformLocation("u_spotLightDirection"), 1, (GLfloat*)&direction);
-				GLProgram::checkGLError();
-
-				glUniform1f(_glProgram.getUniformLocation("u_spotLightRangeInverse"), 1.0f / spotLight->getRange());
-				GLProgram::checkGLError();
-
-				glUniform1f(_glProgram.getUniformLocation("u_spotLightInnerAngleCos"), spotLight->getInnerAngleCos());
-				GLProgram::checkGLError();
-
-				glUniform1f(_glProgram.getUniformLocation("u_spotLightOuterAngleCos"), spotLight->getOuterAngleCos());
-				GLProgram::checkGLError();
-			}
-				break;
-			default:
-				break;
 			}
 		}
+
+		// ポイントライト
+		for (size_t i = 0; i < PointLight::MAX_NUM; i++)
+		{
+			const PointLight* pointLight = scene.getPointLight(i);
+			if (pointLight != nullptr && pointLight->hasShadowMap())
+			{
+			}
+		}
+
+		size_t numPointLight = scene.getNumPointLight();
+		for (size_t i = 0; i < numPointLight; i++)
+		{
+			const PointLight* pointLight = scene.getPointLight(i);
+			if (pointLight != nullptr)
+			{
+			}
+		}
+
+		// スポットライト
+		for (size_t i = 0; i < SpotLight::MAX_NUM; i++)
+		{
+			const SpotLight* spotLight = scene.getSpotLight(i);
+			if (spotLight != nullptr && spotLight->hasShadowMap())
+			{
+			}
+		}
+
+		size_t numSpotLight = scene.getNumSpotLight();
+		for (size_t i = 0; i < numSpotLight; i++)
+		{
+			const SpotLight* spotLight = scene.getSpotLight(i);
+			if (spotLight != nullptr)
+			{
+			}
+		}
+
+		//// ライトの設定
+		//// TODO:現状、ライトは各種類ごとに一個ずつしか処理してない。最後のやつで上書き。
+		//for (Light* light : Director::getLight())
+		//{
+		//	const Color3B& lightColor = light->getColor();
+		//	float intensity = light->getIntensity();
+
+		//	switch (light->getLightType())
+		//	{
+		//	case LightType::AMBIENT:
+		//		glUniform3f(_glProgram.getUniformLocation("u_ambientLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+		//		GLProgram::checkGLError();
+		//		break;
+		//	case LightType::DIRECTION: {
+		//		glUniform3f(_glProgram.getUniformLocation("u_directionalLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+		//		GLProgram::checkGLError();
+
+		//		DirectionalLight* dirLight = static_cast<DirectionalLight*>(light);
+		//		Vec3 direction = dirLight->getDirection();
+		//		direction.normalize();
+		//		glUniform3fv(_glProgram.getUniformLocation("u_directionalLightDirection"), 1, (GLfloat*)&direction);
+		//		GLProgram::checkGLError();
+
+		//		// TODO:とりあえず影つけはDirectionalLightのみを想定
+		//		// 光の方向に向けてシャドウマップを作るカメラが向いていると考え、カメラから見たモデル座標系にする
+		//		if (dirLight->hasShadowMap())
+		//		{
+		//			glUniformMatrix4fv(
+		//				_glProgram.getUniformLocation("u_lightViewMatrix"),
+		//				1,
+		//				GL_FALSE,
+		//				(GLfloat*)dirLight->getShadowMapData().viewMatrix.m
+		//			);
+
+		//			glUniformMatrix4fv(
+		//				_glProgram.getUniformLocation("u_lightProjectionMatrix"),
+		//				1,
+		//				GL_FALSE,
+		//				(GLfloat*)dirLight->getShadowMapData().projectionMatrix.m
+		//			);
+
+		//			static Mat4 depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 0.5f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 1.0f));
+
+		//			glUniformMatrix4fv(
+		//				_glProgram.getUniformLocation("u_depthBiasMatrix"),
+		//				1,
+		//				GL_FALSE,
+		//				(GLfloat*)depthBiasMatrix.m
+		//			);
+		//			// TODO:Vec3やMat4に頭につける-演算子作らないと
+
+		//			glActiveTexture(GL_TEXTURE1);
+		//			glBindTexture(GL_TEXTURE_2D, dirLight->getShadowMapData().getDepthTexture()->getTextureId());
+		//			glUniform1i(_glProgram.getUniformLocation("u_shadowTexture"), 1);
+		//			glActiveTexture(GL_TEXTURE0);
+		//		}
+		//	}
+		//		break;
+		//	case LightType::POINT: {
+		//		glUniform3f(_glProgram.getUniformLocation("u_pointLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+
+		//		GLProgram::checkGLError();
+
+		//		glUniform3fv(_glProgram.getUniformLocation("u_pointLightPosition"), 1, (GLfloat*)&light->getPosition()); // ライトについてはローカル座標でなくワールド座標である前提
+		//		GLProgram::checkGLError();
+
+		//		PointLight* pointLight = static_cast<PointLight*>(light);
+		//		glUniform1f(_glProgram.getUniformLocation("u_pointLightRangeInverse"), 1.0f / pointLight->getRange());
+		//		GLProgram::checkGLError();
+		//	}
+		//		break;
+		//	case LightType::SPOT: {
+		//		glUniform3f(_glProgram.getUniformLocation("u_spotLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+		//		GLProgram::checkGLError();
+
+		//		glUniform3fv(_glProgram.getUniformLocation("u_spotLightPosition"), 1, (GLfloat*)&light->getPosition());
+		//		GLProgram::checkGLError();
+
+		//		SpotLight* spotLight = static_cast<SpotLight*>(light);
+		//		Vec3 direction = spotLight->getDirection();
+		//		direction.normalize();
+		//		glUniform3fv(_glProgram.getUniformLocation("u_spotLightDirection"), 1, (GLfloat*)&direction);
+		//		GLProgram::checkGLError();
+
+		//		glUniform1f(_glProgram.getUniformLocation("u_spotLightRangeInverse"), 1.0f / spotLight->getRange());
+		//		GLProgram::checkGLError();
+
+		//		glUniform1f(_glProgram.getUniformLocation("u_spotLightInnerAngleCos"), spotLight->getInnerAngleCos());
+		//		GLProgram::checkGLError();
+
+		//		glUniform1f(_glProgram.getUniformLocation("u_spotLightOuterAngleCos"), spotLight->getOuterAngleCos());
+		//		GLProgram::checkGLError();
+		//	}
+		//		break;
+		//	default:
+		//		break;
+		//	}
+		//}
 
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::POSITION);
 		GLProgram::checkGLError();

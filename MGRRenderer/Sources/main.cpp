@@ -343,7 +343,7 @@ void initialize()
 	//Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 	BillBoard* spriteNode = new BillBoard();
 	isSucceeded = spriteNode->init("../MGRRenderer/Resources/Hello.png", BillBoard::Mode::VIEW_PLANE_ORIENTED);
-	spriteNode->setOpacity(0.5f);
+	//spriteNode->setOpacity(0.5f);
 	spriteNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f + 80.0f, WINDOW_HEIGHT / 2.0f + 60.0f, 80.0f));
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 

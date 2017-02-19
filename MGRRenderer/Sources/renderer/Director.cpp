@@ -199,7 +199,7 @@ void Director::initGBufferSprite()
 	if (_renderer.getGBuffers()[0] != nullptr) // デプスステンシルにはレンダーバッファを使ってテクスチャを使わなかった場合は表示しない
 	{
 		_gBufferDepthStencil = new Sprite2D();
-		_gBufferDepthStencil->initWithRenderBuffer(_renderer.getGBuffers()[0], Sprite2D::RenderBufferType::DEPTH_TEXTURE);
+		_gBufferDepthStencil->initWithDepthStencilTexture(_renderer.getGBuffers()[0], Sprite2D::RenderBufferType::DEPTH_TEXTURE, getNearClip(), getFarClip(), getCamera().getProjectionMatrix());
 	}
 #endif
 	if (_gBufferDepthStencil != nullptr)

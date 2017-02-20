@@ -1001,19 +1001,19 @@ void Renderer::renderDeferred()
 	GLProgram::checkGLError();
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, getGBuffers()[0]->getTextureId());
+	glBindTexture(GL_TEXTURE_2D, getGBufferDepthStencil()->getTextureId());
 	glUniform1i(_glProgram.getUniformLocation("u_gBufferDepthStencil"), 0);
 
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, getGBuffers()[1]->getTextureId());
+	glBindTexture(GL_TEXTURE_2D, getGBufferColorSpecularIntensity()->getTextureId());
 	glUniform1i(_glProgram.getUniformLocation("u_gBufferColorSpecularIntensity"), 1);
 
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, getGBuffers()[2]->getTextureId());
+	glBindTexture(GL_TEXTURE_2D, getGBufferNormal()->getTextureId());
 	glUniform1i(_glProgram.getUniformLocation("u_gBufferNormal"), 2);
 
 	//glActiveTexture(GL_TEXTURE3);
-	//glBindTexture(GL_TEXTURE_2D, getGBuffers()[3]->getTextureId());
+	//glBindTexture(GL_TEXTURE_2D, getGBufferSpecularPower()->getTextureId());
 	//glUniform1i(_glProgram.getUniformLocation("u_gBufferSpecularPower"), 3);
 
 	glActiveTexture(GL_TEXTURE0);

@@ -47,7 +47,10 @@ public:
 	D3DTexture* getGBufferNormal() const { return _gBufferNormal; }
 	D3DTexture* getGBufferSpecularPower() const { return _gBufferSpecularPower; }
 #elif defined(MGRRENDERER_USE_OPENGL)
-	const std::vector<GLTexture*>& getGBuffers() const { return _gBufferFrameBuffer->getTextures(); }
+	GLTexture* getGBufferDepthStencil() const { return _gBufferFrameBuffer->getTextures()[0]; }
+	GLTexture* getGBufferColorSpecularIntensity() const { return _gBufferFrameBuffer->getTextures()[1]; }
+	GLTexture* getGBufferNormal() const { return _gBufferFrameBuffer->getTextures()[2]; }
+	GLTexture* getGBufferSpecularPower() const { return _gBufferFrameBuffer->getTextures()[3]; }
 #endif
 #endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 

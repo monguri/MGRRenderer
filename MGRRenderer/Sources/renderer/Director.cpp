@@ -192,16 +192,12 @@ void Director::initGBufferSprite()
 {
 	clearGBufferSprite();
 
-#if defined(MGRRENDERER_USE_DIRECT3D)
-	_gBufferDepthStencil = new Sprite2D();
-	_gBufferDepthStencil->initWithDepthStencilTexture(_renderer.getGBufferDepthStencil(), Sprite2D::RenderBufferType::DEPTH_TEXTURE, getNearClip(), getFarClip(), getCamera().getProjectionMatrix());
-#elif defined(MGRRENDERER_USE_OPENGL)
-	if (_renderer.getGBuffers()[0] != nullptr) // デプスステンシルにはレンダーバッファを使ってテクスチャを使わなかった場合は表示しない
+	if (_renderer.getGBufferDepthStencil() != nullptr) // デプスステンシルにはレンダーバッファを使ってテクスチャを使わなかった場合は表示しない
 	{
 		_gBufferDepthStencil = new Sprite2D();
-		_gBufferDepthStencil->initWithDepthStencilTexture(_renderer.getGBuffers()[0], Sprite2D::RenderBufferType::DEPTH_TEXTURE, getNearClip(), getFarClip(), getCamera().getProjectionMatrix());
+		_gBufferDepthStencil->initWithDepthStencilTexture(_renderer.getGBufferDepthStencil(), Sprite2D::RenderBufferType::DEPTH_TEXTURE, getNearClip(), getFarClip(), getCamera().getProjectionMatrix());
 	}
-#endif
+
 	if (_gBufferDepthStencil != nullptr)
 	{
 		_gBufferDepthStencil->setScale(1 / 5.0f);
@@ -209,29 +205,17 @@ void Director::initGBufferSprite()
 	}
 
 	_gBufferColorSpecularIntensitySprite = new Sprite2D();
-#if defined(MGRRENDERER_USE_DIRECT3D)
 	_gBufferColorSpecularIntensitySprite->initWithRenderBuffer(_renderer.getGBufferColorSpecularIntensity(), Sprite2D::RenderBufferType::GBUFFER_COLOR_SPECULAR_INTENSITY);
-#elif defined(MGRRENDERER_USE_OPENGL)
-	_gBufferColorSpecularIntensitySprite->initWithRenderBuffer(_renderer.getGBuffers()[1], Sprite2D::RenderBufferType::GBUFFER_COLOR_SPECULAR_INTENSITY);
-#endif
 	_gBufferColorSpecularIntensitySprite->setScale(1 / 5.0f);
 	_gBufferColorSpecularIntensitySprite->setPosition(Vec3(_windowSize.width / 5.0f, 0.0f, 0.0f));
 
 	_gBufferNormal = new Sprite2D();
-#if defined(MGRRENDERER_USE_DIRECT3D)
 	_gBufferNormal->initWithRenderBuffer(_renderer.getGBufferNormal(), Sprite2D::RenderBufferType::GBUFFER_NORMAL);
-#elif defined(MGRRENDERER_USE_OPENGL)
-	_gBufferNormal->initWithRenderBuffer(_renderer.getGBuffers()[2], Sprite2D::RenderBufferType::GBUFFER_NORMAL);
-#endif
 	_gBufferNormal->setScale(1 / 5.0f);
 	_gBufferNormal->setPosition(Vec3(_windowSize.width / 5.0f * 2, 0.0f, 0.0f));
 
 	_gBufferSpecularPower = new Sprite2D();
-#if defined(MGRRENDERER_USE_DIRECT3D)
 	_gBufferSpecularPower->initWithRenderBuffer(_renderer.getGBufferSpecularPower(), Sprite2D::RenderBufferType::GBUFFER_SPECULAR_POWER);
-#elif defined(MGRRENDERER_USE_OPENGL)
-	_gBufferSpecularPower->initWithRenderBuffer(_renderer.getGBuffers()[3], Sprite2D::RenderBufferType::GBUFFER_SPECULAR_POWER);
-#endif
 	_gBufferSpecularPower->setScale(1 / 5.0f);
 	_gBufferSpecularPower->setPosition(Vec3(_windowSize.width / 5.0f * 3, 0.0f, 0.0f));
 }

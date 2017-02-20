@@ -1036,6 +1036,7 @@ void Renderer::renderDeferred()
 			_glProgram.getUniformLocation("u_directionalLightIsValid"),
 			1
 		);
+		GLProgram::checkGLError();
 
 		lightColor = directionalLight->getColor();
 		intensity = directionalLight->getIntensity();

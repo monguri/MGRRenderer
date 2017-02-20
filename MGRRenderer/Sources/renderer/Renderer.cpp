@@ -1032,6 +1032,11 @@ void Renderer::renderDeferred()
 	const DirectionalLight* directionalLight = scene.getDirectionalLight();
 	if (directionalLight != nullptr)
 	{
+		glUniform1i(
+			_glProgram.getUniformLocation("u_directionalLightIsValid"),
+			1
+		);
+
 		lightColor = directionalLight->getColor();
 		intensity = directionalLight->getIntensity();
 		glUniform3f(_glProgram.getUniformLocation("u_directionalLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
@@ -1079,6 +1084,10 @@ void Renderer::renderDeferred()
 		const PointLight* pointLight = scene.getPointLight(i);
 		if (pointLight != nullptr)
 		{
+			glUniform1i(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_pointLightIsValid[") + std::to_string(i) + std::string("]")).c_str()), 1);
+			//glUniform1f(_glProgram.getUniformLocation(std::string("u_pointLightRangeInverse[") + std::to_string(i) + std::string("]")), 1.0f / pointLight->getRange());
+			GLProgram::checkGLError();
+
 			lightColor = pointLight->getColor();
 			intensity = pointLight->getIntensity();
 			glUniform3f(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_pointLightColor[") + std::to_string(i) + std::string("]")).c_str()), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
@@ -1134,6 +1143,9 @@ void Renderer::renderDeferred()
 		const SpotLight* spotLight = scene.getSpotLight(i);
 		if (spotLight != nullptr)
 		{
+			glUniform1i(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_spotLightIsValid[") + std::to_string(i) + std::string("]")).c_str()), 1);
+			GLProgram::checkGLError();
+
 			lightColor = spotLight->getColor();
 			intensity = spotLight->getIntensity();
 			glUniform3f(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_spotLightColor[") + std::to_string(i) + std::string("]")).c_str()), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);

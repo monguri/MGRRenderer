@@ -213,12 +213,12 @@ void Scene::update(float dt)
 	});
 	Director::getRenderer().addCommand(&_prepareFowardRenderingCommand);
 
-	_camera.renderForward(false);
+	_camera.renderForward();
 	for (Node* child : _children)
 	{
 		if (!child->getIsTransparent())
 		{
-			child->renderForward(false);
+			child->renderForward();
 		}
 	}
 #endif

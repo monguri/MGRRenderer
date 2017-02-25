@@ -1069,7 +1069,6 @@ void Renderer::renderDeferred()
 				(GLfloat*)directionalLight->getShadowMapData().projectionMatrix.m
 			);
 
-			//TODO: シャドウマップのバインドについては複数ライト対応せねば
 			glActiveTexture(GL_TEXTURE4);
 			GLuint textureId = directionalLight->getShadowMapData().getDepthTexture()->getTextureId();
 			glBindTexture(GL_TEXTURE_2D, textureId);
@@ -1127,6 +1126,16 @@ void Renderer::renderDeferred()
 				//	GL_FALSE,
 				//	(GLfloat*)pointLight->getShadowMapData().projectionMatrix.m
 				//);
+
+				for (int j = 0; j < (int)CubeMapFace::NUM_CUBEMAP_FACE; j++)
+				{
+					glUniformMatrix4fv(
+						glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_pointLightViewMatrices[") + std::to_string(j) + std::string("][") + std::to_string(i) + std::string("]")).c_str()),
+						1,
+						GL_FALSE,
+						(GLfloat*)pointLight->getShadowMapData().viewMatrices[j].m
+					);
+				}
 
 				glActiveTexture(GL_TEXTURE5 + i);
 				GLuint textureId = pointLight->getShadowMapData().getDepthTexture()->getTextureId();

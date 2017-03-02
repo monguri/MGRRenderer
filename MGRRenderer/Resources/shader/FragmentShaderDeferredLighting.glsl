@@ -12,7 +12,8 @@ uniform sampler2D u_gBufferColorSpecularIntensity;
 uniform sampler2D u_gBufferNormal;
 //uniform sampler2D u_gBufferSpecularPower;
 uniform sampler2DShadow u_directionalLightShadowMap;
-uniform samplerCubeShadow u_pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
+//uniform samplerCubeShadow u_pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
+uniform samplerCube u_pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
 uniform sampler2DShadow u_spotLightShadowMap[MAX_NUM_SPOT_LIGHT];
 uniform vec3 u_ambientLightColor;
 uniform bool u_directionalLightIsValid;
@@ -24,7 +25,7 @@ uniform vec3 u_directionalLightDirection;
 uniform bool u_pointLightHasShadowMap[MAX_NUM_POINT_LIGHT];
 uniform bool u_pointLightIsValid[MAX_NUM_POINT_LIGHT];
 uniform mat4 u_pointLightViewMatrices[NUM_FACE_CUBEMAP_TEXTURE][MAX_NUM_POINT_LIGHT];
-uniform mat4 u_pointLightProjectionMatrix;
+uniform mat4 u_pointLightProjectionMatrix[MAX_NUM_POINT_LIGHT];
 uniform vec3 u_pointLightPosition[MAX_NUM_POINT_LIGHT];
 uniform vec3 u_pointLightColor[MAX_NUM_POINT_LIGHT];
 uniform float u_pointLightRangeInverse[MAX_NUM_POINT_LIGHT];
@@ -167,17 +168,23 @@ void main()
 				}
 			}
 
-			lightPosition = u_depthBiasMatrix * u_pointLightProjectionMatrix * lightViewMatrix * worldPosition;
+			lightPosition = u_depthBiasMatrix * u_pointLightProjectionMatrix[i] * lightViewMatrix * worldPosition;
 			// zファイティングを避けるための微調整
-			lightPosition.z -= 0.05;
+			//lightPosition.z -= 0.05;
 
-			//float pointLightDepth = -(u_lightProjectionMatrix[2][2] * maxCoordinateVal + u_lightProjectionMatrix[3][2]) / maxCoordinateVal;
+			float pointLightDepth = -(u_pointLightProjectionMatrix[i][2][2] * maxCoordinateVal + u_pointLightProjectionMatrix[i][3][2]) / maxCoordinateVal;
 			// zファイティングを避けるための微調整
-			//pointLightDepth -= 0.05;
+			pointLightDepth -= 0.025;
 
 			// PCFはsamplerCubeMapShadowにはない
 			//shadowAttenuation = shadowCube(u_pointLightShadowCubeMap, vec4(lightPosition, pointLightDepth));
-			shadowAttenuation = texture(u_pointLightShadowCubeMap[i], lightPosition);
+			//shadowAttenuation = texture(u_pointLightShadowCubeMap[i], lightPosition);
+			float depth = texture(u_pointLightShadowCubeMap[i], lightPosition.xyz).x;
+			// TODO:↑常にこれは1を返しているようだ。たぶんlightPositionの方向が別方向なのだろう
+			if (pointLightDepth > depth)
+			{
+				shadowAttenuation = 0.0;
+			}
 		}
 
 		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, normalize(vertexToPointLightDirection), u_pointLightColor[i], attenuation);

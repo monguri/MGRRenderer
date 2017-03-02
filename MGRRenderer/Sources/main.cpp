@@ -474,7 +474,7 @@ void initialize()
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
 	PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Color3B::WHITE, 3000.0f);
 	light->setIntensity(0.7f);
-	//light->setColor(Color3B(255, 0, 0));
+	light->setColor(Color3B(255, 0, 0));
 	light->initShadowMap(NEAR_CLIP, WINDOW_WIDTH);
 	scene->addPointLight(light);
 
@@ -490,7 +490,7 @@ void initialize()
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
 	//PointLight* light2 = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Color3B::WHITE, 3000.0f);
 	//light2->setIntensity(0.7f);
-	////light2->setColor(Color3B(0, 0, 255));
+	//light2->setColor(Color3B(0, 0, 255));
 	//light2->initShadowMap(NEAR_CLIP, WINDOW_WIDTH);
 	//scene->addPointLight(light2);
 
@@ -506,23 +506,23 @@ void initialize()
 	//// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,0,-1)方向の光が降り注ぐようにしている
 	//SpotLight* light = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Vec3(0.0f, 0.0f, -1.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
 	//light->setIntensity(0.7f);
-	////light->setColor(Color3B(255, 0, 0));
+	//light->setColor(Color3B(255, 0, 0));
 	//light->initShadowMap(NEAR_CLIP, SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT));
 	//scene->addSpotLight(light);
 
-	//if (light->hasShadowMap())
+	//if (light->hasshadowmap())
 	//{
-	//	depthTextureSprite = new Sprite2D();
-	//	const SizeFloat& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
-	//	depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix);
-	//	depthTextureSprite->setScale(1 / 5.0f);
-	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
+	//	depthtexturesprite = new sprite2d();
+	//	const sizefloat& contentsize = director::getinstance()->getwindowsize() / 5.0f;
+	//	depthtexturesprite->initwithdepthstenciltexture(light->getshadowmapdata().getdepthtexture(), sprite2d::renderbuffertype::depth_texture, light->getnearclip(), light->getrange(), light->getshadowmapdata().projectionmatrix);
+	//	depthtexturesprite->setscale(1 / 5.0f);
+	//	depthtexturesprite->setposition(vec3(window_width - contentsize.width, 0.0f, 0.0f));
 	//}
 
-	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(-1,0,0)方向の光が降り注ぐようにしている
-	//SpotLight* light2 = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
+	// オークの(window_width / 2.0f, window_height / 2.0f, 0)に(-1,0,0)方向の光が降り注ぐようにしている
+	//spotlight* light2 = new (std::nothrow) spotlight(vec3(window_width / 2.0f, window_height / 2.0f + window_width, 0.0f), vec3(0.0f, -1.0f, 0.0f), color3b::white, 3000.0f, 0.0f, 30.0f);
 	//light2->setIntensity(0.7f);
-	////light2->setColor(Color3B(0, 0, 255));
+	//light2->setColor(Color3B(0, 0, 255));
 	//light2->initShadowMap(NEAR_CLIP, SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT));
 	//scene->addSpotLight(light2);
 

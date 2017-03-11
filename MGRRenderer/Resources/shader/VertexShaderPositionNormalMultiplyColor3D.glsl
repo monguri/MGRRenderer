@@ -7,8 +7,6 @@ attribute vec4 a_position;
 attribute vec4 a_normal;
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewMatrix;
-uniform mat4 u_lightViewMatrix; // 影付けに使うライトをカメラに見立てたビュー行列
-uniform mat4 u_lightProjectionMatrix; // 影付けに使うライトをカメラに見立てたプロジェクション行列
 uniform mat4 u_projectionMatrix;
 uniform mat4 u_depthBiasMatrix;
 uniform mat4 u_normalMatrix;

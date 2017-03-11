@@ -32,6 +32,7 @@
     <None Include="Resources\shader\FragmentShaderGBufferNormal.glsl" />
     <None Include="Resources\shader\FragmentShaderGBufferSpecularPower.glsl" />
     <None Include="Resources\shader\FragmentShaderPositionMultiplyColor.glsl" />
+    <None Include="Resources\shader\FragmentShaderPositionNormalMultiplyColor3D.glsl" />
     <None Include="Resources\shader\FragmentShaderPositionNormalMultiplyColorGBuffer.glsl" />
     <None Include="Resources\shader\FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl" />
     <None Include="Resources\shader\FragmentShaderPositionTextureMultiplyColor.glsl" />
@@ -40,6 +41,7 @@
     <None Include="Resources\shader\VertexShaderObj.glsl" />
     <None Include="Resources\shader\VertexShaderPosition.glsl" />
     <None Include="Resources\shader\VertexShaderPositionNormal.glsl" />
+    <None Include="Resources\shader\VertexShaderPositionNormalMultiplyColor3D.glsl" />
     <None Include="Resources\shader\VertexShaderPositionTexture.glsl" />
     <None Include="Resources\shader\VertexShaderPositionTextureMacro.glsl" />
   </ItemGroup>

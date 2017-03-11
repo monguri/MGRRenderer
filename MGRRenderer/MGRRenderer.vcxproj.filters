@@ -97,6 +97,12 @@
     <None Include="Resources\shader\FragmentShaderGBufferSpecularPower.glsl">
       <Filter>Resource Files\shader</Filter>
     </None>
+    <None Include="Resources\shader\FragmentShaderPositionNormalMultiplyColor3D.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\VertexShaderPositionNormalMultiplyColor3D.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Config.h">

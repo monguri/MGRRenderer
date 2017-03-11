@@ -103,6 +103,18 @@
     <None Include="Resources\shader\VertexShaderPositionNormalMultiplyColor3D.glsl">
       <Filter>Resource Files\shader</Filter>
     </None>
+    <None Include="Resources\shader\VertexShaderPositionNormalTextureMultiplyColor3D.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderPositionTextureNormalMultiplyColor3D.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\VertexShaderC3bC3t.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\FragmentShaderC3bC3t.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Config.h">

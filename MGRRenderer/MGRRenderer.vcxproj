@@ -24,6 +24,7 @@
     <None Include="Resources\orc.c3t" />
     <None Include="Resources\orc_jump.c3t" />
     <None Include="Resources\plane.c3t" />
+    <None Include="Resources\shader\FragmentShaderC3bC3t.glsl" />
     <None Include="Resources\shader\FragmentShaderDeferredLighting.glsl" />
     <None Include="Resources\shader\FragmentShaderDepthCubemapTexture.glsl" />
     <None Include="Resources\shader\FragmentShaderDepthTexture.glsl" />
@@ -37,11 +38,14 @@
     <None Include="Resources\shader\FragmentShaderPositionNormalTextureMultiplyColorGBuffer.glsl" />
     <None Include="Resources\shader\FragmentShaderPositionTextureMultiplyColor.glsl" />
     <None Include="Resources\shader\FragmentShaderPositionTextureMultiplyColorGBuffer.glsl" />
+    <None Include="Resources\shader\FragmentShaderPositionTextureNormalMultiplyColor3D.glsl" />
+    <None Include="Resources\shader\VertexShaderC3bC3t.glsl" />
     <None Include="Resources\shader\VertexShaderDeferredLighting.glsl" />
     <None Include="Resources\shader\VertexShaderObj.glsl" />
     <None Include="Resources\shader\VertexShaderPosition.glsl" />
     <None Include="Resources\shader\VertexShaderPositionNormal.glsl" />
     <None Include="Resources\shader\VertexShaderPositionNormalMultiplyColor3D.glsl" />
+    <None Include="Resources\shader\VertexShaderPositionNormalTextureMultiplyColor3D.glsl" />
     <None Include="Resources\shader\VertexShaderPositionTexture.glsl" />
     <None Include="Resources\shader\VertexShaderPositionTextureMacro.glsl" />
   </ItemGroup>

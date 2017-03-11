@@ -460,6 +460,15 @@ void BillBoard::renderForward()
 		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 		GLProgram::checkGLError();
 
+		static const Mat4& depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 0.5f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(
+			_glProgram.getUniformLocation("u_depthBiasMatrix"),
+			1,
+			GL_FALSE,
+			(GLfloat*)depthBiasMatrix.m
+		);
+		GLProgram::checkGLError();
+
 		// アンビエントライト
 		const Scene& scene = Director::getInstance()->getScene();
 		const AmbientLight* ambientLight = scene.getAmbientLight();

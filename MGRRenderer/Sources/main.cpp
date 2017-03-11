@@ -343,7 +343,7 @@ void initialize()
 	//Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 	BillBoard* spriteNode = new BillBoard();
 	isSucceeded = spriteNode->init("../MGRRenderer/Resources/Hello.png", BillBoard::Mode::VIEW_PLANE_ORIENTED);
-	//spriteNode->setOpacity(0.5f);
+	spriteNode->setOpacity(0.5f);
 	spriteNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f + 80.0f, WINDOW_HEIGHT / 2.0f + 60.0f, 80.0f));
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
@@ -414,6 +414,7 @@ void initialize()
 	isSucceeded = sprite3DObjNode->initWithModel("../MGRRenderer/Resources/boss1.obj");
 	sprite3DObjNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 100, WINDOW_HEIGHT / 2.0f - 100, 0)); // カメラのデフォルトの視点位置から少しずれた場所に置いた
 	sprite3DObjNode->setScale(10.0f);
+	//sprite3DObjNode->setOpacity(0.5f);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 	sprite3DObjNode->setTexture("../MGRRenderer/Resources/boss.png");
 
@@ -423,6 +424,7 @@ void initialize()
 	sprite3DC3tNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)); // カメラのデフォルトの視点位置に置いた
 	sprite3DC3tNode->setRotation(Vec3(0.0f, 180.0f, 0.0f));
 	sprite3DC3tNode->setScale(10.0f);
+	//sprite3DC3tNode->setOpacity(0.5f);
 	sprite3DC3tNode->startAnimation("Take 001", true);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 

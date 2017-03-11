@@ -9,7 +9,7 @@ uniform sampler2DShadow u_directionalLightShadowMap;
 //uniform samplerCubeShadow u_pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
 uniform samplerCube u_pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
 uniform sampler2DShadow u_spotLightShadowMap[MAX_NUM_SPOT_LIGHT];
-uniform vec3 u_multipleColor;
+uniform vec4 u_multipleColor;
 uniform vec3 u_ambientLightColor;
 uniform bool u_directionalLightIsValid;
 uniform bool u_directionalLightHasShadowMap;

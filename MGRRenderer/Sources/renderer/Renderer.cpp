@@ -739,7 +739,7 @@ void Renderer::prepareDefaultRenderTarget()
 #elif defined(MGRRENDERER_USE_OPENGL)
 	//glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
+	glDisable(GL_BLEND);
 	glViewport(0, 0, static_cast<GLsizei>(Director::getInstance()->getWindowSize().width), static_cast<GLsizei>(Director::getInstance()->getWindowSize().height));
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // デフォルトフレームバッファに戻す
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1271,7 +1271,8 @@ void Renderer::prepareTransparentRendering()
 	FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	_direct3dContext->OMSetBlendState(_blendStateTransparent, blendFactor, 0xffffffff);
 #elif defined(MGRRENDERER_USE_OPENGL)
-	// TODO:未実装
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 #endif
 }
 

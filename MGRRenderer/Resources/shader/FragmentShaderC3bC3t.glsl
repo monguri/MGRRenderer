@@ -9,7 +9,7 @@ uniform sampler2DShadow u_directionalLightShadowMap;
 //uniform samplerCubeShadow u_pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
 uniform samplerCube u_pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
 uniform sampler2DShadow u_spotLightShadowMap[MAX_NUM_SPOT_LIGHT];
-uniform vec3 u_multipleColor;
+uniform vec4 u_multipleColor;
 uniform vec3 u_ambientLightColor;
 uniform bool u_directionalLightIsValid;
 uniform bool u_directionalLightHasShadowMap;
@@ -228,5 +228,5 @@ void main()
 		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor[i], attenuation);
 	}
 
-	gl_FragColor = texture2D(u_texture, v_texCoord) * vec4((u_multipleColor * (diffuseSpecularLightColor + u_ambientLightColor.rgb)), 1.0);
+	gl_FragColor = texture2D(u_texture, v_texCoord) * u_multipleColor * vec4(diffuseSpecularLightColor + u_ambientLightColor.rgb, 1.0);
 }

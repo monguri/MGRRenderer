@@ -166,7 +166,10 @@ void Scene::update(float dt)
 
 			for (Node* child : _children)
 			{
-				child->renderPointLightShadowMap(i, pointLight, (CubeMapFace)face);
+				if (!child->getIsTransparent())
+				{
+					child->renderPointLightShadowMap(i, pointLight, (CubeMapFace)face);
+				}
 			}
 		}
 #endif

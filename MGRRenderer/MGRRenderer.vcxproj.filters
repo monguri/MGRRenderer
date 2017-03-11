@@ -100,12 +100,6 @@
     <None Include="Resources\shader\FragmentShaderPositionNormalMultiplyColor3D.glsl">
       <Filter>Resource Files\shader</Filter>
     </None>
-    <None Include="Resources\shader\VertexShaderPositionNormalMultiplyColor3D.glsl">
-      <Filter>Resource Files\shader</Filter>
-    </None>
-    <None Include="Resources\shader\VertexShaderPositionNormalTextureMultiplyColor3D.glsl">
-      <Filter>Resource Files\shader</Filter>
-    </None>
     <None Include="Resources\shader\FragmentShaderPositionTextureNormalMultiplyColor3D.glsl">
       <Filter>Resource Files\shader</Filter>
     </None>
@@ -113,6 +107,12 @@
       <Filter>Resource Files\shader</Filter>
     </None>
     <None Include="Resources\shader\FragmentShaderC3bC3t.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\VertexShaderPositionNormal3D.glsl">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\shader\VertexShaderPositionNormalTexture3D.glsl">
       <Filter>Resource Files\shader</Filter>
     </None>
   </ItemGroup>

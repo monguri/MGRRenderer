@@ -325,7 +325,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	// TODO:objのシェーダとほぼ同じ。共通化したい。
-	_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionNormalMultiplyColor3D.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionNormalMultiplyColor3D.glsl");
+	_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionNormal3D.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionNormalMultiplyColor3D.glsl");
 
 	_glProgramForShadowMap.initWithShaderString(
 		// vertex shader

@@ -537,7 +537,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 #elif defined(MGRRENDERER_USE_OPENGL)
 	if (_isObj)
 	{
-		_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionNormalTextureMultiplyColor3D.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionTextureNormalMultiplyColor3D.glsl");
+		_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionNormalTexture3D.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionTextureNormalMultiplyColor3D.glsl");
 	}
 	else if (_isC3b)
 	{

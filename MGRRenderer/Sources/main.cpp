@@ -451,25 +451,25 @@ void initialize()
 
 	Sprite2D* depthTextureSprite = nullptr;
 
-	//DirectionalLight* dirLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
-	//dirLight->setIntensity(0.7f);
-	//dirLight->setColor(Color3B(0, 255, 0));
-	//dirLight->initShadowMap(
-	//	// Polygon3Dのついたての中心をターゲットにし、シーン全体が入るように、カメラのWINDOW_HEIGHT / 1.1566fに比べると遠目に
-	//	Vec3(0.0f, 0.0f, -WINDOW_WIDTH / 3.0f) - Vec3(-1.0f, -1.0f, -1.0f) * (WINDOW_HEIGHT / 1.1566f),
-	//	NEAR_CLIP,
-	//	FAR_CLIP,
-	//	SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT));
-	//scene->setDirectionalLight(dirLight);
+	DirectionalLight* dirLight = new (std::nothrow) DirectionalLight(Vec3(-1.0f, -1.0f, -1.0f), Color3B::WHITE);
+	dirLight->setIntensity(0.7f);
+	dirLight->setColor(Color3B(0, 255, 0));
+	dirLight->initShadowMap(
+		// Polygon3Dのついたての中心をターゲットにし、シーン全体が入るように、カメラのWINDOW_HEIGHT / 1.1566fに比べると遠目に
+		Vec3(0.0f, 0.0f, -WINDOW_WIDTH / 3.0f) - Vec3(-1.0f, -1.0f, -1.0f) * (WINDOW_HEIGHT / 1.1566f),
+		NEAR_CLIP,
+		FAR_CLIP,
+		SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT));
+	scene->setDirectionalLight(dirLight);
 
-	//if (dirLight->hasShadowMap())
-	//{
-	//	depthTextureSprite = new Sprite2D();
-	//	const SizeFloat& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
-	//	depthTextureSprite->initWithDepthStencilTexture(dirLight->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL, dirLight->getNearClip(), dirLight->getFarClip(), dirLight->getShadowMapData().projectionMatrix);
-	//	depthTextureSprite->setScale(1 / 5.0f);
-	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
-	//}
+	if (dirLight->hasShadowMap())
+	{
+		depthTextureSprite = new Sprite2D();
+		const SizeFloat& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
+		depthTextureSprite->initWithDepthStencilTexture(dirLight->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL, dirLight->getNearClip(), dirLight->getFarClip(), dirLight->getShadowMapData().projectionMatrix);
+		depthTextureSprite->setScale(1 / 5.0f);
+		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
+	}
 
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
 	//PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Color3B::WHITE, 3000.0f);
@@ -510,30 +510,30 @@ void initialize()
 	light->initShadowMap(NEAR_CLIP, SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT));
 	scene->addSpotLight(light);
 
-	if (light->hasShadowMap())
-	{
-		depthTextureSprite = new Sprite2D();
-		const SizeFloat& contentsize = Director::getInstance()->getWindowSize() / 5.0f;
-		depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix);
-		depthTextureSprite->setScale(1 / 5.0f);
-		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentsize.width, 0.0f, 0.0f));
-	}
+	//if (light->hasShadowMap())
+	//{
+	//	depthTextureSprite = new Sprite2D();
+	//	const SizeFloat& contentsize = Director::getInstance()->getWindowSize() / 5.0f;
+	//	depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix);
+	//	depthTextureSprite->setScale(1 / 5.0f);
+	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentsize.width, 0.0f, 0.0f));
+	//}
 
-	// オークの(window_width / 2.0f, window_height / 2.0f, 0)に(-1,0,0)方向の光が降り注ぐようにしている
-	SpotLight* light2 = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
-	light2->setIntensity(0.7f);
-	light2->setColor(Color3B(0, 0, 255));
-	light2->initShadowMap(NEAR_CLIP, SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT));
-	scene->addSpotLight(light2);
+	//// オークの(window_width / 2.0f, window_height / 2.0f, 0)に(-1,0,0)方向の光が降り注ぐようにしている
+	//SpotLight* light2 = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
+	//light2->setIntensity(0.7f);
+	//light2->setColor(Color3B(0, 0, 255));
+	//light2->initShadowMap(NEAR_CLIP, SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT));
+	//scene->addSpotLight(light2);
 
-	if (light2->hasShadowMap())
-	{
-		depthTextureSprite = new Sprite2D();
-		const SizeFloat& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
-		depthTextureSprite->initWithDepthStencilTexture(light2->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE, light2->getNearClip(), light2->getRange(), light2->getShadowMapData().projectionMatrix);
-		depthTextureSprite->setScale(1 / 5.0f);
-		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
-	}
+	//if (light2->hasShadowMap())
+	//{
+	//	depthTextureSprite = new Sprite2D();
+	//	const SizeFloat& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
+	//	depthTextureSprite->initWithDepthStencilTexture(light2->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_TEXTURE, light2->getNearClip(), light2->getRange(), light2->getShadowMapData().projectionMatrix);
+	//	depthTextureSprite->setScale(1 / 5.0f);
+	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
+	//}
 
 	scene->pushNode(point3DNode);
 	scene->pushNode(line3DNode);

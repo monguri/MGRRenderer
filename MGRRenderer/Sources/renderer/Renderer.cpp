@@ -1268,6 +1268,15 @@ void Renderer::prepareTransparentRendering()
 	FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	_direct3dContext->OMSetBlendState(_blendStateTransparent, blendFactor, 0xffffffff);
 #elif defined(MGRRENDERER_USE_OPENGL)
+#if defined(MGRRENDERER_DEFERRED_RENDERING)
+	// Gバッファのデプスバッファをデフォルトのデプスバッファにコピーする	
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, _gBufferFrameBuffer->getFrameBufferId());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
+	const SizeUint& windowSize = Director::getInstance()->getWindowSize();
+	glBlitFramebuffer(0, 0, windowSize.width, windowSize.height, 0, 0, windowSize.width, windowSize.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 #endif

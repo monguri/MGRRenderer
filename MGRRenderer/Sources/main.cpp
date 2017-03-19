@@ -38,7 +38,7 @@ static void fwKeyInputHandler(GLFWwindow* window, int key, int scancode, int act
 void APIENTRY debugMessageHandler(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam);
 static void initialize();
 #endif
-static void render();
+static void update();
 static void finalize();
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
@@ -189,7 +189,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		else
 		{
 			// 描画のメインループ
-			render();
+			update();
 
 			Director::getRenderer().getDirect3dSwapChain()->Present(0, 0);
 		}
@@ -215,14 +215,14 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		{
 			nLast.QuadPart = nNow.QuadPart - (nNow.QuadPart % loopInterval.QuadPart); // 余り分も次回計算で用いる。整数計算にしているので精度が高い
 
+			// イベントポーリング
+			glfwPollEvents();
+
 			// 描画のメインループ
-			render();
+			update();
 
 			// バックバッファとフロントバッファ入れ替え
 			glfwSwapBuffers(window);
-
-			// イベントポーリング
-			glfwPollEvents();
 		}
 		else
 		{
@@ -244,6 +244,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 }
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
+static bool isKeyPressing[0xFF]; // WindowsのVK_XXの数は0xFFが上限になっている。アスキーコードと値は一致している
+static bool keyToggle[0xFF];
 LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowParam, LONG param)
 {
 	switch (message)
@@ -252,6 +254,23 @@ LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowPara
 		PostQuitMessage(0);
 		// TODO:解放処理を書いてない
 		return 0;
+	case WM_KEYDOWN:
+		if (windowParam < 0 || windowParam > 0xFF)
+		{
+			break;
+		}
+
+		isKeyPressing[windowParam] = true;
+		break;
+	case WM_KEYUP:
+		if (windowParam < 0 || windowParam > 0xFF)
+		{
+			break;
+		}
+
+		isKeyPressing[windowParam] = false;
+		keyToggle[windowParam] = false;
+		break;
 	default:
 		//TODO: 他に何が来るのか知らないので処理しない
 		break;
@@ -259,6 +278,9 @@ LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowPara
 	return DefWindowProc(handleWindow, message, windowParam, param);
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
+static bool isKeyPressing[GLFW_KEY_LAST];
+static bool keyToggle[GLFW_KEY_LAST];
+
 void fwErrorHandler(int error, const char* description)
 {
 	(void)error; // 未使用変数警告抑制
@@ -273,6 +295,21 @@ void fwKeyInputHandler(GLFWwindow* window, int key, int scancode, int action, in
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE);
+	}
+
+	if (key < 0 || key > GLFW_KEY_LAST)
+	{
+		return;
+	}
+
+	if (action == GLFW_PRESS)
+	{
+		isKeyPressing[key] = true;
+	}
+	else if (action == GLFW_RELEASE)
+	{
+		isKeyPressing[key] = false;
+		keyToggle[key] = false;
 	}
 }
 
@@ -567,14 +604,55 @@ void initialize()
 	Director::getInstance()->setScene(*scene);
 }
 
-static float cameraAngle = 0.0f; //TODO:objとc3tが見えやすい位置
-
-void render()
+void update()
 {
-	const Vec3& cameraPos = Director::getCamera().getPosition();
-	cameraAngle += 0.003f;
-	Vec3 newCameraPos = Vec3(WINDOW_HEIGHT / 1.1566f * abs(sin(cameraAngle)) + WINDOW_WIDTH / 2.0f, cameraPos.y, WINDOW_HEIGHT / 1.1566f * abs(cos(cameraAngle)));
+	static float cameraAnglePitch = 0.0f;
+	static float cameraAngleYaw = 45.0f;
+	static const float ANGLE_DELTA = 0.005f; // 1フレームに移動する角度
+
+	//const Vec3& cameraPos = Director::getCamera().getPosition();
+	//cameraAngle += 0.003f;
+	//Vec3 newCameraPos = Vec3(WINDOW_HEIGHT / 1.1566f * abs(sin(cameraAngle)) + WINDOW_WIDTH / 2.0f, cameraPos.y, WINDOW_HEIGHT / 1.1566f * abs(cos(cameraAngle)));
 	//Vec3 newCameraPos = Vec3(WINDOW_HEIGHT / 1.1566f * sin(cameraAngle) + WINDOW_WIDTH / 2.0f, cameraPos.y, WINDOW_HEIGHT / 1.1566f * cos(cameraAngle));
+
+	// WASDキーによる上下左右操作
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	if (isKeyPressing['W'])
+	{
+		cameraAnglePitch += ANGLE_DELTA;
+	}
+	else if (isKeyPressing['A'])
+	{
+		cameraAngleYaw += ANGLE_DELTA;
+	}
+	else if (isKeyPressing['S'])
+	{
+		cameraAnglePitch -= ANGLE_DELTA;
+	}
+	else if (isKeyPressing['D'])
+	{
+		cameraAngleYaw -= ANGLE_DELTA;
+	}
+#elif defined(MGRRENDERER_USE_OPENGL)
+	if (isKeyPressing[GLFW_KEY_W])
+	{
+		cameraAnglePitch += ANGLE_DELTA;
+	}
+	else if (isKeyPressing[GLFW_KEY_A])
+	{
+		cameraAngleYaw += ANGLE_DELTA;
+	}
+	else if (isKeyPressing[GLFW_KEY_S])
+	{
+		cameraAnglePitch -= ANGLE_DELTA;
+	}
+	else if (isKeyPressing[GLFW_KEY_D])
+	{
+		cameraAngleYaw -= ANGLE_DELTA;
+	}
+#endif
+
+	const Vec3& newCameraPos = Vec3(WINDOW_HEIGHT / 1.1566f * cos(cameraAnglePitch ) * cos(cameraAngleYaw) + WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_HEIGHT / 1.1566f * sin(cameraAnglePitch ), WINDOW_HEIGHT / 1.1566f * cos(cameraAnglePitch ) * sin(cameraAngleYaw));
 	Director::getCamera().setPosition(newCameraPos);
 
 	// MGRRendererに毎フレームの描画命令

@@ -232,14 +232,21 @@ void Scene::update(float dt)
 	Director::getRenderer().addCommand(&_prepareTransparentRenderingCommand);
 
 	// 透過モデルパス
-	// TODO:本来は深度でソートしておかねばならない
+	std::map<float, Node*> transparentNodes; // キーはカメラからの2乗距離。mapは格納時に2分木としてソートされているのを利用する
+
 	for (Node* child : _children)
 	{
 		// 透過物同士
 		if (child->getIsTransparent())
 		{
-			child->renderForward();
+			float distSqFromCamera = (child->getPosition() - Director::getCamera().getPosition()).lengthSquare();
+			transparentNodes[distSqFromCamera] = child;
 		}
+	}
+
+	for (std::map<float, Node*>::reverse_iterator it = transparentNodes.rbegin(); it != transparentNodes.rend(); ++it)
+	{
+		it->second->renderForward();
 	}
 
 	// 2Dノードは深度の扱いが違うので一つ準備処理をはさむ

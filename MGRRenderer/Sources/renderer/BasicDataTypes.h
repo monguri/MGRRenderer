@@ -116,8 +116,13 @@ struct Vec3
 	Vec3& operator/=(float a) { Logger::logAssert(a != 0.0, "0で除算している。"); x /= a; y /= a; z /= a; return *this; }
 	bool operator==(const Vec3& v) const { return (x == v.x && y == v.y && z == v.z); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Vec3& v) const { return (x != v.x || y != v.y || z != v.z);}
+
+	float lengthSquare() const {
+		return x * x + y * y + z * z;
+	}
+
 	float length() const {
-		return sqrt(x * x + y * y + z * z);
+		return sqrt(lengthSquare());
 	}
 
 	void normalize() {

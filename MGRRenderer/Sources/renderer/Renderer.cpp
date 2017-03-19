@@ -17,9 +17,10 @@ namespace mgrrenderer
 
 static const size_t DEFAULT_RENDER_QUEUE_GROUP_INDEX = 0;
 
-Renderer::Renderer()
+Renderer::Renderer() :
+_drawWireFrame(false)
 #if defined(MGRRENDERER_USE_DIRECT3D)
-: _direct3dSwapChain(nullptr)
+,_direct3dSwapChain(nullptr)
 ,_direct3dDevice(nullptr)
 ,_direct3dContext(nullptr)
 ,_direct3dRenderTarget(nullptr)
@@ -31,8 +32,7 @@ Renderer::Renderer()
 ,_linearSampler(nullptr)
 ,_pcfSampler(nullptr)
 ,_rasterizeStateNormal(nullptr)
-,_rasterizeStateCullFaceFront(nullptr)
-,_rasterizeStateCullFaceBack(nullptr)
+,_rasterizeStateWireFrame(nullptr)
 ,_blendState(nullptr)
 ,_blendStateTransparent(nullptr)
 #endif
@@ -43,7 +43,7 @@ Renderer::Renderer()
 ,_gBufferNormal(nullptr)
 ,_gBufferSpecularPower(nullptr)
 #elif defined(MGRRENDERER_USE_OPENGL)
-: _gBufferFrameBuffer(nullptr)
+,_gBufferFrameBuffer(nullptr)
 #endif
 #endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 {
@@ -150,16 +150,10 @@ Renderer::~Renderer()
 #endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	if (_rasterizeStateCullFaceBack != nullptr)
+	if (_rasterizeStateWireFrame != nullptr)
 	{
-		_rasterizeStateCullFaceBack->Release();
-		_rasterizeStateCullFaceBack = nullptr;
-	}
-
-	if (_rasterizeStateCullFaceFront != nullptr)
-	{
-		_rasterizeStateCullFaceFront ->Release();
-		_rasterizeStateCullFaceFront  = nullptr;
+		_rasterizeStateWireFrame ->Release();
+		_rasterizeStateWireFrame  = nullptr;
 	}
 
 	if (_rasterizeStateNormal != nullptr)
@@ -419,16 +413,8 @@ void Renderer::initView(const SizeUint& windowSize)
 		return;
 	}
 
-	rasterizeDesc.CullMode = D3D11_CULL_FRONT;
-	result = _direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateCullFaceFront);
-	if (FAILED(result))
-	{
-		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
-		return;
-	}
-
-	rasterizeDesc.CullMode = D3D11_CULL_BACK;
-	result = _direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateCullFaceBack);
+	rasterizeDesc.FillMode = D3D11_FILL_WIREFRAME;
+	result = _direct3dDevice->CreateRasterizerState(&rasterizeDesc, &_rasterizeStateWireFrame);
 	if (FAILED(result))
 	{
 		Logger::logAssert(false, "CreateRasterizerState failed. result=%d", result);
@@ -726,7 +712,7 @@ void Renderer::prepareDefaultRenderTarget()
 	_direct3dContext->ClearDepthStencilView(_direct3dDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	_direct3dContext->RSSetViewports(1, _direct3dViewport);
-	_direct3dContext->RSSetState(Director::getRenderer().getRasterizeStateCullFaceNormal());
+	_direct3dContext->RSSetState(_drawWireFrame ? _rasterizeStateWireFrame : _rasterizeStateNormal);
 
 	_direct3dContext->OMSetRenderTargets(1, &_direct3dRenderTarget, _direct3dDepthStencilView);
 	_direct3dContext->OMSetDepthStencilState(_direct3dDepthStencilState, 1);
@@ -734,6 +720,8 @@ void Renderer::prepareDefaultRenderTarget()
 	FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	_direct3dContext->OMSetBlendState(_blendState, blendFactor, 0xffffffff);
 #elif defined(MGRRENDERER_USE_OPENGL)
+	glPolygonMode(GL_FRONT_AND_BACK, _drawWireFrame ? GL_LINE : GL_FILL);
+	glLineWidth(2.0f);
 	//glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
@@ -756,7 +744,7 @@ void Renderer::prepareGBufferRendering()
 	_direct3dContext->ClearDepthStencilView(_gBufferDepthStencil->getDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	_direct3dContext->RSSetViewports(1, _direct3dViewport);
-	_direct3dContext->RSSetState(getRasterizeStateCullFaceNormal());
+	_direct3dContext->RSSetState(_drawWireFrame ? _rasterizeStateWireFrame : _rasterizeStateNormal);
 
 	ID3D11RenderTargetView* gBuffers[3] = {_gBufferColorSpecularIntensity->getRenderTargetView(), _gBufferNormal->getRenderTargetView(), _gBufferSpecularPower->getRenderTargetView()};
 	_direct3dContext->OMSetRenderTargets(3, gBuffers, _gBufferDepthStencil->getDepthStencilView());
@@ -765,6 +753,8 @@ void Renderer::prepareGBufferRendering()
 	FLOAT blendFactor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	_direct3dContext->OMSetBlendState(_blendState, blendFactor, 0xffffffff);
 #elif defined(MGRRENDERER_USE_OPENGL)
+	glPolygonMode(GL_FRONT_AND_BACK, _drawWireFrame ? GL_LINE : GL_FILL);
+	glLineWidth(2.0f);
 	glBindFramebuffer(GL_FRAMEBUFFER, _gBufferFrameBuffer->getFrameBufferId());
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1285,10 +1275,15 @@ void Renderer::prepareTransparentRendering()
 void Renderer::prepareFowardRendering2D()
 {
 #if defined(MGRRENDERER_USE_DIRECT3D)
+	// 2Dノードはワイアーフレーム描画からははずしておく
+	_direct3dContext->RSSetState(_rasterizeStateNormal);
+
 	// レンダーターゲットはカラーバッファは通常描画と同じだがデプステストをしないのでデプスバッファを外す。ブレンドは透過物パスと同様にブレンドを行う。
 	_direct3dContext->OMSetRenderTargets(1, &_direct3dRenderTarget, nullptr);
 	_direct3dContext->OMSetDepthStencilState(_direct3dDepthStencilState2D, 1);
 #elif defined(MGRRENDERER_USE_OPENGL)
+	// 2Dノードはワイアーフレーム描画からははずしておく
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glDisable(GL_DEPTH_TEST);
 #endif
 }

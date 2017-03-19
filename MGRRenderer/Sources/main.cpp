@@ -244,7 +244,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 }
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
-static bool isKeyPressing[0xFF]; // WindowsのVK_XXの数は0xFFが上限になっている。アスキーコードと値は一致している
+static bool isKeyPressed[0xFF]; // WindowsのVK_XXの数は0xFFが上限になっている。アスキーコードと値は一致している
 static bool keyToggle[0xFF];
 LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowParam, LONG param)
 {
@@ -260,7 +260,7 @@ LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowPara
 			break;
 		}
 
-		isKeyPressing[windowParam] = true;
+		isKeyPressed[windowParam] = true;
 		break;
 	case WM_KEYUP:
 		if (windowParam < 0 || windowParam > 0xFF)
@@ -268,7 +268,7 @@ LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowPara
 			break;
 		}
 
-		isKeyPressing[windowParam] = false;
+		isKeyPressed[windowParam] = false;
 		keyToggle[windowParam] = false;
 		break;
 	default:
@@ -278,7 +278,7 @@ LRESULT CALLBACK mainWindowProc(HWND handleWindow, UINT message, UINT windowPara
 	return DefWindowProc(handleWindow, message, windowParam, param);
 }
 #elif defined(MGRRENDERER_USE_OPENGL)
-static bool isKeyPressing[GLFW_KEY_LAST];
+static bool isKeyPressed[GLFW_KEY_LAST];
 static bool keyToggle[GLFW_KEY_LAST];
 
 void fwErrorHandler(int error, const char* description)
@@ -304,11 +304,11 @@ void fwKeyInputHandler(GLFWwindow* window, int key, int scancode, int action, in
 
 	if (action == GLFW_PRESS)
 	{
-		isKeyPressing[key] = true;
+		isKeyPressed[key] = true;
 	}
 	else if (action == GLFW_RELEASE)
 	{
-		isKeyPressing[key] = false;
+		isKeyPressed[key] = false;
 		keyToggle[key] = false;
 	}
 }
@@ -617,38 +617,50 @@ void update()
 
 	// WASDキーによる上下左右操作
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	if (isKeyPressing['W'])
+	if (isKeyPressed['W'])
 	{
 		cameraAnglePitch += ANGLE_DELTA;
 	}
-	else if (isKeyPressing['A'])
+	else if (isKeyPressed['A'])
 	{
 		cameraAngleYaw += ANGLE_DELTA;
 	}
-	else if (isKeyPressing['S'])
+	else if (isKeyPressed['S'])
 	{
 		cameraAnglePitch -= ANGLE_DELTA;
 	}
-	else if (isKeyPressing['D'])
+	else if (isKeyPressed['D'])
 	{
 		cameraAngleYaw -= ANGLE_DELTA;
+	}
+
+	if (isKeyPressed['Z'] && !keyToggle['Z'])
+	{
+		keyToggle['Z'] = true;
+		Director::getRenderer().toggleDrawWireFrame();
 	}
 #elif defined(MGRRENDERER_USE_OPENGL)
-	if (isKeyPressing[GLFW_KEY_W])
+	if (isKeyPressed[GLFW_KEY_W])
 	{
 		cameraAnglePitch += ANGLE_DELTA;
 	}
-	else if (isKeyPressing[GLFW_KEY_A])
+	else if (isKeyPressed[GLFW_KEY_A])
 	{
 		cameraAngleYaw += ANGLE_DELTA;
 	}
-	else if (isKeyPressing[GLFW_KEY_S])
+	else if (isKeyPressed[GLFW_KEY_S])
 	{
 		cameraAnglePitch -= ANGLE_DELTA;
 	}
-	else if (isKeyPressing[GLFW_KEY_D])
+	else if (isKeyPressed[GLFW_KEY_D])
 	{
 		cameraAngleYaw -= ANGLE_DELTA;
+	}
+
+	if (isKeyPressed[GLFW_KEY_Z] && !keyToggle[GLFW_KEY_Z])
+	{
+		keyToggle[GLFW_KEY_Z] = true;
+		Director::getRenderer().toggleDrawWireFrame();
 	}
 #endif
 

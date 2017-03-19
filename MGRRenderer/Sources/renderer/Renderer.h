@@ -27,6 +27,8 @@ public:
 	void initView(const SizeUint& windowSize);
 #endif
 
+	void toggleDrawWireFrame() { _drawWireFrame = !_drawWireFrame; }
+
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	IDXGISwapChain* getDirect3dSwapChain() const { return _direct3dSwapChain; }
 	ID3D11Device* getDirect3dDevice() const { return _direct3dDevice; }
@@ -36,8 +38,6 @@ public:
 	ID3D11SamplerState* getLinearSamplerState() const { return _linearSampler; }
 	ID3D11SamplerState* getPCFSamplerState() const { return _pcfSampler; }
 	ID3D11RasterizerState* getRasterizeStateCullFaceNormal() const { return _rasterizeStateNormal; }
-	ID3D11RasterizerState* getRasterizeStateCullFaceFront() const { return _rasterizeStateCullFaceFront; }
-	ID3D11RasterizerState* getRasterizeStateCullFaceBack() const { return _rasterizeStateCullFaceBack; }
 #endif
 
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
@@ -73,6 +73,8 @@ private:
 	// TODO:moveコンストラクタ使う？
 	std::vector<std::vector<RenderCommand*>> _queueGroup;
 	Quadrangle2D _quadrangle;
+	// ワイアーフレームのみ描画するモード
+	bool _drawWireFrame;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	IDXGISwapChain* _direct3dSwapChain;
 	ID3D11Device* _direct3dDevice;
@@ -87,8 +89,7 @@ private:
 	ID3D11SamplerState* _linearSampler;
 	ID3D11SamplerState* _pcfSampler;
 	ID3D11RasterizerState* _rasterizeStateNormal;
-	ID3D11RasterizerState* _rasterizeStateCullFaceFront;
-	ID3D11RasterizerState* _rasterizeStateCullFaceBack;
+	ID3D11RasterizerState* _rasterizeStateWireFrame;
 	ID3D11BlendState* _blendState;
 	ID3D11BlendState* _blendStateTransparent;
 #endif

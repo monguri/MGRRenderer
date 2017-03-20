@@ -24,6 +24,7 @@ public:
 	static const std::string SEMANTIC_BLEND_WEIGHT;
 	static const std::string SEMANTIC_BLEND_INDEX;
 
+	static const std::string CONSTANT_BUFFER_RENDER_MODE;
 	static const std::string CONSTANT_BUFFER_MODEL_MATRIX;
 	static const std::string CONSTANT_BUFFER_VIEW_MATRIX;
 	static const std::string CONSTANT_BUFFER_PROJECTION_MATRIX;

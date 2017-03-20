@@ -18,6 +18,7 @@ static const std::string ATTRIBUTE_NAME_NORMAL = "a_normal";
 static const std::string ATTRIBUTE_NAME_BLEND_WEIGHT = "a_blendWeight";
 static const std::string ATTRIBUTE_NAME_BLEND_INDEX = "a_blendIndex";
 
+const std::string GLProgram::UNIFORM_NAME_RENDER_MODE = "u_renderMode";
 const std::string GLProgram::UNIFORM_NAME_MULTIPLE_COLOR = "u_multipleColor";
 const std::string GLProgram::UNIFORM_NAME_TEXTURE_SAMPLER = "u_texture";
 const std::string GLProgram::UNIFORM_NAME_MODEL_MATRIX = "u_modelMatrix";

@@ -19,6 +19,14 @@ class Light;
 class Renderer final
 {
 public:
+	enum class RenderMode : int {
+		NONE = -1, // 初期値や不正値に使う値
+		LIGHTING, // 通常のライティング
+		DIFFUSE,
+		NORMAL,
+		SPECULAR,
+	};
+
 	Renderer();
 	~Renderer();
 #if defined(MGRRENDERER_USE_DIRECT3D)
@@ -28,6 +36,8 @@ public:
 #endif
 
 	void toggleDrawWireFrame() { _drawWireFrame = !_drawWireFrame; }
+	RenderMode getRenderMode() const { return _renderMode; }
+	void setRenderMode(RenderMode mode) { _renderMode = mode; }
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	IDXGISwapChain* getDirect3dSwapChain() const { return _direct3dSwapChain; }
@@ -75,6 +85,7 @@ private:
 	Quadrangle2D _quadrangle;
 	// ワイアーフレームのみ描画するモード
 	bool _drawWireFrame;
+	RenderMode _renderMode;
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	IDXGISwapChain* _direct3dSwapChain;
 	ID3D11Device* _direct3dDevice;

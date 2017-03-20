@@ -343,7 +343,7 @@ void initialize()
 #endif
 	Director::getInstance()->setDisplayStats(true);
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
-	Director::getInstance()->setDisplayGBuffer(true);
+	//Director::getInstance()->setDisplayGBuffer(true);
 #endif
 
 	// 各ノードの作成はDirector::initの後に呼ぶ。Director::initのもっているウィンドウサイズを使用する場合があるので。
@@ -461,7 +461,7 @@ void initialize()
 	sprite3DC3tNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)); // カメラのデフォルトの視点位置に置いた
 	sprite3DC3tNode->setRotation(Vec3(0.0f, 180.0f, 0.0f));
 	sprite3DC3tNode->setScale(10.0f);
-	sprite3DC3tNode->setOpacity(0.5f);
+	//sprite3DC3tNode->setOpacity(0.5f);
 	sprite3DC3tNode->startAnimation("Take 001", true);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
@@ -634,6 +634,23 @@ void update()
 		cameraAngleYaw -= ANGLE_DELTA;
 	}
 
+	if (isKeyPressed['1'])
+	{
+		Director::getRenderer().setRenderMode(Renderer::RenderMode::LIGHTING);
+	}
+	else if (isKeyPressed['2'])
+	{
+		Director::getRenderer().setRenderMode(Renderer::RenderMode::DIFFUSE);
+	}
+	else if (isKeyPressed['3'])
+	{
+		Director::getRenderer().setRenderMode(Renderer::RenderMode::NORMAL);
+	}
+	else if (isKeyPressed['4'])
+	{
+		Director::getRenderer().setRenderMode(Renderer::RenderMode::SPECULAR);
+	}
+
 	if (isKeyPressed['Z'] && !keyToggle['Z'])
 	{
 		keyToggle['Z'] = true;
@@ -655,6 +672,23 @@ void update()
 	else if (isKeyPressed[GLFW_KEY_D])
 	{
 		cameraAngleYaw -= ANGLE_DELTA;
+	}
+
+	if (isKeyPressed[GLFW_KEY_1])
+	{
+		Director::getRenderer().setRenderMode(Renderer::RenderMode::LIGHTING);
+	}
+	else if (isKeyPressed[GLFW_KEY_2])
+	{
+		Director::getRenderer().setRenderMode(Renderer::RenderMode::DIFFUSE);
+	}
+	else if (isKeyPressed[GLFW_KEY_3])
+	{
+		Director::getRenderer().setRenderMode(Renderer::RenderMode::NORMAL);
+	}
+	else if (isKeyPressed[GLFW_KEY_4])
+	{
+		Director::getRenderer().setRenderMode(Renderer::RenderMode::SPECULAR);
 	}
 
 	if (isKeyPressed[GLFW_KEY_Z] && !keyToggle[GLFW_KEY_Z])

@@ -180,8 +180,18 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	constantBufferDesc.StructureByteStride = 0;
 	constantBufferDesc.ByteWidth = sizeof(Mat4);
 
-	// Model行列用
+	// render mode用
 	ID3D11Buffer* constantBuffer = nullptr;
+	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return false;
+	}
+	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_RENDER_MODE, constantBuffer);
+
+	// Model行列用
+	constantBuffer = nullptr;
 	result = direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
@@ -787,8 +797,21 @@ void Polygon3D::renderForward()
 
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
 
-		// モデル行列のマップ
+		// render modeのマップ
 		HRESULT result = direct3dContext->Map(
+			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_RENDER_MODE),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedResource
+		);
+		Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+		Renderer::RenderMode renderMode = Director::getRenderer().getRenderMode();
+		CopyMemory(mappedResource.pData, &renderMode, sizeof(renderMode));
+		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_RENDER_MODE), 0);
+
+		// モデル行列のマップ
+		result = direct3dContext->Map(
 			_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MODEL_MATRIX),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
@@ -1015,6 +1038,8 @@ void Polygon3D::renderForward()
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgram.getShaderProgram());
 		GLProgram::checkGLError();
+
+		glUniform1i(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_RENDER_MODE), (GLint)Director::getRenderer().getRenderMode());
 
 		glUniform4f(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f, getOpacity());
 		GLProgram::checkGLError();

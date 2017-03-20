@@ -4,10 +4,16 @@ const int MAX_NUM_POINT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 const int NUM_FACE_CUBEMAP_TEXTURE = 6;
 const int MAX_NUM_SPOT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 
+const int RENDER_MODE_LIGHTING = 0;
+const int RENDER_MODE_DIFFUSE = 1;
+const int RENDER_MODE_NORMAL = 2;
+const int RENDER_MODE_SPECULAR = 3;
+
 uniform sampler2DShadow u_directionalLightShadowMap;
 //uniform samplerCubeShadow u_pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
 uniform samplerCube u_pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
 uniform sampler2DShadow u_spotLightShadowMap[MAX_NUM_SPOT_LIGHT];
+uniform int u_renderMode;
 uniform vec4 u_multipleColor;
 uniform vec3 u_ambientLightColor;
 uniform bool u_directionalLightIsValid;
@@ -198,5 +204,18 @@ void main()
 		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor[i], attenuation);
 	}
 
-	gl_FragColor = u_multipleColor * vec4(diffuseSpecularLightColor + u_ambientLightColor.rgb, 1.0);
+	switch (u_renderMode)
+	{
+	case RENDER_MODE_DIFFUSE:
+		gl_FragColor = u_multipleColor;
+		break;
+	case RENDER_MODE_NORMAL:
+		gl_FragColor = vec4((normal + 1.0) * 0.5, 1.0);
+		break;
+	case RENDER_MODE_LIGHTING:
+	case RENDER_MODE_SPECULAR:
+	default:
+		gl_FragColor = u_multipleColor * vec4(diffuseSpecularLightColor + u_ambientLightColor.rgb, 1.0);
+		break;
+	}
 }

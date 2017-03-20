@@ -7,14 +7,20 @@ const int MAX_NUM_POINT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 const int NUM_FACE_CUBEMAP_TEXTURE = 6;
 const int MAX_NUM_SPOT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 
+const int RENDER_MODE_LIGHTING = 0;
+const int RENDER_MODE_DIFFUSE = 1;
+const int RENDER_MODE_NORMAL = 2;
+const int RENDER_MODE_SPECULAR = 3;
+
 uniform sampler2D u_gBufferDepthStencil;
 uniform sampler2D u_gBufferColorSpecularIntensity;
 uniform sampler2D u_gBufferNormal;
-//uniform sampler2D u_gBufferSpecularPower;
+uniform sampler2D u_gBufferSpecularPower;
 uniform sampler2DShadow u_directionalLightShadowMap;
 //uniform samplerCubeShadow u_pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
 uniform samplerCube u_pointLightShadowCubeMap[MAX_NUM_POINT_LIGHT];
 uniform sampler2DShadow u_spotLightShadowMap[MAX_NUM_SPOT_LIGHT];
+uniform int u_renderMode;
 uniform vec3 u_ambientLightColor;
 uniform bool u_directionalLightIsValid;
 uniform bool u_directionalLightHasShadowMap;
@@ -83,8 +89,8 @@ void main()
 	vec3 normalizedNormal = texture2D(u_gBufferNormal, v_texCoord).xyz;
 	vec3 normal = normalizedNormal * 2.0 - 1.0;
 
-	//float normalizedSpecularPower = texture2D(u_gBufferSpecularPower, v_texCoord).x;
-	//float specularPower = SPECULAR_POWER_RANGE_X + SPECULAR_POWER_RANGE_Y * normalizedSpecularPower;
+	float normalizedSpecularPower = texture2D(u_gBufferSpecularPower, v_texCoord).x;
+	float specularPower = SPECULAR_POWER_RANGE_X + SPECULAR_POWER_RANGE_Y * normalizedSpecularPower;
 
 	// 後はここで得たpositionと、normalとcolorを利用して、ライティングをして色を決める
 	vec3 diffuseSpecularLightColor = vec3(0.0, 0.0, 0.0);
@@ -226,5 +232,20 @@ void main()
 		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, vertexToSpotLightDirection, u_spotLightColor[i], attenuation);
 	}
 
-	gl_FragColor = vec4((color * (diffuseSpecularLightColor + u_ambientLightColor.rgb)), 1.0);
+	switch (u_renderMode)
+	{
+	case RENDER_MODE_DIFFUSE:
+		gl_FragColor = vec4(color, 1.0);
+		break;
+	case RENDER_MODE_NORMAL:
+		gl_FragColor = vec4(normalizedNormal, 1.0);
+		break;
+	case RENDER_MODE_SPECULAR:
+		gl_FragColor = vec4(specularIntensity, specularPower, 1.0, 1.0);
+		break;
+	case RENDER_MODE_LIGHTING:
+	default:
+		gl_FragColor = vec4((color * (diffuseSpecularLightColor + u_ambientLightColor.rgb)), 1.0);
+		break;
+	}
 }

@@ -1,41 +1,51 @@
 #include "GBufferPack.hlsl"
 
-cbuffer ModelMatrix : register(b0)
+static const int RENDER_MODE_LIGHTING = 0;
+static const int RENDER_MODE_DIFFUSE = 1;
+static const int RENDER_MODE_NORMAL = 2;
+static const int RENDER_MODE_SPECULAR = 3;
+
+cbuffer RenderMode : register(b0)
+{
+	int _renderMode;
+};
+
+cbuffer ModelMatrix : register(b1)
 {
 	matrix _model;
 };
 
-cbuffer ViewMatrix : register(b1)
+cbuffer ViewMatrix : register(b2)
 {
 	matrix _view;
 };
 
-cbuffer ProjectionMatrix : register(b2)
+cbuffer ProjectionMatrix : register(b3)
 {
 	matrix _projection;
 };
 
-cbuffer DepthBiasMatrix : register(b3)
+cbuffer DepthBiasMatrix : register(b4)
 {
 	matrix _depthBias;
 };
 
-cbuffer NormalMatrix : register(b4)
+cbuffer NormalMatrix : register(b5)
 {
 	matrix _normal;
 };
 
-cbuffer MultiplyColor : register(b5)
+cbuffer MultiplyColor : register(b6)
 {
 	float4 _multiplyColor;
 };
 
-cbuffer AmbientLightParameter : register(b6)
+cbuffer AmbientLightParameter : register(b7)
 {
 	float4 _ambientLightColor;
 };
 
-cbuffer DirectionalLightParameter : register(b7)
+cbuffer DirectionalLightParameter : register(b8)
 {
 	matrix _directionalLightView;
 	matrix _directionalLightProjection;
@@ -48,7 +58,7 @@ cbuffer DirectionalLightParameter : register(b7)
 static const unsigned int NUM_FACE_CUBEMAP_TEXTURE = 6;
 static const unsigned int MAX_NUM_POINT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 
-cbuffer PointLightParameter : register(b8)
+cbuffer PointLightParameter : register(b9)
 {
 	struct {
 		matrix _pointLightView[NUM_FACE_CUBEMAP_TEXTURE];
@@ -64,7 +74,7 @@ cbuffer PointLightParameter : register(b8)
 
 static const unsigned int MAX_NUM_SPOT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 
-cbuffer SpotLightParameter : register(b9)
+cbuffer SpotLightParameter : register(b10)
 {
 	struct {
 		matrix _spotLightView;
@@ -306,5 +316,15 @@ float4 PS(PS_INPUT input) : SV_TARGET
 		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, vertexToSpotLightDirection, _spotLightParameter[i]._spotLightColor, attenuation);
 	}
 
-	return _multiplyColor * float4(shadowAttenuation * diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
+	switch (_renderMode)
+	{
+	case RENDER_MODE_DIFFUSE:
+		return _multiplyColor;
+	case RENDER_MODE_NORMAL:
+		return float4((normal + 1.0) * 0.5, 1.0);
+	case RENDER_MODE_LIGHTING:
+	case RENDER_MODE_SPECULAR:
+	default:
+		return _multiplyColor * float4(shadowAttenuation * diffuseSpecularLightColor + _ambientLightColor.rgb, 1.0);
+	}
 }

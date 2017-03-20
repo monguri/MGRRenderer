@@ -1,28 +1,37 @@
 //TODO: うまくGBufferPack,GBufferUnpack.hlslにまとまらないや
 
 static const float2 SPECULAR_POWER_RANGE = {10.0, 250.0};
+static const int RENDER_MODE_LIGHTING = 0;
+static const int RENDER_MODE_DIFFUSE = 1;
+static const int RENDER_MODE_NORMAL = 2;
+static const int RENDER_MODE_SPECULAR = 3;
 
-cbuffer ViewMatrixInverse : register(b0)
+cbuffer RenderMode : register(b0)
+{
+	int _renderMode;
+};
+
+cbuffer ViewMatrixInverse : register(b1)
 {
 	matrix _viewInverse;
 };
 
-cbuffer DepthTextureProjectionMatrix : register(b1)
+cbuffer DepthTextureProjectionMatrix : register(b2)
 {
 	matrix _depthTextureProjection;
 };
 
-cbuffer DepthBiasMatrix : register(b2)
+cbuffer DepthBiasMatrix : register(b3)
 {
 	matrix _depthBias;
 };
 
-cbuffer AmbientLightParameter : register(b3)
+cbuffer AmbientLightParameter : register(b4)
 {
 	float4 _ambientLightColor;
 };
 
-cbuffer DirectionalLightParameter : register(b4)
+cbuffer DirectionalLightParameter : register(b5)
 {
 	matrix _directionalLightView;
 	matrix _directionalLightProjection;
@@ -35,7 +44,7 @@ cbuffer DirectionalLightParameter : register(b4)
 static const unsigned int NUM_FACE_CUBEMAP_TEXTURE = 6;
 static const unsigned int MAX_NUM_POINT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 
-cbuffer PointLightParameter : register(b5)
+cbuffer PointLightParameter : register(b6)
 {
 	struct {
 		matrix _pointLightView[NUM_FACE_CUBEMAP_TEXTURE];
@@ -51,7 +60,7 @@ cbuffer PointLightParameter : register(b5)
 
 static const unsigned int MAX_NUM_SPOT_LIGHT = 4; // 注意：プログラム側と定数の一致が必要
 
-cbuffer SpotLightParameter : register(b6)
+cbuffer SpotLightParameter : register(b7)
 {
 	struct {
 		matrix _spotLightView;
@@ -319,5 +328,16 @@ float4 PS(PS_INPUT input) : SV_TARGET
 		diffuseSpecularLightColor += shadowAttenuation * computeLightedColor(normal, vertexToSpotLightDirection, _spotLightParameter[i]._spotLightColor, attenuation);
 	}
 
-	return float4((color * (diffuseSpecularLightColor + _ambientLightColor.rgb)), 1.0);
+	switch (_renderMode)
+	{
+	case RENDER_MODE_DIFFUSE:
+		return float4(color, 1.0);
+	case RENDER_MODE_NORMAL:
+		return float4(normalizedNormal, 1.0);
+	case RENDER_MODE_SPECULAR:
+		return float4(specularIntensity, specularPower, 1.0, 1.0);
+	case RENDER_MODE_LIGHTING:
+	default:
+		return float4((color * (diffuseSpecularLightColor + _ambientLightColor.rgb)), 1.0);
+	}
 }

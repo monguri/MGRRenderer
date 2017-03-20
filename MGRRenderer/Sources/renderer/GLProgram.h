@@ -14,6 +14,7 @@ class GLProgram final
 {
 public:
 	// TODO:‚±‚±‚É’u‚­‚Ì‚ª‚ ‚Ü‚è‚¢‚¢‚Æ‚ÍŽv‚í‚È‚¢‚ª‚Æ‚è‚ ‚¦‚¸
+	static const std::string GLProgram::UNIFORM_NAME_RENDER_MODE;
 	static const std::string GLProgram::UNIFORM_NAME_MULTIPLE_COLOR;
 	static const std::string GLProgram::UNIFORM_NAME_TEXTURE_SAMPLER;
 	static const std::string GLProgram::UNIFORM_NAME_MODEL_MATRIX;

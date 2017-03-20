@@ -19,6 +19,7 @@ static const size_t DEFAULT_RENDER_QUEUE_GROUP_INDEX = 0;
 
 Renderer::Renderer() :
 _drawWireFrame(false)
+,_renderMode(RenderMode::LIGHTING)
 #if defined(MGRRENDERER_USE_DIRECT3D)
 ,_direct3dSwapChain(nullptr)
 ,_direct3dDevice(nullptr)
@@ -494,7 +495,17 @@ void Renderer::initView(const SizeUint& windowSize)
 
 	ID3D11Buffer* constantBuffer = nullptr;
 
+	// render mode用
+	result = _direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+	if (FAILED(result))
+	{
+		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
+		return;
+	}
+	_d3dProgramForDeferredRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_RENDER_MODE, constantBuffer);
+
 	// View行列用
+	constantBuffer = nullptr;
 	result = _direct3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 	if (FAILED(result))
 	{
@@ -782,8 +793,20 @@ void Renderer::renderDeferred()
 	// TODO:ここらへん共通化したいな。。
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 
-	// ビュー行列の逆行列のマップ
+	// render modeのマップ
 	HRESULT result = direct3dContext->Map(
+		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_RENDER_MODE),
+		0,
+		D3D11_MAP_WRITE_DISCARD,
+		0,
+		&mappedResource
+	);
+	Logger::logAssert(SUCCEEDED(result), "Map failed, result=%d", result);
+	CopyMemory(mappedResource.pData, &_renderMode, sizeof(_renderMode));
+	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_RENDER_MODE), 0);
+
+	// ビュー行列の逆行列のマップ
+	result = direct3dContext->Map(
 		_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_VIEW_MATRIX),
 		0,
 		D3D11_MAP_WRITE_DISCARD,
@@ -972,6 +995,8 @@ void Renderer::renderDeferred()
 	glUseProgram(_glProgram.getShaderProgram());
 	GLProgram::checkGLError();
 
+	glUniform1i(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_RENDER_MODE), (GLint)_renderMode);
+
 	Mat4 viewMatrix = Director::getCamera().getViewMatrix();
 	viewMatrix.inverse();
 	glUniformMatrix4fv(_glProgram.getUniformLocation("u_viewInverse"), 1, GL_FALSE, (GLfloat*)viewMatrix.m);
@@ -999,9 +1024,9 @@ void Renderer::renderDeferred()
 	glBindTexture(GL_TEXTURE_2D, getGBufferNormal()->getTextureId());
 	glUniform1i(_glProgram.getUniformLocation("u_gBufferNormal"), 2);
 
-	//glActiveTexture(GL_TEXTURE3);
-	//glBindTexture(GL_TEXTURE_2D, getGBufferSpecularPower()->getTextureId());
-	//glUniform1i(_glProgram.getUniformLocation("u_gBufferSpecularPower"), 3);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, getGBufferSpecularPower()->getTextureId());
+	glUniform1i(_glProgram.getUniformLocation("u_gBufferSpecularPower"), 3);
 
 	glActiveTexture(GL_TEXTURE0);
 

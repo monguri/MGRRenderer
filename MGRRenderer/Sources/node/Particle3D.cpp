@@ -88,7 +88,7 @@ bool Particle3D::initWithParameter(const Particle3D::Parameter& parameter)
 	}
 
 	// とりあえず設定量のパーティクルをふきだしたらそれで終わりにする
-	_glProgram.initWithShaderString(
+	_glProgramForForwardRendering.initWithShaderString(
 		// vertex shader
 		"#version 430\n"
 		"attribute vec4 a_position;"
@@ -191,34 +191,34 @@ void Particle3D::renderForward()
 	_renderForwardCommand.init([=]
 	{
 #if defined(MGRRENDERER_USE_OPENGL)
-		glUseProgram(_glProgram.getShaderProgram());
+		glUseProgram(_glProgramForForwardRendering.getShaderProgram());
 		GLProgram::checkGLError();
 
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 		GLProgram::checkGLError();
 
-		glUniform3fv(_glProgram.getUniformLocation("u_gravity"), 1, (GLfloat*)&_parameter.gravity);
+		glUniform3fv(_glProgramForForwardRendering.getUniformLocation("u_gravity"), 1, (GLfloat*)&_parameter.gravity);
 		GLProgram::checkGLError();
 
-		glUniform1f(_glProgram.getUniformLocation("u_lifeTime"), _parameter.lifeTime);
+		glUniform1f(_glProgramForForwardRendering.getUniformLocation("u_lifeTime"), _parameter.lifeTime);
 		GLProgram::checkGLError();
-		glUniform1f(_glProgram.getUniformLocation("u_pointSize"), _parameter.pointSize);
+		glUniform1f(_glProgramForForwardRendering.getUniformLocation("u_pointSize"), _parameter.pointSize);
 		GLProgram::checkGLError();
 
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::POSITION);
 		GLProgram::checkGLError();
-		glEnableVertexAttribArray(_glProgram.getAttributeLocation("a_initVelocity"));
+		glEnableVertexAttribArray(_glProgramForForwardRendering.getAttributeLocation("a_initVelocity"));
 		GLProgram::checkGLError();
-		glEnableVertexAttribArray(_glProgram.getAttributeLocation("a_elapsedTime"));
+		glEnableVertexAttribArray(_glProgramForForwardRendering.getAttributeLocation("a_elapsedTime"));
 		GLProgram::checkGLError();
 
 		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, sizeof(_vertexArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)_vertexArray.data());
 		GLProgram::checkGLError();
-		glVertexAttribPointer(_glProgram.getAttributeLocation("a_initVelocity"), sizeof(_initVelocityArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)_initVelocityArray.data());
+		glVertexAttribPointer(_glProgramForForwardRendering.getAttributeLocation("a_initVelocity"), sizeof(_initVelocityArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)_initVelocityArray.data());
 		GLProgram::checkGLError();
-		glVertexAttribPointer(_glProgram.getAttributeLocation("a_elapsedTime"), sizeof(_elapsedTimeArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)_elapsedTimeArray.data());
+		glVertexAttribPointer(_glProgramForForwardRendering.getAttributeLocation("a_elapsedTime"), sizeof(_elapsedTimeArray[0]) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, 0, (GLvoid*)_elapsedTimeArray.data());
 		GLProgram::checkGLError();
 
 		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());

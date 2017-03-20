@@ -141,7 +141,7 @@ void Point3D::initWithPointArray(const std::vector<Point3DData>& pointArray)
 	}
 	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 #elif defined(MGRRENDERER_USE_OPENGL)
-	_glProgram.initWithShaderString(
+	_glProgramForForwardRendering.initWithShaderString(
 		// vertex shader
 		"#version 430\n"
 		"attribute vec4 a_position;"
@@ -246,25 +246,25 @@ void Point3D::renderForward()
 
 		direct3dContext->DrawIndexed(_pointArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
-		glUseProgram(_glProgram.getShaderProgram());
+		glUseProgram(_glProgramForForwardRendering.getShaderProgram());
 		GLProgram::checkGLError();
 
-		glUniform3f(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
+		glUniform3f(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
 		GLProgram::checkGLError();
 
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 		GLProgram::checkGLError();
 
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::POSITION);
 		GLProgram::checkGLError();
-		glEnableVertexAttribArray(_glProgram.getAttributeLocation("a_pointSize"));
+		glEnableVertexAttribArray(_glProgramForForwardRendering.getAttributeLocation("a_pointSize"));
 		GLProgram::checkGLError();
 
 		glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, sizeof(_pointArray[0].point) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point3DData), (GLvoid*)&_pointArray[0].point);
 		GLProgram::checkGLError();
-		glVertexAttribPointer(_glProgram.getAttributeLocation("a_pointSize"), sizeof(_pointArray[0].pointSize) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point3DData), (GLvoid*)((GLbyte*)&_pointArray[0].pointSize));
+		glVertexAttribPointer(_glProgramForForwardRendering.getAttributeLocation("a_pointSize"), sizeof(_pointArray[0].pointSize) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Point3DData), (GLvoid*)((GLbyte*)&_pointArray[0].pointSize));
 		GLProgram::checkGLError();
 
 		glDrawArrays(GL_POINTS, 0, _pointArray.size());

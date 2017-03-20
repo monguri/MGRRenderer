@@ -48,7 +48,7 @@ namespace mgrrenderer
 		D3DTexture* _texture;
 #elif defined(MGRRENDERER_USE_OPENGL)
 		GLProgram _glProgramForGBuffer;
-		GLProgram _glProgram;
+		GLProgram _glProgramForForwardRendering;
 		GLProgram _glProgramForShadowMap;
 		GLTexture* _texture;
 #endif

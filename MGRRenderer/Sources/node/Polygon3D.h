@@ -30,7 +30,7 @@ private:
 	D3DProgram _d3dProgramForForwardRendering;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLProgram _glProgramForGBuffer;
-	GLProgram _glProgram;
+	GLProgram _glProgramForForwardRendering;
 	GLProgram _glProgramForShadowMap;
 #endif
 

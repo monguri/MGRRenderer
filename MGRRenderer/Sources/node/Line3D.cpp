@@ -148,7 +148,7 @@ bool Line3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	}
 	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR, constantBuffer);
 #elif defined(MGRRENDERER_USE_OPENGL)
-	_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPosition.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionMultiplyColor.glsl");
+	_glProgramForForwardRendering.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPosition.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionMultiplyColor.glsl");
 #endif
 
 	return true;
@@ -234,15 +234,15 @@ void Line3D::renderForward()
 
 		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
-		glUseProgram(_glProgram.getShaderProgram());
+		glUseProgram(_glProgramForForwardRendering.getShaderProgram());
 		GLProgram::checkGLError();
 
-		glUniform3f(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
+		glUniform3f(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
 		GLProgram::checkGLError();
 
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 		GLProgram::checkGLError();
 
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::POSITION);

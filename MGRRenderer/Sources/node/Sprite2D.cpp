@@ -184,7 +184,7 @@ bool Sprite2D::initCommon(const std::string& geometryShaderFunctionPath, const s
 	_quadrangle.topRight.position = Vec2((float)contentSize.width, (float)contentSize.height);
 	_quadrangle.topRight.textureCoordinate = Vec2(1.0f, 1.0f);
 
-	_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionTexture.glsl", pixelShaderFunctionPath);
+	_glProgramForForwardRendering.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionTexture.glsl", pixelShaderFunctionPath);
 
 	return true;
 }
@@ -510,30 +510,30 @@ void Sprite2D::renderForward()
 		direct3dContext->DrawIndexed(4, 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
-		glUseProgram(_glProgram.getShaderProgram());
+		glUseProgram(_glProgramForForwardRendering.getShaderProgram());
 		GLProgram::checkGLError();
 
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getViewMatrix().m);
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getProjectionMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getProjectionMatrix().m);
 		GLProgram::checkGLError();
 
 		// デプステクスチャ描画時のプロジェクション行列のマップ
 		switch (_renderBufferType) {
 			case RenderBufferType::DEPTH_CUBEMAP_TEXTURE:
-				glUniform1i(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_CUBEMAP_FACE), (GLint)_cubeMapFace);
+				glUniform1i(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_CUBEMAP_FACE), (GLint)_cubeMapFace);
 				GLProgram::checkGLError();
 				// そのまま通過する
 			case RenderBufferType::DEPTH_TEXTURE:
 			case RenderBufferType::DEPTH_TEXTURE_ORTHOGONAL:
 			{
-				glUniform1f(_glProgram.getUniformLocation("u_nearClipZ"), -_nearClip);
+				glUniform1f(_glProgramForForwardRendering.getUniformLocation("u_nearClipZ"), -_nearClip);
 				GLProgram::checkGLError();
 
-				glUniform1f(_glProgram.getUniformLocation("u_farClipZ"), -_farClip);
+				glUniform1f(_glProgramForForwardRendering.getUniformLocation("u_farClipZ"), -_farClip);
 				GLProgram::checkGLError();
 
-				glUniformMatrix4fv(_glProgram.getUniformLocation("u_depthTextureProjectionMatrix"), 1, GL_FALSE, (GLfloat*)_projectionMatrix.m);
+				glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation("u_depthTextureProjectionMatrix"), 1, GL_FALSE, (GLfloat*)_projectionMatrix.m);
 				GLProgram::checkGLError();
 				break;
 			}
@@ -542,7 +542,7 @@ void Sprite2D::renderForward()
 			case RenderBufferType::GBUFFER_SPECULAR_POWER:
 				break;
 			default:
-				glUniform3f(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
+				glUniform3f(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f);
 				GLProgram::checkGLError();
 				break;
 		}

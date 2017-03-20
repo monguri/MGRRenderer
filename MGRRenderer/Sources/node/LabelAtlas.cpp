@@ -35,7 +35,7 @@ bool LabelAtlas::init(const std::string& string, const GLTexture* texture, float
 
 	setString(string);
 
-	_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionTexture.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionTextureMultiplyColor.glsl");
+	_glProgramForForwardRendering.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionTexture.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionTextureMultiplyColor.glsl");
 
 	return true;
 }
@@ -107,15 +107,15 @@ void LabelAtlas::renderForward()
 			return;
 		}
 
-		glUseProgram(_glProgram.getShaderProgram());
+		glUseProgram(_glProgramForForwardRendering.getShaderProgram());
 		GLProgram::checkGLError();
 
-		glUniform4f(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f, getOpacity());
+		glUniform4f(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f, getOpacity());
 		GLProgram::checkGLError();
 
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getViewMatrix().m);
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getProjectionMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCameraFor2D().getProjectionMatrix().m);
 		GLProgram::checkGLError();
 
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::POSITION);

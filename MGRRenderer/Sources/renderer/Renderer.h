@@ -114,7 +114,7 @@ private:
 	D3DProgram _d3dProgramForDeferredRendering;
 #elif defined(MGRRENDERER_USE_OPENGL)
 	GLFrameBuffer* _gBufferFrameBuffer;
-	GLProgram _glProgram;
+	GLProgram _glProgramForDeferredRendering;
 #endif
 #endif // defined(MGRRENDERER_DEFERRED_RENDERING)
 

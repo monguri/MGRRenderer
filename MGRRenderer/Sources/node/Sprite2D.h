@@ -61,7 +61,7 @@ protected:
 	D3DProgram _d3dProgramForForwardRendering;
 	D3DTexture* _texture;
 #elif defined(MGRRENDERER_USE_OPENGL)
-	GLProgram _glProgram;
+	GLProgram _glProgramForForwardRendering;
 	GLTexture* _texture;
 #endif
 	CustomRenderCommand _renderForwardCommand;

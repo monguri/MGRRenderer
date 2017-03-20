@@ -29,7 +29,7 @@ private:
 #if defined(MGRRENDERER_USE_DIRECT3D)
 	D3DProgram _d3dProgramForForwardRendering;
 #elif defined(MGRRENDERER_USE_OPENGL)
-	GLProgram _glProgram;
+	GLProgram _glProgramForForwardRendering;
 #endif
 	CustomRenderCommand _renderForwardCommand;
 

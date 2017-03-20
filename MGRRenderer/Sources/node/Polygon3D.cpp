@@ -335,7 +335,7 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 	_d3dProgramForForwardRendering.addConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER, constantBuffer);
 #elif defined(MGRRENDERER_USE_OPENGL)
 	// TODO:objのシェーダとほぼ同じ。共通化したい。
-	_glProgram.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionNormal3D.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionNormalMultiplyColor3D.glsl");
+	_glProgramForForwardRendering.initWithShaderFile("../MGRRenderer/Resources/shader/VertexShaderPositionNormal3D.glsl", "../MGRRenderer/Resources/shader/FragmentShaderPositionNormalMultiplyColor3D.glsl");
 
 	_glProgramForShadowMap.initWithShaderString(
 		// vertex shader
@@ -1036,25 +1036,25 @@ void Polygon3D::renderForward()
 
 		direct3dContext->DrawIndexed(_vertexArray.size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
-		glUseProgram(_glProgram.getShaderProgram());
+		glUseProgram(_glProgramForForwardRendering.getShaderProgram());
 		GLProgram::checkGLError();
 
-		glUniform1i(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_RENDER_MODE), (GLint)Director::getRenderer().getRenderMode());
+		glUniform1i(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_RENDER_MODE), (GLint)Director::getRenderer().getRenderMode());
 
-		glUniform4f(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f, getOpacity());
+		glUniform4f(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_MULTIPLE_COLOR), getColor().r / 255.0f, getColor().g / 255.0f, getColor().b / 255.0f, getOpacity());
 		GLProgram::checkGLError();
 
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_MODEL_MATRIX), 1, GL_FALSE, (GLfloat*)getModelMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_VIEW_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getViewMatrix().m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_PROJECTION_MATRIX), 1, GL_FALSE, (GLfloat*)Director::getCamera().getProjectionMatrix().m);
 		GLProgram::checkGLError();
 
 		Mat4 normalMatrix = Mat4::createNormalMatrix(getModelMatrix());
-		glUniformMatrix4fv(_glProgram.getUniformLocation(GLProgram::UNIFORM_NAME_NORMAL_MATRIX), 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
+		glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation(GLProgram::UNIFORM_NAME_NORMAL_MATRIX), 1, GL_FALSE, (GLfloat*)&normalMatrix.m);
 
 		static const Mat4& depthBiasMatrix = Mat4::createScale(Vec3(0.5f, 0.5f, 0.5f)) * Mat4::createTranslation(Vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(
-			_glProgram.getUniformLocation("u_depthBiasMatrix"),
+			_glProgramForForwardRendering.getUniformLocation("u_depthBiasMatrix"),
 			1,
 			GL_FALSE,
 			(GLfloat*)depthBiasMatrix.m
@@ -1067,7 +1067,7 @@ void Polygon3D::renderForward()
 		Logger::logAssert(ambientLight != nullptr, "シーンにアンビエントライトがない。");
 		Color3B lightColor = ambientLight->getColor();
 		float intensity = ambientLight->getIntensity();
-		glUniform3f(_glProgram.getUniformLocation("u_ambientLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+		glUniform3f(_glProgramForForwardRendering.getUniformLocation("u_ambientLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
 		GLProgram::checkGLError();
 
 
@@ -1077,32 +1077,32 @@ void Polygon3D::renderForward()
 		if (directionalLight != nullptr)
 		{
 			glUniform1i(
-				_glProgram.getUniformLocation("u_directionalLightIsValid"),
+				_glProgramForForwardRendering.getUniformLocation("u_directionalLightIsValid"),
 				1
 			);
 			GLProgram::checkGLError();
 
 			lightColor = directionalLight->getColor();
 			intensity = directionalLight->getIntensity();
-			glUniform3f(_glProgram.getUniformLocation("u_directionalLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+			glUniform3f(_glProgramForForwardRendering.getUniformLocation("u_directionalLightColor"), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
 			GLProgram::checkGLError();
 
 			Vec3 direction = directionalLight->getDirection();
 			direction.normalize();
-			glUniform3fv(_glProgram.getUniformLocation("u_directionalLightDirection"), 1, (GLfloat*)&direction);
+			glUniform3fv(_glProgramForForwardRendering.getUniformLocation("u_directionalLightDirection"), 1, (GLfloat*)&direction);
 			GLProgram::checkGLError();
 
 			if (directionalLight->hasShadowMap())
 			{
 				glUniformMatrix4fv(
-					_glProgram.getUniformLocation("u_directionalLightViewMatrix"),
+					_glProgramForForwardRendering.getUniformLocation("u_directionalLightViewMatrix"),
 					1,
 					GL_FALSE,
 					(GLfloat*)directionalLight->getShadowMapData().viewMatrix.m
 				);
 
 				glUniformMatrix4fv(
-					_glProgram.getUniformLocation("u_directionalLightProjectionMatrix"),
+					_glProgramForForwardRendering.getUniformLocation("u_directionalLightProjectionMatrix"),
 					1,
 					GL_FALSE,
 					(GLfloat*)directionalLight->getShadowMapData().projectionMatrix.m
@@ -1111,7 +1111,7 @@ void Polygon3D::renderForward()
 				glActiveTexture(GL_TEXTURE0);
 				GLuint textureId = directionalLight->getShadowMapData().getDepthTexture()->getTextureId();
 				glBindTexture(GL_TEXTURE_2D, textureId);
-				glUniform1i(_glProgram.getUniformLocation("u_directionalLightShadowMap"), 0);
+				glUniform1i(_glProgramForForwardRendering.getUniformLocation("u_directionalLightShadowMap"), 0);
 			}
 		}
 
@@ -1121,44 +1121,44 @@ void Polygon3D::renderForward()
 			const PointLight* pointLight = scene.getPointLight(i);
 			if (pointLight != nullptr)
 			{
-				glUniform1i(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_pointLightIsValid[") + std::to_string(i) + std::string("]")).c_str()), 1);
-				//glUniform1f(_glProgram.getUniformLocation(std::string("u_pointLightRangeInverse[") + std::to_string(i) + std::string("]")), 1.0f / pointLight->getRange());
+				glUniform1i(glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_pointLightIsValid[") + std::to_string(i) + std::string("]")).c_str()), 1);
+				//glUniform1f(_glProgramForForwardRendering.getUniformLocation(std::string("u_pointLightRangeInverse[") + std::to_string(i) + std::string("]")), 1.0f / pointLight->getRange());
 				GLProgram::checkGLError();
 
 				lightColor = pointLight->getColor();
 				intensity = pointLight->getIntensity();
-				glUniform3f(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_pointLightColor[") + std::to_string(i) + std::string("]")).c_str()), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
-				//glUniform3f(_glProgram.getUniformLocation(std::string("u_pointLightColor[") + std::to_string(i) + std::string("]")), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+				glUniform3f(glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_pointLightColor[") + std::to_string(i) + std::string("]")).c_str()), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+				//glUniform3f(_glProgramForForwardRendering.getUniformLocation(std::string("u_pointLightColor[") + std::to_string(i) + std::string("]")), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
 
 				GLProgram::checkGLError();
 
-				glUniform3fv(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_pointLightPosition[") + std::to_string(i) + std::string("]")).c_str()), 1, (GLfloat*)&pointLight->getPosition()); // ライトについてはローカル座標でなくワールド座標である前提
-				//glUniform3fv(_glProgram.getUniformLocation(std::string("u_pointLightPosition[") + std::to_string(i) + std::string("]")), 1, (GLfloat*)&pointLight->getPosition()); // ライトについてはローカル座標でなくワールド座標である前提
+				glUniform3fv(glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_pointLightPosition[") + std::to_string(i) + std::string("]")).c_str()), 1, (GLfloat*)&pointLight->getPosition()); // ライトについてはローカル座標でなくワールド座標である前提
+				//glUniform3fv(_glProgramForForwardRendering.getUniformLocation(std::string("u_pointLightPosition[") + std::to_string(i) + std::string("]")), 1, (GLfloat*)&pointLight->getPosition()); // ライトについてはローカル座標でなくワールド座標である前提
 				GLProgram::checkGLError();
 
-				glUniform1f(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_pointLightRangeInverse[") + std::to_string(i) + std::string("]")).c_str()), 1.0f / pointLight->getRange());
-				//glUniform1f(_glProgram.getUniformLocation(std::string("u_pointLightRangeInverse[") + std::to_string(i) + std::string("]")), 1.0f / pointLight->getRange());
+				glUniform1f(glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_pointLightRangeInverse[") + std::to_string(i) + std::string("]")).c_str()), 1.0f / pointLight->getRange());
+				//glUniform1f(_glProgramForForwardRendering.getUniformLocation(std::string("u_pointLightRangeInverse[") + std::to_string(i) + std::string("]")), 1.0f / pointLight->getRange());
 				GLProgram::checkGLError();
 
 				glUniform1i(
-					glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_pointLightHasShadowMap[") + std::to_string(i) + std::string("]")).c_str()),
+					glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_pointLightHasShadowMap[") + std::to_string(i) + std::string("]")).c_str()),
 					pointLight->hasShadowMap()
 				);
 				//glUniform1i(
-				//	_glProgram.getUniformLocation(std::string("u_pointLightHasShadowMap[") + std::to_string(i) + std::string("]")),
+				//	_glProgramForForwardRendering.getUniformLocation(std::string("u_pointLightHasShadowMap[") + std::to_string(i) + std::string("]")),
 				//	pointLight->hasShadowMap()
 				//);
 
 				if (pointLight->hasShadowMap())
 				{
 					glUniformMatrix4fv(
-						glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_pointLightProjectionMatrix[") + std::to_string(i) + std::string("]")).c_str()),
+						glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_pointLightProjectionMatrix[") + std::to_string(i) + std::string("]")).c_str()),
 						1,
 						GL_FALSE,
 						(GLfloat*)pointLight->getShadowMapData().projectionMatrix.m
 					);
 					//glUniformMatrix4fv(
-					//	_glProgram.getUniformLocation(std::string("u_pointLightProjectionMatrix[") + std::to_string(i) + std::string("]")),
+					//	_glProgramForForwardRendering.getUniformLocation(std::string("u_pointLightProjectionMatrix[") + std::to_string(i) + std::string("]")),
 					//	1,
 					//	GL_FALSE,
 					//	(GLfloat*)pointLight->getShadowMapData().projectionMatrix.m
@@ -1167,8 +1167,8 @@ void Polygon3D::renderForward()
 					glActiveTexture(GL_TEXTURE1 + i);
 					GLuint textureId = pointLight->getShadowMapData().getDepthTexture()->getTextureId();
 					glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
-					glUniform1i(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_pointLightShadowCubeMap[") + std::to_string(i) + std::string("]")).c_str()), 1 + i);
-					//glUniform1i(_glProgram.getUniformLocation(std::string("u_pointLightShadowCubeMap[") + std::to_string(i) + std::string("]")), 5 + i);
+					glUniform1i(glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_pointLightShadowCubeMap[") + std::to_string(i) + std::string("]")).c_str()), 1 + i);
+					//glUniform1i(_glProgramForForwardRendering.getUniformLocation(std::string("u_pointLightShadowCubeMap[") + std::to_string(i) + std::string("]")), 5 + i);
 					glActiveTexture(GL_TEXTURE0);
 				}
 			}
@@ -1180,69 +1180,69 @@ void Polygon3D::renderForward()
 			const SpotLight* spotLight = scene.getSpotLight(i);
 			if (spotLight != nullptr)
 			{
-				glUniform1i(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_spotLightIsValid[") + std::to_string(i) + std::string("]")).c_str()), 1);
+				glUniform1i(glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_spotLightIsValid[") + std::to_string(i) + std::string("]")).c_str()), 1);
 				GLProgram::checkGLError();
 
 				lightColor = spotLight->getColor();
 				intensity = spotLight->getIntensity();
-				glUniform3f(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_spotLightColor[") + std::to_string(i) + std::string("]")).c_str()), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
-				//glUniform3f(_glProgram.getUniformLocation(std::string("u_spotLightColor[") + std::to_string(i) + std::string("]")), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+				glUniform3f(glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_spotLightColor[") + std::to_string(i) + std::string("]")).c_str()), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
+				//glUniform3f(_glProgramForForwardRendering.getUniformLocation(std::string("u_spotLightColor[") + std::to_string(i) + std::string("]")), lightColor.r / 255.0f * intensity, lightColor.g / 255.0f * intensity, lightColor.b / 255.0f * intensity);
 				GLProgram::checkGLError();
 
-				glUniform3fv(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_spotLightPosition[") + std::to_string(i) + std::string("]")).c_str()), 1, (GLfloat*)&spotLight->getPosition());
-				//glUniform3fv(_glProgram.getUniformLocation(std::string("u_spotLightPosition[") + std::to_string(i) + std::string("]")), 1, (GLfloat*)&spotLight->getPosition());
+				glUniform3fv(glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_spotLightPosition[") + std::to_string(i) + std::string("]")).c_str()), 1, (GLfloat*)&spotLight->getPosition());
+				//glUniform3fv(_glProgramForForwardRendering.getUniformLocation(std::string("u_spotLightPosition[") + std::to_string(i) + std::string("]")), 1, (GLfloat*)&spotLight->getPosition());
 				GLProgram::checkGLError();
 
 				Vec3 direction = spotLight->getDirection();
 				direction.normalize();
-				glUniform3fv(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_spotLightDirection[") + std::to_string(i) + std::string("]")).c_str()), 1, (GLfloat*)&direction);
-				//glUniform3fv(_glProgram.getUniformLocation(std::string("u_spotLightDirection[") + std::to_string(i) + std::string("]")), 1, (GLfloat*)&direction);
+				glUniform3fv(glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_spotLightDirection[") + std::to_string(i) + std::string("]")).c_str()), 1, (GLfloat*)&direction);
+				//glUniform3fv(_glProgramForForwardRendering.getUniformLocation(std::string("u_spotLightDirection[") + std::to_string(i) + std::string("]")), 1, (GLfloat*)&direction);
 				GLProgram::checkGLError();
 
-				glUniform1f(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_spotLightRangeInverse[") + std::to_string(i) + std::string("]")).c_str()), 1.0f / spotLight->getRange());
-				//glUniform1f(_glProgram.getUniformLocation(std::string("u_spotLightRangeInverse[") + std::to_string(i) + std::string("]")), 1.0f / spotLight->getRange());
+				glUniform1f(glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_spotLightRangeInverse[") + std::to_string(i) + std::string("]")).c_str()), 1.0f / spotLight->getRange());
+				//glUniform1f(_glProgramForForwardRendering.getUniformLocation(std::string("u_spotLightRangeInverse[") + std::to_string(i) + std::string("]")), 1.0f / spotLight->getRange());
 				GLProgram::checkGLError();
 
-				glUniform1f(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_spotLightInnerAngleCos[") + std::to_string(i) + std::string("]")).c_str()), spotLight->getInnerAngleCos());
-				//glUniform1f(_glProgram.getUniformLocation(std::string("u_spotLightInnerAngleCos[") + std::to_string(i) + std::string("]")), spotLight->getInnerAngleCos());
+				glUniform1f(glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_spotLightInnerAngleCos[") + std::to_string(i) + std::string("]")).c_str()), spotLight->getInnerAngleCos());
+				//glUniform1f(_glProgramForForwardRendering.getUniformLocation(std::string("u_spotLightInnerAngleCos[") + std::to_string(i) + std::string("]")), spotLight->getInnerAngleCos());
 				GLProgram::checkGLError();
 
-				glUniform1f(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_spotLightOuterAngleCos[") + std::to_string(i) + std::string("]")).c_str()), spotLight->getOuterAngleCos());
-				//glUniform1f(_glProgram.getUniformLocation(std::string("u_spotLightOuterAngleCos[") + std::to_string(i) + std::string("]")), spotLight->getOuterAngleCos());
+				glUniform1f(glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_spotLightOuterAngleCos[") + std::to_string(i) + std::string("]")).c_str()), spotLight->getOuterAngleCos());
+				//glUniform1f(_glProgramForForwardRendering.getUniformLocation(std::string("u_spotLightOuterAngleCos[") + std::to_string(i) + std::string("]")), spotLight->getOuterAngleCos());
 				GLProgram::checkGLError();
 
 				glUniform1i(
-					glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_spotLightHasShadowMap[") + std::to_string(i) + std::string("]")).c_str()),
+					glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_spotLightHasShadowMap[") + std::to_string(i) + std::string("]")).c_str()),
 					spotLight->hasShadowMap()
 				);
 				//glUniform1i(
-				//	_glProgram.getUniformLocation(std::string("u_spotLightHasShadowMap[") + std::to_string(i) + std::string("]")),
+				//	_glProgramForForwardRendering.getUniformLocation(std::string("u_spotLightHasShadowMap[") + std::to_string(i) + std::string("]")),
 				//	spotLight->hasShadowMap()
 				//);
 
 				if (spotLight->hasShadowMap())
 				{
 					glUniformMatrix4fv(
-						glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_spotLightViewMatrix[") + std::to_string(i) + std::string("]")).c_str()),
+						glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_spotLightViewMatrix[") + std::to_string(i) + std::string("]")).c_str()),
 						1,
 						GL_FALSE,
 						(GLfloat*)spotLight->getShadowMapData().viewMatrix.m
 					);
 					//glUniformMatrix4fv(
-					//	_glProgram.getUniformLocation(std::string("u_spotLightViewMatrix[") + std::to_string(i) + std::string("]")),
+					//	_glProgramForForwardRendering.getUniformLocation(std::string("u_spotLightViewMatrix[") + std::to_string(i) + std::string("]")),
 					//	1,
 					//	GL_FALSE,
 					//	(GLfloat*)spotLight->getShadowMapData().viewMatrix.m
 					//);
 
 					glUniformMatrix4fv(
-						glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_spotLightProjectionMatrix[") + std::to_string(i) + std::string("]")).c_str()),
+						glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_spotLightProjectionMatrix[") + std::to_string(i) + std::string("]")).c_str()),
 						1,
 						GL_FALSE,
 						(GLfloat*)spotLight->getShadowMapData().projectionMatrix.m
 					);
 					//glUniformMatrix4fv(
-					//	_glProgram.getUniformLocation(std::string("u_spotLightProjectionMatrix[") + std::to_string(i) + std::string("]")),
+					//	_glProgramForForwardRendering.getUniformLocation(std::string("u_spotLightProjectionMatrix[") + std::to_string(i) + std::string("]")),
 					//	1,
 					//	GL_FALSE,
 					//	(GLfloat*)spotLight->getShadowMapData().projectionMatrix.m
@@ -1251,8 +1251,8 @@ void Polygon3D::renderForward()
 					glActiveTexture(GL_TEXTURE5 + i);
 					GLuint textureId = spotLight->getShadowMapData().getDepthTexture()->getTextureId();
 					glBindTexture(GL_TEXTURE_2D, textureId);
-					glUniform1i(glGetUniformLocation(_glProgram.getShaderProgram(), (std::string("u_spotLightShadowMap[") + std::to_string(i) + std::string("]")).c_str()), 5 + i);
-					//glUniform1i(_glProgram.getUniformLocation(std::string("u_spotLightShadowMap[") + std::to_string(i) + std::string("]")), 9 + i);
+					glUniform1i(glGetUniformLocation(_glProgramForForwardRendering.getShaderProgram(), (std::string("u_spotLightShadowMap[") + std::to_string(i) + std::string("]")).c_str()), 5 + i);
+					//glUniform1i(_glProgramForForwardRendering.getUniformLocation(std::string("u_spotLightShadowMap[") + std::to_string(i) + std::string("]")), 9 + i);
 					glActiveTexture(GL_TEXTURE0);
 				}
 			}

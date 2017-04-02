@@ -90,18 +90,6 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			return false;
 		}
 
-#if defined(MGRRENDERER_USE_DIRECT3D)
-		for (D3DTexture* texture : _textureList)
-#elif defined(MGRRENDERER_USE_OPENGL)
-		for (GLTexture* texture : _textureList)
-#endif
-		{
-			if (texture != nullptr)
-			{
-				delete texture;
-			}
-		}
-
 		// materialListは現状無視
 		// TODO:そもそもMeshDataはその時点でマテリアルごとにまとまってないのでは？faceGroupだからまとまってる？
 		// →まとまってる。しかし、今回はマテリアルは一種類という前提でいこう

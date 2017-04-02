@@ -15,7 +15,6 @@ namespace mgrrenderer
 Sprite3D::Sprite3D() :
 _isObj(false),
 _isC3b(false),
-_texture(nullptr),
 _meshDatas(nullptr),
 _nodeDatas(nullptr),
 _perVertexByteSize(0),
@@ -52,15 +51,27 @@ Sprite3D::~Sprite3D()
 	glBindTexture(GL_TEXTURE_2D, 0);
 #endif
 
-	if (_texture != nullptr)
+#if defined(MGRRENDERER_USE_DIRECT3D)
+	for (D3DTexture* texture : _textureList)
+#elif defined(MGRRENDERER_USE_OPENGL)
+	for (GLTexture* texture : _textureList)
+#endif
 	{
-		delete _texture;
-		_texture = nullptr;
+		if (texture != nullptr)
+		{
+			delete texture;
+		}
 	}
+
+	_textureList.clear();
 }
 
 bool Sprite3D::initWithModel(const std::string& filePath)
 {
+	Logger::logAssert(_textureList.empty(), "Sprite3DではとりあえずinitWithModelは一回しか呼ばれない前提。");
+	Logger::logAssert(_verticesList.empty(), "Sprite3DではとりあえずinitWithModelは一回しか呼ばれない前提。");
+	Logger::logAssert(_indicesList.empty(), "Sprite3DではとりあえずinitWithModelは一回しか呼ばれない前提。");
+
 	_isObj = false;
 	_isC3b = false;
 
@@ -79,17 +90,44 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			return false;
 		}
 
-		_vertices.clear();
+#if defined(MGRRENDERER_USE_DIRECT3D)
+		for (D3DTexture* texture : _textureList)
+#elif defined(MGRRENDERER_USE_OPENGL)
+		for (GLTexture* texture : _textureList)
+#endif
+		{
+			if (texture != nullptr)
+			{
+				delete texture;
+			}
+		}
 
 		// materialListは現状無視
 		// TODO:そもそもMeshDataはその時点でマテリアルごとにまとまってないのでは？faceGroupだからまとまってる？
 		// →まとまってる。しかし、今回はマテリアルは一種類という前提でいこう
 		// 本来は、std::vector<std::vector<Position3DTextureCoordinates>> がメンバ変数になってて、マテリアルごとに切り替えて描画する
 		// テクスチャも本来は切り替え前提だからsetTextureってメソッドおかしいよな。。
-		Logger::logAssert(meshList.size() == 1, "現状メッシュ複数には対応してない。");
-		const ObjLoader::MeshData& mesh = meshList[0];
-		_vertices = mesh.vertices;
-		_indices = mesh.indices;
+		for (const ObjLoader::MeshData& mesh : meshList)
+		{
+			_verticesList.push_back(mesh.vertices);
+			_indicesList.push_back(mesh.indices);
+		}
+
+		const std::string& fullPath = FileUtility::getInstance()->getFullPathForFileName(filePath);
+		std::string textureBasePath = fullPath.substr(0, fullPath.find_last_of("\\/") + 1);
+		if (textureBasePath.empty())
+		{
+			textureBasePath = "";
+		}
+
+		for (const ObjLoader::MaterialData& material : materialList)
+		{
+			// TODO:とりあえずdiffuseTextureだけに対応
+			if (!material.diffuseTextureName.empty())
+			{
+				addTexture(textureBasePath + material.diffuseTextureName);
+			}
+		}
 	}
 	else if (ext == ".c3t" || ext == ".c3b")
 	{
@@ -116,8 +154,9 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 			return false;
 		}
 
+		Logger::logAssert(_meshDatas->meshDatas.size() == 1, "現状メッシュ複数には対応してない。");
 		C3bLoader::MeshData* meshData = _meshDatas->meshDatas[0];
-		_indices = meshData->subMeshIndices[0];
+		_indicesList.push_back(meshData->subMeshIndices[0]);
 
 		_perVertexByteSize = 0;
 
@@ -128,7 +167,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		C3bLoader::MaterialData* materialData = materialDatas->materialDatas[0];
 		const C3bLoader::TextureData& texture = materialData->textures[0];
-		setTexture(texture.fileName);
+		addTexture(texture.fileName);
 		_ambient = materialData->ambient;
 		_diffuse = materialData->diffuse;
 		_specular = materialData->specular;
@@ -152,7 +191,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		// 頂点バッファの定義
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBufferDesc.ByteWidth = sizeof(Position3DNormalTextureCoordinates) * _vertices.size();
+		vertexBufferDesc.ByteWidth = sizeof(Position3DNormalTextureCoordinates) * _verticesList.size();
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		vertexBufferDesc.CPUAccessFlags = 0;
 		vertexBufferDesc.MiscFlags = 0;
@@ -160,7 +199,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		// 頂点バッファのサブリソースの定義
 		D3D11_SUBRESOURCE_DATA vertexBufferSubData;
-		vertexBufferSubData.pSysMem = _vertices.data();
+		vertexBufferSubData.pSysMem = _verticesList.data();
 		vertexBufferSubData.SysMemPitch = 0;
 		vertexBufferSubData.SysMemSlicePitch = 0;
 
@@ -182,7 +221,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		// インデックスバッファの定義
 		D3D11_BUFFER_DESC indexBufferDesc;
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.ByteWidth = sizeof(USHORT) * _indices.size();
+		indexBufferDesc.ByteWidth = sizeof(USHORT) * _indicesList[0].size();
 		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		indexBufferDesc.CPUAccessFlags = 0;
 		indexBufferDesc.MiscFlags = 0;
@@ -190,7 +229,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		// インデックスバッファのサブリソースの定義
 		D3D11_SUBRESOURCE_DATA indexBufferSubData;
-		indexBufferSubData.pSysMem = _indices.data();
+		indexBufferSubData.pSysMem = _indicesList[0].data();
 		indexBufferSubData.SysMemPitch = 0;
 		indexBufferSubData.SysMemSlicePitch = 0;
 
@@ -280,7 +319,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		// インデックスバッファの定義
 		D3D11_BUFFER_DESC indexBufferDesc;
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.ByteWidth = sizeof(USHORT) * _indices.size();
+		indexBufferDesc.ByteWidth = sizeof(USHORT) * _indicesList[0].size();
 		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		indexBufferDesc.CPUAccessFlags = 0;
 		indexBufferDesc.MiscFlags = 0;
@@ -288,7 +327,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		// インデックスバッファのサブリソースの定義
 		D3D11_SUBRESOURCE_DATA indexBufferSubData;
-		indexBufferSubData.pSysMem = _indices.data();
+		indexBufferSubData.pSysMem = _indicesList[0].data();
 		indexBufferSubData.SysMemPitch = 0;
 		indexBufferSubData.SysMemSlicePitch = 0;
 
@@ -759,24 +798,28 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	return true;
 }
 
-void Sprite3D::setTexture(const std::string& filePath)
+void Sprite3D::addTexture(const std::string& filePath)
 {
-	if (_texture != nullptr)
-	{
-		delete _texture;
-		_texture = nullptr;
-	}
-
 	Image image; // ImageはCPU側のメモリを使っているのでこのスコープで解放されてもよいものだからスタックに取る
-	image.initWithFilePath(filePath);
+	bool success = image.initWithFilePath(filePath);
+	Logger::logAssert(success, "Sprite3Dでテクスチャ作成に失敗。");
+	if (!success)
+	{
+		return;
+	}
 
 	// TextureはGPU側のメモリを使ってるので解放されると困るのでヒープにとる
 #if defined(MGRRENDERER_USE_DIRECT3D)
-	_texture = new D3DTexture(); 
+	D3DTexture* texture = new D3DTexture(); 
 #elif defined(MGRRENDERER_USE_OPENGL)
-	_texture = new GLTexture();
+	GLTexture* texture = new GLTexture();
 #endif
-	static_cast<Texture*>(_texture)->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
+	success = static_cast<Texture*>(texture)->initWithImage(image); // TODO:なぜか暗黙に継承元クラスのメソッドが呼べない
+	Logger::logAssert(success, "Sprite3Dでテクスチャ作成に失敗。");
+	if (success)
+	{
+		_textureList.push_back(texture);
+	}
 }
 
 void Sprite3D::startAnimation(const std::string& animationName, bool loop /* = false*/)
@@ -1017,7 +1060,7 @@ void Sprite3D::renderGBuffer()
 		ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getLinearSamplerState() };
 		direct3dContext->PSSetSamplers(0, 1, samplerState);
 
-		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
+		direct3dContext->DrawIndexed(_indicesList[0].size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForGBuffer.getShaderProgram());
 		GLProgram::checkGLError();
@@ -1052,11 +1095,12 @@ void Sprite3D::renderGBuffer()
 
 		if (_isObj)
 		{
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].position);
+			// TODO:修正必要
+			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[0].position);
 			GLProgram::checkGLError();
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
+			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[0].normal);
 			GLProgram::checkGLError();
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
+			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[0].textureCoordinate);
 			GLProgram::checkGLError();
 		}
 		else if (_isC3b)
@@ -1082,7 +1126,7 @@ void Sprite3D::renderGBuffer()
 		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
 		GLProgram::checkGLError();
 
-		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, _indices.data());
+		glDrawElements(GL_TRIANGLES, _indicesList[0].size(), GL_UNSIGNED_SHORT, _indicesList[0].data());
 		GLProgram::checkGLError();
 		glBindTexture(GL_TEXTURE_2D, 0);
 #endif
@@ -1180,7 +1224,7 @@ void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 		_d3dProgramForShadowMap.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
+		direct3dContext->DrawIndexed(_indicesList[0].size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForShadowMap.getShaderProgram());
 		GLProgram::checkGLError();
@@ -1214,19 +1258,24 @@ void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 		glEnableVertexAttribArray((GLuint)GLProgram::AttributeLocation::BLEND_INDEX);
 		GLProgram::checkGLError();
 
-		// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
 		if (_isObj)
 		{
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].position);
-			GLProgram::checkGLError();
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
-			GLProgram::checkGLError();
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
-			GLProgram::checkGLError();
+			for (size_t i = 0; i < _verticesList.size(); ++i)
+			{
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].position);
+				GLProgram::checkGLError();
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].normal);
+				GLProgram::checkGLError();
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].textureCoordinate);
+				GLProgram::checkGLError();
+
+				glDrawElements(GL_TRIANGLES, _indicesList[i].size(), GL_UNSIGNED_SHORT, _indicesList[i].data());
+				GLProgram::checkGLError();
+			}
 		}
 		else if (_isC3b)
 		{
-			// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
+			// TODO:c3t/c3bでメッシュデータは一個である前提
 			C3bLoader::MeshData* meshData = _meshDatas->meshDatas[0];
 			for (size_t i = 0, offset = 0; i < meshData->numAttribute; ++i)
 			{
@@ -1235,17 +1284,15 @@ void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 				GLProgram::checkGLError();
 				offset += attrib.size;
 			}
-		}
 
-		// スキニングのマトリックスパレットの設定
-		if (_isC3b) {
+			// スキニングのマトリックスパレットの設定
 			Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
 			glUniformMatrix4fv(_glProgramForShadowMap.getUniformLocation("u_matrixPalette"), _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
 			GLProgram::checkGLError();
-		}
 
-		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, _indices.data());
-		GLProgram::checkGLError();
+			glDrawElements(GL_TRIANGLES, _indicesList[0].size(), GL_UNSIGNED_SHORT, _indicesList[0].data());
+			GLProgram::checkGLError();
+		}
 #endif
 	});
 
@@ -1323,7 +1370,7 @@ void Sprite3D::renderPointLightShadowMap(size_t index, const PointLight* light, 
 		_d3dProgramForPointLightShadowMap.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForPointLightShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
+		direct3dContext->DrawIndexed(_indicesList[0].size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForShadowMap.getShaderProgram());
 		GLProgram::checkGLError();
@@ -1362,12 +1409,18 @@ void Sprite3D::renderPointLightShadowMap(size_t index, const PointLight* light, 
 		// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
 		if (_isObj)
 		{
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].position);
-			GLProgram::checkGLError();
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
-			GLProgram::checkGLError();
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
-			GLProgram::checkGLError();
+			for (size_t i = 0; i < _verticesList.size(); ++i)
+			{
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].position);
+				GLProgram::checkGLError();
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].normal);
+				GLProgram::checkGLError();
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].textureCoordinate);
+				GLProgram::checkGLError();
+
+				glDrawElements(GL_TRIANGLES, _indicesList[i].size(), GL_UNSIGNED_SHORT, _indicesList[i].data());
+				GLProgram::checkGLError();
+			}
 		}
 		else if (_isC3b)
 		{
@@ -1380,17 +1433,15 @@ void Sprite3D::renderPointLightShadowMap(size_t index, const PointLight* light, 
 				GLProgram::checkGLError();
 				offset += attrib.size;
 			}
-		}
 
-		// スキニングのマトリックスパレットの設定
-		if (_isC3b) {
+			// スキニングのマトリックスパレットの設定
 			Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
 			glUniformMatrix4fv(_glProgramForShadowMap.getUniformLocation("u_matrixPalette"), _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
 			GLProgram::checkGLError();
-		}
 
-		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, _indices.data());
-		GLProgram::checkGLError();
+			glDrawElements(GL_TRIANGLES, _indicesList[0].size(), GL_UNSIGNED_SHORT, _indicesList[0].data());
+			GLProgram::checkGLError();
+		}
 #endif
 	});
 
@@ -1485,7 +1536,7 @@ void Sprite3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 		_d3dProgramForShadowMap.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
+		direct3dContext->DrawIndexed(_indicesList[0].size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForShadowMap.getShaderProgram());
 		GLProgram::checkGLError();
@@ -1522,12 +1573,18 @@ void Sprite3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 		// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
 		if (_isObj)
 		{
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].position);
-			GLProgram::checkGLError();
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
-			GLProgram::checkGLError();
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
-			GLProgram::checkGLError();
+			for (size_t i = 0; i < _verticesList.size(); ++i)
+			{
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].position);
+				GLProgram::checkGLError();
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].normal);
+				GLProgram::checkGLError();
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].textureCoordinate);
+				GLProgram::checkGLError();
+
+				glDrawElements(GL_TRIANGLES, _indicesList[i].size(), GL_UNSIGNED_SHORT, _indicesList[i].data());
+				GLProgram::checkGLError();
+			}
 		}
 		else if (_isC3b)
 		{
@@ -1540,17 +1597,15 @@ void Sprite3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 				GLProgram::checkGLError();
 				offset += attrib.size;
 			}
-		}
 
-		// スキニングのマトリックスパレットの設定
-		if (_isC3b) {
+			// スキニングのマトリックスパレットの設定
 			Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
 			glUniformMatrix4fv(_glProgramForShadowMap.getUniformLocation("u_matrixPalette"), _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
 			GLProgram::checkGLError();
-		}
 
-		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, _indices.data());
-		GLProgram::checkGLError();
+			glDrawElements(GL_TRIANGLES, _indicesList[0].size(), GL_UNSIGNED_SHORT, _indicesList[0].data());
+			GLProgram::checkGLError();
+		}
 #endif
 	});
 
@@ -1829,7 +1884,7 @@ void Sprite3D::renderForward()
 		ID3D11SamplerState* samplerState[2] = { Director::getRenderer().getLinearSamplerState(), Director::getRenderer().getPCFSamplerState() };
 		direct3dContext->PSSetSamplers(0, 2, samplerState);
 
-		direct3dContext->DrawIndexed(_indices.size(), 0, 0);
+		direct3dContext->DrawIndexed(_indicesList[0].size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
 		glUseProgram(_glProgramForForwardRendering.getShaderProgram());
@@ -2073,12 +2128,24 @@ void Sprite3D::renderForward()
 
 		if (_isObj)
 		{
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].position);
+			// TODO:複数テクスチャ対応する
+			glBindTexture(GL_TEXTURE_2D, _textureList[0]->getTextureId());
 			GLProgram::checkGLError();
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].normal);
-			GLProgram::checkGLError();
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_vertices[0].textureCoordinate);
-			GLProgram::checkGLError();
+
+			for (size_t i = 0; i < _verticesList.size(); ++i)
+			{
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].position);
+				GLProgram::checkGLError();
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].normal);
+				GLProgram::checkGLError();
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].textureCoordinate);
+				GLProgram::checkGLError();
+
+				glDrawElements(GL_TRIANGLES, _indicesList[i].size(), GL_UNSIGNED_SHORT, _indicesList[i].data());
+				GLProgram::checkGLError();
+			}
+
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 		else if (_isC3b)
 		{
@@ -2091,13 +2158,18 @@ void Sprite3D::renderForward()
 				GLProgram::checkGLError();
 				offset += attrib.size;
 			}
-		}
 
-		// スキニングのマトリックスパレットの設定
-		if (_isC3b) {
+			// スキニングのマトリックスパレットの設定
 			Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
 			glUniformMatrix4fv(_glProgramForForwardRendering.getUniformLocation("u_matrixPalette"), _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette.data()));
 			GLProgram::checkGLError();
+
+			glBindTexture(GL_TEXTURE_2D, _textureList[0]->getTextureId());
+			GLProgram::checkGLError();
+
+			glDrawElements(GL_TRIANGLES, _indicesList[0].size(), GL_UNSIGNED_SHORT, _indicesList[0].data());
+			GLProgram::checkGLError();
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 
 		// TODO:monguri:実装
@@ -2123,13 +2195,6 @@ void Sprite3D::renderForward()
 			//glUniform1f(_glProgramForForwardRendering.uniformMaterialOpacity, 1, (GLfloat*)&_emissive);
 			//GLProgram::checkGLError();
 		}
-
-		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
-		GLProgram::checkGLError();
-
-		glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_SHORT, _indices.data());
-		GLProgram::checkGLError();
-		glBindTexture(GL_TEXTURE_2D, 0);
 #endif
 	});
 

@@ -13,11 +13,15 @@ namespace ObjLoader
 {
 	struct MeshData
 	{
+		typedef std::vector<unsigned short> IndexArray;
 		std::string name;
-		//TODO:Œ»ó‚Å‚Ívn‚É‚Í‚Ü‚¾‘Î‰‚µ‚È‚¢
 		std::vector<Position3DNormalTextureCoordinates> vertices;
 		std::vector<unsigned short> indices;
 		std::vector<int> materialIndices;
+		size_t numMaterialIndex;
+		std::vector<IndexArray> subMeshIndices;
+		std::vector<std::string> subMeshIds;
+		//std::vector<AABB> subMeshAABB;
 	};
 
 	struct MaterialData

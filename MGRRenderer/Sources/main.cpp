@@ -447,13 +447,20 @@ void initialize()
 	isSucceeded = plane3DNode3->initWithVertexArray(planeVertices3D3);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
-	Sprite3D* sprite3DObjNode = new Sprite3D();
-	isSucceeded = sprite3DObjNode->initWithModel("../MGRRenderer/Resources/boss1.obj");
-	sprite3DObjNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 100, WINDOW_HEIGHT / 2.0f - 100, 0)); // カメラのデフォルトの視点位置から少しずれた場所に置いた
-	sprite3DObjNode->setScale(10.0f);
+	//Sprite3D* sprite3DObjNode = new Sprite3D();
+	//isSucceeded = sprite3DObjNode->initWithModel("../MGRRenderer/Resources/boss1.obj");
+	//sprite3DObjNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 100, WINDOW_HEIGHT / 2.0f - 100, 0)); // カメラのデフォルトの視点位置から少しずれた場所に置いた
+	//sprite3DObjNode->setScale(10.0f);
+	////sprite3DObjNode->setOpacity(0.5f);
+	//Logger::logAssert(isSucceeded, "ノードの初期化失敗");
+	//sprite3DObjNode->addTexture("../MGRRenderer/Resources/boss.png");
+
+	Sprite3D* sprite3DNanoSuitNode = new Sprite3D();
+	isSucceeded = sprite3DNanoSuitNode->initWithModel("../MGRRenderer/Resources/nanosuit/nanosuit.obj");
+	sprite3DNanoSuitNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 100, WINDOW_HEIGHT / 2.0f - 100, 0)); // カメラのデフォルトの視点位置から少しずれた場所に置いた
+	sprite3DNanoSuitNode->setScale(10.0f);
 	//sprite3DObjNode->setOpacity(0.5f);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
-	sprite3DObjNode->setTexture("../MGRRenderer/Resources/boss.png");
 
 	// 画面はこのオーク、(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)を中心に構成されている
 	Sprite3D* sprite3DC3tNode = new Sprite3D();
@@ -580,8 +587,9 @@ void initialize()
 	scene->pushNode(plane3DNode1);
 	scene->pushNode(plane3DNode2);
 	scene->pushNode(plane3DNode3);
-	scene->pushNode(sprite3DObjNode);
-	scene->pushNode(sprite3DC3tNode);
+	//scene->pushNode(sprite3DObjNode);
+	//scene->pushNode(sprite3DC3tNode);
+	scene->pushNode(sprite3DNanoSuitNode);
 	//scene->pushNode(particle3DNode);
 	scene->pushNode2D(pointNode);
 	scene->pushNode2D(lineNode);

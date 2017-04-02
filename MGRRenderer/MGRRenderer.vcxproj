@@ -20,6 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\box.c3t" />
+    <None Include="Resources\nanosuit\nanosuit.mtl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
     <None Include="Resources\orc.c3b" />
     <None Include="Resources\orc.c3t" />
     <None Include="Resources\orc_jump.c3t" />
@@ -135,6 +138,37 @@
     <Image Include="Resources\boss.png" />
     <Image Include="Resources\Hello.png" />
     <Image Include="Resources\monguger.tga" />
+    <Image Include="Resources\nanosuit\arm_dif.png" />
+    <Image Include="Resources\nanosuit\arm_showroom_ddn.png" />
+    <Image Include="Resources\nanosuit\arm_showroom_refl.png" />
+    <Image Include="Resources\nanosuit\arm_showroom_spec.png" />
+    <Image Include="Resources\nanosuit\back.jpg" />
+    <Image Include="Resources\nanosuit\body_dif.png" />
+    <Image Include="Resources\nanosuit\body_showroom_ddn.png" />
+    <Image Include="Resources\nanosuit\body_showroom_refl.png" />
+    <Image Include="Resources\nanosuit\body_showroom_spec.png" />
+    <Image Include="Resources\nanosuit\cell_arm_alpha.png" />
+    <Image Include="Resources\nanosuit\cell_body_alpha.png" />
+    <Image Include="Resources\nanosuit\cell_ddn.png" />
+    <Image Include="Resources\nanosuit\cell_hand_alpha.png" />
+    <Image Include="Resources\nanosuit\cell_helmet_alpha.png" />
+    <Image Include="Resources\nanosuit\cell_leg_alpha.png" />
+    <Image Include="Resources\nanosuit\front.jpg" />
+    <Image Include="Resources\nanosuit\glass_ddn.png" />
+    <Image Include="Resources\nanosuit\glass_dif.png" />
+    <Image Include="Resources\nanosuit\glass_refl.png" />
+    <Image Include="Resources\nanosuit\hand_dif.png" />
+    <Image Include="Resources\nanosuit\hand_showroom_ddn.png" />
+    <Image Include="Resources\nanosuit\hand_showroom_refl.png" />
+    <Image Include="Resources\nanosuit\hand_showroom_spec.png" />
+    <Image Include="Resources\nanosuit\helmet_diff.png" />
+    <Image Include="Resources\nanosuit\helmet_showroom_ddn.png" />
+    <Image Include="Resources\nanosuit\helmet_showroom_refl.png" />
+    <Image Include="Resources\nanosuit\helmet_showroom_spec.png" />
+    <Image Include="Resources\nanosuit\leg_dif.png" />
+    <Image Include="Resources\nanosuit\leg_showroom_ddn.png" />
+    <Image Include="Resources\nanosuit\leg_showroom_refl.png" />
+    <Image Include="Resources\nanosuit\leg_showroom_spec.png" />
   </ItemGroup>
   <ItemGroup>
     <Object Include="Resources\boss1.obj">
@@ -142,6 +176,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </Object>
+    <Object Include="Resources\nanosuit\nanosuit.obj">
+      <SubType>Designer</SubType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Object>
   </ItemGroup>
   <ItemGroup>

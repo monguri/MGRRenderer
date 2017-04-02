@@ -254,6 +254,7 @@ namespace ObjLoader
 		}
 
 		mesh.name = name;
+		mesh.numMaterialIndex = mesh.materialIndices.size();
 
 		if (clearCache)
 		{
@@ -666,8 +667,6 @@ namespace ObjLoader
 			// object name
 			else if (token[0] == 'o' && isSpace(token[1]))
 			{
-				token += 2;
-
 				// flush previous face group.
 				bool ret = createMeshDataFromFaceGroup(
 					mesh,
@@ -689,7 +688,7 @@ namespace ObjLoader
 				faceGroup.clear();
 
 				char fileNameBuf[SSCANF_BUFFER_SIZE];
-				token += 7;
+				token += 2;
 
 				sscanf_s(token, "%s", fileNameBuf, _countof(fileNameBuf));
 				name = std::string(fileNameBuf);
@@ -711,6 +710,30 @@ namespace ObjLoader
 		if (ret)
 		{
 			outMeshArray.push_back(mesh);
+		}
+
+		// マテリアルごとにサブメッシュに分割する
+        char str[20];
+		int i = 0;
+		std::map<int, std::vector<unsigned short>> subMeshMap;
+		for (MeshData& meshData : outMeshArray)
+		{
+			for (size_t j = 0; j < meshData.numMaterialIndex; j++)
+			{
+				int materialId = meshData.materialIndices[j];
+				size_t index = j * 3;
+				subMeshMap[materialId].push_back(meshData.indices[index]);
+				subMeshMap[materialId].push_back(meshData.indices[index + 1]);
+				subMeshMap[materialId].push_back(meshData.indices[index + 2]);
+			}
+
+			for (auto& subMesh : subMeshMap)
+			{
+				meshData.subMeshIndices.push_back(subMesh.second);
+                //mesh->subMeshAABB.push_back(calculateAABB(meshdata->vertex, meshdata->getPerVertexSize(), submesh.second));
+                sprintf_s(str, "%d", i++);
+				meshData.subMeshIds.push_back(str);
+			}
 		}
 
 		faceGroup.clear();

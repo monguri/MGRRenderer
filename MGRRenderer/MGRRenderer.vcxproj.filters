@@ -26,6 +26,9 @@
     <Filter Include="Resource Files\shader">
       <UniqueIdentifier>{853f62e5-038f-4891-85aa-9feb51342884}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\nanosuit">
+      <UniqueIdentifier>{3b5bb58d-36aa-4b3a-8ec9-fd50f00cf9c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\box.c3t">
@@ -114,6 +117,9 @@
     </None>
     <None Include="Resources\shader\VertexShaderPositionNormalTexture3D.glsl">
       <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="Resources\nanosuit\nanosuit.mtl">
+      <Filter>Resource Files\nanosuit</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -364,10 +370,106 @@
     <Image Include="Resources\monguger.tga">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="Resources\nanosuit\arm_dif.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\arm_showroom_ddn.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\arm_showroom_refl.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\arm_showroom_spec.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\back.jpg">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\body_dif.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\body_showroom_ddn.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\body_showroom_refl.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\body_showroom_spec.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\cell_arm_alpha.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\cell_body_alpha.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\cell_ddn.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\cell_hand_alpha.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\cell_helmet_alpha.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\cell_leg_alpha.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\front.jpg">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\glass_ddn.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\glass_dif.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\glass_refl.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\hand_dif.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\hand_showroom_ddn.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\hand_showroom_refl.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\hand_showroom_spec.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\helmet_diff.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\helmet_showroom_ddn.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\helmet_showroom_refl.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\helmet_showroom_spec.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\leg_dif.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\leg_showroom_ddn.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\leg_showroom_refl.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
+    <Image Include="Resources\nanosuit\leg_showroom_spec.png">
+      <Filter>Resource Files\nanosuit</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Object Include="Resources\boss1.obj">
       <Filter>Resource Files</Filter>
+    </Object>
+    <Object Include="Resources\nanosuit\nanosuit.obj">
+      <Filter>Resource Files\nanosuit</Filter>
     </Object>
   </ItemGroup>
   <ItemGroup>

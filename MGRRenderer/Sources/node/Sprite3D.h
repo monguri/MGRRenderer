@@ -26,7 +26,7 @@ namespace mgrrenderer
 	public:
 		Sprite3D();
 		bool initWithModel(const std::string& filePath);
-		void setTexture(const std::string& filePath);
+		void addTexture(const std::string& filePath);
 		void startAnimation(const std::string& animationName, bool loop = false);
 		void stopAnimation();
 
@@ -50,7 +50,7 @@ namespace mgrrenderer
 		GLProgram _glProgramForGBuffer;
 		GLProgram _glProgramForForwardRendering;
 		GLProgram _glProgramForShadowMap;
-		GLTexture* _texture;
+		std::vector<GLTexture*> _textureList;
 #endif
 		CustomRenderCommand _renderGBufferCommand;
 		CustomRenderCommand _renderDirectionalLightShadowMapCommand;
@@ -67,9 +67,9 @@ namespace mgrrenderer
 		//float _opacity;
 
 		// TODO:現状objのみに使っている。I/FをObjLoaderとC3bLoaderで合わせよう
-		std::vector<Position3DNormalTextureCoordinates> _vertices;
+		std::vector<std::vector<Position3DNormalTextureCoordinates>> _verticesList;
 
-		std::vector<unsigned short> _indices;
+		std::vector<std::vector<unsigned short>> _indicesList;
 
 		// TODO:現状c3t/c3bのみに使っている。I/FをObjLoaderとC3bLoaderで合わせよう
 		C3bLoader::MeshDatas* _meshDatas;

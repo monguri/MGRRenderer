@@ -1096,13 +1096,38 @@ void Sprite3D::renderGBuffer()
 
 		if (_isObj)
 		{
-			// TODO:修正必要
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[0].position);
-			GLProgram::checkGLError();
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[0].normal);
-			GLProgram::checkGLError();
-			glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[0].textureCoordinate);
-			GLProgram::checkGLError();
+			// メッシュ数のループ
+			for (size_t meshIndex = 0; meshIndex < _verticesList.size(); ++meshIndex)
+			{
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].position);
+				GLProgram::checkGLError();
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].normal);
+				GLProgram::checkGLError();
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].textureCoordinate);
+				GLProgram::checkGLError();
+
+				glActiveTexture(GL_TEXTURE0);
+
+				GLuint textureId = _textureList[0]->getTextureId();
+				size_t numSubMesh = _indicesList[meshIndex].size();
+				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
+				{
+					int subMeshDiffuseTextureIndex = _diffuseTextureIndices[meshIndex][subMeshIndex];
+					if (_useMtl)
+					{
+						textureId = _textureList[subMeshDiffuseTextureIndex]->getTextureId();
+					}
+
+					glBindTexture(GL_TEXTURE_2D, textureId);
+					GLProgram::checkGLError();
+
+					const std::vector<unsigned short>& subMeshIndices = _indicesList[meshIndex][subMeshIndex];
+					glDrawElements(GL_TRIANGLES, subMeshIndices.size(), GL_UNSIGNED_SHORT, subMeshIndices.data());
+					GLProgram::checkGLError();
+				}
+
+				glBindTexture(GL_TEXTURE_2D, 0);
+			}
 		}
 		else if (_isC3b)
 		{
@@ -1115,21 +1140,18 @@ void Sprite3D::renderGBuffer()
 				GLProgram::checkGLError();
 				offset += attrib.size;
 			}
-		}
 
-		// スキニングのマトリックスパレットの設定
-		if (_isC3b) {
 			Logger::logAssert(_matrixPalette.size() > 0, "マトリックスパレットは0でない前提");
 			glUniformMatrix4fv(_glProgramForGBuffer.getUniformLocation("u_matrixPalette"), _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette.data()));
 			GLProgram::checkGLError();
+
+			glBindTexture(GL_TEXTURE_2D, _textureList[0]->getTextureId());
+			GLProgram::checkGLError();
+
+			glDrawElements(GL_TRIANGLES, _indicesList[0].size(), GL_UNSIGNED_SHORT, _indicesList[0].data());
+			GLProgram::checkGLError();
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
-
-		glBindTexture(GL_TEXTURE_2D, _texture->getTextureId());
-		GLProgram::checkGLError();
-
-		glDrawElements(GL_TRIANGLES, _indicesList[0].size(), GL_UNSIGNED_SHORT, _indicesList[0].data());
-		GLProgram::checkGLError();
-		glBindTexture(GL_TEXTURE_2D, 0);
 #endif
 	});
 

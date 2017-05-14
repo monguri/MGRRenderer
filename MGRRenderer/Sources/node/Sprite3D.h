@@ -25,7 +25,7 @@ namespace mgrrenderer
 	{
 	public:
 		Sprite3D();
-		bool initWithModel(const std::string& filePath);
+		bool initWithModel(const std::string& filePath, bool useMtl = true);
 		void addTexture(const std::string& filePath);
 		void startAnimation(const std::string& animationName, bool loop = false);
 		void stopAnimation();
@@ -34,9 +34,11 @@ namespace mgrrenderer
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		static const int MAX_SKINNING_JOINT = 60; // シェーダと最大値定数を一致させること
 #endif
-	// TODO:とりあえずフラグで動作を切り替えている
+		// TODO:とりあえずフラグで動作を切り替えている
 		bool _isObj;
 		bool _isC3b;
+
+		bool _useMtl;
 
 #if defined(MGRRENDERER_USE_DIRECT3D)
 		D3DProgram _d3dProgramForForwardRendering;
@@ -68,8 +70,8 @@ namespace mgrrenderer
 
 		// TODO:現状objのみに使っている。I/FをObjLoaderとC3bLoaderで合わせよう
 		std::vector<std::vector<Position3DNormalTextureCoordinates>> _verticesList;
-
-		std::vector<std::vector<unsigned short>> _indicesList;
+		std::vector<std::vector<std::vector<unsigned short>>> _indicesList;
+		std::vector<std::vector<int>> _diffuseTextureIndices;
 
 		// TODO:現状c3t/c3bのみに使っている。I/FをObjLoaderとC3bLoaderで合わせよう
 		C3bLoader::MeshDatas* _meshDatas;

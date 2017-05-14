@@ -713,26 +713,16 @@ namespace ObjLoader
 		}
 
 		// マテリアルごとにサブメッシュに分割する
-        char str[20];
-		int i = 0;
 		std::map<int, std::vector<unsigned short>> subMeshMap;
 		for (MeshData& meshData : outMeshArray)
 		{
-			for (size_t j = 0; j < meshData.numMaterialIndex; j++)
+			for (size_t i = 0; i < meshData.numMaterialIndex; i++)
 			{
-				int materialId = meshData.materialIndices[j];
-				size_t index = j * 3;
-				subMeshMap[materialId].push_back(meshData.indices[index]);
-				subMeshMap[materialId].push_back(meshData.indices[index + 1]);
-				subMeshMap[materialId].push_back(meshData.indices[index + 2]);
-			}
-
-			for (auto& subMesh : subMeshMap)
-			{
-				meshData.subMeshIndices.push_back(subMesh.second);
-                //mesh->subMeshAABB.push_back(calculateAABB(meshdata->vertex, meshdata->getPerVertexSize(), submesh.second));
-                sprintf_s(str, "%d", i++);
-				meshData.subMeshIds.push_back(str);
+				int materialId = meshData.materialIndices[i];
+				size_t index = i * 3;
+				meshData.subMeshMap[materialId].push_back(meshData.indices[index]);
+				meshData.subMeshMap[materialId].push_back(meshData.indices[index + 1]);
+				meshData.subMeshMap[materialId].push_back(meshData.indices[index + 2]);
 			}
 		}
 

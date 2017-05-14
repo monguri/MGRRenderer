@@ -19,8 +19,11 @@ namespace ObjLoader
 		std::vector<unsigned short> indices;
 		std::vector<int> materialIndices;
 		size_t numMaterialIndex;
-		std::vector<IndexArray> subMeshIndices;
-		std::vector<std::string> subMeshIds;
+		std::map<int, std::vector<unsigned short>> subMeshMap;
+		// cocos2d-xではsubMeshMapをさらに分解してsubMeshIndicesとsumMeshIdsをもち、サブメッシュとマテリアルの対応は
+		// ModelDataで保持しているが、別のデータを使うのも面倒なので分解しないことにした
+		//std::vector<IndexArray> subMeshIndices;
+		//std::vector<std::string> subMeshIds;
 		//std::vector<AABB> subMeshAABB;
 	};
 

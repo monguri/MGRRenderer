@@ -447,30 +447,30 @@ void initialize()
 	isSucceeded = plane3DNode3->initWithVertexArray(planeVertices3D3);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
-	//Sprite3D* sprite3DObjNode = new Sprite3D();
-	//isSucceeded = sprite3DObjNode->initWithModel("../MGRRenderer/Resources/boss1.obj");
-	//sprite3DObjNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 100, WINDOW_HEIGHT / 2.0f - 100, 0)); // カメラのデフォルトの視点位置から少しずれた場所に置いた
-	//sprite3DObjNode->setScale(10.0f);
-	////sprite3DObjNode->setOpacity(0.5f);
-	//Logger::logAssert(isSucceeded, "ノードの初期化失敗");
-	//sprite3DObjNode->addTexture("../MGRRenderer/Resources/boss.png");
+	Sprite3D* sprite3DObjNode = new Sprite3D();
+	isSucceeded = sprite3DObjNode->initWithModel("../MGRRenderer/Resources/boss1.obj", false);
+	sprite3DObjNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 100, WINDOW_HEIGHT / 2.0f - 100, 0)); // カメラのデフォルトの視点位置から少しずれた場所に置いた
+	sprite3DObjNode->setScale(10.0f);
+	//sprite3DObjNode->setOpacity(0.5f);
+	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
+	sprite3DObjNode->addTexture("../MGRRenderer/Resources/boss.png");
 
 	Sprite3D* sprite3DNanoSuitNode = new Sprite3D();
 	isSucceeded = sprite3DNanoSuitNode->initWithModel("../MGRRenderer/Resources/nanosuit/nanosuit.obj");
 	sprite3DNanoSuitNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f - 100, WINDOW_HEIGHT / 2.0f - 100, 0)); // カメラのデフォルトの視点位置から少しずれた場所に置いた
-	sprite3DNanoSuitNode->setScale(10.0f);
+	sprite3DNanoSuitNode->setScale(30.0f);
 	//sprite3DObjNode->setOpacity(0.5f);
 	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 	// 画面はこのオーク、(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)を中心に構成されている
-	Sprite3D* sprite3DC3tNode = new Sprite3D();
-	isSucceeded = sprite3DC3tNode->initWithModel("../MGRRenderer/Resources/orc.c3b");
-	sprite3DC3tNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)); // カメラのデフォルトの視点位置に置いた
-	sprite3DC3tNode->setRotation(Vec3(0.0f, 180.0f, 0.0f));
-	sprite3DC3tNode->setScale(10.0f);
-	//sprite3DC3tNode->setOpacity(0.5f);
-	sprite3DC3tNode->startAnimation("Take 001", true);
-	Logger::logAssert(isSucceeded, "ノードの初期化失敗");
+	//Sprite3D* sprite3DC3tNode = new Sprite3D();
+	//isSucceeded = sprite3DC3tNode->initWithModel("../MGRRenderer/Resources/orc.c3b");
+	//sprite3DC3tNode->setPosition(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)); // カメラのデフォルトの視点位置に置いた
+	//sprite3DC3tNode->setRotation(Vec3(0.0f, 180.0f, 0.0f));
+	//sprite3DC3tNode->setScale(10.0f);
+	////sprite3DC3tNode->setOpacity(0.5f);
+	//sprite3DC3tNode->startAnimation("Take 001", true);
+	//Logger::logAssert(isSucceeded, "ノードの初期化失敗");
 
 	Particle3D::Parameter parameter;
 	parameter.loopFlag = true;
@@ -518,20 +518,20 @@ void initialize()
 	}
 
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
-	//PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Color3B::WHITE, 3000.0f);
-	//light->setIntensity(0.7f);
-	//light->setColor(Color3B(255, 0, 0));
-	//light->initShadowMap(NEAR_CLIP, WINDOW_WIDTH);
-	//scene->addPointLight(light);
+	PointLight* light = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Color3B::WHITE, 3000.0f);
+	light->setIntensity(0.7f);
+	light->setColor(Color3B(255, 0, 0));
+	light->initShadowMap(NEAR_CLIP, WINDOW_WIDTH);
+	scene->addPointLight(light);
 
-	//if (light->hasShadowMap())
-	//{
-	//	depthTextureSprite = new Sprite2D();
-	//	const SizeFloat& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
-	//	depthTextureSprite->setScale(1 / 5.0f);
-	//	depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_CUBEMAP_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix, CubeMapFace::Z_NEGATIVE);
-	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
-	//}
+	if (light->hasShadowMap())
+	{
+		depthTextureSprite = new Sprite2D();
+		const SizeFloat& contentSize = Director::getInstance()->getWindowSize() / 5.0f;
+		depthTextureSprite->setScale(1 / 5.0f);
+		depthTextureSprite->initWithDepthStencilTexture(light->getShadowMapData().getDepthTexture(), Sprite2D::RenderBufferType::DEPTH_CUBEMAP_TEXTURE, light->getNearClip(), light->getRange(), light->getShadowMapData().projectionMatrix, CubeMapFace::Z_NEGATIVE);
+		depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
+	}
 
 	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,-1,0)方向の光が降り注ぐようにしている
 	//PointLight* light2 = new (std::nothrow) PointLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Color3B::WHITE, 3000.0f);
@@ -549,12 +549,12 @@ void initialize()
 	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentSize.width, 0.0f, 0.0f));
 	//}
 
-	// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,0,-1)方向の光が降り注ぐようにしている
-	SpotLight* light = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Vec3(0.0f, 0.0f, -1.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
-	light->setIntensity(0.7f);
-	light->setColor(Color3B(255, 0, 0));
-	light->initShadowMap(NEAR_CLIP, SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT));
-	scene->addSpotLight(light);
+	//// オークの(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0)に(0,0,-1)方向の光が降り注ぐようにしている
+	//SpotLight* light = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, 0.0f + WINDOW_WIDTH), Vec3(0.0f, 0.0f, -1.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
+	//light->setIntensity(0.7f);
+	//light->setColor(Color3B(255, 0, 0));
+	//light->initShadowMap(NEAR_CLIP, SizeUint(WINDOW_WIDTH, WINDOW_HEIGHT));
+	//scene->addSpotLight(light);
 
 	//if (light->hasShadowMap())
 	//{
@@ -565,7 +565,7 @@ void initialize()
 	//	depthTextureSprite->setPosition(Vec3(WINDOW_WIDTH - contentsize.width, 0.0f, 0.0f));
 	//}
 
-	//// オークの(window_width / 2.0f, window_height / 2.0f, 0)に(-1,0,0)方向の光が降り注ぐようにしている
+	// オークの(window_width / 2.0f, window_height / 2.0f, 0)に(-1,0,0)方向の光が降り注ぐようにしている
 	//SpotLight* light2 = new (std::nothrow) SpotLight(Vec3(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + WINDOW_WIDTH, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Color3B::WHITE, 3000.0f, 0.0f, 30.0f);
 	//light2->setIntensity(0.7f);
 	//light2->setColor(Color3B(0, 0, 255));
@@ -587,7 +587,7 @@ void initialize()
 	scene->pushNode(plane3DNode1);
 	scene->pushNode(plane3DNode2);
 	scene->pushNode(plane3DNode3);
-	//scene->pushNode(sprite3DObjNode);
+	scene->pushNode(sprite3DObjNode);
 	//scene->pushNode(sprite3DC3tNode);
 	scene->pushNode(sprite3DNanoSuitNode);
 	//scene->pushNode(particle3DNode);
@@ -600,10 +600,10 @@ void initialize()
 	//{
 	//	scene->pushNode2D(depthTextureSprite);
 	//}
-	if (light->hasShadowMap())
-	{
-		scene->pushNode2D(depthTextureSprite);
-	}
+	//if (light->hasShadowMap())
+	//{
+	//	scene->pushNode2D(depthTextureSprite);
+	//}
 	//if (light2->hasShadowMap())
 	//{
 	//	scene->pushNode2D(depthTextureSprite);

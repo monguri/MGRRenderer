@@ -15,6 +15,7 @@ namespace mgrrenderer
 Sprite3D::Sprite3D() :
 _isObj(false),
 _isC3b(false),
+_useMtl(true),
 _meshDatas(nullptr),
 _nodeDatas(nullptr),
 _perVertexByteSize(0),
@@ -66,7 +67,7 @@ Sprite3D::~Sprite3D()
 	_textureList.clear();
 }
 
-bool Sprite3D::initWithModel(const std::string& filePath)
+bool Sprite3D::initWithModel(const std::string& filePath, bool useMtl)
 {
 	Logger::logAssert(_textureList.empty(), "Sprite3DではとりあえずinitWithModelは一回しか呼ばれない前提。");
 	Logger::logAssert(_verticesList.empty(), "Sprite3DではとりあえずinitWithModelは一回しか呼ばれない前提。");
@@ -79,6 +80,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 	if (ext == ".obj")
 	{
 		_isObj = true;
+		_useMtl = useMtl;
 
 		std::vector<ObjLoader::MeshData> meshList;
 		std::vector<ObjLoader::MaterialData> materialList;
@@ -95,10 +97,21 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 		// →まとまってる。しかし、今回はマテリアルは一種類という前提でいこう
 		// 本来は、std::vector<std::vector<Position3DTextureCoordinates>> がメンバ変数になってて、マテリアルごとに切り替えて描画する
 		// テクスチャも本来は切り替え前提だからsetTextureってメソッドおかしいよな。。
-		for (const ObjLoader::MeshData& mesh : meshList)
+		for (size_t meshIndex = 0; meshIndex < meshList.size(); ++meshIndex)
 		{
+			ObjLoader::MeshData& mesh = meshList[meshIndex];
 			_verticesList.push_back(mesh.vertices);
-			_indicesList.push_back(mesh.indices);
+
+			std::vector<std::vector<unsigned short>> subMeshIndices;
+			std::vector<int> subMeshDiffuseTextureIndices;
+			for (const auto& subMesh : mesh.subMeshMap)
+			{
+				subMeshIndices.push_back(subMesh.second);
+				subMeshDiffuseTextureIndices.push_back(subMesh.first);
+			}
+
+			_indicesList.push_back(subMeshIndices);
+			_diffuseTextureIndices.push_back(subMeshDiffuseTextureIndices);;
 		}
 
 		const std::string& fullPath = FileUtility::getInstance()->getFullPathForFileName(filePath);
@@ -144,7 +157,7 @@ bool Sprite3D::initWithModel(const std::string& filePath)
 
 		Logger::logAssert(_meshDatas->meshDatas.size() == 1, "現状メッシュ複数には対応してない。");
 		C3bLoader::MeshData* meshData = _meshDatas->meshDatas[0];
-		_indicesList.push_back(meshData->subMeshIndices[0]);
+		_indicesList.push_back(meshData->subMeshIndices);
 
 		_perVertexByteSize = 0;
 
@@ -1248,17 +1261,23 @@ void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 
 		if (_isObj)
 		{
-			for (size_t i = 0; i < _verticesList.size(); ++i)
+			// メッシュ数のループ
+			for (size_t meshIndex = 0; meshIndex < _verticesList.size(); ++meshIndex)
 			{
-				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].position);
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].position);
 				GLProgram::checkGLError();
-				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].normal);
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].normal);
 				GLProgram::checkGLError();
-				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].textureCoordinate);
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].textureCoordinate);
 				GLProgram::checkGLError();
 
-				glDrawElements(GL_TRIANGLES, _indicesList[i].size(), GL_UNSIGNED_SHORT, _indicesList[i].data());
-				GLProgram::checkGLError();
+				size_t numSubMesh = _indicesList[meshIndex].size();
+				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
+				{
+					const std::vector<unsigned short>& subMeshIndices = _indicesList[meshIndex][subMeshIndex];
+					glDrawElements(GL_TRIANGLES, subMeshIndices.size(), GL_UNSIGNED_SHORT, subMeshIndices.data());
+					GLProgram::checkGLError();
+				}
 			}
 		}
 		else if (_isC3b)
@@ -1397,17 +1416,23 @@ void Sprite3D::renderPointLightShadowMap(size_t index, const PointLight* light, 
 		// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
 		if (_isObj)
 		{
-			for (size_t i = 0; i < _verticesList.size(); ++i)
+			// メッシュ数のループ
+			for (size_t meshIndex = 0; meshIndex < _verticesList.size(); ++meshIndex)
 			{
-				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].position);
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].position);
 				GLProgram::checkGLError();
-				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].normal);
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].normal);
 				GLProgram::checkGLError();
-				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].textureCoordinate);
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].textureCoordinate);
 				GLProgram::checkGLError();
 
-				glDrawElements(GL_TRIANGLES, _indicesList[i].size(), GL_UNSIGNED_SHORT, _indicesList[i].data());
-				GLProgram::checkGLError();
+				size_t numSubMesh = _indicesList[meshIndex].size();
+				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
+				{
+					const std::vector<unsigned short>& subMeshIndices = _indicesList[meshIndex][subMeshIndex];
+					glDrawElements(GL_TRIANGLES, subMeshIndices.size(), GL_UNSIGNED_SHORT, subMeshIndices.data());
+					GLProgram::checkGLError();
+				}
 			}
 		}
 		else if (_isC3b)
@@ -1561,17 +1586,23 @@ void Sprite3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 		// TODO:objあるいはc3t/c3bでメッシュデータは一個である前提
 		if (_isObj)
 		{
-			for (size_t i = 0; i < _verticesList.size(); ++i)
+			// メッシュ数のループ
+			for (size_t meshIndex = 0; meshIndex < _verticesList.size(); ++meshIndex)
 			{
-				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].position);
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].position);
 				GLProgram::checkGLError();
-				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].normal);
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].normal);
 				GLProgram::checkGLError();
-				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].textureCoordinate);
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].textureCoordinate);
 				GLProgram::checkGLError();
 
-				glDrawElements(GL_TRIANGLES, _indicesList[i].size(), GL_UNSIGNED_SHORT, _indicesList[i].data());
-				GLProgram::checkGLError();
+				size_t numSubMesh = _indicesList[meshIndex].size();
+				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
+				{
+					const std::vector<unsigned short>& subMeshIndices = _indicesList[meshIndex][subMeshIndex];
+					glDrawElements(GL_TRIANGLES, subMeshIndices.size(), GL_UNSIGNED_SHORT, subMeshIndices.data());
+					GLProgram::checkGLError();
+				}
 			}
 		}
 		else if (_isC3b)
@@ -2116,24 +2147,38 @@ void Sprite3D::renderForward()
 
 		if (_isObj)
 		{
-			// TODO:複数テクスチャ対応する
-			glBindTexture(GL_TEXTURE_2D, _textureList[0]->getTextureId());
-			GLProgram::checkGLError();
-
-			for (size_t i = 0; i < _verticesList.size(); ++i)
+			// メッシュ数のループ
+			for (size_t meshIndex = 0; meshIndex < _verticesList.size(); ++meshIndex)
 			{
-				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].position);
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].position);
 				GLProgram::checkGLError();
-				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].normal);
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].normal);
 				GLProgram::checkGLError();
-				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[i][0].textureCoordinate);
+				glVertexAttribPointer((GLuint)GLProgram::AttributeLocation::TEXTURE_COORDINATE, 2, GL_FLOAT, GL_FALSE, sizeof(Position3DNormalTextureCoordinates), (GLvoid*)&_verticesList[meshIndex][0].textureCoordinate);
 				GLProgram::checkGLError();
 
-				glDrawElements(GL_TRIANGLES, _indicesList[i].size(), GL_UNSIGNED_SHORT, _indicesList[i].data());
-				GLProgram::checkGLError();
+				glActiveTexture(GL_TEXTURE0);
+
+				GLuint textureId = _textureList[0]->getTextureId();
+				size_t numSubMesh = _indicesList[meshIndex].size();
+				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
+				{
+					int subMeshDiffuseTextureIndex = _diffuseTextureIndices[meshIndex][subMeshIndex];
+					if (_useMtl)
+					{
+						textureId = _textureList[subMeshDiffuseTextureIndex]->getTextureId();
+					}
+
+					glBindTexture(GL_TEXTURE_2D, textureId);
+					GLProgram::checkGLError();
+
+					const std::vector<unsigned short>& subMeshIndices = _indicesList[meshIndex][subMeshIndex];
+					glDrawElements(GL_TRIANGLES, subMeshIndices.size(), GL_UNSIGNED_SHORT, subMeshIndices.data());
+					GLProgram::checkGLError();
+				}
+
+				glBindTexture(GL_TEXTURE_2D, 0);
 			}
-
-			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 		else if (_isC3b)
 		{

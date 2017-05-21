@@ -69,6 +69,7 @@ namespace mgrrenderer
 		//float _opacity;
 
 		// TODO:現状objのみに使っている。I/FをObjLoaderとC3bLoaderで合わせよう
+		// std::vectorの第一階層は、MeshDataごと。次がMeshData内のマテリアルIDごと
 		std::vector<std::vector<Position3DNormalTextureCoordinates>> _verticesList;
 		std::vector<std::vector<std::vector<unsigned short>>> _indicesList;
 		std::vector<std::vector<int>> _diffuseTextureIndices;

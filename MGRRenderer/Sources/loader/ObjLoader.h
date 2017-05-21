@@ -13,12 +13,15 @@ namespace ObjLoader
 {
 	struct MeshData
 	{
-		typedef std::vector<unsigned short> IndexArray;
+		//typedef std::vector<unsigned short> IndexArray;
 		std::string name;
 		std::vector<Position3DNormalTextureCoordinates> vertices;
+		// 全体のインデックス配列
 		std::vector<unsigned short> indices;
+		// マテリアルID配列
 		std::vector<int> materialIndices;
 		size_t numMaterialIndex;
+		// マテリアルIDごとのインデックス配列のマップ
 		std::map<int, std::vector<unsigned short>> subMeshMap;
 		// cocos2d-xではsubMeshMapをさらに分解してsubMeshIndicesとsumMeshIdsをもち、サブメッシュとマテリアルの対応は
 		// ModelDataで保持しているが、別のデータを使うのも面倒なので分解しないことにした

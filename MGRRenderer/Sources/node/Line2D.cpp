@@ -75,7 +75,7 @@ bool Line2D::initWithVertexArray(const std::vector<Vec2>& vertexArray)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgramForForwardRendering.setIndexBuffer(indexBuffer);
+	_d3dProgramForForwardRendering.addIndexBuffer(indexBuffer);
 
 	bool depthEnable = false;
 	_d3dProgramForForwardRendering.initWithShaderFile("Resources/shader/Line.hlsl", depthEnable, "VS", "GS", "PS");
@@ -224,7 +224,7 @@ void Line2D::renderForward()
 		UINT strides[1] = {sizeof(Vec2)};
 		UINT offsets[1] = {0};
 		direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers().size(), _d3dProgramForForwardRendering.getVertexBuffers().data(), strides, offsets);
-		direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffers()[0], DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForForwardRendering.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 

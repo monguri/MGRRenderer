@@ -35,7 +35,6 @@ _vertexShader(nullptr),
 _vertexShaderBlob(nullptr),
 _geometryShader(nullptr),
 _pixelShader(nullptr),
-_indexBuffer(nullptr),
 _inputLayout(nullptr)
 {
 }
@@ -53,10 +52,9 @@ D3DProgram::~D3DProgram()
 		_inputLayout = nullptr;
 	}
 
-	if (_indexBuffer != nullptr)
+	for (ID3D11Buffer* indexBuffer : _indexBuffers)
 	{
-		_indexBuffer->Release();
-		_indexBuffer = nullptr;
+		indexBuffer->Release();
 	}
 
 	for (ID3D11Buffer* vertexBuffer : _vertexBuffers)

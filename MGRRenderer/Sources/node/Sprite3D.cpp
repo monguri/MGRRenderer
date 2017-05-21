@@ -222,7 +222,7 @@ bool Sprite3D::initWithModel(const std::string& filePath, bool useMtl)
 		// インデックスバッファの定義
 		D3D11_BUFFER_DESC indexBufferDesc;
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.ByteWidth = sizeof(USHORT) * _indicesList[0].size();
+		indexBufferDesc.ByteWidth = sizeof(USHORT) * _indicesList[0][0].size();
 		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		indexBufferDesc.CPUAccessFlags = 0;
 		indexBufferDesc.MiscFlags = 0;
@@ -230,7 +230,7 @@ bool Sprite3D::initWithModel(const std::string& filePath, bool useMtl)
 
 		// インデックスバッファのサブリソースの定義
 		D3D11_SUBRESOURCE_DATA indexBufferSubData;
-		indexBufferSubData.pSysMem = _indicesList[0].data();
+		indexBufferSubData.pSysMem = _indicesList[0][0].data();
 		indexBufferSubData.SysMemPitch = 0;
 		indexBufferSubData.SysMemSlicePitch = 0;
 
@@ -320,7 +320,7 @@ bool Sprite3D::initWithModel(const std::string& filePath, bool useMtl)
 		// インデックスバッファの定義
 		D3D11_BUFFER_DESC indexBufferDesc;
 		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.ByteWidth = sizeof(USHORT) * _indicesList[0].size();
+		indexBufferDesc.ByteWidth = sizeof(USHORT) * _indicesList[0][0].size();
 		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		indexBufferDesc.CPUAccessFlags = 0;
 		indexBufferDesc.MiscFlags = 0;
@@ -328,7 +328,7 @@ bool Sprite3D::initWithModel(const std::string& filePath, bool useMtl)
 
 		// インデックスバッファのサブリソースの定義
 		D3D11_SUBRESOURCE_DATA indexBufferSubData;
-		indexBufferSubData.pSysMem = _indicesList[0].data();
+		indexBufferSubData.pSysMem = _indicesList[0][0].data();
 		indexBufferSubData.SysMemPitch = 0;
 		indexBufferSubData.SysMemSlicePitch = 0;
 
@@ -1061,7 +1061,7 @@ void Sprite3D::renderGBuffer()
 		ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getLinearSamplerState() };
 		direct3dContext->PSSetSamplers(0, 1, samplerState);
 
-		direct3dContext->DrawIndexed(_indicesList[0].size(), 0, 0);
+		direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForGBuffer.getShaderProgram());
 		GLProgram::checkGLError();
@@ -1247,7 +1247,7 @@ void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 		_d3dProgramForShadowMap.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		direct3dContext->DrawIndexed(_indicesList[0].size(), 0, 0);
+		direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForShadowMap.getShaderProgram());
 		GLProgram::checkGLError();
@@ -1399,7 +1399,7 @@ void Sprite3D::renderPointLightShadowMap(size_t index, const PointLight* light, 
 		_d3dProgramForPointLightShadowMap.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForPointLightShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		direct3dContext->DrawIndexed(_indicesList[0].size(), 0, 0);
+		direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForShadowMap.getShaderProgram());
 		GLProgram::checkGLError();
@@ -1571,7 +1571,7 @@ void Sprite3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 		_d3dProgramForShadowMap.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForShadowMap.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		direct3dContext->DrawIndexed(_indicesList[0].size(), 0, 0);
+		direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		glUseProgram(_glProgramForShadowMap.getShaderProgram());
 		GLProgram::checkGLError();
@@ -1925,7 +1925,7 @@ void Sprite3D::renderForward()
 		ID3D11SamplerState* samplerState[2] = { Director::getRenderer().getLinearSamplerState(), Director::getRenderer().getPCFSamplerState() };
 		direct3dContext->PSSetSamplers(0, 2, samplerState);
 
-		direct3dContext->DrawIndexed(_indicesList[0].size(), 0, 0);
+		direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 #elif defined(MGRRENDERER_USE_OPENGL)
 		// cocos2d-xはTriangleCommand発行してる形だからな。。テクスチャバインドはTexture2Dでやってるのに大丈夫か？
 		glUseProgram(_glProgramForForwardRendering.getShaderProgram());

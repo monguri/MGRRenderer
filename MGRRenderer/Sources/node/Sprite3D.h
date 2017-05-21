@@ -47,7 +47,7 @@ namespace mgrrenderer
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
 		D3DProgram _d3dProgramForGBuffer;
 #endif // defined(MGRRENDERER_DEFERRED_RENDERING)
-		D3DTexture* _texture;
+		std::vector<D3DTexture*> _textureList;
 #elif defined(MGRRENDERER_USE_OPENGL)
 		GLProgram _glProgramForGBuffer;
 		GLProgram _glProgramForForwardRendering;

@@ -192,7 +192,7 @@ bool Sprite3D::initWithModel(const std::string& filePath, bool useMtl)
 		// 頂点バッファの定義
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBufferDesc.ByteWidth = sizeof(Position3DNormalTextureCoordinates) * _verticesList.size();
+		vertexBufferDesc.ByteWidth = sizeof(Position3DNormalTextureCoordinates) * _verticesList[0].size();
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		vertexBufferDesc.CPUAccessFlags = 0;
 		vertexBufferDesc.MiscFlags = 0;
@@ -200,7 +200,7 @@ bool Sprite3D::initWithModel(const std::string& filePath, bool useMtl)
 
 		// 頂点バッファのサブリソースの定義
 		D3D11_SUBRESOURCE_DATA vertexBufferSubData;
-		vertexBufferSubData.pSysMem = _verticesList.data();
+		vertexBufferSubData.pSysMem = _verticesList[0].data();
 		vertexBufferSubData.SysMemPitch = 0;
 		vertexBufferSubData.SysMemSlicePitch = 0;
 
@@ -1056,7 +1056,7 @@ void Sprite3D::renderGBuffer()
 		_d3dProgramForGBuffer.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForGBuffer.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		ID3D11ShaderResourceView* resourceView[1] = { _texture->getShaderResourceView() };
+		ID3D11ShaderResourceView* resourceView[1] = { _textureList[0]->getShaderResourceView() };
 		direct3dContext->PSSetShaderResources(0, 1, resourceView);
 		ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getLinearSamplerState() };
 		direct3dContext->PSSetSamplers(0, 1, samplerState);
@@ -1913,7 +1913,7 @@ void Sprite3D::renderForward()
 		_d3dProgramForForwardRendering.setConstantBuffersToDirect3DContext(direct3dContext);
 
 		ID3D11ShaderResourceView* shaderResourceViews[2] = {
-			_texture->getShaderResourceView(),
+			_textureList[0]->getShaderResourceView(),
 			dirLightShadowMapResourceView,
 		};
 		direct3dContext->PSSetShaderResources(0, 2, shaderResourceViews);

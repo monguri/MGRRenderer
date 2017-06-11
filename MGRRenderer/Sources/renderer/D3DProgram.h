@@ -49,8 +49,8 @@ public:
 	ID3D11PixelShader* getPixelShader() const { return _pixelShader; }
 	const std::vector<ID3D11Buffer*>& getVertexBuffers() const { return _vertexBuffers; }
 	void addVertexBuffer(ID3D11Buffer* vertexBuffer) { _vertexBuffers.push_back(vertexBuffer); }
-	const std::vector<ID3D11Buffer*>& getIndexBuffers() const { return _indexBuffers; }
-	void addIndexBuffer(ID3D11Buffer* indexBuffer) { _indexBuffers.push_back(indexBuffer); }
+	const std::vector<std::vector<ID3D11Buffer*>>& getIndexBuffers() const { return _indexBuffers; }
+	void addIndexBuffers(const std::vector<ID3D11Buffer*>& indexBuffers) { _indexBuffers.push_back(indexBuffers); }
 	ID3D11InputLayout* getInputLayout() const { return _inputLayout; }
 	void setInputLayout(ID3D11InputLayout* inputLayout) { _inputLayout = inputLayout; }
 	ID3D11Buffer* getConstantBuffer(const std::string& keyStr) const { return _constantBuffers[_constantBufferIndices.at(keyStr)]; }
@@ -66,8 +66,10 @@ private:
 	ID3DBlob* _vertexShaderBlob;
 	ID3D11GeometryShader* _geometryShader;
 	ID3D11PixelShader* _pixelShader;
+	// 一つのモデルファイルの中の複数メッシュの数だけ
 	std::vector<ID3D11Buffer*> _vertexBuffers;
-	std::vector<ID3D11Buffer*> _indexBuffers;
+	// 第一階層は一つのモデルファイルの中の複数メッシュ、第二階層は、その中でのマテリアルごとのサブメッシュ
+	std::vector<std::vector<ID3D11Buffer*>> _indexBuffers;
 	ID3D11InputLayout* _inputLayout;
 	std::map<std::string, size_t> _constantBufferIndices;
 	std::vector<ID3D11Buffer*> _constantBuffers;

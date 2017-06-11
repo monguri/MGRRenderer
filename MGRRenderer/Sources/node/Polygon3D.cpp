@@ -131,11 +131,15 @@ bool Polygon3D::initWithVertexArray(const std::vector<Vec3>& vertexArray)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgramForForwardRendering.addIndexBuffer(indexBuffer);
-	_d3dProgramForShadowMap.addIndexBuffer(indexBuffer);
-	_d3dProgramForPointLightShadowMap.addIndexBuffer(indexBuffer);
+
+	std::vector<ID3D11Buffer*> indexBufferList;
+	indexBufferList.push_back(indexBuffer);
+
+	_d3dProgramForForwardRendering.addIndexBuffers(indexBufferList);
+	_d3dProgramForShadowMap.addIndexBuffers(indexBufferList);
+	_d3dProgramForPointLightShadowMap.addIndexBuffers(indexBufferList);
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
-	_d3dProgramForGBuffer.addIndexBuffer(indexBuffer);
+	_d3dProgramForGBuffer.addIndexBuffers(indexBufferList);
 #endif
 
 	bool depthEnable = true;
@@ -443,7 +447,7 @@ void Polygon3D::renderGBuffer()
 		UINT strides[2] = {sizeof(Vec3), sizeof(Vec3)};
 		UINT offsets[2] = {0, 0};
 		direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers().size(), _d3dProgramForGBuffer.getVertexBuffers().data(), strides, offsets);
-		direct3dContext->IASetIndexBuffer(_d3dProgramForGBuffer.getIndexBuffers()[0], DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForGBuffer.getIndexBuffers()[0][0], DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForGBuffer.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -543,7 +547,7 @@ void Polygon3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 		UINT strides[2] = {sizeof(Vec3), sizeof(Vec3)};
 		UINT offsets[2] = {0, 0};
 		direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers().size(), _d3dProgramForShadowMap.getVertexBuffers().data(), strides, offsets);
-		direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffers()[0], DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffers()[0][0], DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForShadowMap.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -631,7 +635,7 @@ void Polygon3D::renderPointLightShadowMap(size_t index, const PointLight* light,
 		UINT strides[2] = {sizeof(Vec3), sizeof(Vec3)};
 		UINT offsets[2] = {0, 0};
 		direct3dContext->IASetVertexBuffers(0, _d3dProgramForPointLightShadowMap.getVertexBuffers().size(), _d3dProgramForPointLightShadowMap.getVertexBuffers().data(), strides, offsets);
-		direct3dContext->IASetIndexBuffer(_d3dProgramForPointLightShadowMap.getIndexBuffers()[0], DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForPointLightShadowMap.getIndexBuffers()[0][0], DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForPointLightShadowMap.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -739,7 +743,7 @@ void Polygon3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 		UINT strides[2] = {sizeof(Vec3), sizeof(Vec3)};
 		UINT offsets[2] = {0, 0};
 		direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers().size(), _d3dProgramForShadowMap.getVertexBuffers().data(), strides, offsets);
-		direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffers()[0], DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffers()[0][0], DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForShadowMap.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -1015,7 +1019,7 @@ void Polygon3D::renderForward()
 		UINT strides[2] = {sizeof(Vec3), sizeof(Vec3)};
 		UINT offsets[2] = {0, 0};
 		direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers().size(), _d3dProgramForForwardRendering.getVertexBuffers().data(), strides, offsets);
-		direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffers()[0], DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffers()[0][0], DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForForwardRendering.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

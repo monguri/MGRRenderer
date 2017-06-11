@@ -52,9 +52,12 @@ D3DProgram::~D3DProgram()
 		_inputLayout = nullptr;
 	}
 
-	for (ID3D11Buffer* indexBuffer : _indexBuffers)
+	for (const std::vector<ID3D11Buffer*>& indexBufferList : _indexBuffers)
 	{
-		indexBuffer->Release();
+		for (ID3D11Buffer* indexBuffer : indexBufferList)
+		{
+			indexBuffer->Release();
+		}
 	}
 
 	for (ID3D11Buffer* vertexBuffer : _vertexBuffers)

@@ -104,8 +104,12 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgramForForwardRendering.addIndexBuffer(indexBuffer);
-	_d3dProgramForGBuffer.addIndexBuffer(indexBuffer);
+
+	std::vector<ID3D11Buffer*> indexBufferList;
+	indexBufferList.push_back(indexBuffer);
+
+	_d3dProgramForForwardRendering.addIndexBuffers(indexBufferList);
+	_d3dProgramForGBuffer.addIndexBuffers(indexBufferList);
 
 	_d3dProgramForForwardRendering.initWithShaderFile("Resources/shader/PositionTextureMultiplyColor.hlsl", true, "VS", "", "PS");
 	_d3dProgramForGBuffer.initWithShaderFile("Resources/shader/PositionTextureMultiplyColor.hlsl", true, "VS", "", "PS_GBUFFER");
@@ -325,7 +329,7 @@ void BillBoard::renderGBuffer()
 		UINT strides[1] = {sizeof(_quadrangle.topLeft)};
 		UINT offsets[1] = {0};
 		direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers().size(), _d3dProgramForGBuffer.getVertexBuffers().data(), strides, offsets);
-		direct3dContext->IASetIndexBuffer(_d3dProgramForGBuffer.getIndexBuffers()[0], DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForGBuffer.getIndexBuffers()[0][0], DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForGBuffer.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
@@ -434,7 +438,7 @@ void BillBoard::renderForward()
 		UINT strides[1] = {sizeof(_quadrangle.topLeft)};
 		UINT offsets[1] = {0};
 		direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers().size(), _d3dProgramForForwardRendering.getVertexBuffers().data(), strides, offsets);
-		direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffers()[0], DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffers()[0][0], DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForForwardRendering.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 

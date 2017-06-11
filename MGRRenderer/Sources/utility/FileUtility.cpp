@@ -153,7 +153,7 @@ unsigned char* FileUtility::getFileData(const std::string& fileName, size_t* siz
 		}
 	}
 
-	if (ret != nullptr)
+	if (ret == nullptr)
 	{
 		std::string msg = "Get data from file(";
 		std::string errCodeStr = "" + GetLastError();

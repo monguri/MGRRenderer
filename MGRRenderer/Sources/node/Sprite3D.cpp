@@ -1174,7 +1174,7 @@ void Sprite3D::renderGBuffer()
 			glBindTexture(GL_TEXTURE_2D, _textureList[0]->getTextureId());
 			GLProgram::checkGLError();
 
-			glDrawElements(GL_TRIANGLES, _indicesList[0].size(), GL_UNSIGNED_SHORT, _indicesList[0].data());
+			glDrawElements(GL_TRIANGLES, _indicesList[0][0].size(), GL_UNSIGNED_SHORT, _indicesList[0][0].data());
 			GLProgram::checkGLError();
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
@@ -1365,7 +1365,7 @@ void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 			glUniformMatrix4fv(_glProgramForShadowMap.getUniformLocation("u_matrixPalette"), _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
 			GLProgram::checkGLError();
 
-			glDrawElements(GL_TRIANGLES, _indicesList[0].size(), GL_UNSIGNED_SHORT, _indicesList[0].data());
+			glDrawElements(GL_TRIANGLES, _indicesList[0][0].size(), GL_UNSIGNED_SHORT, _indicesList[0][0].data());
 			GLProgram::checkGLError();
 		}
 #endif
@@ -1540,7 +1540,7 @@ void Sprite3D::renderPointLightShadowMap(size_t index, const PointLight* light, 
 			glUniformMatrix4fv(_glProgramForShadowMap.getUniformLocation("u_matrixPalette"), _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
 			GLProgram::checkGLError();
 
-			glDrawElements(GL_TRIANGLES, _indicesList[0].size(), GL_UNSIGNED_SHORT, _indicesList[0].data());
+			glDrawElements(GL_TRIANGLES, _indicesList[0][0].size(), GL_UNSIGNED_SHORT, _indicesList[0][0].data());
 			GLProgram::checkGLError();
 		}
 #endif
@@ -1730,7 +1730,7 @@ void Sprite3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 			glUniformMatrix4fv(_glProgramForShadowMap.getUniformLocation("u_matrixPalette"), _matrixPalette.size(), GL_FALSE, (GLfloat*)(_matrixPalette[0].m));
 			GLProgram::checkGLError();
 
-			glDrawElements(GL_TRIANGLES, _indicesList[0].size(), GL_UNSIGNED_SHORT, _indicesList[0].data());
+			glDrawElements(GL_TRIANGLES, _indicesList[0][0].size(), GL_UNSIGNED_SHORT, _indicesList[0][0].data());
 			GLProgram::checkGLError();
 		}
 #endif
@@ -2341,7 +2341,7 @@ void Sprite3D::renderForward()
 			glBindTexture(GL_TEXTURE_2D, _textureList[0]->getTextureId());
 			GLProgram::checkGLError();
 
-			glDrawElements(GL_TRIANGLES, _indicesList[0].size(), GL_UNSIGNED_SHORT, _indicesList[0].data());
+			glDrawElements(GL_TRIANGLES, _indicesList[0][0].size(), GL_UNSIGNED_SHORT, _indicesList[0][0].data());
 			GLProgram::checkGLError();
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}

@@ -1082,8 +1082,6 @@ void Sprite3D::renderGBuffer()
 		_d3dProgramForGBuffer.setShadersToDirect3DContext(direct3dContext);
 		_d3dProgramForGBuffer.setConstantBuffersToDirect3DContext(direct3dContext);
 
-		ID3D11ShaderResourceView* resourceView[1] = { _textureList[0]->getShaderResourceView() };
-		direct3dContext->PSSetShaderResources(0, 1, resourceView);
 		ID3D11SamplerState* samplerState[1] = { Director::getRenderer().getLinearSamplerState() };
 		direct3dContext->PSSetSamplers(0, 1, samplerState);
 
@@ -1094,9 +1092,19 @@ void Sprite3D::renderGBuffer()
 			{
 				direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers(meshIndex).size(), _d3dProgramForGBuffer.getVertexBuffers(meshIndex).data(), strides, offsets);
 
+				D3DTexture* texture = _textureList[0];
 				size_t numSubMesh = _indicesList[meshIndex].size();
 				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
 				{
+					int subMeshDiffuseTextureIndex = _diffuseTextureIndices[meshIndex][subMeshIndex];
+					if (_useMtl)
+					{
+						texture = _textureList[subMeshDiffuseTextureIndex];
+					}
+
+					ID3D11ShaderResourceView* shaderResourceViews[1] = { texture->getShaderResourceView() };
+					direct3dContext->PSSetShaderResources(0, 1, shaderResourceViews);
+
 					direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffer(meshIndex, subMeshIndex), DXGI_FORMAT_R16_UINT, 0);
 					direct3dContext->DrawIndexed(_indicesList[meshIndex][subMeshIndex].size(), 0, 0);
 				}
@@ -1104,6 +1112,9 @@ void Sprite3D::renderGBuffer()
 		}
 		else if (_isC3b)
 		{
+			ID3D11ShaderResourceView* resourceView[1] = { _textureList[0]->getShaderResourceView() };
+			direct3dContext->PSSetShaderResources(0, 1, resourceView);
+
 			// ƒƒbƒVƒ…‚Í‚Ð‚Æ‚Â‚¾‚¯
 			direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers(0).size(), _d3dProgramForGBuffer.getVertexBuffers(0).data(), strides, offsets);
 			direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffer(0, 0), DXGI_FORMAT_R16_UINT, 0);

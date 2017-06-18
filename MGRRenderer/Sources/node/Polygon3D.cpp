@@ -445,7 +445,7 @@ void Polygon3D::renderGBuffer()
 		UINT strides[2] = {sizeof(Vec3), sizeof(Vec3)};
 		UINT offsets[2] = {0, 0};
 		direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers(0).size(), _d3dProgramForGBuffer.getVertexBuffers(0).data(), strides, offsets);
-		direct3dContext->IASetIndexBuffer(_d3dProgramForGBuffer.getIndexBuffer()[0][0], DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForGBuffer.getIndexBuffer(0, 0), DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForGBuffer.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

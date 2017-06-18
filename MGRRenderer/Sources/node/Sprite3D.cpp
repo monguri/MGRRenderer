@@ -1097,7 +1097,7 @@ void Sprite3D::renderGBuffer()
 				size_t numSubMesh = _indicesList[meshIndex].size();
 				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
 				{
-					direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffers()[meshIndex][subMeshIndex], DXGI_FORMAT_R16_UINT, 0);
+					direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffer()[meshIndex][subMeshIndex], DXGI_FORMAT_R16_UINT, 0);
 					direct3dContext->DrawIndexed(_indicesList[meshIndex][subMeshIndex].size(), 0, 0);
 				}
 			}
@@ -1106,7 +1106,7 @@ void Sprite3D::renderGBuffer()
 		{
 			// メッシュはひとつだけ
 			direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers(0).size(), _d3dProgramForGBuffer.getVertexBuffers(0).data(), strides, offsets);
-			direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffers()[0][0], DXGI_FORMAT_R16_UINT, 0);
+			direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffer()[0][0], DXGI_FORMAT_R16_UINT, 0);
 			direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 		}
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -1304,7 +1304,7 @@ void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 				size_t numSubMesh = _indicesList[meshIndex].size();
 				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
 				{
-					direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffers()[meshIndex][subMeshIndex], DXGI_FORMAT_R16_UINT, 0);
+					direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffer(meshIndex, subMeshIndex), DXGI_FORMAT_R16_UINT, 0);
 					direct3dContext->DrawIndexed(_indicesList[meshIndex][subMeshIndex].size(), 0, 0);
 				}
 			}
@@ -1313,7 +1313,7 @@ void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 		{
 			// メッシュはひとつだけ
 			direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers(0).size(), _d3dProgramForShadowMap.getVertexBuffers(0).data(), strides, offsets);
-			direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffers()[0][0], DXGI_FORMAT_R16_UINT, 0);
+			direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffer(0, 0), DXGI_FORMAT_R16_UINT, 0);
 			direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 		}
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -1477,7 +1477,7 @@ void Sprite3D::renderPointLightShadowMap(size_t index, const PointLight* light, 
 				size_t numSubMesh = _indicesList[meshIndex].size();
 				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
 				{
-					direct3dContext->IASetIndexBuffer(_d3dProgramForPointLightShadowMap.getIndexBuffers()[meshIndex][subMeshIndex], DXGI_FORMAT_R16_UINT, 0);
+					direct3dContext->IASetIndexBuffer(_d3dProgramForPointLightShadowMap.getIndexBuffer(meshIndex, subMeshIndex), DXGI_FORMAT_R16_UINT, 0);
 					direct3dContext->DrawIndexed(_indicesList[meshIndex][subMeshIndex].size(), 0, 0);
 				}
 			}
@@ -1486,7 +1486,7 @@ void Sprite3D::renderPointLightShadowMap(size_t index, const PointLight* light, 
 		{
 			// メッシュはひとつだけ
 			direct3dContext->IASetVertexBuffers(0, _d3dProgramForPointLightShadowMap.getVertexBuffers(0).size(), _d3dProgramForPointLightShadowMap.getVertexBuffers(0).data(), strides, offsets);
-			direct3dContext->IASetIndexBuffer(_d3dProgramForPointLightShadowMap.getIndexBuffers()[0][0], DXGI_FORMAT_R16_UINT, 0);
+			direct3dContext->IASetIndexBuffer(_d3dProgramForPointLightShadowMap.getIndexBuffer(0, 0), DXGI_FORMAT_R16_UINT, 0);
 			direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 		}
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -1670,7 +1670,7 @@ void Sprite3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 				size_t numSubMesh = _indicesList[meshIndex].size();
 				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
 				{
-					direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffers()[meshIndex][subMeshIndex], DXGI_FORMAT_R16_UINT, 0);
+					direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffer(meshIndex, subMeshIndex), DXGI_FORMAT_R16_UINT, 0);
 					direct3dContext->DrawIndexed(_indicesList[meshIndex][subMeshIndex].size(), 0, 0);
 				}
 			}
@@ -1679,7 +1679,7 @@ void Sprite3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 		{
 			// メッシュはひとつだけ
 			direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers(0).size(), _d3dProgramForShadowMap.getVertexBuffers(0).data(), strides, offsets);
-			direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffers()[0][0], DXGI_FORMAT_R16_UINT, 0);
+			direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffer(0, 0), DXGI_FORMAT_R16_UINT, 0);
 			direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 		}
 #elif defined(MGRRENDERER_USE_OPENGL)
@@ -2051,7 +2051,7 @@ void Sprite3D::renderForward()
 					};
 					direct3dContext->PSSetShaderResources(0, 2, shaderResourceViews);
 
-					direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffers()[meshIndex][subMeshIndex], DXGI_FORMAT_R16_UINT, 0);
+					direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffer(meshIndex, subMeshIndex), DXGI_FORMAT_R16_UINT, 0);
 					direct3dContext->DrawIndexed(_indicesList[meshIndex][subMeshIndex].size(), 0, 0);
 				}
 			}
@@ -2066,7 +2066,7 @@ void Sprite3D::renderForward()
 
 			// メッシュはひとつだけ
 			direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers(0).size(), _d3dProgramForForwardRendering.getVertexBuffers(0).data(), strides, offsets);
-			direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffers()[0][0], DXGI_FORMAT_R16_UINT, 0);
+			direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffer(0, 0), DXGI_FORMAT_R16_UINT, 0);
 			direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 		}
 #elif defined(MGRRENDERER_USE_OPENGL)

@@ -49,7 +49,7 @@ public:
 	ID3D11PixelShader* getPixelShader() const { return _pixelShader; }
 	const std::vector<ID3D11Buffer*>& getVertexBuffers(size_t meshIndex) const { return _vertexBuffers[meshIndex]; }
 	void addVertexBuffers(const std::vector<ID3D11Buffer*>& vertexBuffers) { _vertexBuffers.push_back(vertexBuffers); }
-	const std::vector<std::vector<ID3D11Buffer*>>& getIndexBuffers() const { return _indexBuffers; }
+	ID3D11Buffer* getIndexBuffer(size_t meshIndex, size_t subMeshIndex) const { return _indexBuffers[meshIndex][subMeshIndex]; }
 	void addIndexBuffers(const std::vector<ID3D11Buffer*>& indexBuffers) { _indexBuffers.push_back(indexBuffers); }
 	ID3D11InputLayout* getInputLayout() const { return _inputLayout; }
 	void setInputLayout(ID3D11InputLayout* inputLayout) { _inputLayout = inputLayout; }

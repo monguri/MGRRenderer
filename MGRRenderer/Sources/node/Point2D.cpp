@@ -244,7 +244,7 @@ void Point2D::renderForward()
 		UINT strides[1] = {sizeof(Point2DData)};
 		UINT offsets[1] = {0};
 		direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers(0).size(), _d3dProgramForForwardRendering.getVertexBuffers(0).data(), strides, offsets);
-		direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffers()[0][0], DXGI_FORMAT_R32_UINT, 0);
+		direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffer(0, 0), DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForForwardRendering.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 

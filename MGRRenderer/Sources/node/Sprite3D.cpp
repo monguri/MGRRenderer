@@ -1059,18 +1059,22 @@ void Sprite3D::renderGBuffer()
 			direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE), 0);
 		}
 
-		UINT strides[1];
+		size_t stride = 0;
+		size_t offset = 0;
 		if (_isObj)
 		{
-			strides[0] = sizeof(Position3DNormalTextureCoordinates);
+			stride = sizeof(Position3DNormalTextureCoordinates);
 		}
 		else if (_isC3b)
 		{
-			strides[0] = _perVertexByteSize;
+			stride = _perVertexByteSize;
 		}
 
-		UINT offsets[1] = {0};
-		direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers().size(), _d3dProgramForGBuffer.getVertexBuffers().data(), strides, offsets);
+		size_t numVertexBuffer = _d3dProgramForGBuffer.getVertexBuffers().size();
+		std::vector<UINT> strides(numVertexBuffer, stride);
+		std::vector<UINT> offsets(numVertexBuffer, offset);
+
+		direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers().size(), _d3dProgramForGBuffer.getVertexBuffers().data(), strides.data(), offsets.data());
 		direct3dContext->IASetIndexBuffer(_d3dProgramForGBuffer.getIndexBuffers()[0][0], DXGI_FORMAT_R16_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForGBuffer.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -1250,18 +1254,22 @@ void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 			direct3dContext->Unmap(_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE), 0);
 		}
 
-		UINT strides[1];
+		size_t stride = 0;
+		size_t offset = 0;
 		if (_isObj)
 		{
-			strides[0] = sizeof(Position3DNormalTextureCoordinates);
+			stride = sizeof(Position3DNormalTextureCoordinates);
 		}
 		else if (_isC3b)
 		{
-			strides[0] = _perVertexByteSize;
+			stride = _perVertexByteSize;
 		}
 
-		UINT offsets[1] = {0};
-		direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers().size(), _d3dProgramForShadowMap.getVertexBuffers().data(), strides, offsets);
+		size_t numVertexBuffer = _d3dProgramForShadowMap.getVertexBuffers().size();
+		std::vector<UINT> strides(numVertexBuffer, stride);
+		std::vector<UINT> offsets(numVertexBuffer, offset);
+
+		direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers().size(), _d3dProgramForShadowMap.getVertexBuffers().data(), strides.data(), offsets.data());
 		direct3dContext->IASetInputLayout(_d3dProgramForShadowMap.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -1418,18 +1426,22 @@ void Sprite3D::renderPointLightShadowMap(size_t index, const PointLight* light, 
 			direct3dContext->Unmap(_d3dProgramForPointLightShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE), 0);
 		}
 
-		UINT strides[1];
+		size_t stride = 0;
+		size_t offset = 0;
 		if (_isObj)
 		{
-			strides[0] = sizeof(Position3DNormalTextureCoordinates);
+			stride = sizeof(Position3DNormalTextureCoordinates);
 		}
 		else if (_isC3b)
 		{
-			strides[0] = _perVertexByteSize;
+			stride = _perVertexByteSize;
 		}
 
-		UINT offsets[1] = {0};
-		direct3dContext->IASetVertexBuffers(0, _d3dProgramForPointLightShadowMap.getVertexBuffers().size(), _d3dProgramForPointLightShadowMap.getVertexBuffers().data(), strides, offsets);
+		size_t numVertexBuffer = _d3dProgramForPointLightShadowMap.getVertexBuffers().size();
+		std::vector<UINT> strides(numVertexBuffer, stride);
+		std::vector<UINT> offsets(numVertexBuffer, offset);
+
+		direct3dContext->IASetVertexBuffers(0, numVertexBuffer, _d3dProgramForPointLightShadowMap.getVertexBuffers().data(), strides.data(), offsets.data());
 		direct3dContext->IASetInputLayout(_d3dProgramForPointLightShadowMap.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -1606,18 +1618,22 @@ void Sprite3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 			direct3dContext->Unmap(_d3dProgramForShadowMap.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_JOINT_MATRIX_PALLETE), 0);
 		}
 
-		UINT strides[1];
+		size_t stride = 0;
+		size_t offset = 0;
 		if (_isObj)
 		{
-			strides[0] = sizeof(Position3DNormalTextureCoordinates);
+			stride = sizeof(Position3DNormalTextureCoordinates);
 		}
 		else if (_isC3b)
 		{
-			strides[0] = _perVertexByteSize;
+			stride = _perVertexByteSize;
 		}
 
-		UINT offsets[1] = {0};
-		direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers().size(), _d3dProgramForShadowMap.getVertexBuffers().data(), strides, offsets);
+		size_t numVertexBuffer = _d3dProgramForShadowMap.getVertexBuffers().size();
+		std::vector<UINT> strides(numVertexBuffer, stride);
+		std::vector<UINT> offsets(numVertexBuffer, offset);
+
+		direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers().size(), _d3dProgramForShadowMap.getVertexBuffers().data(), strides.data(), offsets.data());
 		direct3dContext->IASetInputLayout(_d3dProgramForShadowMap.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -1963,18 +1979,22 @@ void Sprite3D::renderForward()
 		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER), 0);
 
 
-		UINT strides[1];
+		size_t stride = 0;
+		size_t offset = 0;
 		if (_isObj)
 		{
-			strides[0] = sizeof(Position3DNormalTextureCoordinates);
+			stride = sizeof(Position3DNormalTextureCoordinates);
 		}
 		else if (_isC3b)
 		{
-			strides[0] = _perVertexByteSize;
+			stride = _perVertexByteSize;
 		}
 
-		UINT offsets[1] = {0};
-		direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers().size(), _d3dProgramForForwardRendering.getVertexBuffers().data(), strides, offsets);
+		size_t numVertexBuffer = _d3dProgramForForwardRendering.getVertexBuffers().size();
+		std::vector<UINT> strides(numVertexBuffer, stride);
+		std::vector<UINT> offsets(numVertexBuffer, offset);
+
+		direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers().size(), _d3dProgramForForwardRendering.getVertexBuffers().data(), strides.data(), offsets.data());
 		direct3dContext->IASetInputLayout(_d3dProgramForForwardRendering.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

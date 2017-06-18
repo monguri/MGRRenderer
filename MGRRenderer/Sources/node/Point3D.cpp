@@ -36,7 +36,9 @@ void Point3D::initWithPointArray(const std::vector<Point3DData>& pointArray)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgramForForwardRendering.addVertexBuffer(vertexBuffer);
+	std::vector<ID3D11Buffer*> oneMeshVBs;
+	oneMeshVBs.push_back(vertexBuffer);
+	_d3dProgramForForwardRendering.addVertexBuffers(oneMeshVBs);
 
 	// インデックスバッファ用の配列の用意。素直に昇順に番号付けする
 	std::vector<unsigned int> indexArray;
@@ -238,9 +240,10 @@ void Point3D::renderForward()
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
 		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
 
+		// メッシュはひとつだけ
 		UINT strides[1] = {sizeof(Point3DData)};
 		UINT offsets[1] = {0};
-		direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers().size(), _d3dProgramForForwardRendering.getVertexBuffers().data(), strides, offsets);
+		direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers(0).size(), _d3dProgramForForwardRendering.getVertexBuffers(0).data(), strides, offsets);
 		direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffers()[0][0], DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForForwardRendering.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);

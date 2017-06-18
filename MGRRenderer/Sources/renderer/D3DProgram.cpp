@@ -60,9 +60,12 @@ D3DProgram::~D3DProgram()
 		}
 	}
 
-	for (ID3D11Buffer* vertexBuffer : _vertexBuffers)
+	for (const std::vector<ID3D11Buffer*>& vertexBufferList : _vertexBuffers)
 	{
-		vertexBuffer->Release();
+		for (ID3D11Buffer* vertexBuffer : vertexBufferList)
+		{
+			vertexBuffer->Release();
+		}
 	}
 
 	if (_pixelShader != nullptr)

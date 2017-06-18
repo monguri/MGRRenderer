@@ -610,7 +610,9 @@ void Renderer::initView(const SizeUint& windowSize)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return;
 	}
-	_d3dProgramForDeferredRendering.addVertexBuffer(vertexBuffer);
+	std::vector<ID3D11Buffer*> oneMeshVBs;
+	oneMeshVBs.push_back(vertexBuffer);
+	_d3dProgramForDeferredRendering.addVertexBuffers(oneMeshVBs);
 
 	// 入力レイアウトオブジェクトの作成
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
@@ -958,10 +960,10 @@ void Renderer::renderDeferred()
 
 	direct3dContext->Unmap(_d3dProgramForDeferredRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_SPOT_LIGHT_PARAMETER), 0);
 
-
+	// メッシュはひとつだけ
 	UINT strides[1] = {sizeof(_quadrangle.topLeft)};
 	UINT offsets[1] = {0};
-	direct3dContext->IASetVertexBuffers(0, _d3dProgramForDeferredRendering.getVertexBuffers().size(), _d3dProgramForDeferredRendering.getVertexBuffers().data(), strides, offsets);
+	direct3dContext->IASetVertexBuffers(0, _d3dProgramForDeferredRendering.getVertexBuffers(0).size(), _d3dProgramForDeferredRendering.getVertexBuffers(0).data(), strides, offsets);
 	direct3dContext->IASetInputLayout(_d3dProgramForDeferredRendering.getInputLayout());
 	//direct3dContext->IASetInputLayout(nullptr);
 	direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);

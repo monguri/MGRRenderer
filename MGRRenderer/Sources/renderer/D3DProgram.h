@@ -47,8 +47,8 @@ public:
 	ID3DBlob* getVertexShaderBlob() const { return _vertexShaderBlob; };
 	ID3D11GeometryShader* getGeometryShader() const { return _geometryShader; }
 	ID3D11PixelShader* getPixelShader() const { return _pixelShader; }
-	const std::vector<ID3D11Buffer*>& getVertexBuffers() const { return _vertexBuffers; }
-	void addVertexBuffer(ID3D11Buffer* vertexBuffer) { _vertexBuffers.push_back(vertexBuffer); }
+	const std::vector<ID3D11Buffer*>& getVertexBuffers(size_t meshIndex) const { return _vertexBuffers[meshIndex]; }
+	void addVertexBuffers(const std::vector<ID3D11Buffer*>& vertexBuffers) { _vertexBuffers.push_back(vertexBuffers); }
 	const std::vector<std::vector<ID3D11Buffer*>>& getIndexBuffers() const { return _indexBuffers; }
 	void addIndexBuffers(const std::vector<ID3D11Buffer*>& indexBuffers) { _indexBuffers.push_back(indexBuffers); }
 	ID3D11InputLayout* getInputLayout() const { return _inputLayout; }
@@ -66,8 +66,8 @@ private:
 	ID3DBlob* _vertexShaderBlob;
 	ID3D11GeometryShader* _geometryShader;
 	ID3D11PixelShader* _pixelShader;
-	// 一つのモデルファイルの中の複数メッシュの数だけ
-	std::vector<ID3D11Buffer*> _vertexBuffers;
+	// 第一階層は一つのモデルファイルの中の複数メッシュ、第二階層は、頂点属性ごとにバーテックスバッファを別にした場合
+	std::vector<std::vector<ID3D11Buffer*>> _vertexBuffers;
 	// 第一階層は一つのモデルファイルの中の複数メッシュ、第二階層は、その中でのマテリアルごとのサブメッシュ
 	std::vector<std::vector<ID3D11Buffer*>> _indexBuffers;
 	ID3D11InputLayout* _inputLayout;

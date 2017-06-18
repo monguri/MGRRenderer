@@ -217,11 +217,13 @@ bool Sprite3D::initWithModel(const std::string& filePath, bool useMtl)
 				Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 				return false;
 			}
-			_d3dProgramForForwardRendering.addVertexBuffer(vertexBuffer);
-			_d3dProgramForShadowMap.addVertexBuffer(vertexBuffer);
-			_d3dProgramForPointLightShadowMap.addVertexBuffer(vertexBuffer);
+			std::vector<ID3D11Buffer*> oneMeshVBs;
+			oneMeshVBs.push_back(vertexBuffer);
+			_d3dProgramForForwardRendering.addVertexBuffers(oneMeshVBs);
+			_d3dProgramForShadowMap.addVertexBuffers(oneMeshVBs);
+			_d3dProgramForPointLightShadowMap.addVertexBuffers(oneMeshVBs);
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
-			_d3dProgramForGBuffer.addVertexBuffer(vertexBuffer);
+			_d3dProgramForGBuffer.addVertexBuffers(oneMeshVBs);
 #endif
 
 			std::vector<ID3D11Buffer*> indexBufferList;
@@ -328,11 +330,13 @@ bool Sprite3D::initWithModel(const std::string& filePath, bool useMtl)
 			Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 			return false;
 		}
-		_d3dProgramForForwardRendering.addVertexBuffer(vertexBuffer);
-		_d3dProgramForShadowMap.addVertexBuffer(vertexBuffer);
-		_d3dProgramForPointLightShadowMap.addVertexBuffer(vertexBuffer);
+		std::vector<ID3D11Buffer*> oneMeshVBs;
+		oneMeshVBs.push_back(vertexBuffer);
+		_d3dProgramForForwardRendering.addVertexBuffers(oneMeshVBs);
+		_d3dProgramForShadowMap.addVertexBuffers(oneMeshVBs);
+		_d3dProgramForPointLightShadowMap.addVertexBuffers(oneMeshVBs);
 #if defined(MGRRENDERER_DEFERRED_RENDERING)
-		_d3dProgramForGBuffer.addVertexBuffer(vertexBuffer);
+		_d3dProgramForGBuffer.addVertexBuffers(oneMeshVBs);
 #endif
 
 		// インデックスバッファの定義
@@ -1088,8 +1092,7 @@ void Sprite3D::renderGBuffer()
 			// メッシュ数のループ
 			for (size_t meshIndex = 0; meshIndex < _verticesList.size(); ++meshIndex)
 			{
-				ID3D11Buffer* meshVB[1] = { _d3dProgramForGBuffer.getVertexBuffers()[meshIndex] };
-				direct3dContext->IASetVertexBuffers(0, 1, meshVB, strides, offsets);
+				direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers(meshIndex).size(), _d3dProgramForGBuffer.getVertexBuffers(meshIndex).data(), strides, offsets);
 
 				size_t numSubMesh = _indicesList[meshIndex].size();
 				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
@@ -1101,8 +1104,8 @@ void Sprite3D::renderGBuffer()
 		}
 		else if (_isC3b)
 		{
-			ID3D11Buffer* meshVB[1] = { _d3dProgramForShadowMap.getVertexBuffers()[0] };
-			direct3dContext->IASetVertexBuffers(0, 1, meshVB, strides, offsets);
+			// メッシュはひとつだけ
+			direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers(0).size(), _d3dProgramForGBuffer.getVertexBuffers(0).data(), strides, offsets);
 			direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffers()[0][0], DXGI_FORMAT_R16_UINT, 0);
 			direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 		}
@@ -1296,8 +1299,7 @@ void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 			// メッシュ数のループ
 			for (size_t meshIndex = 0; meshIndex < _verticesList.size(); ++meshIndex)
 			{
-				ID3D11Buffer* meshVB[1] = { _d3dProgramForShadowMap.getVertexBuffers()[meshIndex] };
-				direct3dContext->IASetVertexBuffers(0, 1, meshVB, strides, offsets);
+				direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers(meshIndex).size(), _d3dProgramForShadowMap.getVertexBuffers(meshIndex).data(), strides, offsets);
 
 				size_t numSubMesh = _indicesList[meshIndex].size();
 				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
@@ -1309,8 +1311,8 @@ void Sprite3D::renderDirectionalLightShadowMap(const DirectionalLight* light)
 		}
 		else if (_isC3b)
 		{
-			ID3D11Buffer* meshVB[1] = { _d3dProgramForShadowMap.getVertexBuffers()[0] };
-			direct3dContext->IASetVertexBuffers(0, 1, meshVB, strides, offsets);
+			// メッシュはひとつだけ
+			direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers(0).size(), _d3dProgramForShadowMap.getVertexBuffers(0).data(), strides, offsets);
 			direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffers()[0][0], DXGI_FORMAT_R16_UINT, 0);
 			direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 		}
@@ -1470,8 +1472,7 @@ void Sprite3D::renderPointLightShadowMap(size_t index, const PointLight* light, 
 			// メッシュ数のループ
 			for (size_t meshIndex = 0; meshIndex < _verticesList.size(); ++meshIndex)
 			{
-				ID3D11Buffer* meshVB[1] = { _d3dProgramForPointLightShadowMap.getVertexBuffers()[meshIndex] };
-				direct3dContext->IASetVertexBuffers(0, 1, meshVB, strides, offsets);
+				direct3dContext->IASetVertexBuffers(0, _d3dProgramForPointLightShadowMap.getVertexBuffers(meshIndex).size(), _d3dProgramForPointLightShadowMap.getVertexBuffers(meshIndex).data(), strides, offsets);
 
 				size_t numSubMesh = _indicesList[meshIndex].size();
 				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
@@ -1483,8 +1484,8 @@ void Sprite3D::renderPointLightShadowMap(size_t index, const PointLight* light, 
 		}
 		else if (_isC3b)
 		{
-			ID3D11Buffer* meshVB[1] = { _d3dProgramForPointLightShadowMap.getVertexBuffers()[0] };
-			direct3dContext->IASetVertexBuffers(0, 1, meshVB, strides, offsets);
+			// メッシュはひとつだけ
+			direct3dContext->IASetVertexBuffers(0, _d3dProgramForPointLightShadowMap.getVertexBuffers(0).size(), _d3dProgramForPointLightShadowMap.getVertexBuffers(0).data(), strides, offsets);
 			direct3dContext->IASetIndexBuffer(_d3dProgramForPointLightShadowMap.getIndexBuffers()[0][0], DXGI_FORMAT_R16_UINT, 0);
 			direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 		}
@@ -1664,8 +1665,7 @@ void Sprite3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 			// メッシュ数のループ
 			for (size_t meshIndex = 0; meshIndex < _verticesList.size(); ++meshIndex)
 			{
-				ID3D11Buffer* meshVB[1] = { _d3dProgramForShadowMap.getVertexBuffers()[meshIndex] };
-				direct3dContext->IASetVertexBuffers(0, 1, meshVB, strides, offsets);
+				direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers(meshIndex).size(), _d3dProgramForShadowMap.getVertexBuffers(meshIndex).data(), strides, offsets);
 
 				size_t numSubMesh = _indicesList[meshIndex].size();
 				for (size_t subMeshIndex = 0; subMeshIndex < numSubMesh; ++subMeshIndex)
@@ -1677,8 +1677,8 @@ void Sprite3D::renderSpotLightShadowMap(size_t index, const SpotLight* light)
 		}
 		else if (_isC3b)
 		{
-			ID3D11Buffer* meshVB[1] = { _d3dProgramForShadowMap.getVertexBuffers()[0] };
-			direct3dContext->IASetVertexBuffers(0, 1, meshVB, strides, offsets);
+			// メッシュはひとつだけ
+			direct3dContext->IASetVertexBuffers(0, _d3dProgramForShadowMap.getVertexBuffers(0).size(), _d3dProgramForShadowMap.getVertexBuffers(0).data(), strides, offsets);
 			direct3dContext->IASetIndexBuffer(_d3dProgramForShadowMap.getIndexBuffers()[0][0], DXGI_FORMAT_R16_UINT, 0);
 			direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 		}
@@ -2033,8 +2033,7 @@ void Sprite3D::renderForward()
 			// メッシュ数のループ
 			for (size_t meshIndex = 0; meshIndex < _verticesList.size(); ++meshIndex)
 			{
-				ID3D11Buffer* meshVB[1] = { _d3dProgramForForwardRendering.getVertexBuffers()[meshIndex] };
-				direct3dContext->IASetVertexBuffers(0, 1, meshVB, strides, offsets);
+				direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers(meshIndex).size(), _d3dProgramForForwardRendering.getVertexBuffers(meshIndex).data(), strides, offsets);
 
 				D3DTexture* texture = _textureList[0];
 				size_t numSubMesh = _indicesList[meshIndex].size();
@@ -2065,8 +2064,8 @@ void Sprite3D::renderForward()
 			};
 			direct3dContext->PSSetShaderResources(0, 2, shaderResourceViews);
 
-			ID3D11Buffer* meshVB[1] = { _d3dProgramForForwardRendering.getVertexBuffers()[0] };
-			direct3dContext->IASetVertexBuffers(0, 1, meshVB, strides, offsets);
+			// メッシュはひとつだけ
+			direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers(0).size(), _d3dProgramForForwardRendering.getVertexBuffers(0).data(), strides, offsets);
 			direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffers()[0][0], DXGI_FORMAT_R16_UINT, 0);
 			direct3dContext->DrawIndexed(_indicesList[0][0].size(), 0, 0);
 		}

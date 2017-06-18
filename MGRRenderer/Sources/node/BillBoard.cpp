@@ -70,8 +70,10 @@ bool BillBoard::init(const std::string& filePath, Mode mode)
 		Logger::logAssert(false, "CreateBuffer failed. result=%d", result);
 		return false;
 	}
-	_d3dProgramForForwardRendering.addVertexBuffer(vertexBuffer);
-	_d3dProgramForGBuffer.addVertexBuffer(vertexBuffer);
+	std::vector<ID3D11Buffer*> oneMeshVBs;
+	oneMeshVBs.push_back(vertexBuffer);
+	_d3dProgramForForwardRendering.addVertexBuffers(oneMeshVBs);
+	_d3dProgramForGBuffer.addVertexBuffers(oneMeshVBs);
 
 	// インデックスバッファ用の配列の用意。素直に昇順に番号付けする
 	std::vector<unsigned int> indexArray;
@@ -326,9 +328,10 @@ void BillBoard::renderGBuffer()
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
 		direct3dContext->Unmap(_d3dProgramForGBuffer.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
 
+		// メッシュはひとつだけ
 		UINT strides[1] = {sizeof(_quadrangle.topLeft)};
 		UINT offsets[1] = {0};
-		direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers().size(), _d3dProgramForGBuffer.getVertexBuffers().data(), strides, offsets);
+		direct3dContext->IASetVertexBuffers(0, _d3dProgramForGBuffer.getVertexBuffers(0).size(), _d3dProgramForGBuffer.getVertexBuffers(0).data(), strides, offsets);
 		direct3dContext->IASetIndexBuffer(_d3dProgramForGBuffer.getIndexBuffers()[0][0], DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForGBuffer.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
@@ -435,9 +438,10 @@ void BillBoard::renderForward()
 		CopyMemory(mappedResource.pData, &multiplyColor , sizeof(multiplyColor));
 		direct3dContext->Unmap(_d3dProgramForForwardRendering.getConstantBuffer(D3DProgram::CONSTANT_BUFFER_MULTIPLY_COLOR), 0);
 
+		// メッシュはひとつだけ
 		UINT strides[1] = {sizeof(_quadrangle.topLeft)};
 		UINT offsets[1] = {0};
-		direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers().size(), _d3dProgramForForwardRendering.getVertexBuffers().data(), strides, offsets);
+		direct3dContext->IASetVertexBuffers(0, _d3dProgramForForwardRendering.getVertexBuffers(0).size(), _d3dProgramForForwardRendering.getVertexBuffers(0).data(), strides, offsets);
 		direct3dContext->IASetIndexBuffer(_d3dProgramForForwardRendering.getIndexBuffers()[0][0], DXGI_FORMAT_R32_UINT, 0);
 		direct3dContext->IASetInputLayout(_d3dProgramForForwardRendering.getInputLayout());
 		direct3dContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);

@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MGRRenderer", "MGRRenderer\MGRRenderer.vcxproj", "{6BC7B3AF-198E-4A27-9950-D1C347DF439B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MGRPhysics", "MGRPhysics\MGRPhysics.vcxproj", "{70B3D09B-9F76-431F-A98B-88BC599C0AA6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6BC7B3AF-198E-4A27-9950-D1C347DF439B} = {6BC7B3AF-198E-4A27-9950-D1C347DF439B}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

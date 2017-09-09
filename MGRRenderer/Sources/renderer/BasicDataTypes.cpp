@@ -2,6 +2,7 @@
 
 namespace mgrrenderer
 {
+const Vec3 Vec3::ZERO = Vec3(0.0f, 0.0f, 0.0f);
 
 const Color3B Color3B::WHITE = Color3B(255, 255, 255);
 const Color3B Color3B::RED = Color3B(255, 0, 0);
@@ -23,6 +24,8 @@ const Color4B Color4B::ORANGE = Color4B(255, 127, 255, 255);
 const Color4B Color4B::GRAY = Color4B(166, 166, 166, 255);
 const Color4B Color4B::BLACK = Color4B(0, 0, 0, 255);
 
+const Quaternion Quaternion::IDENTITY = Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+
 Quaternion::Quaternion(const Vec3& angleVec)
 {
 	float halfRadianX = convertDegreeToRadian(angleVec.x / 2.0f);
@@ -41,6 +44,24 @@ Quaternion::Quaternion(const Vec3& angleVec)
 	z = cosHalfRadianX * cosHalfRadianY * sinHalfRadianZ - sinHalfRadianX * sinHalfRadianY * cosHalfRadianZ;
 	w = cosHalfRadianX * cosHalfRadianY * cosHalfRadianZ + sinHalfRadianX * sinHalfRadianY * sinHalfRadianZ;
 }
+
+Vec3 Quaternion::operator*(const Vec3& v)
+{
+	const Mat3& rotation = Mat3::createRotation(*this);
+	return rotation * v;
+}
+
+const Mat3 Mat3::IDENTITY = Mat3(
+							1.0f, 0.0f, 0.0f,
+							0.0f, 1.0f, 0.0f,
+							0.0f, 0.0f, 1.0f
+							);
+
+const Mat3 Mat3::ZERO = Mat3(
+							0.0f, 0.0f, 0.0f,
+							0.0f, 0.0f, 0.0f,
+							0.0f, 0.0f, 0.0f
+							);
 
 const Mat4 Mat4::IDENTITY = Mat4(
 							1.0f, 0.0f, 0.0f, 0.0f,

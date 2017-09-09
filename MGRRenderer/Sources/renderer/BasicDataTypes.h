@@ -87,6 +87,8 @@ struct Vec2
 
 struct Vec3
 {
+	static const Vec3 ZERO;
+
 	union
 	{
 		float x;
@@ -150,6 +152,14 @@ struct Vec3
 	static Vec3 cross(const Vec3& v1, const Vec3& v2)
 	{
 		return Vec3(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
+	}
+	static Vec3 maxVec3(const Vec3& v1, const Vec3& v2)
+	{
+		return Vec3(fmaxf(v1.x, v2.x), fmaxf(v1.y, v2.y), fmaxf(v1.y, v2.y));
+	}
+	static Vec3 minVec3(const Vec3& v1, const Vec3& v2)
+	{
+		return Vec3(fminf(v1.x, v2.x), fminf(v1.y, v2.y), fminf(v1.y, v2.y));
 	}
 };
 
@@ -313,6 +323,8 @@ struct Color4F
 };
 
 struct Quaternion {
+	static const Quaternion IDENTITY;
+
 	float x;
 	float y;
 	float z;
@@ -323,6 +335,7 @@ struct Quaternion {
 	Quaternion(const Vec3& angleVec);
 	bool operator==(const Quaternion& q) const { return (x == q.x && y == q.y && z == q.z && w == q.w); } //TODO:うーん。。。誤差考慮してない
 	bool operator!=(const Quaternion& q) const { return (x != q.x || y != q.y || z != q.z || w != q.w);}
+	Vec3 operator*(const Vec3& v);
 
 	static Quaternion slerp(const Quaternion& q1, const Quaternion& q2, float t)
 	{
@@ -399,6 +412,230 @@ struct Quaternion {
 
 		//f1 = 1.5f - 0.5f * (x * x + y * y + z * z + w * w);
 		//return Quaternion(x * f1, y * f1, z * f1, w * f1);
+	}
+};
+
+struct Mat3
+{
+	float m[3][3];
+
+	static const Mat3 IDENTITY;
+	static const Mat3 ZERO;
+
+	Mat3() {
+		setZero();
+	}
+
+	~Mat3() {
+		setZero();
+	}
+
+	Mat3(
+		float m00, float m01, float m02,
+		float m10, float m11, float m12,
+		float m20, float m21, float m22
+		)
+	{
+		//　普通にイメージする行列とは転置関係になる
+		//　cocos2d-xの一次配列との対応をコメントに記載する
+		m[0][0] = m00;/*[0]*/ m[1][0] = m01;/*[3]*/ m[2][0] = m02;/*[6]*/
+		m[0][1] = m10;/*[1]*/ m[1][1] = m11;/*[4]*/ m[2][1] = m12;/*[7]*/
+		m[0][2] = m20;/*[2]*/ m[1][2] = m21;/*[5]*/ m[2][2] = m22;/*[8]*/
+	}
+
+	Mat3(float** mat)
+	{
+		memcpy(m[0], mat[0], 3 * 3);
+	}
+
+	Mat3& operator*=(float a)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				m[i][j] *= a;
+			}
+		}
+		return *this;
+	}
+
+	Mat3& operator/=(float a)
+	{
+		Logger::logAssert(a != 0.0, "0で除算している。");
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				m[i][j] /= a;
+			}
+		}
+		return *this;
+	} //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
+
+	Mat3 operator*(float a) const
+	{
+		Mat3 ret;
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				ret.m[i][j] = a * m[i][j];
+			}
+		}
+		return ret;
+	}
+
+	Mat3 operator/(float a) const
+	{
+		Logger::logAssert(a != 0.0, "0で除算している。");
+		Mat3 ret;
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				ret.m[i][j] = m[i][j] / a;
+			}
+		}
+		return ret;
+	} //TODO:CCMathBaseのMATH_TOLELRANCEみたいの考慮してない
+
+	Vec3 operator*(const Vec3& v) const
+	{
+		Vec3 ret;
+		ret.x = m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z;
+		ret.y = m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z;
+		ret.z = m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z;
+		return ret;
+	}
+
+	Mat3 operator*(const Mat3& mat) const
+	{
+		Mat3 ret;
+
+		ret.m[0][0] = m[0][0] * mat.m[0][0] + m[1][0] * mat.m[0][1] + m[2][0] * mat.m[0][2];
+		ret.m[0][1] = m[0][1] * mat.m[0][0] + m[1][1] * mat.m[0][1] + m[2][1] * mat.m[0][2];
+		ret.m[0][2] = m[0][2] * mat.m[0][0] + m[1][2] * mat.m[0][1] + m[2][2] * mat.m[0][2];
+
+		ret.m[1][0] = m[0][0] * mat.m[1][0] + m[1][0] * mat.m[1][1] + m[2][0] * mat.m[1][2];
+		ret.m[1][1] = m[0][1] * mat.m[1][0] + m[1][1] * mat.m[1][1] + m[2][1] * mat.m[1][2];
+		ret.m[1][2] = m[0][2] * mat.m[1][0] + m[1][2] * mat.m[1][1] + m[2][2] * mat.m[1][2];
+
+		ret.m[2][0] = m[0][0] * mat.m[2][0] + m[1][0] * mat.m[2][1] + m[2][0] * mat.m[2][2];
+		ret.m[2][1] = m[0][1] * mat.m[2][0] + m[1][1] * mat.m[2][1] + m[2][1] * mat.m[2][2];
+		ret.m[2][2] = m[0][2] * mat.m[2][0] + m[1][2] * mat.m[2][1] + m[2][2] * mat.m[2][2];
+
+		return ret;
+	}
+
+	Mat3& operator*=(const Mat3& mat)
+	{
+		*this = *this * mat;
+		return *this;
+	}
+
+	bool operator==(const Mat3& mat) const {
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				if (m[i][j] != mat.m[i][j])
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
+	} //TODO:うーん。。。誤差考慮してない
+
+	bool operator!=(const Mat3& mat) const {
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				if (m[i][j] != mat.m[i][j])
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	} //TODO:うーん。。。誤差考慮してない
+
+	Mat3& setZero()
+	{
+		memset(m, 0, sizeof(Mat3));
+		return *this;
+	}
+
+	Mat3& setIdentity()
+	{
+		memcpy(&m, &IDENTITY, sizeof(Mat3));
+		return *this;
+	}
+
+	static Mat3 createRotation(const Quaternion& rotation)
+	{
+		// TODO:理論をちゃんと知るべし
+		float x2 = rotation.x + rotation.x;
+		float y2 = rotation.y + rotation.y;
+		float z2 = rotation.z + rotation.z;
+
+		float xx2 = rotation.x * x2;
+		float yy2 = rotation.y * y2;
+		float zz2 = rotation.z * z2;
+
+		float xy2 = rotation.x * y2;
+		float xz2 = rotation.x * z2;
+		float yz2 = rotation.y * z2;
+
+		float wx2 = rotation.w * x2;
+		float wy2 = rotation.w * y2;
+		float wz2 = rotation.w * z2;
+
+		return Mat3(
+			1.0f - yy2 - zz2,	xy2 - wz2,			xz2 + wy2,
+			xy2 + wz2,			1.0f - xx2 - zz2,	yz2 - wx2,
+			xz2 - wy2,			yz2 + wx2,			1.0f - xx2 -yy2
+			);
+	}
+
+	static Mat3 createScale(const Vec3& scale)
+	{
+		Mat3 ret;
+		ret.setIdentity();
+
+		ret.m[0][0] = scale.x;
+		ret.m[1][1] = scale.y;
+		ret.m[2][2] = scale.z;
+		return ret;
+	}
+
+	static Mat3 createTransform(const Quaternion& rotation, const Vec3& scale)
+	{
+		Mat3 ret = createRotation(rotation);
+		ret *= createScale(scale);
+		return ret;
+	}
+
+	Mat3 createTranspose() const
+	{
+		Mat3 mat(
+			m[0][0], m[0][1], m[0][2],
+			m[1][0], m[1][1], m[1][2],
+			m[2][0], m[2][1], m[2][2]
+		);
+
+		return mat;
+	}
+
+	Mat3& transpose()
+	{
+		const Mat3& mat = createTranspose();
+		memcpy(this, &mat, sizeof(Mat3));
+		return *this;
 	}
 };
 

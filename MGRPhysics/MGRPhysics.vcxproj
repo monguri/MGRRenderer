@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Sources\elements\BallJoint.h" />
     <ClInclude Include="Sources\elements\Collidable.h" />
     <ClInclude Include="Sources\elements\Constraint.h" />
     <ClInclude Include="Sources\elements\Contact.h" />
@@ -28,10 +29,19 @@
     <ClInclude Include="Sources\elements\Shape.h" />
     <ClInclude Include="Sources\elements\SolverBody.h" />
     <ClInclude Include="Sources\elements\State.h" />
+    <ClInclude Include="Sources\pipeline\Allocator.h" />
+    <ClInclude Include="Sources\pipeline\BroadPhase.h" />
+    <ClInclude Include="Sources\pipeline\CollisionDetection.h" />
+    <ClInclude Include="Sources\pipeline\ConstraintSolver.h" />
+    <ClInclude Include="Sources\pipeline\Integrate.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\elements\Contact.cpp" />
     <ClCompile Include="Sources\elements\ConvexMesh.cpp" />
+    <ClCompile Include="Sources\pipeline\BroadPhase.cpp" />
+    <ClCompile Include="Sources\pipeline\CollisionDetection.cpp" />
+    <ClCompile Include="Sources\pipeline\ConstraintSolver.cpp" />
+    <ClCompile Include="Sources\pipeline\Integrate.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{70B3D09B-9F76-431F-A98B-88BC599C0AA6}</ProjectGuid>

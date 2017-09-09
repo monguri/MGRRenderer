@@ -19,9 +19,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Sources\elements\State.h">
-      <Filter>Sources\elements</Filter>
-    </ClInclude>
     <ClInclude Include="Sources\elements\Shape.h">
       <Filter>Sources\elements</Filter>
     </ClInclude>
@@ -46,6 +43,27 @@
     <ClInclude Include="Sources\elements\SolverBody.h">
       <Filter>Sources\elements</Filter>
     </ClInclude>
+    <ClInclude Include="Sources\pipeline\Allocator.h">
+      <Filter>Sources\pipline</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\pipeline\BroadPhase.h">
+      <Filter>Sources\pipline</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\pipeline\CollisionDetection.h">
+      <Filter>Sources\pipline</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\elements\State.h">
+      <Filter>Sources\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\pipeline\ConstraintSolver.h">
+      <Filter>Sources\pipline</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\elements\BallJoint.h">
+      <Filter>Sources\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\pipeline\Integrate.h">
+      <Filter>Sources\pipline</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\elements\ConvexMesh.cpp">
@@ -53,6 +71,18 @@
     </ClCompile>
     <ClCompile Include="Sources\elements\Contact.cpp">
       <Filter>Sources\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\pipeline\BroadPhase.cpp">
+      <Filter>Sources\pipline</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\pipeline\CollisionDetection.cpp">
+      <Filter>Sources\pipline</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\pipeline\ConstraintSolver.cpp">
+      <Filter>Sources\pipline</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\pipeline\Integrate.cpp">
+      <Filter>Sources\pipline</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

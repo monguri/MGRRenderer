@@ -637,6 +637,17 @@ struct Mat3
 		memcpy(this, &mat, sizeof(Mat3));
 		return *this;
 	}
+
+	Mat3 createAbsolute() const
+	{
+		Mat3 mat(
+			fabsf(m[0][0]), fabsf(m[1][0]), fabsf(m[2][0]),
+			fabsf(m[0][1]), fabsf(m[1][1]), fabsf(m[2][1]),
+			fabsf(m[0][2]), fabsf(m[1][2]), fabsf(m[2][2])
+		);
+
+		return mat;
+	}
 };
 
 struct Mat4

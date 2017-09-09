@@ -2,6 +2,8 @@
 
 namespace mgrphysics
 {
+struct Contact;
+
 enum class PairType : int
 {
 	NEW,
@@ -23,5 +25,8 @@ struct Pair
 			unsigned int rigidBodyB;
 		};
 	};
+
+	// Õ“Ëî•ñ
+	Contact* contact;
 };
 } // namespace mgrphysics

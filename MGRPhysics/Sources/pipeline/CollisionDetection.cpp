@@ -13,5 +13,6 @@ void detectCollision(
 	unsigned int numpairs
 )
 {
+	// ì‹Æ’†IIIÀ‘•
 }
 } // namespace mgrphysics

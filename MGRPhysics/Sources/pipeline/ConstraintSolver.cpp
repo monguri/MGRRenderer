@@ -1,6 +1,6 @@
 #include "ConstraintSolver.h"
 #include "../elements/State.h"
-#include "../elements/Collidable.h"
+#include "../elements/RigidBody.h"
 #include "../elements/Pair.h"
 #include "../elements/BallJoint.h"
 
@@ -8,7 +8,7 @@ namespace mgrphysics
 {
 void solveConstraint(
 	const State* states,
-	const Collidable* collidables,
+	const RigidBody* bodies,
 	unsigned int numRigidBodies,
 	const Pair* pairs,
 	unsigned int numPairs,

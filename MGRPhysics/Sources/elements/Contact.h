@@ -58,7 +58,7 @@ struct Contact
 
 	// 衝突点を破棄する
 	// @param i 破棄する衝突点のインデックス
-	void removeContactPoints(int i);
+	void removeContactPoint(int i);
 
 	// 初期化
 	void reset();

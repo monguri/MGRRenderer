@@ -29,11 +29,12 @@
     <ClInclude Include="Sources\elements\Shape.h" />
     <ClInclude Include="Sources\elements\SolverBody.h" />
     <ClInclude Include="Sources\elements\State.h" />
-    <ClInclude Include="Sources\pipeline\Allocator.h" />
     <ClInclude Include="Sources\pipeline\BroadPhase.h" />
     <ClInclude Include="Sources\pipeline\CollisionDetection.h" />
     <ClInclude Include="Sources\pipeline\ConstraintSolver.h" />
     <ClInclude Include="Sources\pipeline\Integrate.h" />
+    <ClInclude Include="Sources\pipeline\Sort.h" />
+    <ClInclude Include="Sources\Simulation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\elements\Contact.cpp" />
@@ -42,6 +43,7 @@
     <ClCompile Include="Sources\pipeline\CollisionDetection.cpp" />
     <ClCompile Include="Sources\pipeline\ConstraintSolver.cpp" />
     <ClCompile Include="Sources\pipeline\Integrate.cpp" />
+    <ClCompile Include="Sources\Simulation.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{70B3D09B-9F76-431F-A98B-88BC599C0AA6}</ProjectGuid>

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Sources\collide\ConvexConvexContact.h" />
     <ClInclude Include="Sources\elements\BallJoint.h" />
     <ClInclude Include="Sources\elements\Collidable.h" />
     <ClInclude Include="Sources\elements\Constraint.h" />
@@ -37,6 +38,7 @@
     <ClInclude Include="Sources\Simulation.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Sources\collide\ConvexConvexContact.cpp" />
     <ClCompile Include="Sources\elements\Contact.cpp" />
     <ClCompile Include="Sources\elements\ConvexMesh.cpp" />
     <ClCompile Include="Sources\pipeline\BroadPhase.cpp" />

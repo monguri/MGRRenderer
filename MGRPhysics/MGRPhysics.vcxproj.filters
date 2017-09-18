@@ -8,14 +8,14 @@
     <Filter Include="Sources">
       <UniqueIdentifier>{9e640d71-6dd2-479a-9677-87bce715068d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sources\collision">
-      <UniqueIdentifier>{43980410-7870-431b-b91e-baf3788b03c6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Sources\elements">
       <UniqueIdentifier>{f3a42f3c-ca26-4c90-9734-5c98fcd9b02a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\pipline">
       <UniqueIdentifier>{d02e9796-1ec2-4e69-a6a2-07567648466d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\collide">
+      <UniqueIdentifier>{43980410-7870-431b-b91e-baf3788b03c6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -67,6 +67,9 @@
     <ClInclude Include="Sources\Simulation.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="Sources\collide\ConvexConvexContact.h">
+      <Filter>Sources\collide</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\elements\ConvexMesh.cpp">
@@ -89,6 +92,9 @@
     </ClCompile>
     <ClCompile Include="Sources\Simulation.cpp">
       <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\collide\ConvexConvexContact.cpp">
+      <Filter>Sources\collide</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

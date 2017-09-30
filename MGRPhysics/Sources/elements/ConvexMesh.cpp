@@ -8,7 +8,7 @@ bool ConvexMesh::InitConvexMesh(const float* vertices, unsigned int numVertices,
 	return true;
 }
 
-void ConvexMesh::GetProjection(float& outMin, float& outMax, const Vec3& axis)
+void ConvexMesh::GetProjection(float& outMin, float& outMax, const Vec3& axis) const
 {
 	//TODO:ŽÀ‘•
 }

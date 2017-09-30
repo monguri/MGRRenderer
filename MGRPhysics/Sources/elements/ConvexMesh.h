@@ -43,8 +43,8 @@ struct ConvexMesh
 	unsigned char numEdges;
 
 	Vec3 vertices[MAX_VERTICES];
-	Vec3 edges[MAX_EDGES];
-	Vec3 facets[MAX_FACETS];
+	Edge edges[MAX_EDGES];
+	Facet facets[MAX_FACETS];
 
 	void reset()
 	{
@@ -55,6 +55,6 @@ struct ConvexMesh
 
 	bool InitConvexMesh(const float* vertices, unsigned int numVertices, const unsigned short* indices, unsigned int numIndices, const Vec3& scale = Vec3(1.0f, 1.0f, 1.0f));
 
-	void GetProjection(float& outMin, float& outMax, const Vec3& axis);
+	void GetProjection(float& outMin, float& outMax, const Vec3& axis) const;
 };
 } // namespace mgrphysics

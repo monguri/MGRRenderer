@@ -14,7 +14,7 @@
     <Filter Include="Sources\pipline">
       <UniqueIdentifier>{d02e9796-1ec2-4e69-a6a2-07567648466d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sources\collide">
+    <Filter Include="Sources\collision">
       <UniqueIdentifier>{43980410-7870-431b-b91e-baf3788b03c6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -67,8 +67,11 @@
     <ClInclude Include="Sources\Simulation.h">
       <Filter>Sources</Filter>
     </ClInclude>
-    <ClInclude Include="Sources\collide\ConvexConvexContact.h">
-      <Filter>Sources\collide</Filter>
+    <ClInclude Include="Sources\collision\ConvexConvexContact.h">
+      <Filter>Sources\collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\collision\ClosestFunction.h">
+      <Filter>Sources\collision</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -93,8 +96,11 @@
     <ClCompile Include="Sources\Simulation.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\collide\ConvexConvexContact.cpp">
-      <Filter>Sources\collide</Filter>
+    <ClCompile Include="Sources\collision\ConvexConvexContact.cpp">
+      <Filter>Sources\collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\collision\ClosestFunction.cpp">
+      <Filter>Sources\collision</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

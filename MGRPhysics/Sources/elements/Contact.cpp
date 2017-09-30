@@ -36,7 +36,7 @@ void Contact::refresh(const Vec3 & pA, const Quaternion & qA, const Vec3 & pB, c
 
 	// 衝突点の更新
 	// 両衝突点の距離が閾値（CONTACT_THRESHOLD）を超えたら消去
-	for (int i = 0; i < numContacts; ++i)
+	for (int i = 0; i < (int)numContacts; ++i)
 	{
 		const Vec3& normal = contactPoints[i].normal;
 		// pointA、pointBについては前に計算に使ったものを用いて、剛体ABの位置とポーズの変更のみ反映する

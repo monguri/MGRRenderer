@@ -52,6 +52,7 @@ struct Vec2
 	Vec2() : x(0), y(0) {}
 	Vec2(float x, float y) : x(x), y(y) {}
 
+	Vec2 operator-() const { return Vec2(-x, -y); }
 	Vec2 operator+(const Vec2& vec) const { return Vec2(x + vec.x, y + vec.y); }
 	Vec2 operator-(const Vec2& vec) const { return Vec2(x - vec.x, y - vec.y); }
 	Vec2& operator+=(const Vec2& vec) { x += vec.x; y += vec.y; return *this; }
@@ -108,6 +109,7 @@ struct Vec3
 	Vec3() : x(0), y(0), z(0) {}
 	Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
 
+	Vec3 operator-() const { return Vec3(-x, -y, -z); }
 	Vec3 operator+(const Vec3& v) const { return Vec3(x + v.x, y + v.y, z + v.z); }
 	Vec3 operator-(const Vec3& v) const { return Vec3(x - v.x, y - v.y, z - v.z); }
 	Vec3& operator+=(const Vec3& v) { x += v.x; y += v.y; z += v.z; return *this; }
@@ -234,6 +236,7 @@ struct Vec4
 	Vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 	Vec4(const Vec3& vec3) : x(vec3.x), y(vec3.y), z(vec3.z), w(1.0f) {}
 
+	Vec4 operator-() const { return Vec4(-x, -y, -z, -w); }
 	Vec4 operator+(const Vec4& v) const { return Vec4(x + v.x, y + v.y, z + v.z, w + v.w); }
 	Vec4 operator-(const Vec4& v) const { return Vec4(x - v.x, y - v.y, z - v.z, w - v.w); }
 	Vec4& operator+=(const Vec4& v) { x += v.x; y += v.y; z += v.z; w += v.w; return *this; }
@@ -446,6 +449,19 @@ struct Mat3
 	Mat3(float** mat)
 	{
 		memcpy(m[0], mat[0], 3 * 3);
+	}
+
+	Mat3 operator-() const
+	{
+		Mat3 ret;
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				ret.m[i][j] = -m[i][j];
+			}
+		}
+		return ret;
 	}
 
 	Mat3& operator*=(float a)
@@ -689,6 +705,19 @@ struct Mat4
 		memcpy(m[0], mat[0], 4 * 4);
 	}
 
+	Mat4 operator-() const
+	{
+		Mat4 ret;
+		for (int i = 0; i < 4; ++i)
+		{
+			for (int j = 0; j < 4; ++j)
+			{
+				ret.m[i][j] = -m[i][j];
+			}
+		}
+		return ret;
+	}
+
 	Mat4& operator*=(float a)
 	{
 		for (int i = 0; i < 4; ++i)
@@ -840,7 +869,7 @@ struct Mat4
 		Vec3 upVec = up;
 		upVec.normalize();
 
-		Vec3 zAxis = direction * -1;
+		Vec3 zAxis = -direction;
 		zAxis.normalize();
 
 		Vec3 xAxis = Vec3::cross(upVec, zAxis);
@@ -1067,6 +1096,11 @@ struct Mat4
 		normalMatrix.inverse();
 		normalMatrix.transpose();
 		return normalMatrix;
+	}
+
+	Vec3 getTranslationVector() const
+	{
+		return Vec3(m[0][3], m[1][3], m[2][3]);
 	}
 };
 

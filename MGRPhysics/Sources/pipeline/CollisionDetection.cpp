@@ -3,7 +3,7 @@
 #include "../elements/Collidable.h"
 #include "../elements/Pair.h"
 #include "../elements/Contact.h"
-#include "../collide/ConvexConvexContact.h"
+#include "../collision/ConvexConvexContact.h"
 
 // TODO:インクルードパスにMGRRenderer/sourcesを追加している。あとで外す
 #include "renderer/BasicDataTypes.h"
@@ -57,7 +57,6 @@ void detectCollision(
 				Vec3 contactPointA;
 				Vec3 contactPointB;
 
-				// TODO:中身を実装
 				if (convexConvexContact(
 						shapeA.geometry,
 						worldTransformA,
@@ -79,7 +78,7 @@ void detectCollision(
 					// TODO:中身を実装
 					pair.contact->addContact(penetrationDepth, normal,
 						Vec3(offsetContactPointA.x, offsetContactPointA.y, offsetContactPointA.z),
-						Vec3(offsetContactPointB.x, offsetContactPointB.y, offsetContactPointB.z);
+						Vec3(offsetContactPointB.x, offsetContactPointB.y, offsetContactPointB.z));
 				}
 			}
 		}
